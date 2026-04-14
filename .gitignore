@@ -1,0 +1,22 @@
+# --- Synology Specific (The Ghost Folders) ---
+**/@eaDir/
+.DS_Store
+
+# --- Dependencies & Build ---
+node_modules/
+.next/
+out/
+build/
+dist/
+
+# --- Database & Environment ---
+.env
+.env.local
+*.db
+*.db-journal
+
+# --- Debug Logs ---
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*

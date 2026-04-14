@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --color-gym-blue: #2563eb;
+  --color-gym-slate: #0f172a;
+  --color-gym-accent: #38bdf8;
+}
+
+body {
+  @apply bg-[#F8FAFC] text-slate-900 antialiased;
+}
+
+/* Custom Glassmorphism for cards */
+.glass-card {
+  @apply bg-white/80 backdrop-blur-md border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)];
+}

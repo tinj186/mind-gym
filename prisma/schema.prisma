@@ -1,0 +1,58 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model StudentMastery {
+  id              String   @id @default(uuid())
+  studentId       String   @default("default-student") // Track individual student
+  subject         String   @default("Math")
+  level           String   @default("Primary 4")
+  topic           String
+  subtopic        String?
+  synapseStrength Float    @default(0.0) 
+  totalReps       Int      @default(0)
+  consecutiveWins Int      @default(0)
+  lastTrained     DateTime @updatedAt
+
+  // Ensure one mastery record per student per subtopic
+  @@unique([studentId, subject, level, topic, subtopic])
+}
+
+model QuestionBank {
+  id          String   @id @default(uuid())
+  subject     String   @default("Math")
+  level       String   @default("Primary 4")
+  topic       String
+  subtopic    String?
+  type        String   // MCQ, Short, Structured
+  difficulty  String   // Easy, Medium, Hard
+  question    String   @db.Text
+  solution    String   @db.Text
+  finalAnswer String
+  isApproved  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  // Relation: One question can have many attempts
+  attempts    AttemptLog[]
+}
+
+model AttemptLog {
+  id            String   @id @default(uuid())
+  studentId     String   @default("default-student")
+  isCorrect     Boolean
+  studentAnswer String?  // Added: Crucial for Tier 2/3 AI diagnosis
+  timeSpentSecs Int
+  defectCode    String?  // Section 3: e.g., "CARELESS_CALCULATION"
+  gradingTier   Int      @default(1) // Added: 1 (Local), 2 (Async), 3 (Full)
+  createdAt     DateTime @default(now())
+
+  // Relation: Link attempt back to the question
+  questionId    String
+  question      QuestionBank @relation(fields: [questionId], references: [id])
+}
