@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: GymPassword123
       POSTGRES_DB: mindgym
     ports:
-      - "5434:5432" # Changed from 5433 to avoid any potential port conflicts
+      - "5434:5432"
     volumes:
       - gym_db_data_v2:/var/lib/postgresql/data
 
@@ -22,17 +22,19 @@ services:
     environment:
       DATABASE_URL: "postgresql://gym_admin:GymPassword123@db:5432/mindgym?schema=public"
       WATCHPACK_POLLING: "true"
+      PORT: 3001
+      NEXT_TELEMETRY_DISABLED: 1
     ports:
-      - "3001:3000" # Maps Synology Port 3001 to Container Port 3000
+      - "3001:3001"
       - "5555:5555"
     command: >
       sh -c "
       find . -name '@eaDir' -type d -exec rm -rf {} + || true &&
+      ( [ -d .next ] && find .next -mindepth 1 -delete || true ) &&
       rm -rf node_modules/.cache &&
-      ( [ -d .next ] && find .next -mindepth 1 -not -path '*/@eaDir*' -delete || true ) &&
       npm install &&
       npx prisma generate &&
-      npx next dev -H 0.0.0.0"
+      npm run dev"
     depends_on:
       - db
 

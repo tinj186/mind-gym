@@ -3,6 +3,15 @@
 import { prisma } from '@/lib/db';
 import { redirect } from 'next/navigation';
 
+// Normalizes math strings: removes LaTeX commands, braces, and all whitespace
+const normalize = (val) => {
+  if (!val) return '';
+  return val.toLowerCase()
+    .replace(/\\frac\s*\{(\d+)\}\s*\{(\d+)\}/g, '$1/$2') // \frac {1} {4} -> 1/4
+    .replace(/\\frac\s*(\d)(\d)/g, '$1/$2')             // \frac 14 -> 1/4
+    .replace(/[\\{}\s]/g, '');                     // remove \, {, }, and spaces
+};
+
 export async function gradeAction(prevState, formData) {
   const questionId = formData.get('questionId');
   const studentAnswer = formData.get('answer')?.toString() || '';
@@ -27,7 +36,7 @@ export async function gradeAction(prevState, formData) {
 
   // 2. Precision Check
   const isCorrect = 
-    question.finalAnswer.trim().toLowerCase() === studentAnswer.trim().toLowerCase();
+    normalize(question.finalAnswer) === normalize(studentAnswer);
     console.log(`[SERVER ACTION] Match: ${isCorrect}`);
 
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useActionState } from 'react';
+import { useState, useEffect, useActionState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import BarModel from '@/components/BarModel';
 import MathInput from '@/components/MathInput';
@@ -8,10 +8,6 @@ import { gradeAction } from './actions';
 import Link from 'next/link';
 
 export default function TrainingPage() {
-  const [answer, setAnswer] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const router = useRouter();
-
   // useActionState handles the "Nothing happened" issue by capturing 
   // the server response even if hydration is slow.
   const [state, formAction] = useActionState(gradeAction, {
@@ -19,62 +15,95 @@ export default function TrainingPage() {
     lastAnswer: ''
   });
 
+  const [answer, setAnswer] = useState(state?.lastAnswer || '');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    console.log('🔄 [TrainingPage] Current Answer State:', answer);
+  }, [answer]);
+
   useEffect(() => {
     console.log('🚀 Training Client Hydrated');
+    setIsMounted(true);
   }, []);
+
+  // Sync previous answer into the active state when the server responds
+  useEffect(() => {
+    // Only sync if we have a new answer from the server and we aren't currently typing
+    const activeEl = document.activeElement;
+    const isFocused = activeEl?.tagName === 'MATH-FIELD' || activeEl?.closest('math-field');
+
+    if (isMounted && 
+        state?.lastAnswer && 
+        answer !== state.lastAnswer && 
+        !isSubmitting && 
+        !isFocused) {
+      console.log('📥 [TrainingPage] Syncing last answer from server:', state.lastAnswer);
+      setAnswer(state.lastAnswer);
+    }
+  }, [state?.lastAnswer, isSubmitting, isMounted]);
 
   // Mock data for current validation - this will be replaced by dynamic data later
   const currentQuestionId = "seed-q1"; 
+  
+  const handleSubmit = useCallback(async (e) => {
+    // 1. Prevent browser default behavior
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    
+    // 2. Prevent double-submission
+    if (isSubmitting) return;
 
-  const handleSubmit = async (e) => {
-    if (e) e.preventDefault();
+    // 3. Validate input
     if (!answer || answer.trim() === '') {
-      console.log('⚠️ Submit blocked: Answer is empty');
+      console.log('⚠️ [TrainingPage] Submit blocked: Answer state is currently:', JSON.stringify(answer));
+      alert(`Please enter an answer before submitting! (Current state: "${answer}")`);
       return;
     }
     
-    console.log('--- Submission Started ---');
-    console.log('Target ID:', currentQuestionId);
-    console.log('Student Answer:', answer);
-    
+    console.log('🚀 [TrainingPage] Starting Submission:', { id: currentQuestionId, answer });
     setIsSubmitting(true);
 
     try {
       const response = await fetch('/api/grade', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           questionId: currentQuestionId, 
           studentAnswer: answer 
         }),
       });
 
-      console.log('Response Status:', response.status);
-      
-      if (!response.ok) {
-        throw new Error(`Server returned ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`Server returned ${response.status}`);
 
       const result = await response.json();
-      console.log('Result received:', result);
+      console.log('📊 [TrainingPage] Grading Result:', result);
 
       if (result.isCorrect) {
         console.log('✅ Correct! Navigating to summary...');
-              // Force a hard redirect as fallback for router lag on NAS
         router.push('/train/summary');
-        setTimeout(() => { window.location.assign('/train/summary'); }, 500);
       } else {
         console.log('❌ Incorrect answer.');
-        alert(result.hint || "Incorrect. Check the model and try again!");
+        alert(result.hint || "Incorrect answer. Check your calculation and try again!");
         setIsSubmitting(false);
       }
     } catch (error) {
-      console.error("Submission failed", error);
+      console.error("❌ [TrainingPage] Submission failed:", error);
+      alert("Connection error. Please check your network and try again.");
       setIsSubmitting(false);
     }
-  };
+  }, [answer, currentQuestionId, router, isSubmitting]);
+
+  // Stable reference for the change handler
+  const handleInputChange = useCallback((val) => {
+    // val is already the string from MathInput
+    setAnswer(val);
+  }, []);
+
+  const handleEnter = useCallback(() => {
+    handleSubmit();
+  }, [handleSubmit]);
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -98,7 +127,11 @@ export default function TrainingPage() {
              <BarModel data={[{ label: "ALI", value: 150, color: "fill-blue-600" }, { label: "BABA", value: 90, color: "fill-slate-300" }]} />
           </section>
 
-          <form action={formAction} onSubmit={handleSubmit} className="space-y-6">
+          {/* 
+            Removed action={formAction} to prevent conflict between 
+            Server Action redirect and client-side router.push
+          */}
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Hidden field to pass the question ID to the Server Action */}
             <input type="hidden" name="questionId" value={currentQuestionId} />
             
@@ -110,8 +143,12 @@ export default function TrainingPage() {
             )}
 
             <div className="flex flex-col items-center">
-              {/* IMPORTANT: Ensure the input inside MathInput has name="answer" */}
-              <MathInput name="answer" value={answer || state?.lastAnswer} onChange={(e) => setAnswer(e.target.value)} />
+              <MathInput 
+                name="answer" 
+                value={answer} 
+                onChange={handleInputChange} 
+                onEnter={handleEnter}
+              />
             </div>
             <button 
               type="submit"

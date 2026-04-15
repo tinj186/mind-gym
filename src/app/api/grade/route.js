@@ -1,6 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
+// Normalizes math strings: removes LaTeX commands, braces, and all whitespace
+const normalize = (val) => {
+  if (!val) return '';
+  return val.toLowerCase()
+    .replace(/\\frac\s*\{(\d+)\}\s*\{(\d+)\}/g, '$1/$2') // \frac {1} {4} -> 1/4
+    .replace(/\\frac\s*(\d)(\d)/g, '$1/$2')             // \frac 14 -> 1/4
+    .replace(/[\\{}\s]/g, '');                     // remove \, {, }, and spaces
+};
+
 export async function POST(req) {
   try {
     const { questionId, studentAnswer } = await req.json();
@@ -18,7 +27,7 @@ export async function POST(req) {
     }
 
     // 2. Precision Check
-    const isCorrect = question.finalAnswer.trim().toLowerCase() === studentAnswer.trim().toLowerCase();
+    const isCorrect = normalize(question.finalAnswer) === normalize(studentAnswer);
 
     // 3. Log the Attempt (The "Workout Log")
     await prisma.attemptLog.create({
