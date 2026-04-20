@@ -2,19 +2,18 @@
 
 import { prisma } from '@/lib/db';
 import { redirect } from 'next/navigation';
-
-// Normalizes math strings: removes LaTeX commands, braces, and all whitespace
-const normalize = (val) => {
-  if (!val) return '';
-  return val.toLowerCase()
-    .replace(/\\frac\s*\{(\d+)\}\s*\{(\d+)\}/g, '$1/$2') // \frac {1} {4} -> 1/4
-    .replace(/\\frac\s*(\d)(\d)/g, '$1/$2')             // \frac 14 -> 1/4
-    .replace(/[\\{}\s]/g, '');                     // remove \, {, }, and spaces
-};
+import { normalizeAnswer } from '@/lib/math';
 
 export async function gradeAction(prevState, formData) {
   const questionId = formData.get('questionId');
   const studentAnswer = formData.get('answer')?.toString() || '';
+
+  // Zero-Trust Validation: Reject any input containing shell-active characters
+  const safeRegex = /^[0-9a-zA-Z\s\/\-\+\(\)\.\{\}\[\]\^\\]+$/;
+  if (!safeRegex.test(studentAnswer)) {
+    console.error(`[SECURITY] Server Action blocked malicious input: "${studentAnswer}"`);
+    return { error: "Security validation failed: Invalid characters detected." };
+  }
 
    console.log(`[SERVER ACTION] Grading QID: ${questionId}`);
   console.log(`[SERVER ACTION] Received Answer: "${studentAnswer}"`);
@@ -35,8 +34,8 @@ export async function gradeAction(prevState, formData) {
   }
 
   // 2. Precision Check
-  const isCorrect = 
-    normalize(question.finalAnswer) === normalize(studentAnswer);
+  const isCorrect =  
+    normalizeAnswer(question.finalAnswer) === normalizeAnswer(studentAnswer);
     console.log(`[SERVER ACTION] Match: ${isCorrect}`);
 
 

@@ -1,18 +1,16 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-
-// Normalizes math strings: removes LaTeX commands, braces, and all whitespace
-const normalize = (val) => {
-  if (!val) return '';
-  return val.toLowerCase()
-    .replace(/\\frac\s*\{(\d+)\}\s*\{(\d+)\}/g, '$1/$2') // \frac {1} {4} -> 1/4
-    .replace(/\\frac\s*(\d)(\d)/g, '$1/$2')             // \frac 14 -> 1/4
-    .replace(/[\\{}\s]/g, '');                     // remove \, {, }, and spaces
-};
+import { normalizeAnswer } from '@/lib/math';
+import { MATH_SAFE_REGEX } from '@/lib/constants';
 
 export async function POST(req) {
   try {
     const { questionId, studentAnswer } = await req.json();
+
+    if (typeof studentAnswer !== 'string' || !MATH_SAFE_REGEX.test(studentAnswer)) {
+      console.error(`[SECURITY] Blocked malicious input attempt: "${studentAnswer}"`);
+      return NextResponse.json({ error: "Invalid input format" }, { status: 400 });
+    }
 
     console.log(`[API ROUTE] Grading attempt: QID=${questionId}, Answer="${studentAnswer}"`);
 
@@ -26,8 +24,16 @@ export async function POST(req) {
       return NextResponse.json({ error: "Question not found" }, { status: 404 });
     }
 
-    // 2. Precision Check
-    const isCorrect = normalize(question.finalAnswer) === normalize(studentAnswer);
+    // 2. Precision Check with Safety
+    const expected = normalizeAnswer(question.finalAnswer);
+    const actual = normalizeAnswer(studentAnswer);
+
+    // If normalization fails or returns NaN, treat as incorrect rather than crashing
+    if (actual === null || isNaN(actual)) {
+      return NextResponse.json({ isCorrect: false, hint: "Invalid math format." });
+    }
+
+    const isCorrect = expected === actual;
 
     // 3. Log the Attempt (The "Workout Log")
     await prisma.attemptLog.create({

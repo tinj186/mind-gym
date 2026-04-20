@@ -3,40 +3,44 @@ services:
     image: postgres:15-alpine
     container_name: mind_gym_db_v2
     environment:
-      POSTGRES_USER: gym_admin
-      POSTGRES_PASSWORD: GymPassword123
-      POSTGRES_DB: mindgym
-    ports:
-      - "5434:5432"
+      POSTGRES_USER: ${DB_USER:-gym_admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-mindgym}
+    # Remove public port exposure. 
+    # Only the 'web' service can talk to the DB now via internal Docker network.
+    expose:
+      - "5432"
     volumes:
       - gym_db_data_v2:/var/lib/postgresql/data
 
   web:
     image: node:22-alpine
     container_name: mind_gym_web_v2
+    # Ensure the container cannot gain new privileges
+    security_opt:
+      - no-new-privileges:true
+    # If your app doesn't need to write files at runtime, set to true.
+    # Note: npm install and prisma generate usually need write access during build.
+    read_only: false
+    user: "1026:1026" # Run as non-privileged user
     working_dir: /app
     volumes:
       - .:/app
-      - /app/.next
-      - /app/node_modules
+      # Removed the named 'node_modules' volume. 
+      # This ensures npm uses the folder directly in your project directory
+      # which inherits the correct permissions from your Synology user.
     environment:
-      DATABASE_URL: "postgresql://gym_admin:GymPassword123@db:5432/mindgym?schema=public"
+      DATABASE_URL: "postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}?schema=public"
       WATCHPACK_POLLING: "true"
+      HOME: /tmp
+      NPM_CONFIG_CACHE: /tmp/.npm-cache
       PORT: 3001
       NEXT_TELEMETRY_DISABLED: 1
     ports:
       - "3001:3001"
       - "5555:5555"
-    command: >
-      sh -c "
-      find . -name '@eaDir' -type d -exec rm -rf {} + || true &&
-      ( [ -d .next ] && find .next -mindepth 1 -delete || true ) &&
-      rm -rf node_modules/.cache &&
-      npm install &&
-      npx prisma generate &&
-      npm run dev"
+    command: sh -c "cd /app && npm install && npx prisma generate && npm run dev"
     depends_on:
       - db
-
 volumes:
   gym_db_data_v2:

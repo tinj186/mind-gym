@@ -2,9 +2,9 @@
   "name": "mind-gym-v2",
   "version": "1.0.0",
   "type": "module",
-"scripts": {
-  "dev": "next dev -H 0.0.0.0 -p 3001"
-},
+  "scripts": {
+    "dev": "next dev -H 0.0.0.0 -p 3001"
+  },
   "dependencies": {
     "@prisma/adapter-pg": "^7.7.0",
     "@prisma/client": "^7.7.0",
@@ -20,7 +20,8 @@
   },
   "devDependencies": {
     "@prisma/config": "^7.7.0",
-    "prisma": "^7.7.0"
+    "prisma": "^7.7.0",
+    "typescript": "6.0.2"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

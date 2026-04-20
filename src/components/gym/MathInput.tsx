@@ -9,6 +9,7 @@ declare global {
       'math-field': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
         ref?: React.RefObject<any>;
         'menu-toggle-visibility'?: string;
+        'virtual-keyboard-toggle-visibility'?: string;
         'math-virtual-keyboard-policy'?: string;
       };
     }
@@ -41,9 +42,9 @@ export default function MathInput({ name, value, onChange, onEnter }: MathInputP
     if (typeof window !== 'undefined') {
       const configureMathLive = (mfClass: any) => {
         if (typeof mfClass === 'function') {
-          // Using unpkg as the primary stable source
-          mfClass.fontsDirectory = "https://unpkg.com/mathlive@0.109.1/dist/fonts/";
-          mfClass.soundsDirectory = "https://unpkg.com/mathlive@0.109.1/dist/sounds/";
+          // Point to local assets in /public/mathlive/
+          mfClass.fontsDirectory = "/mathlive/fonts/";
+          mfClass.soundsDirectory = "/mathlive/sounds/";
         }
       };
 
@@ -141,7 +142,7 @@ export default function MathInput({ name, value, onChange, onEnter }: MathInputP
 
     // Force hide UI buttons that clutter the primary interface
     currentMf.menuToggleVisibility = "hidden";
-    currentMf.virtualKeyboardToggleVisibility = "hidden";
+    currentMf.virtualKeyboardToggleVisibility = "visible";
 
     currentMf.readOnly = false;
     currentMf.letterShapeStyle = "iso";
@@ -163,14 +164,18 @@ export default function MathInput({ name, value, onChange, onEnter }: MathInputP
       const target = e.target as any;
       // Get value in LaTeX format
       const newValue = target?.value || target?.getValue?.() || "";
-      
-      if (newValue === value) return; // Prevent redundant updates
+
+      // Use the ref to check against the latest value to avoid stale closure issues
+      if (newValue === mfRef.current?.value && newValue === value) return;
+
       console.log('🎹 [MathInput] Event detected. New value:', newValue);
       onChangeRef.current(newValue);
     };
 
-    const onKeyDownEvent = (e: KeyboardEvent) => {
+    const onKeyDownEvent = (e: any) => {
       if (e.key === 'Enter' && onEnterRef.current) {
+        e.preventDefault();
+        e.stopPropagation();
         onEnterRef.current();
       }
     };
@@ -208,6 +213,12 @@ export default function MathInput({ name, value, onChange, onEnter }: MathInputP
 
   return (
     <div className="w-full max-w-md mx-auto p-2">
+      {/* Global override to ensure the UI buttons are hidden via CSS Parts */}
+      <style>{`
+        math-field::part(menu-toggle) { display: none !important; }
+        /* Also hide the toggle if it appears in the shadow root container */
+        math-field::part(container) > .menu-toggle { display: none !important; }
+      `}</style>
       <div className="relative group bg-white rounded-2xl border-2 border-slate-100 p-6 shadow-sm focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-50 transition-all">
         {/* The Math-Field Custom Element */}
         {isLoaded ? (
@@ -215,7 +226,7 @@ export default function MathInput({ name, value, onChange, onEnter }: MathInputP
             ref={mfRef}
             tabIndex={0}
             menu-toggle-visibility="hidden"
-            virtual-keyboard-toggle-visibility="hidden"
+            virtual-keyboard-toggle-visibility="visible"
             math-virtual-keyboard-policy="auto"
             style={{
               display: 'block',
