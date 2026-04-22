@@ -17,7 +17,9 @@ export default function LoginPage() {
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedPassword = password.trim();
 
-    if (normalizedEmail === 'student@mathmindgym.com' && normalizedPassword === 'gym2026') {
+    const accessCode = process.env.NEXT_PUBLIC_APP_ACCESS_CODE || 'gym-2026';
+
+    if (normalizedEmail === 'student@mathmindgym.com' && normalizedPassword === accessCode) {
       // Always prevent default if we are handling the redirect via JS
       if (e) e.preventDefault();
       console.log('✅ Access Granted (Client). Navigating...');
@@ -62,7 +64,7 @@ export default function LoginPage() {
           <input 
             type="password" 
             name="password"
-            placeholder="Access Code (gym2026)"
+            placeholder="Enter Access Code"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}

@@ -1,59 +1,71 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { normalizeAnswer } from '@/lib/math';
-import { MATH_SAFE_REGEX } from '@/lib/constants';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getBestModel, modelCooldowns, COOLDOWN_MS, refreshModelPriority } from '@/lib/ai-config';
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const AI_TIMEOUT_MS = 15000;
 
 export async function POST(req) {
   try {
-    const { questionId, studentAnswer } = await req.json();
+    await refreshModelPriority();
+    const { questionId, studentAnswer, modelDescription, timeSpentSecs } = await req.json();
 
-    if (typeof studentAnswer !== 'string' || !MATH_SAFE_REGEX.test(studentAnswer)) {
-      console.error(`[SECURITY] Blocked malicious input attempt: "${studentAnswer}"`);
-      return NextResponse.json({ error: "Invalid input format" }, { status: 400 });
-    }
-
-    console.log(`[API ROUTE] Grading attempt: QID=${questionId}, Answer="${studentAnswer}"`);
-
-    // 1. Fetch the actual answer from the vault
     const question = await prisma.questionBank.findUnique({
       where: { id: questionId }
     });
 
-    if (!question) {
-      console.error(`[API ROUTE] Question ${questionId} not found in DB`);
-      return NextResponse.json({ error: "Question not found" }, { status: 404 });
+    if (!question) return NextResponse.json({ error: "Question not found" }, { status: 404 });
+
+    // Tier 1: Local Grader
+    const isCorrect = normalizeAnswer(studentAnswer) === normalizeAnswer(question.finalAnswer);
+
+    // Tier 2/3: AI Logic Grader
+    let isLogicCorrect = isCorrect;
+    let hint = "";
+
+    if (!isCorrect || question.type === 'Structured') {
+      const selectedModelId = getBestModel();
+      try {
+        const model = genAI.getGenerativeModel({ model: selectedModelId }, { apiVersion: 'v1beta' });
+        const prompt = `Grade this math answer. Question: ${question.question}. Correct Answer: ${question.finalAnswer}. Student Answer: ${studentAnswer}. Bar Model Logic: ${modelDescription}. 
+        Return JSON: { "isLogicCorrect": boolean, "hint": "string", "explanation": "string" }`;
+
+        const aiResult = await Promise.race([
+          model.generateContent(prompt),
+          new Promise((_, reject) => setTimeout(() => reject(new Error("AI_TIMEOUT")), AI_TIMEOUT_MS))
+        ]);
+
+        const result = JSON.parse(aiResult.response.text().match(/\{[\s\S]*\}/)[0]);
+        isLogicCorrect = result.isLogicCorrect;
+        hint = result.hint;
+      } catch (err) {
+        console.warn("AI Grading failed, falling back to Tier 1");
+      }
     }
 
-    // 2. Precision Check with Safety
-    const expected = normalizeAnswer(question.finalAnswer);
-    const actual = normalizeAnswer(studentAnswer);
-
-    // If normalization fails or returns NaN, treat as incorrect rather than crashing
-    if (actual === null || isNaN(actual)) {
-      return NextResponse.json({ isCorrect: false, hint: "Invalid math format." });
-    }
-
-    const isCorrect = expected === actual;
-
-    // 3. Log the Attempt (The "Workout Log")
     await prisma.attemptLog.create({
       data: {
         questionId,
         studentAnswer,
         isCorrect,
-        timeSpentSecs: 0, // Satisfies the required schema field
-        // defectCode: isCorrect ? null : "CALCULATION_ERROR"
+        isLogicCorrect,
+        modelDescription,
+        timeSpentSecs,
+        gradingTier: isCorrect ? 1 : 2
       }
     });
 
-    console.log(`[API ROUTE] Result: ${isCorrect ? 'CORRECT' : 'WRONG'}`);
-
-    return NextResponse.json({ 
+    return NextResponse.json({
       isCorrect,
-      hint: isCorrect ? null : "Check your mixed number conversion steps." 
+      isLogicCorrect,
+      hint,
+      solution: question.solution,
+      correctAnswer: question.finalAnswer
     });
   } catch (error) {
-    console.error("[API ROUTE] Internal Error:", error);
-    return NextResponse.json({ error: "Failed to process grade" }, { status: 500 });
+    console.error("❌ Grading failed:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

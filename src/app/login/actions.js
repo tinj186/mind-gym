@@ -9,8 +9,12 @@ export async function loginAction(formData) {
 
   console.log(`Server Action: Attempting login for ${email}`);
 
-  if (email === 'student@mathmindgym.com' && password === 'gym2026') {
+  // Pull the access code from environment, matching the client-side logic
+  const accessCode = process.env.NEXT_PUBLIC_APP_ACCESS_CODE || 'gym-2026';
+
+  if (email === 'student@mathmindgym.com' && password === accessCode) {
     console.log('Server Action: Access Granted. Redirecting...');
     redirect('/');
   }
+  // Failure logic can be added here if needed for server-side feedback
 }

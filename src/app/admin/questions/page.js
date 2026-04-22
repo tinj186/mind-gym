@@ -1,49 +1,95 @@
 import { prisma } from '@/lib/db';
-import QuestionRow from '@/components/admin/QuestionRow'; // This is correct, but ensure file is in src/components
+import QuestionFilter from '@/components/admin/QuestionFilter';
+import QuestionTable from '@/components/admin/QuestionTable';
+import { SYLLABUS_DATA, getSyllabusRows, DEFAULT_TYPES, DEFAULT_DIFFICULTIES, GET_DISTINCT } from '@/lib/syllabus';
 
-export default async function QuestionBankManager() {
-  // Fetch all questions, sorted by topic
-  const questions = await prisma.questionBank.findMany({
-    orderBy: { topic: 'asc' }
-  });
+export const dynamic = 'force-dynamic'; // Ensure this page is always dynamic
+
+export default async function AdminQuestionsPage({ searchParams }) {
+  const { level, topic, subtopic, type, difficulty } = searchParams;
+
+  let questions = [];
+  let error = null;
+  let groupedSummary = [];
+
+  try {
+    // Fetch question metadata once to calculate inventory coverage
+    const allFiltered = await prisma.questionBank.findMany({
+      select: {
+        level: true, topic: true, subtopic: true, type: true, difficulty: true, isApproved: true
+      }
+    });
+
+    // Generate rows for every syllabus combination, filtered by current UI selection
+    groupedSummary = getSyllabusRows().filter(item => {
+      if (level && item.level !== level) return false;
+      if (topic && item.topic !== topic) return false;
+      if (type && item.type !== type) return false;
+      return true;
+    }).map(s => {
+      // Count questions matching this specific syllabus row and difficulty filter
+      const matches = allFiltered.filter(q => 
+        q.level === s.level && 
+        q.topic === s.topic && 
+        q.type === s.type &&
+        (!difficulty || q.difficulty === difficulty) &&
+        (!subtopic || q.subtopic === subtopic)
+      );
+
+      const pending = matches.filter(m => !m.isApproved).length;
+      const approved = matches.filter(m => m.isApproved).length;
+      
+      return {
+        ...s,
+        subtopic: subtopic || "", // Pass specific subtopic filter if active
+        difficulty: difficulty || "Medium",
+        pending,
+        approved,
+        needsGeneration: (pending + approved) === 0
+      };
+    });
+
+  } catch (err) {
+    console.error("❌ Failed to fetch questions:", err);
+    error = "Failed to load questions. Please try again.";
+  }
+
+  // Use the Syllabus constants for filters instead of DB values
+  const distinctLevels = GET_DISTINCT('level');
+  const distinctTopics = GET_DISTINCT('topic');
+  const distinctSubtopics = GET_DISTINCT('subtopic');
+  const distinctTypes = DEFAULT_TYPES;
+  const distinctDifficulties = DEFAULT_DIFFICULTIES;
 
   return (
-    <div className="space-y-8">
-      <header className="flex justify-between items-center">
-        <div>
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight">QUESTION BANK</h2>
-          <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest mt-1">
-            Inventory Quality Control
-          </p>
+    <div className="min-h-screen bg-slate-50 p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-extrabold text-slate-900">Question Bank Admin</h1>
         </div>
-        <button className="bg-slate-900 text-white px-6 py-3 rounded-2xl font-bold text-sm hover:bg-blue-600 transition-all">
-          + ADD MANUAL PART
-        </button>
-      </header>
 
-      <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-100 text-[10px] font-black uppercase text-slate-400 tracking-widest">
-              <th className="px-8 py-5">Status</th>
-              <th className="px-8 py-5">Topic / Level</th>
-              <th className="px-8 py-5 w-1/3">Question Content</th>
-              <th className="px-8 py-5">Correct Answer</th>
-              <th className="px-8 py-5 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-50">
-            {questions.map((q) => (
-              <QuestionRow key={q.id} question={q} />
-            ))}
-          </tbody>
-        </table>
-        
-        {questions.length === 0 && (
-          <div className="p-20 text-center text-slate-300 font-bold uppercase text-xs tracking-widest">
-            Inventory Empty. Seed database to begin.
+        <div className="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-slate-100">
+          <h2 className="text-2xl font-bold text-slate-800 mb-6">Filters</h2>
+          <QuestionFilter
+            levels={distinctLevels}
+            topics={distinctTopics}
+            subtopics={distinctSubtopics}
+            types={distinctTypes}
+            difficulties={distinctDifficulties}
+            currentFilters={{ level, topic, subtopic, type, difficulty }}
+          />
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-xl p-8 border border-slate-100">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-slate-800">Question Inventory</h2>
           </div>
-        )}
+          {error ? (
+            <div className="text-red-500 text-center py-8">{error}</div>
+          ) : (
+            <QuestionTable data={groupedSummary} />
+          )}
+        </div>
       </div>
     </div>
   );

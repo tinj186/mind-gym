@@ -5,13 +5,18 @@ import { useRouter } from 'next/navigation';
 import BarModel from '@/components/gym/BarModel/BarModel';
 import MathInput from '@/components/gym/MathInput';
 import Link from 'next/link';
+import { normalizeAnswer } from '@/lib/math';
 import { serializeModel, generateId } from '@/types/gym';
 
 export default function TrainingPage() {
   const [answer, setAnswer] = useState('');
+  const [question, setQuestion] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [localFeedback, setLocalFeedback] = useState(null); // { isCorrect: boolean }
   const [error, setError] = useState(null);
+  const [startTime, setStartTime] = useState(Date.now());
   
   const [activeEdit, setActiveEdit] = useState(null); // { rowId, segId, value }
   const [isAddingRow, setIsAddingRow] = useState(false);
@@ -35,14 +40,25 @@ export default function TrainingPage() {
   }, [answer]);
 
   useEffect(() => {
-    console.log('🚀 Training Client Hydrated');
+    const fetchQuestion = async () => {
+      try {
+        const response = await fetch('/api/question');
+        if (!response.ok) throw new Error('Failed to fetch question');
+        const data = await response.json();
+        setQuestion(data);
+        setStartTime(Date.now());
+      } catch (err) {
+        console.error('❌ Question Fetch Error:', err);
+        setError("Could not load question from database.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     setIsMounted(true);
+    fetchQuestion();
   }, []);
 
-  // Mock data for current validation - this will be replaced by dynamic data later
-  const currentQuestionId = "seed-q1"; 
-  const questionText = "Express 13/4 as a mixed number in its simplest form.";
-  
   const handleSubmit = useCallback(async (e) => {
     // 1. Prevent browser default behavior
     if (e && typeof e.preventDefault === 'function') e.preventDefault();
@@ -50,25 +66,34 @@ export default function TrainingPage() {
     // 2. Prevent double-submission
     if (isSubmitting) return;
 
-    // 3. Validate input
+    // 3. Validate input and ensures the question object exists
+    if (!question?.id) return;
     if (!answer || answer.trim() === '') {
       console.log('⚠️ [TrainingPage] Submit blocked: Answer state is currently:', JSON.stringify(answer));
       alert(`Please enter an answer before submitting! (Current state: "${answer}")`);
       return;
     }
     
-    console.log('🚀 [TrainingPage] Starting Submission:', { id: currentQuestionId, answer });
+    // --- TIER 1: LIGHTNING-FAST LOCAL GRADER ---
+    const isCorrectLocally = normalizeAnswer(answer) === normalizeAnswer(question.finalAnswer);
+    setLocalFeedback({ isCorrect: isCorrectLocally });
+    console.log(`⚡ [Local Grader] Fast-path result: ${isCorrectLocally ? 'CORRECT' : 'INCORRECT'}`);
+
+    console.log('🚀 [TrainingPage] Starting Submission:', { id: question.id, answer });
     setIsSubmitting(true);
     setError(null);
+    
+    const timeSpent = Math.floor((Date.now() - startTime) / 1000);
 
     try {
       const response = await fetch('/api/grade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          questionId: currentQuestionId, 
+          questionId: question.id, 
           studentAnswer: answer,
-          modelDescription: serializeModel(rows, brackets, questionText)
+          modelDescription: serializeModel(rows, brackets, question.question),
+          timeSpentSecs: timeSpent
         }),
       });
 
@@ -77,21 +102,22 @@ export default function TrainingPage() {
       const result = await response.json();
       console.log('📊 [TrainingPage] Grading Result:', result);
 
-      if (result.isCorrect) {
-        console.log('✅ Correct! Navigating to summary...');
-        router.push('/train/summary');
-      } else {
-        console.log('❌ Incorrect answer.');
-        alert(result.hint || "Incorrect answer. Check your calculation and try again!");
-        setError(result.hint || "Incorrect answer.");
-        setIsSubmitting(false);
-      }
+      console.log('🏁 Submission complete. Navigating to summary...');
+      const params = new URLSearchParams({
+        isCorrect: result.isCorrect ? 'true' : 'false',
+        hint: result.hint || '',
+        logic: result.isLogicCorrect ? 'true' : 'false',
+        correctAnswer: result.correctAnswer || '',
+        solution: result.solution || ''
+      });
+      router.push(`/train/summary?${params.toString()}`);
+
     } catch (error) {
       console.error("❌ [TrainingPage] Submission failed:", error);
       alert("Connection error. Please check your network and try again.");
       setIsSubmitting(false);
     }
-  }, [answer, currentQuestionId, router, isSubmitting, rows, brackets]);
+  }, [answer, question, router, isSubmitting, rows, brackets]);
 
   // Stable reference for the change handler
   const handleInputChange = useCallback((val) => {
@@ -261,10 +287,16 @@ export default function TrainingPage() {
 
       <main className="flex-1 flex flex-col items-center py-12 px-6">
         <div className="w-full max-w-3xl space-y-12">
-          <section className="text-center">
-            <h2 className="text-3xl font-bold text-slate-900">
-              {questionText}
-            </h2>
+          <section className="text-center min-h-[4rem]">
+            {isLoading ? (
+              <div className="animate-pulse text-slate-300 font-black">CHARGING LOGIC...</div>
+            ) : question ? (
+              <h2 className="text-3xl font-bold text-slate-900">
+                {question.question}
+              </h2>
+            ) : (
+              <div className="text-red-500 font-bold tracking-tighter">QUESTION BANK EMPTY</div>
+            )}
           </section>
 
           <section className="bg-slate-50 rounded-[3rem] p-10 border border-slate-100 relative">
@@ -411,7 +443,7 @@ export default function TrainingPage() {
           */}
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Hidden field to pass the question ID to the Server Action */}
-            <input type="hidden" name="questionId" value={currentQuestionId} />
+            <input type="hidden" name="questionId" value={question?.id || ''} />
             
             {/* Display Error Message */}
             {error && (

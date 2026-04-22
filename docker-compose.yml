@@ -4,17 +4,27 @@ services:
     container_name: mind_gym_db_v2
     environment:
       POSTGRES_USER: ${DB_USER:-gym_admin}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-mindgym_pass}
       POSTGRES_DB: ${DB_NAME:-mindgym}
-    # Remove public port exposure. 
-    # Only the 'web' service can talk to the DB now via internal Docker network.
     expose:
       - "5432"
+    # Map the internal port 5432 to the host port 5433 to avoid conflicts
+    ports:
+      - "5433:5432"
     volumes:
       - gym_db_data_v2:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-gym_admin} -d $${POSTGRES_DB:-mindgym}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mind_gym_net
 
   web:
-    image: node:22-alpine
+    # Using the full bookworm image ensures openssl and ca-certificates 
+    # are pre-installed, preventing Prisma engine detection failures.
+    image: node:22-bookworm
     container_name: mind_gym_web_v2
     # Ensure the container cannot gain new privileges
     security_opt:
@@ -30,17 +40,49 @@ services:
       # This ensures npm uses the folder directly in your project directory
       # which inherits the correct permissions from your Synology user.
     environment:
-      DATABASE_URL: "postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}?schema=public"
+      DATABASE_URL: "postgresql://${DB_USER:-gym_admin}:${DB_PASSWORD:-mindgym_pass}@db:5432/${DB_NAME:-mindgym}?schema=public&connect_timeout=30"
       WATCHPACK_POLLING: "true"
       HOME: /tmp
       NPM_CONFIG_CACHE: /tmp/.npm-cache
       PORT: 3001
       NEXT_TELEMETRY_DISABLED: 1
+      PRISMA_STUDIO_HOSTNAME: "0.0.0.0"
+      DEBUG: "prisma:*"
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      NO_UPDATE_NOTIFIER: "true"
+      PRISMA_CLI_QUERY_ENGINE_TYPE: "binary"
+      PRISMA_CLIENT_ENGINE_TYPE: "binary"
+      # The Access Code for the student login portal
+      NEXT_PUBLIC_APP_ACCESS_CODE: ${APP_ACCESS_CODE:-gym-2026}
+      # Verbose logging to monitor the initial build progress
+      NPM_CONFIG_LOGLEVEL: info
     ports:
       - "3001:3001"
       - "5555:5555"
-    command: sh -c "cd /app && npm install && npx prisma generate && npm run dev"
+    command: >
+      bash -c "
+      cd /app && 
+      chmod -R +x node_modules/@prisma/engines node_modules/.prisma 2>/dev/null || true &&
+      rm -rf /tmp/.config/prisma-nodejs && mkdir -p /tmp/.config/prisma-nodejs &&
+      export PRISMA_SKIP_POSTINSTALL_GENERATE=1 &&
+      (npm install --no-audit --no-fund || (sleep 5 && npm install --no-audit --no-fund)) && 
+      echo '⏳ Waiting for network stabilization...' && sleep 15 &&
+      npx prisma generate && 
+      echo '🚀 Synchronizing database...' &&
+      for i in {1..10}; do npx prisma db push --accept-data-loss && break || (echo 'Retrying DB connection in 5s...' && sleep 5); done &&
+      chmod -R +x node_modules/@prisma/engines node_modules/.prisma &&
+      npm run dev"
     depends_on:
+      db:
+        condition: service_healthy
+    links:
       - db
+    networks:
+      - mind_gym_net
+
 volumes:
   gym_db_data_v2:
+
+networks:
+  mind_gym_net:
+    driver: bridge

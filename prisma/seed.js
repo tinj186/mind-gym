@@ -1,35 +1,52 @@
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+import { prisma } from '../src/lib/db.js';
 
 async function main() {
-  console.log('--- 🏋️ Seeding Math Mind Gym: P4 Syllabus ---');
+  console.log('--- 🏋️ Seeding Math Mind Gym: Phase 2.3 Aligned ---');
 
   const questions = [
     {
+      id: 'seed-q1',
       subject: "Math",
       level: "Primary 4",
-      topic: "Fractions",
-      subtopic: "Mixed Numbers & Improper Fractions",
-      type: "SAQ",
+      gradeLevel: "P4",
+      heuristic: "REPEATED_IDENTITY",
+      topic: "REPEATED_IDENTITY", 
+      subtopic: "Whole Numbers",
+      type: "Structured",
       difficulty: "Medium",
-      question: "Express 13/4 as a mixed number in its simplest form.",
-      solution: "13 ÷ 4 = 3 remainder 1. Therefore, 13/4 = 3 1/4.",
-      finalAnswer: "3 1/4",
+      question: "Ali and Ben have $150. Ali has twice as much money as Ben. How much money does Ali have?",
+      solution: "3 units = 150. 1 unit = 50. Ali (2 units) = 100.",
+      finalAnswer: "100",
       isApproved: true
     },
-    // ... add your other questions here
+    {
+      id: 'seed-q2',
+      subject: "Math",
+      level: "Primary 4",
+      gradeLevel: "P4",
+      heuristic: "PART_WHOLE",
+      topic: "Fractions",
+      subtopic: "Mixed Numbers",
+      type: "Short",
+      difficulty: "Easy",
+      question: "Express 13/4 as a mixed number.",
+      solution: "3 1/4",
+      finalAnswer: "3 1/4",
+      isApproved: true
+    }
   ];
 
   for (const q of questions) {
-    // We use a specific ID or find by question text to prevent duplicates
-    await prisma.questionBank.upsert({
-      where: { id: 'seed-q1' }, // You can generate specific IDs for your seeds
-      update: {},
-      create: {
-        ...q,
-        id: 'seed-q1' 
-      },
-    });
+    try {
+      console.log(`Upserting question: ${q.id}`);
+      await prisma.questionBank.upsert({
+        where: { id: q.id },
+        update: q,
+        create: q,
+      });
+    } catch (error) {
+      console.error(`❌ Failed to upsert ${q.id}:`, error.message);
+    }
   }
 
   console.log(`✅ Successfully seeded ${questions.length} questions.`);

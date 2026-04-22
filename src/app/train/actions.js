@@ -45,6 +45,8 @@ export async function gradeAction(prevState, formData) {
       questionId,
       studentAnswer,
       isCorrect,
+       gradingTier: 1, // Default to Tier 1 for non-AI checks
+      isLogicCorrect: isCorrect, // For Tier 1, logic follows accuracy
       timeSpentSecs: 0, // Satisfies the required schema field
     }
   });
