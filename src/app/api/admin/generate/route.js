@@ -14,6 +14,19 @@ function getSyllabusPrompt(quantity, level, strand, topic, subtopic, heuristic, 
   const instructions = [];
   const isP1P2 = level?.includes('1') || level?.includes('2');
 
+  instructions.push(`COMBINATION LOGIC (Advanced Difficulty):
+    - For Advanced difficulty, you may combine the Anchor Subtopic with a secondary skill.
+    - However, the visualType MUST remain consistent with the Anchor Subtopic's defined visualType.
+    - Example (Counting + Addition): Use COUNTING_OBJECTS as the anchor. Question: "There are 3 boxes of 10 blocks. If 5 more blocks are added, what is the new total?"
+    - Example (Ordinal + Comparison): Use ORDINAL_LINE as the anchor. Question: "The cat is in the 3rd position. The dog is 2 positions behind the cat. What is the dog's position?"
+    - Example (Place Value + Number Patterns): Use BASE_TEN_BLOCKS. Question: "The blocks show 45. What number comes next if you count on by tens?"
+    - CRITICAL: The final answer must always be derived from the integration. Do not let the AI generate a simple counting question if it claims to be Advanced Integration.`);
+
+  instructions.push(`DIFFICULTY TIERS DEFINITION (Singapore MOE Style):
+    - Foundation: Basic mastery. Direct computation, single-step logic, fluency-based.
+    - Standard: MOE Grade Level expectation. Multi-step word problems, application of heuristics like Bar Models.
+    - Advanced: Gifted/Olympiad level. Non-routine problems, complex logic, and high-order heuristic strategies.`);
+
   instructions.push(`QUESTION TYPES DEFINITION:
     - SHORT: 1-mark questions (Short Question). Goal: Quick answer (e.g., "How many?", "Which is greater?"). 'finalAnswer' is just the value (string).
     - STRUCTURED: 2-mark word problems (Structured). Goal: Show logic. 'finalAnswer' MUST be a JSON object: { "equation": "string (e.g., 12 + 5 = 17)", "value": "string (e.g., 17)", "statement": "string (e.g., She has 17 stickers now.)" }.`);
