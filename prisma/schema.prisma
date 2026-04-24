@@ -26,6 +26,7 @@ model StudentMastery {
 model QuestionBank {
   id          String   @id @default(uuid())
   subject     String   @default("Math")
+  strand      String?  // e.g., "Number and Algebra", "Measurement and Geometry"
   level       String   @default("Primary 4")
   gradeLevel  String   // e.g., "P1", "P5" - Used by AI for syllabus mapping
   heuristic   String   // e.g., "PART_WHOLE", "UNITS_PARTS" - Used by AI for prompt generation
@@ -35,6 +36,7 @@ model QuestionBank {
   difficulty  String   // Easy, Medium, Hard
   question    String   @db.Text
   options     Json?    // Stores ["A: ..", "B: ..", "C: ..", "D: .."] or null for MCQ
+  modelData   Json?    // Visual Bar Model coordinates/values
   solution    String   @db.Text
   finalAnswer String
   isApproved  Boolean  @default(false)

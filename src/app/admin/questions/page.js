@@ -1,12 +1,14 @@
 import { prisma } from '@/lib/db';
 import QuestionFilter from '@/components/admin/QuestionFilter';
 import QuestionTable from '@/components/admin/QuestionTable';
+import Link from 'next/link';
 import { SYLLABUS_DATA, getSyllabusRows, DEFAULT_TYPES, DEFAULT_DIFFICULTIES, GET_DISTINCT } from '@/lib/syllabus';
 
 export const dynamic = 'force-dynamic'; // Ensure this page is always dynamic
 
 export default async function AdminQuestionsPage({ searchParams }) {
-  const { level, topic, subtopic, type, difficulty } = searchParams;
+  const resolvedSearchParams = await searchParams;
+  const { level, topic, subtopic, type, difficulty } = resolvedSearchParams;
 
   let questions = [];
   let error = null;
@@ -21,33 +23,40 @@ export default async function AdminQuestionsPage({ searchParams }) {
     });
 
     // Generate rows for every syllabus combination, filtered by current UI selection
-    groupedSummary = getSyllabusRows().filter(item => {
+    const baseSyllabusRows = getSyllabusRows().filter(item => {
       if (level && item.level !== level) return false;
       if (topic && item.topic !== topic) return false;
       if (type && item.type !== type) return false;
+      if (subtopic && item.subtopic !== subtopic) return false;
       return true;
-    }).map(s => {
-      // Count questions matching this specific syllabus row and difficulty filter
-      const matches = allFiltered.filter(q => 
-        q.level === s.level && 
-        q.topic === s.topic && 
-        q.type === s.type &&
-        (!difficulty || q.difficulty === difficulty) &&
-        (!subtopic || q.subtopic === subtopic)
-      );
-
-      const pending = matches.filter(m => !m.isApproved).length;
-      const approved = matches.filter(m => m.isApproved).length;
-      
-      return {
-        ...s,
-        subtopic: subtopic || "", // Pass specific subtopic filter if active
-        difficulty: difficulty || "Medium",
-        pending,
-        approved,
-        needsGeneration: (pending + approved) === 0
-      };
     });
+
+    const expandedRows = [];
+    const difficultiesToProcess = difficulty ? [difficulty] : DEFAULT_DIFFICULTIES;
+
+    baseSyllabusRows.forEach(s => {
+      difficultiesToProcess.forEach(d => {
+        const matches = allFiltered.filter(q => 
+          q.level === s.level && 
+          q.topic === s.topic && 
+          q.type === s.type &&
+          (q.subtopic === s.subtopic || (!q.subtopic && s.subtopic === "")) &&
+          q.difficulty === d
+        );
+
+        const pending = matches.filter(m => !m.isApproved).length;
+        const approved = matches.filter(m => m.isApproved).length;
+        
+        expandedRows.push({
+          ...s,
+          difficulty: d,
+          pending,
+          approved,
+          needsGeneration: (pending + approved) === 0
+        });
+      });
+    });
+    groupedSummary = expandedRows;
 
   } catch (err) {
     console.error("❌ Failed to fetch questions:", err);
@@ -56,9 +65,9 @@ export default async function AdminQuestionsPage({ searchParams }) {
 
   // Use the Syllabus constants for filters instead of DB values
   const distinctLevels = GET_DISTINCT('level');
-  const distinctTopics = GET_DISTINCT('topic');
-  const distinctSubtopics = GET_DISTINCT('subtopic');
-  const distinctTypes = DEFAULT_TYPES;
+  const distinctTopics = GET_DISTINCT('topic', { level, type }); 
+  const distinctSubtopics = GET_DISTINCT('subtopic', { level, topic, type }); 
+  const distinctTypes = GET_DISTINCT('type', { level, topic, subtopic });
   const distinctDifficulties = DEFAULT_DIFFICULTIES;
 
   return (
@@ -69,7 +78,14 @@ export default async function AdminQuestionsPage({ searchParams }) {
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-slate-100">
-          <h2 className="text-2xl font-bold text-slate-800 mb-6">Filters</h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-slate-800">Filters</h2>
+            {(level || topic || subtopic || type || difficulty) && (
+              <Link href="/admin/questions" className="text-[10px] font-black uppercase text-slate-400 hover:text-blue-600 transition-colors flex items-center gap-1">
+                ✕ Reset Defaults
+              </Link>
+            )}
+          </div>
           <QuestionFilter
             levels={distinctLevels}
             topics={distinctTopics}

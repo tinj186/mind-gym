@@ -47,7 +47,6 @@ services:
       PORT: 3001
       NEXT_TELEMETRY_DISABLED: 1
       PRISMA_STUDIO_HOSTNAME: "0.0.0.0"
-      DEBUG: "prisma:*"
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       NO_UPDATE_NOTIFIER: "true"
       PRISMA_CLI_QUERY_ENGINE_TYPE: "binary"

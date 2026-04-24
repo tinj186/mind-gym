@@ -26,7 +26,7 @@ export default function QuestionTable({ data }) {
         }),
       });
       const result = await res.json();
-      alert(result.message || "Generation initiated.");
+      console.log(result.message || "Generation initiated.");
     } catch (err) {
       alert("Failed to trigger generation.");
     }
@@ -35,8 +35,28 @@ export default function QuestionTable({ data }) {
   const handleDeleteGenerated = async (row) => {
     const confirm = window.confirm(`Are you sure you want to delete ALL ${row.pending} pending questions in this category?`);
     if (!confirm) return;
-    // Implementation would call a DELETE endpoint with the specific filters
-    alert("Delete functionality requires a DELETE API implementation.");
+
+    try {
+      const params = new URLSearchParams({
+        level: row.level,
+        topic: row.topic,
+        subtopic: row.subtopic || "",
+        type: row.type,
+        difficulty: row.difficulty,
+        approved: "false"
+      });
+
+      const res = await fetch(`/api/admin/questions?${params.toString()}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        alert("Pending questions deleted.");
+        window.location.reload();
+      }
+    } catch (err) {
+      alert("Failed to delete questions.");
+    }
   };
 
   return (
