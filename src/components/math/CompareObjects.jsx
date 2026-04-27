@@ -10,7 +10,7 @@ export default function CompareObjects({ data }) {
       {data.sets.map((set, i) => (
         <div key={i} className="flex flex-col items-center gap-4">
           <div className="w-48 min-h-[160px] p-6 bg-white rounded-[2rem] border-2 border-slate-100 shadow-sm flex flex-wrap gap-2 justify-center items-center content-center transition-transform hover:scale-105">
-            {Array.from({ length: set.count }).map((_, j) => (
+            {Array.from({ length: Math.max(0, Math.min(50, parseInt(set.count) || 0)) }).map((_, j) => (
               <span key={j} className="text-3xl grayscale-0">
                 {set.icon}
               </span>

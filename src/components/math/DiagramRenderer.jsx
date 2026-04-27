@@ -12,7 +12,7 @@ import NumberCards from './NumberCards';
 import NumberBond from './NumberBond';
 import CompareObjects from './CompareObjects';
 
-export default function DiagramRenderer({ modelData: inputModelData, isQuestion }) {
+export default function DiagramRenderer({ modelData: inputModelData, isQuestion, questionId, difficulty }) {
   if (!inputModelData) return null;
 
   // Safety parse if the field comes in as a string
@@ -29,7 +29,7 @@ export default function DiagramRenderer({ modelData: inputModelData, isQuestion 
   }
 
   if (type === 'COUNTING_OBJECTS') {
-    return <CountingObjects data={modelData} isQuestion={isQuestion} />;
+    return <CountingObjects data={modelData} isQuestion={isQuestion} questionId={questionId} difficulty={difficulty} />;
   }
 
   if (type === 'EQUAL_GROUPS') {

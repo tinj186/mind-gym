@@ -1,28 +1,36 @@
 'use client';
 
 import React from 'react';
+import { generatePositions } from '@/lib/utils/layout';
 
-export default function CountingObjects({ data, isQuestion }) {
-  if (!data || !data.groups) return null;
+export default function CountingObjects({ data, isQuestion, questionId, difficulty }) {
+  if (!data || !Array.isArray(data.groups)) return null;
 
   const { icons = [], groups, crossOut = 0 } = data;
   
   // Flatten icons to apply cross-out logic sequentially from the end
-  const allIcons = groups.flatMap((count, gIdx) => 
-    Array(count).fill(0).map((_, i) => ({ 
+  const allIcons = groups.flatMap((count, gIdx) => {
+    const safeCount = Math.max(0, Math.min(100, parseInt(count) || 0));
+    return Array(safeCount).fill(0).map((_, i) => ({ 
       groupIndex: gIdx,
       icon: icons[gIdx] || icons[0] || data.icon 
-    }))
-  );
+    }));
+  });
 
   const totalItems = allIcons.length;
 
   if (isQuestion) {
+    const positions = generatePositions(groups, questionId || JSON.stringify(groups), difficulty);
+
     return (
-      <div className="my-8 p-10 bg-white rounded-[2rem] border-2 border-slate-100 flex flex-wrap gap-4 justify-center items-center">
-        {allIcons.map((item, i) => (
-          <div key={i} className="text-4xl select-none grayscale-0">
-            {item.icon}
+      <div className="my-8 relative w-full aspect-[2/1] bg-white rounded-[2rem] border-2 border-slate-100 overflow-hidden">
+        {positions.map((pos, i) => (
+          <div 
+            key={i} 
+            className="absolute text-4xl select-none grayscale-0 -translate-x-1/2 -translate-y-1/2"
+            style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
+          >
+            {allIcons[i]?.icon}
           </div>
         ))}
       </div>

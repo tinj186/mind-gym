@@ -7,6 +7,8 @@ import MathInput from '@/components/gym/MathInput';
 import Link from 'next/link';
 import { normalizeAnswer } from '@/lib/math';
 import { serializeModel, generateId } from '@/types/gym';
+import DiagramRenderer from '@/components/math/DiagramRenderer';
+import GroupingWorkspace from '@/components/tools/GroupingWorkspace';
 
 export default function TrainingPage() {
   const [answer, setAnswer] = useState('');
@@ -14,6 +16,7 @@ export default function TrainingPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [isToolOpen, setIsToolOpen] = useState(false);
   const [localFeedback, setLocalFeedback] = useState(null); // { isCorrect: boolean }
   const [error, setError] = useState(null);
   const [startTime, setStartTime] = useState(Date.now());
@@ -42,10 +45,16 @@ export default function TrainingPage() {
   useEffect(() => {
     const fetchQuestion = async () => {
       try {
-        const response = await fetch('/api/question');
+        const response = await fetch(`/api/question?t=${Date.now()}`, { cache: 'no-store' });
         if (!response.ok) throw new Error('Failed to fetch question');
         const data = await response.json();
         setQuestion(data);
+        // Reset all interaction states to ensure a clean slate for the new question
+        setAnswer('');
+        setLocalFeedback(null);
+        setIsToolOpen(false);
+        setBrackets([]);
+        setRows([{ id: generateId('row'), title: "ALI", segments: [{ id: generateId('seg'), value: 1, label: "", isUnknown: false, color: "bg-blue-500" }] }]);
         setStartTime(Date.now());
       } catch (err) {
         console.error('❌ Question Fetch Error:', err);
@@ -291,9 +300,32 @@ export default function TrainingPage() {
             {isLoading ? (
               <div className="animate-pulse text-slate-300 font-black">CHARGING LOGIC...</div>
             ) : question ? (
-              <h2 className="text-3xl font-bold text-slate-900">
-                {question.question}
-              </h2>
+              <div className="space-y-6">
+                <h2 className="text-3xl font-bold text-slate-900">
+                  {question.question}
+                </h2>
+                
+                {/* Question Image/Diagram Area */}
+                <div className="relative group">
+                  <DiagramRenderer 
+                    key={question.id}
+                    modelData={question.modelData} 
+                    isQuestion={true} 
+                    questionId={question.id}
+                    difficulty={question.difficulty}
+                  />
+                  
+                  {/* Grouping Tool Trigger */}
+                  {['COUNTING_OBJECTS', 'EQUAL_GROUPS', 'MULTIPLICATION_PICTORIAL'].includes(question?.modelData?.type) && (
+                    <button 
+                      onClick={() => setIsToolOpen(true)}
+                      className="absolute -bottom-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-indigo-600 text-white text-[10px] font-black uppercase rounded-full shadow-xl hover:bg-indigo-500 transition-all active:scale-95 z-10"
+                    >
+                      ✨ Open Grouping Tool
+                    </button>
+                  )}
+                </div>
+              </div>
             ) : (
               <div className="text-red-500 font-bold tracking-tighter">QUESTION BANK EMPTY</div>
             )}
@@ -474,6 +506,27 @@ export default function TrainingPage() {
           </form>
         </div>
       </main>
+
+      {/* Grouping Tool Modal */}
+      {isToolOpen && question?.modelData && (
+        <GroupingWorkspace 
+          modelData={question.modelData} 
+          onClose={() => setIsToolOpen(false)}
+          questionId={question.id}
+          difficulty={question.difficulty}
+          mode={
+            question.subtopic?.includes('Division') || question.topic?.includes('Division') 
+              ? 'SHARING' : 'GROUPING'
+          }
+          expectedGroups={question.modelData?.groups}
+          targetGroupSize={
+            question.modelData?.itemsPerGroup || 
+            question.modelData?.groupSize || 
+            10
+          }
+          showTargetSize={question.topic !== 'Division'}
+        />
+      )}
     </div>
   );
 }

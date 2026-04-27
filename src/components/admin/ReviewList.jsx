@@ -1,15 +1,36 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import DiagramRenderer from '@/components/math/DiagramRenderer';
+import useSWR from 'swr';
+
+const fetcher = url => fetch(url).then(res => res.json());
 
 export default function ReviewList({ initialQuestions, isViewOnly }) {
-  const [questions, setQuestions] = useState(initialQuestions);
+  const router = useRouter();
+
+  // Implement SWR for production-ready polling and caching
+  const { data, error, mutate, isValidating } = useSWR(
+    '/api/admin/questions?approved=false',
+    fetcher,
+    {
+      refreshInterval: 3000, // Auto-refresh every 3 seconds
+      revalidateOnFocus: true, // Refresh when the admin switches back to the tab
+      dedupingInterval: 2000, // Prevent multiple identical requests
+      fallbackData: initialQuestions
+    }
+  );
+
+  const questions = data || [];
   const [processingId, setProcessingId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const router = useRouter();
+
+  // Function to fetch the latest unapproved questions
+  const refreshQuestions = async () => {
+    mutate(); // Trigger a fresh sync
+  };
 
   // Helper to map technical modelData keys to pedagogical labels
   const MAP_KEY = (key) => {
@@ -60,7 +81,8 @@ export default function ReviewList({ initialQuestions, isViewOnly }) {
           body: JSON.stringify({ isApproved: true }),
         })
       ));
-      setQuestions(prev => prev.filter(q => !ids.includes(q.id)));
+      mutate(); // Revalidate SWR cache immediately
+      router.refresh();
     } catch (err) {
       alert("Batch approval failed.");
     } finally {
@@ -78,6 +100,7 @@ export default function ReviewList({ initialQuestions, isViewOnly }) {
         fetch(`/api/admin/questions/${id}`, { method: 'DELETE' })
       ));
       setQuestions(prev => prev.filter(q => !ids.includes(q.id)));
+      router.refresh();
     } catch (err) {
       alert("Batch deletion failed.");
     } finally {
@@ -94,7 +117,8 @@ export default function ReviewList({ initialQuestions, isViewOnly }) {
         body: JSON.stringify({ isApproved: true }),
       });
       if (res.ok) {
-        setQuestions(prev => prev.filter(q => q.id !== id));
+        mutate(); // Revalidate SWR cache immediately
+        router.refresh();
       }
     } catch (err) {
       alert("Failed to approve question.");
@@ -109,7 +133,8 @@ export default function ReviewList({ initialQuestions, isViewOnly }) {
     try {
       const res = await fetch(`/api/admin/questions/${id}`, { method: 'DELETE' });
       if (res.ok) {
-        setQuestions(prev => prev.filter(q => q.id !== id));
+        mutate(); // Revalidate SWR cache immediately
+        router.refresh();
       }
     } catch (err) {
       alert("Failed to delete question.");
@@ -140,7 +165,8 @@ export default function ReviewList({ initialQuestions, isViewOnly }) {
       });
       // Delete the current "bad" generation after triggering new one
       await fetch(`/api/admin/questions/${q.id}`, { method: 'DELETE' });
-      setQuestions(prev => prev.filter(item => item.id !== q.id));
+      mutate(); // Revalidate SWR cache immediately
+      router.refresh();
       alert("Regeneration triggered. New question will appear in inventory shortly.");
     } catch (err) {
       alert("Regeneration failed.");
@@ -174,7 +200,15 @@ export default function ReviewList({ initialQuestions, isViewOnly }) {
             </button>
           ))}
         </div>
-        <div className="flex gap-3">
+        <div className="flex items-center gap-3">
+          {isValidating && <span className="text-[10px] font-black text-blue-500 animate-pulse uppercase tracking-widest mr-2">Syncing...</span>}
+          <button
+            onClick={refreshQuestions}
+            disabled={processingId !== null}
+            className="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-blue-50 text-blue-600 hover:bg-blue-100"
+          >
+            ↻ Refresh Queue
+          </button>
           <button
             disabled={processingId !== null}
             onClick={handleDeleteAll}
@@ -225,7 +259,7 @@ export default function ReviewList({ initialQuestions, isViewOnly }) {
                 {/* Question-level Visuals (Concrete) */}
                 {isQuestionVisual && (
                   <div className="pt-4">
-                    <DiagramRenderer modelData={q.modelData} isQuestion={true} />
+                    <DiagramRenderer modelData={q.modelData} isQuestion={true} questionId={q.id} difficulty={q.difficulty} />
                   </div>
                 )}
 
@@ -271,7 +305,7 @@ export default function ReviewList({ initialQuestions, isViewOnly }) {
               <div className="space-y-2">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Model Solution</span>
                   {/* Solution-level Visuals (Abstract Bar Models) */}
-                  {isSolutionVisual && <DiagramRenderer modelData={q.modelData} isQuestion={false} />}
+                  {isSolutionVisual && <DiagramRenderer modelData={q.modelData} isQuestion={false} questionId={q.id} difficulty={q.difficulty} />}
                 <p className="text-sm text-slate-600 leading-relaxed italic whitespace-pre-line">{q.solution}</p>
               </div>
               <div className="space-y-2">
