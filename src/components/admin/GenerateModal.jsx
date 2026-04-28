@@ -1,44 +1,40 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function GenerateModal() {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [syllabus, setSyllabus] = useState('P5_P6');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const totalToGenerate = quantity;
     setIsGenerating(true);
-    setMessage('');
     setError('');
+    setIsOpen(false); // Close modal immediately so user can see the table counts increment
 
-    try {
-      const response = await fetch('/api/admin/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quantity, syllabus }),
-      });
+    for (let i = 0; i < totalToGenerate; i++) {
+      try {
+        const response = await fetch('/api/admin/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ quantity: 1, syllabus }),
+        });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to generate questions.');
+        if (response.ok) {
+          router.refresh(); // Refresh counts after every single question
+        }
+      } catch (err) {
+        console.error("❌ Generation Error:", err);
+        break;
       }
-
-      setMessage(data.message);
-      setIsOpen(false); // Close modal on success
-      // Optionally, refresh the page to see new questions
-      // window.location.reload(); 
-    } catch (err) {
-      console.error("❌ Generation Error:", err);
-      setError(err.message || 'An unexpected error occurred.');
-    } finally {
-      setIsGenerating(false);
     }
+    setIsGenerating(false);
   };
 
   return (
@@ -82,7 +78,6 @@ export default function GenerateModal() {
                 </select>
               </div>
               {error && <p className="text-red-500 text-sm">{error}</p>}
-              {message && <p className="text-green-600 text-sm">{message}</p>}
               <div className="flex justify-end space-x-3">
                 <button type="button" onClick={() => setIsOpen(false)} className="px-4 py-2 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors" disabled={isGenerating}>Cancel</button>
                 <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-300" disabled={isGenerating}>

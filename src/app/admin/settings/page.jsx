@@ -36,13 +36,8 @@ export default function AdminSettingsPage() {
   const handleRunBenchmark = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/system/benchmark');
-      
-      const contentType = res.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Server returned HTML instead of JSON. Ensure the benchmark route is correctly placed.");
-      }
-
+      // Update to the new Dynamic Model Router endpoint
+      const res = await fetch('/api/admin/performance');
       const data = await res.json();
       setResults(data);
     } catch (err) {
@@ -114,7 +109,7 @@ export default function AdminSettingsPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {results.map((row, idx) => (
-                    <tr key={row.modelId} className={`hover:bg-slate-50/50 transition-colors ${idx === 0 && row.status === 'online' ? 'bg-blue-50/30' : ''}`}>
+                    <tr key={row.modelId} className={`hover:bg-slate-50/50 transition-colors ${row.role !== 'UNRANKED' && row.status === 'online' ? 'bg-blue-50/20' : ''}`}>
                       <td className="px-6 py-5 font-bold text-slate-900">{row.modelId}</td>
                       <td className="px-6 py-5 font-mono text-sm text-slate-600">
                         {row.latency === 99999 ? '—' : `${row.latency}ms`}
@@ -128,9 +123,11 @@ export default function AdminSettingsPage() {
                         </div>
                       </td>
                       <td className="px-6 py-5 text-right">
-                        {idx === 0 && row.status === 'online' && (
-                          <span className="bg-blue-600 text-white text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-widest">
-                            Primary
+                        {row.role !== 'UNRANKED' && row.status === 'online' && (
+                          <span className={`text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-widest ${
+                            row.role === 'PRIMARY' ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-600'
+                          }`}>
+                            {row.role}
                           </span>
                         )}
                       </td>

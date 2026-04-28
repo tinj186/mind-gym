@@ -1,34 +1,42 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function QuestionTable({ data }) {
+  const router = useRouter();
+
   const handleGenerateBatch = async (row) => {
     const confirm = window.confirm(`Generate 5 new ${row.type} questions for ${row.level} ${row.topic}?`);
     if (!confirm) return;
 
-    try {
-      const res = await fetch('/api/admin/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          quantity: 5, 
-          syllabus: row.level.match(/1|2/) ? 'P1_P2' : row.level.match(/3|4/) ? 'P3_P4' : 'P5_P6',
-          metadata: { 
-            level: row.level,
-            topic: row.topic, 
-            subtopic: row.subtopic, 
-            type: row.type, 
-            difficulty: row.difficulty,
-            // Pass the primary heuristic for this topic as defined in the syllabus
-            heuristic: row.heuristics?.[0] || row.topic 
-          }
-        }),
-      });
-      const result = await res.json();
-      console.log(result.message || "Generation initiated.");
-    } catch (err) {
-      alert("Failed to trigger generation.");
+    // Generate questions one-by-one to show progress in the UI counts
+    for (let i = 0; i < 5; i++) {
+      try {
+        const res = await fetch('/api/admin/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            quantity: 1, 
+            syllabus: row.level.match(/1|2/) ? 'P1_P2' : row.level.match(/3|4/) ? 'P3_P4' : 'P5_P6',
+            metadata: { 
+              level: row.level,
+              topic: row.topic, 
+              subtopic: row.subtopic, 
+              type: row.type, 
+              difficulty: row.difficulty,
+              heuristic: row.heuristics?.[0] || row.topic 
+            }
+          }),
+        });
+        
+        if (res.ok) {
+          router.refresh(); // Update the counts in the table immediately
+        }
+      } catch (err) {
+        console.error("Generation step failed:", err);
+        break; // Stop loop on network error
+      }
     }
   };
 
@@ -52,7 +60,7 @@ export default function QuestionTable({ data }) {
 
       if (res.ok) {
         alert("Pending questions deleted.");
-        window.location.reload();
+        router.refresh();
       }
     } catch (err) {
       alert("Failed to delete questions.");

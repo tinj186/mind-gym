@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import DiagramRenderer from '@/components/math/DiagramRenderer';
 import useSWR from 'swr';
 
@@ -9,10 +9,17 @@ const fetcher = url => fetch(url).then(res => res.json());
 
 export default function ReviewList({ initialQuestions, isViewOnly }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Sync the SWR fetch key with the current URL search parameters
+  const swrKey = useMemo(() => {
+    const query = searchParams.toString();
+    return `/api/admin/questions?${query || 'approved=false'}`;
+  }, [searchParams]);
 
   // Implement SWR for production-ready polling and caching
   const { data, error, mutate, isValidating } = useSWR(
-    '/api/admin/questions?approved=false',
+    swrKey,
     fetcher,
     {
       refreshInterval: 3000, // Auto-refresh every 3 seconds
@@ -99,7 +106,7 @@ export default function ReviewList({ initialQuestions, isViewOnly }) {
       await Promise.all(ids.map(id => 
         fetch(`/api/admin/questions/${id}`, { method: 'DELETE' })
       ));
-      setQuestions(prev => prev.filter(q => !ids.includes(q.id)));
+      mutate(); // Revalidate SWR cache immediately
       router.refresh();
     } catch (err) {
       alert("Batch deletion failed.");
