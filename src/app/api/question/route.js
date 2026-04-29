@@ -3,21 +3,31 @@ import { prisma } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req) {
   try {
-    // Get the total number of approved questions
-    const totalQuestions = await prisma.questionBank.count({
-      where: { isApproved: true }
-    });
+    const { searchParams } = new URL(req.url);
+    const questionId = searchParams.get('id');
+    let question;
 
-    if (totalQuestions === 0) return NextResponse.json({ error: "No questions available" }, { status: 404 });
+    if (questionId) {
+      // If an ID is provided, fetch that specific question
+      question = await prisma.questionBank.findUnique({
+        where: { id: questionId, isApproved: true } // Ensure it's approved
+      });
+    } else {
+      // Otherwise, fetch a random approved question
+      const totalQuestions = await prisma.questionBank.count({
+        where: { isApproved: true }
+      });
 
-    // Pick a random index and fetch that question
-    const skip = Math.floor(Math.random() * totalQuestions);
-    const question = await prisma.questionBank.findFirst({
-      where: { isApproved: true },
-      skip: skip
-    });
+      if (totalQuestions === 0) return NextResponse.json({ error: "No questions available" }, { status: 404 });
+
+      const skip = Math.floor(Math.random() * totalQuestions);
+      question = await prisma.questionBank.findFirst({
+        where: { isApproved: true },
+        skip: skip
+      });
+    }
 
     return NextResponse.json(question);
   } catch (error) {

@@ -45,9 +45,41 @@ export default function TrainingPage() {
   useEffect(() => {
     const fetchQuestion = async () => {
       try {
-        const response = await fetch(`/api/question?t=${Date.now()}`, { cache: 'no-store' });
+        // Hardcode question ID for testing purposes
+        const hardcodedQuestionId = '1af29fcb-00c4-48cd-bb5e-679395c61464';
+        const response = await fetch(`/api/question?id=${hardcodedQuestionId}`, { cache: 'no-store' });
         if (!response.ok) throw new Error('Failed to fetch question');
-        const data = await response.json();
+        let data = await response.json();
+
+        // Initialize modelData if missing (common in bulk fallback/legacy questions)
+        if (!data.modelData && data.visualItems) {
+          data.modelData = { type: "NONE", items: [] };
+        }
+
+        // Robust parsing of modelData if it arrived as a string
+        if (data.modelData && typeof data.modelData === 'string') {
+          try {
+            data.modelData = JSON.parse(data.modelData);
+          } catch (e) {
+            console.error("Failed to parse modelData:", e);
+          }
+        }
+
+        // Sync top-level visualItems into modelData.items if missing
+        // This ensures compatibility with legacy bulk-generated questions
+        if (data.modelData && !data.modelData.items && data.visualItems) {
+          let items = data.visualItems;
+          // Handle cases where visualItems column is a stringified JSON
+          if (typeof items === 'string' && (items.startsWith('[') || items.startsWith('{'))) {
+            try {
+              items = JSON.parse(items);
+            } catch (e) {
+              console.error("Failed to parse visualItems string:", e);
+            }
+          }
+          data.modelData.items = Array.isArray(items) ? items : [];
+        }
+
         setQuestion(data);
         // Reset all interaction states to ensure a clean slate for the new question
         setAnswer('');

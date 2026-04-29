@@ -23,7 +23,17 @@ export default function GenerateModal() {
         const response = await fetch('/api/admin/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ quantity: 1, syllabus }),
+          body: JSON.stringify({ 
+            quantity: 1, 
+            syllabus,
+            metadata: {
+              level: syllabus === 'P1_P2' ? 'Primary 1' : syllabus === 'P3_P4' ? 'Primary 3' : 'Primary 5',
+              topic: 'Whole Numbers', // Default for bulk gen until UI expanded
+              subtopic: 'Ordinal Numbers',
+              type: 'MCQ',
+              difficulty: 'Foundation'
+            }
+          }),
         });
 
         if (response.ok) {

@@ -6,28 +6,34 @@ import { generatePositions } from '@/lib/utils/layout';
 export default function CountingObjects({ data, isQuestion, questionId, difficulty }) {
   if (!data || !Array.isArray(data.groups)) return null;
 
-  const { icons = [], groups, crossOut = 0 } = data;
+  const { icons = [], groups, crossOut = 0, items = [], icon } = data;
   
   // Flatten icons to apply cross-out logic sequentially from the end
   const allIcons = groups.flatMap((count, gIdx) => {
     const safeCount = Math.max(0, Math.min(100, parseInt(count) || 0));
-    return Array(safeCount).fill(0).map((_, i) => ({ 
-      groupIndex: gIdx,
-      icon: icons[gIdx] || icons[0] || data.icon 
-    }));
+    return Array(safeCount).fill(0).map((_, i) => {
+      const globalIdx = groups.slice(0, gIdx).reduce((a, b) => a + b, 0) + i;
+      return { 
+        groupIndex: gIdx,
+        icon: items[globalIdx] || items[0] || icons[gIdx] || icons[0] || icon || data.icon 
+      };
+    });
   });
 
   const totalItems = allIcons.length;
+  // Dynamic font scaling to fit high quantities (e.g., 100 items)
+  const itemSizeClass = totalItems > 60 ? 'text-xl' : totalItems > 30 ? 'text-2xl' : 'text-4xl';
+  const solutionSizeClass = totalItems > 60 ? 'text-lg' : totalItems > 30 ? 'text-xl' : 'text-3xl';
 
   if (isQuestion) {
     const positions = generatePositions(groups, questionId || JSON.stringify(groups), difficulty);
 
     return (
-      <div className="my-8 relative w-full aspect-[2/1] bg-white rounded-[2rem] border-2 border-slate-100 overflow-hidden">
+      <div className="my-8 relative w-full aspect-[3/2] md:aspect-[2/1] bg-white rounded-[2rem] border-2 border-slate-100 overflow-hidden p-8">
         {positions.map((pos, i) => (
           <div 
             key={i} 
-            className="absolute text-4xl select-none grayscale-0 -translate-x-1/2 -translate-y-1/2"
+            className={`absolute ${itemSizeClass} select-none grayscale-0 -translate-x-1/2 -translate-y-1/2 transition-all duration-500`}
             style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
           >
             {allIcons[i]?.icon}
@@ -48,10 +54,10 @@ export default function CountingObjects({ data, isQuestion, questionId, difficul
             // Calculate global index to see if this specific icon is crossed out
             const globalIdx = groups.slice(0, gIdx).reduce((a, b) => a + b, 0) + i;
             const isCrossedOut = globalIdx >= (totalItems - crossOut);
-            const currentIcon = icons[gIdx] || icons[0] || data.icon;
+            const currentIcon = items[globalIdx] || items[0] || icons[gIdx] || icons[0] || icon || data.icon;
 
             return (
-              <div key={i} className="relative text-3xl select-none grayscale-0">
+              <div key={i} className={`relative ${solutionSizeClass} select-none grayscale-0`}>
                 {currentIcon}
                 {isCrossedOut && (
                   <div className="absolute inset-0 flex items-center justify-center text-red-500 font-black text-4xl drop-shadow-sm">✕</div>

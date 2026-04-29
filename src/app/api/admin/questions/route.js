@@ -24,7 +24,14 @@ export async function GET(req) {
       where,
       orderBy: { createdAt: 'desc' } // Ensure newest generations appear at the top
     });
-    return NextResponse.json(questions);
+    
+    // Ensure MCQ options are always strings to prevent UI crashes (opt.includes is not a function)
+    const sanitized = questions.map(q => ({
+      ...q,
+      options: Array.isArray(q.options) ? q.options.map(opt => (opt === null || opt === undefined) ? "" : String(opt)) : (q.type === 'MCQ' ? [] : null)
+    }));
+
+    return NextResponse.json(sanitized);
   } catch (error) {
     console.error("❌ Failed to fetch questions:", error);
     return NextResponse.json({ error: "Failed to fetch questions" }, { status: 500 });

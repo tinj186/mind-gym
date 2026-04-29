@@ -53,11 +53,15 @@ export default function DiagramRenderer({ modelData: inputModelData, isQuestion,
   }
 
   if (type === 'ORDINAL_LINE') {
-    return <OrdinalLine data={modelData} />;
+    // Ensure OrdinalLine receives the object containing the items array
+    const ordinalData = { ...modelData, items: modelData.items || [] };
+    return <OrdinalLine data={ordinalData} />;
   }
 
   if (type === 'NUMBER_BOND') {
-    return <NumberBond data={modelData} />;
+    // Map 'items' from the universal fix to 'numbers' if cards component expects it
+    const cardData = { ...modelData, numbers: modelData.numbers || modelData.items || [] };
+    return <NumberCards data={cardData} />;
   }
 
   return null;

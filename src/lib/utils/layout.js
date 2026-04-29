@@ -21,17 +21,16 @@ export function generatePositions(groups, seed, difficulty = 'Standard') {
   const itemsPerRow = 10;
   const rowCount = Math.ceil(totalItems / itemsPerRow);
   
-  // Spacing in percentages (0-100)
-  const hGap = 8; 
-  const vGap = 15;
+  // Spacing in percentages (0-100) - scale down gaps dynamically to ensure high counts fit
+  const hGap = totalItems > 60 ? 7 : 8; 
+  const vGap = totalItems > 60 ? 8 : 12;
 
   // Calculate total grid dimensions to center it
   const gridW = (Math.min(totalItems, itemsPerRow) - 1) * hGap;
   const gridH = (rowCount - 1) * vGap;
 
   const startX = 50 - (gridW / 2);
-  // Move the initial counting grid down to leave space at the top for groups
-  const startY = 65 - (gridH / 2);
+  const startY = 50 - (gridH / 2);
 
   let globalIdx = 0;
   groups.forEach((count, gIdx) => {

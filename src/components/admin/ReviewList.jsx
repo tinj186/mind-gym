@@ -266,14 +266,15 @@ export default function ReviewList({ initialQuestions, isViewOnly }) {
                 {/* Question-level Visuals (Concrete) */}
                 {isQuestionVisual && (
                   <div className="pt-4">
-                    <DiagramRenderer modelData={q.modelData} isQuestion={true} questionId={q.id} difficulty={q.difficulty} />
+                    <DiagramRenderer modelData={modelData} isQuestion={true} questionId={q.id} difficulty={q.difficulty} />
                   </div>
                 )}
 
                 {/* Metadata Grid (The redesigned section) */}
                 {modelData && (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4 border-t border-slate-50">
-                    {Object.entries(modelData).filter(([k]) => k !== 'type').map(([key, val]) => (
+                    {/* Filter out complex visual arrays from the metadata grid to prevent "clutter dumping". Case-insensitive check. */}
+                    {Object.entries(modelData).filter(([k]) => !['type', 'items', 'groups', 'visualitems', 'hidevisual'].includes(k.toLowerCase())).map(([key, val]) => (
                       <div key={key} className="p-3 bg-slate-50/50 rounded-xl border border-slate-100">
                         <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">
                           {MAP_KEY(key)}
@@ -291,7 +292,8 @@ export default function ReviewList({ initialQuestions, isViewOnly }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
                 {q.options.map((opt, i) => {
                   // Highlight the option that matches the final answer
-                  const isCorrect = opt.includes(q.finalAnswer) || opt.startsWith(q.finalAnswer + ':');
+                  const optStr = String(opt ?? "");
+                  const isCorrect = optStr.includes(q.finalAnswer) || optStr.startsWith(q.finalAnswer + ':');
                   return (
                     <div 
                       key={i} 
@@ -312,7 +314,7 @@ export default function ReviewList({ initialQuestions, isViewOnly }) {
               <div className="space-y-2">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Model Solution</span>
                   {/* Solution-level Visuals (Abstract Bar Models) */}
-                  {isSolutionVisual && <DiagramRenderer modelData={q.modelData} isQuestion={false} questionId={q.id} difficulty={q.difficulty} />}
+                  {isSolutionVisual && <DiagramRenderer modelData={modelData} isQuestion={false} questionId={q.id} difficulty={q.difficulty} />}
                 <p className="text-sm text-slate-600 leading-relaxed italic whitespace-pre-line">{q.solution}</p>
               </div>
               <div className="space-y-2">

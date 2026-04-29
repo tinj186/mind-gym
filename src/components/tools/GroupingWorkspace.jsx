@@ -15,6 +15,12 @@ export default function GroupingWorkspace({ modelData, onClose, questionId, diff
   const [lockedGroupSize, setLockedGroupSize] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
 
+  // Dynamic scaling for high quantity items
+  const isCompact = items.length > 60;
+  const itemSizeClass = isCompact ? 'text-xl' : items.length > 30 ? 'text-2xl' : 'text-4xl';
+  // Centering offset scales with size: text-xl (~20px) -> offset 10, text-4xl (~36px) -> offset 18
+  const iconOffset = isCompact ? 10 : (items.length > 30 ? 12 : 18);
+
   // Resize handler to ensure coordinate translations stay accurate
   useEffect(() => {
     if (!containerRef.current) return;
@@ -89,11 +95,16 @@ export default function GroupingWorkspace({ modelData, onClose, questionId, diff
     const width = dims.w || 1;
     const height = dims.h || 1;
 
-    const selectedItems = items.filter(item => 
-      !item.isGrouped &&
-      item.x >= (left / width) * 100 && item.x <= (right / width) * 100 &&
-      item.y >= (top / height) * 100 && item.y <= (bottom / height) * 100
-    );
+    const selectedItems = items.filter(item => {
+      if (item.isGrouped) return false;
+      // Selection logic must match the Safe Zone rendering mapping (5-95% W, 10-95% H)
+      const mappedX = (5 + (item.x * 0.9));
+      const mappedY = (10 + (item.y * 0.85));
+      return (
+        mappedX >= (left / width) * 100 && mappedX <= (right / width) * 100 &&
+        mappedY >= (top / height) * 100 && mappedY <= (bottom / height) * 100
+      );
+    });
 
     const selectedCount = selectedItems.length;
 
@@ -122,13 +133,13 @@ export default function GroupingWorkspace({ modelData, onClose, questionId, diff
       const groupId = `group-${groups.length}`;
 
       // Calculate "Parking Spot" at the top corner
-      const groupsPerRow = 4;
+      const groupsPerRow = Math.max(1, Math.floor(width / 210)); 
       const gIdx = groups.length;
       const col = gIdx % groupsPerRow;
       const row = Math.floor(gIdx / groupsPerRow);
       
-      const storageX = 110 + (col * 210); // Spaced horizontally
-      const storageY = 80 + (row * 120);  // Spaced vertically if many groups
+      const storageX = 100 + (col * 200); // Slightly tighter horizontal spacing
+      const storageY = 70 + (row * 110);  // Higher starting point to maximize workspace
 
       setGroups(prev => [...prev, { id: groupId, x: storageX, y: storageY, itemIds: selectedItems.map(i => i.id) }]);
       setItems(prev => prev.map(item => 
@@ -197,7 +208,18 @@ export default function GroupingWorkspace({ modelData, onClose, questionId, diff
             <div className="absolute border-2 border-blue-400 bg-blue-400/10 rounded-lg pointer-events-none z-50" style={{ left: Math.min(dragStart.x, currentDrag.x), top: Math.min(dragStart.y, currentDrag.y), width: Math.abs(currentDrag.x - dragStart.x), height: Math.abs(currentDrag.y - dragStart.y) }} />
           )}
           {groups.map((g, idx) => (
-            <motion.div key={g.id} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="absolute border-4 border-blue-500/20 bg-blue-500/5 rounded-2xl flex items-center justify-center pointer-events-none" style={{ left: g.x - 90, top: g.y - 50, width: 180, height: 100 }}>
+            <motion.div 
+              key={g.id} 
+              initial={{ scale: 0.8, opacity: 0 }} 
+              animate={{ scale: 1, opacity: 1 }} 
+              className="absolute border-4 border-blue-500/20 bg-blue-500/5 rounded-2xl flex items-center justify-center pointer-events-none" 
+              style={{ 
+                left: g.x - 90, 
+                top: g.y - 55, 
+                width: 180, 
+                height: targetGroupSize > 10 ? 140 : 100 // Dynamically grow group box for larger sets
+              }}
+            >
               <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-md">
                 {mode === 'SHARING' ? `Group ${idx + 1}` : targetGroupSize}
               </span>
@@ -205,11 +227,17 @@ export default function GroupingWorkspace({ modelData, onClose, questionId, diff
           ))}
           {items.map(item => {
             const isRemainder = !item.isGrouped && isSharingError;
-            const pos = item.isGrouped ? getGroupedPos(item.id, item.groupId) : { x: (item.x / 100) * dims.w, y: (item.y / 100) * dims.h };
+            const pos = item.isGrouped 
+              ? getGroupedPos(item.id, item.groupId) 
+              : { 
+                  // Map un-grouped items to a more generous "Safe Zone" (5-95% W, 10-95% H) to reduce top gap and prevent bottom clipping
+                  x: ((5 + (item.x * 0.9)) / 100) * dims.w, 
+                  y: ((10 + (item.y * 0.85)) / 100) * dims.h 
+                };
             return (
-              <motion.div key={item.id} layoutId={item.id} className="absolute text-4xl select-none" initial={false} animate={{ 
-                  x: pos.x - 20, 
-                  y: pos.y - 20,
+              <motion.div key={item.id} layoutId={item.id} className={`absolute ${itemSizeClass} select-none`} initial={false} animate={{ 
+                  x: pos.x - iconOffset, 
+                  y: pos.y - iconOffset,
                   rotate: isShaking && !item.isGrouped ? [0, -10, 10, -10, 10, 0] : 0,
                   scale: isRemainder ? 1.15 : 1,
                   filter: isRemainder ? 'drop-shadow(0 0 12px rgba(239,68,68,0.9))' : 'drop-shadow(0 0 0px rgba(0,0,0,0))'

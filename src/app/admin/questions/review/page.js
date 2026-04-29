@@ -30,6 +30,12 @@ export default async function QuestionReviewPage({ searchParams }) {
       where: whereClause,
       orderBy: { createdAt: 'desc' }
     });
+
+    // Sanitize options to ensure they are always strings (prevents opt.includes crashes)
+    questions = questions.map(q => ({
+      ...q,
+      options: Array.isArray(q.options) ? q.options.map(opt => String(opt ?? "")) : (q.type === 'MCQ' ? [] : null)
+    }));
   } catch (err) {
     console.error("❌ Failed to fetch questions for review:", err);
   }
