@@ -87,8 +87,8 @@ export const multiplicationDivisionBlueprint = {
     let formatInstructions = isMCQ 
       ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.`
       : isShort 
-        ? `Format as Short Answer. The "options" field in your JSON should be null. CRITICAL: For the "question" string, output ONLY the mathematical equation (e.g., "12 + 15 = ?"). Do not use any English words.`
-        : `Format as Structured Question. The "options" field in your JSON should be null. CRITICAL: For the "question" string, write a clear localized word problem. CREATIVE INSTRUCTIONS: Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).`;
+        ? `Format as Short Answer. The "options" field in your JSON should be null. CRITICAL: For the "questionText" string, output ONLY the mathematical equation (e.g., "12 + 15 = ?"). Do not use any English words.`
+        : `Format as Structured Question. The "options" field in your JSON should be null. CRITICAL: For the "questionText" string, write a clear localized word problem. CREATIVE INSTRUCTIONS: Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).`;
 
     const getOptions = (ans) => {
       const a = parseInt(ans);
@@ -101,6 +101,15 @@ export const multiplicationDivisionBlueprint = {
       return JSON.stringify([String(a), String(d1), String(d2), String(d3)].sort(() => Math.random() - 0.5));
     };
     const getQText = (words, equation) => isShort ? equation : words;
+    
+    // Dynamic visual item selection
+    const funIcons = ['⚽', '🏀', '⭐', '🚗', '🥟', '🍢', '🍡', '🍎'];
+    const selectedIcon = funIcons[Math.floor(Math.random() * funIcons.length)];
+
+    // Map to Zod enums
+    const zodType = isMCQ ? 'MCQ' : isShort ? 'SHORT_QUESTION' : 'STRUCTURED';
+    const zodDiff = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+
     // FIX: Only hide visuals for pure equations, NOT for interactive workspaces
     const hideVis = isShort && !activeVariant.includes('interactive');
 
@@ -111,8 +120,24 @@ export const multiplicationDivisionBlueprint = {
       const groups = Math.floor(Math.random() * 3) + 2; // 2 to 4
       const size = Math.floor(Math.random() * 4) + 2; // 2 to 5
       const answer = String(groups * size);
+      const questionText = getQText('Find the total sum.', groups + ' x ' + size + ' = ?');
+      const solutionSteps = `${groups} groups of ${size} is ${groups} x ${size} = ${answer}.`;
+
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Equal Groups\n - Equation: ${groups} x ${size} = ?\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "${getQText('Find the total sum.', groups + ' x ' + size + ' = ?')}", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "EQUAL_GROUPS", "items": [{"count": ${size}, "label": "Group"}], "groupCount": ${groups}, "hideVisual": ${hideVis} }, "finalAnswer": "${answer}", "solution": "${groups} groups of ${size} is ${groups} x ${size} = ${answer}." }`,
+        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Equal Groups\n - Equation: ${groups} x ${size} = ?\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "Primary 1", "topic": "Whole Numbers", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${questionText}",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "${solutionSteps}"
+          },
+          "visualEngine": ${isShort 
+            ? `{ "componentToRender": "NONE", "componentData": null }`
+            : `{ "componentToRender": "EQUAL_GROUPS", "componentData": { "items": [{"count": ${size}, "label": "Group"}], "groupCount": ${groups}, "icon": "${selectedIcon}" } }`
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 1, logic: "mult_eqn" }
       };
     }
@@ -122,8 +147,24 @@ export const multiplicationDivisionBlueprint = {
       const groups = Math.floor(Math.random() * 3) + 2; 
       const total = groups * size;
       const answer = String(groups);
+      const questionText = getQText('Share ' + total + ' items into ' + size + ' equal groups. How many in each group?', total + ' ÷ ' + size + ' = ?');
+      const solutionSteps = `${total} shared into ${size} groups gives ${answer} in each group.`;
+
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Sharing/Division\n - Equation: ${total} ÷ ${size} = ?\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "${getQText('Share ' + total + ' items into ' + size + ' equal groups. How many in each group?', total + ' ÷ ' + size + ' = ?')}", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "EQUAL_GROUPS", "items": [{"count": 1, "label": "Item"}], "groupCount": ${size}, "totalItems": ${total}, "hideVisual": ${hideVis} }, "finalAnswer": "${answer}", "solution": "${total} shared into ${size} groups gives ${answer} in each group." }`,
+        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Sharing/Division\n - Equation: ${total} ÷ ${size} = ?\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "Primary 1", "topic": "Whole Numbers", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${questionText}",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "${solutionSteps}"
+          },
+          "visualEngine": ${isShort 
+            ? `{ "componentToRender": "NONE", "componentData": null }`
+            : `{ "componentToRender": "EQUAL_GROUPS", "componentData": { "items": [{"count": 1, "label": "Item"}], "groupCount": ${size}, "totalItems": ${total}, "hideVisual": ${hideVis}, "icon": "${selectedIcon}" } }`
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 1, logic: "div_eqn" }
       };
     }
@@ -135,7 +176,20 @@ export const multiplicationDivisionBlueprint = {
       const total = groups * size;
       const answer = isDiv ? String(groups) : String(total);
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: ${isDiv ? 'Division' : 'Multiplication'} Word Problem\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "...", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "Mathematical explanation for the ${isDiv ? 'sharing' : 'grouping'} problem." }`,
+        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: ${isDiv ? 'Division' : 'Multiplication'} Word Problem\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "Primary 1", "topic": "Whole Numbers", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "...",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "Mathematical explanation for the ${isDiv ? 'sharing' : 'grouping'} problem."
+          },
+          "visualEngine": {
+            "componentToRender": "NONE",
+            "componentData": null
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 1, logic: isDiv ? "wp_div_20" : "wp_mult_20" }
       };
     }
@@ -146,10 +200,25 @@ export const multiplicationDivisionBlueprint = {
       const groups = Math.floor(Math.random() * 3) + 2; // 2, 3, or 4 groups
       const total = groups * size;
       const answer = String(groups);
-      const itemsArray = JSON.stringify(Array(total).fill('🍡'));
       
+      const questionText = getQText('[Insert full localized Singaporean word problem here]', total + ' ÷ ' + size + ' = ?');
+      const solutionSteps = `${total} items put into groups of ${size} makes ${answer} groups.`;
+
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Grouping (Interactive)\n - Task: Group ${total} items into sets of ${size}.\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "...", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": ${itemsArray}, "modelData": { "type": "GROUPING_WORKSPACE", "mode": "GROUPING", "targetGroupSize": ${size}, "expectedGroups": null, "items": ${itemsArray}, "hideVisual": false }, "finalAnswer": "${answer}", "solution": "${total} items put into groups of ${size} makes ${answer} groups." }`,
+        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Grouping (Interactive)\n - Task: Group ${total} items into sets of ${size}.\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE: Generate a Singapore-themed story.\n CRITICAL VISUAL RULE: DO NOT modify the "visualEngine" block below. You MUST copy the "totalItems" number and the "items" array exactly as provided in the template. Do not change them to match the final answer.\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "Primary 1", "topic": "Whole Numbers", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${questionText}",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "${solutionSteps}"
+          },
+          "visualEngine": {
+            "componentToRender": "GROUPING_WORKSPACE",
+            "componentData": { "mode": "GROUPING", "targetGroupSize": ${size}, "totalItems": ${total}, "icon": "${selectedIcon}", "items": ${JSON.stringify(Array(total).fill(selectedIcon))} }
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 1, logic: "grouping_interactive" }
       };
     }
@@ -160,10 +229,25 @@ export const multiplicationDivisionBlueprint = {
       const size = Math.floor(Math.random() * 3) + 2; // Each group gets 2, 3, or 4
       const total = groups * size;
       const answer = String(size);
-      const itemsArray = JSON.stringify(Array(total).fill('🍢'));
+      
+      const questionText = getQText('[Insert full localized Singaporean word problem here]', total + ' ÷ ' + groups + ' = ?');
+      const solutionSteps = `When we share ${total} items into ${groups} groups equally, each group has ${answer} items.`;
       
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Sharing (Interactive)\n - Task: Share ${total} items equally into ${groups} groups.\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "...", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": ${itemsArray}, "modelData": { "type": "GROUPING_WORKSPACE", "mode": "SHARING", "targetGroupSize": null, "expectedGroups": ${groups}, "items": ${itemsArray}, "hideVisual": false }, "finalAnswer": "${answer}", "solution": "When we share ${total} items into ${groups} groups equally, each group has ${answer} items." }`,
+        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Sharing (Interactive)\n - Task: Share ${total} items equally into ${groups} groups.\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE: Generate a Singapore-themed story.\n CRITICAL VISUAL RULE: DO NOT modify the "visualEngine" block below. You MUST copy the "totalItems" number and the "items" array exactly as provided in the template. Do not change them to match the final answer.\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "Primary 1", "topic": "Whole Numbers", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${questionText}",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "${solutionSteps}"
+          },
+          "visualEngine": {
+            "componentToRender": "GROUPING_WORKSPACE",
+            "componentData": { "mode": "SHARING", "expectedGroups": ${groups}, "totalItems": ${total}, "icon": "${selectedIcon}", "items": ${JSON.stringify(Array(total).fill(selectedIcon))} }
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 1, logic: "sharing_interactive" }
       };
     }
@@ -173,7 +257,20 @@ export const multiplicationDivisionBlueprint = {
       const groups = Math.floor(Math.random() * 3) + 2;
       const answer = String(groups * 10);
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Multiply by 10\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "${getQText('What is ' + groups + ' tens?', groups + ' x 10 = ?')}", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "EQUAL_GROUPS", "items": [{"count": 10, "label": "Items"}], "groupCount": ${groups}, "hideVisual": ${hideVis} }, "finalAnswer": "${answer}", "solution": "${groups} groups of 10 is ${answer}." }`,
+        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Multiply by 10\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "Primary 1", "topic": "Whole Numbers", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${getQText('What is ' + groups + ' tens?', groups + ' x 10 = ?')}",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "${groups} groups of 10 is ${answer}."
+          },
+          "visualEngine": ${isShort 
+            ? `{ "componentToRender": "NONE", "componentData": null }`
+            : `{ "componentToRender": "EQUAL_GROUPS", "componentData": { "items": [{"count": 10, "label": "Items"}], "groupCount": ${groups}, "hideVisual": ${hideVis}, "icon": "${selectedIcon}" } }`
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 1, logic: "mult_10" }
       };
     }
@@ -183,8 +280,24 @@ export const multiplicationDivisionBlueprint = {
       const groups = Math.floor(Math.random() * 4) + 4; 
       const total = groups * size;
       const answer = String(groups);
+      const questionText = getQText('...', total + ' ÷ ' + size + ' = ?');
+      const solutionSteps = `Put ${total} items into groups of ${size}. There are ${answer} groups.`;
+
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Grouping Logic\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "...", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "Put ${total} items into groups of ${size}. There are ${answer} groups." }`,
+        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Grouping Logic\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "Primary 1", "topic": "Whole Numbers", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${questionText}",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "${solutionSteps}"
+          },
+          "visualEngine": {
+            "componentToRender": "NONE",
+            "componentData": null
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 2, logic: "grouping_logic" }
       };
     }
@@ -201,8 +314,24 @@ export const multiplicationDivisionBlueprint = {
       const selectedIcon = icons[Math.floor(Math.random() * icons.length)];
       const itemsArray = JSON.stringify(Array(total).fill(selectedIcon));
 
+      const questionText = "[Insert full localized Singaporean word problem here]";
+      const solutionSteps = `First, we look at the total number of items: ${total}. Then, we put them into groups of ${size}. We can see that there are ${answer} groups formed.`;
+
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Grouping Word Problem (Structured)\n - Task: Group ${total} items into sets of ${size}.\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "...", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": ${itemsArray}, "modelData": { "type": "GROUPING_WORKSPACE", "mode": "GROUPING", "targetGroupSize": ${size}, "items": ${itemsArray}, "hideVisual": false }, "finalAnswer": "${answer}", "solution": "First, we look at the total number of items: ${total}. Then, we put them into groups of ${size}. We can see that there are ${answer} groups formed." }`,
+        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Grouping Word Problem (Structured)\n - Task: Group ${total} items into sets of ${size}.\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE: Generate a Singapore-themed story.\n CRITICAL VISUAL RULE: DO NOT modify the "visualEngine" block below. You MUST copy the "totalItems" number and the "items" array exactly as provided in the template. Do not change them to match the final answer.\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "Primary 1", "topic": "Whole Numbers", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${questionText}",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "${solutionSteps}"
+          },
+          "visualEngine": {
+            "componentToRender": "GROUPING_WORKSPACE",
+            "componentData": { "mode": "GROUPING", "targetGroupSize": ${size}, "totalItems": ${total}, "icon": "${selectedIcon}", "items": ${itemsArray}, "hideVisual": false }
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 2, logic: "grouping_structured_interactive" }
       };
     }
@@ -212,8 +341,24 @@ export const multiplicationDivisionBlueprint = {
       const groups = Math.floor(Math.random() * 3) + 4; // 4 to 6
       const size = Math.floor(Math.random() * 3) + 3; // 3 to 5
       const answer = String(groups * size);
+      const questionText = getQText('...', groups + ' x ' + size + ' = ?');
+      const solutionSteps = `${groups} groups of ${size} is ${groups} x ${size} = ${answer}.`;
+
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Multiplication Word Problem\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "...", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "${groups} groups of ${size} is ${groups} x ${size} = ${answer}." }`,
+        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Multiplication Word Problem\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "Primary 1", "topic": "Whole Numbers", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${questionText}",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "${solutionSteps}"
+          },
+          "visualEngine": {
+            "componentToRender": "NONE",
+            "componentData": null
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 2, logic: "wp_mult" }
       };
     }
@@ -224,8 +369,24 @@ export const multiplicationDivisionBlueprint = {
       const size = 5;
       const extra = Math.floor(Math.random() * 5) + 2;
       const answer = String((groups * size) + extra);
+      const questionText = getQText('...', '(' + groups + ' x ' + size + ') + ' + extra + ' = ?');
+      const solutionSteps = `Step 1: ${groups} x ${size} = ${groups * size}. Step 2: ${groups * size} + ${extra} = ${answer}.`;
+
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Multi-step Multiplication/Addition\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "${getQText('...', '(' + groups + ' x ' + size + ') + ' + extra + ' = ?')}", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "Step 1: ${groups} x ${size} = ${groups * size}. Step 2: ${groups * size} + ${extra} = ${answer}." }`,
+        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Multi-step Multiplication/Addition\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "Primary 1", "topic": "Whole Numbers", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${questionText}",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "${solutionSteps}"
+          },
+          "visualEngine": {
+            "componentToRender": "NONE",
+            "componentData": null
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 3, logic: "adv_mult_add" }
       };
     }
@@ -235,8 +396,24 @@ export const multiplicationDivisionBlueprint = {
       const size = 5;
       const remove = Math.floor(Math.random() * 5) + 2;
       const answer = String((groups * size) - remove);
+      const questionText = getQText('...', '(' + groups + ' x ' + size + ') - ' + remove + ' = ?');
+      const solutionSteps = `Step 1: ${groups} x ${size} = ${groups * size}. Step 2: ${groups * size} - ${remove} = ${answer}.`;
+
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Multi-step Multiplication/Subtraction\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "${getQText('...', '(' + groups + ' x ' + size + ') - ' + remove + ' = ?')}", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "Step 1: ${groups} x ${size} = ${groups * size}. Step 2: ${groups * size} - ${remove} = ${answer}." }`,
+        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Multi-step Multiplication/Subtraction\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "Primary 1", "topic": "Whole Numbers", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${questionText}",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "${solutionSteps}"
+          },
+          "visualEngine": {
+            "componentToRender": "NONE",
+            "componentData": null
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 3, logic: "adv_mult_sub" }
       };
     }
@@ -246,8 +423,24 @@ export const multiplicationDivisionBlueprint = {
       const typeLabel = Math.random() > 0.5 ? "tricycles" : "cars";
       const legsPer = typeLabel === "tricycles" ? 3 : 4;
       const answer = String(count * legsPer);
+      const questionText = getQText('...', count + ' x ' + legsPer + ' = ?');
+      const solutionSteps = `${count} items each have ${legsPer} parts. ${count} x ${legsPer} = ${answer}.`;
+
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Multiplication Logic (Wheels/Legs)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "...", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "${count} items each have ${legsPer} parts. ${count} x ${legsPer} = ${answer}." }`,
+        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Multiplication Logic (Wheels/Legs)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "Primary 1", "topic": "Whole Numbers", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${questionText}",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "${solutionSteps}"
+          },
+          "visualEngine": {
+            "componentToRender": "NONE",
+            "componentData": null
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 2, logic: "adv_wheels_legs" }
       };
     }

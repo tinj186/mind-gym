@@ -4,6 +4,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getBestModel, modelCooldowns, COOLDOWN_MS, refreshModelPriority, modelPriorityList } from '@/lib/ai-config';
 import { SYLLABUS_DATA } from '@/lib/syllabus';
 import { getGeneratedQuestion, blueprintRegistry } from '@/lib/syllabus/index.js';
+import { UniversalQuestionSchema } from './questionSchema';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const AI_TIMEOUT_MS = 25000;
@@ -189,32 +190,61 @@ export async function POST(request) {
         }
 
         if (result) {
-          const rawAiData = parseAiResponse(result.response.text());
-          
-          // AI sometimes wraps a requested single object in an array; handle both
-          const aiData = Array.isArray(rawAiData) ? rawAiData[0] : rawAiData;
+          const aiResponse = parseAiResponse(result.response.text());
+          const aiBatch = Array.isArray(aiResponse) ? aiResponse : [aiResponse];
 
-          parsedQuestions.push({
-            question: aiData.question,
-            solution: aiData.solution,
-            finalAnswer: String(aiData.finalAnswer),
-            options: parseAiOptions(aiData.options),
-            subject: "Math",
-            level, gradeLevel, topic, subtopic: subtopic || "", type, difficulty,
-            heuristic: heuristic || "Standard",
-            strand: strand || blueprintMeta?.strand || "Number and Algebra",
-            isApproved: false,
-            modelData: {
-              ...(aiData.modelData || {}),
-              type: blueprintMeta?.visualType === 'DYNAMIC' ? (aiData.modelData?.type || "NONE") : (blueprintMeta?.visualType || aiData.modelData?.type || "NONE"),
-              // ONLY overwrite modelData.items if visualItems actually contains data
-              items: (Array.isArray(aiData.visualItems) && aiData.visualItems.length > 0) 
-                ? aiData.visualItems 
-                : (aiData.modelData?.items || []),
-              hideVisual: !!stepResult.metadata?.hideVisual || !!aiData.modelData?.hideVisual,
-              finalAnswer: String(aiData.finalAnswer)
+          for (const q of aiBatch) {
+            try {
+              // THE NEW ENGINE: Try strict Zod validation first
+              const validatedData = UniversalQuestionSchema.parse(q);
+              parsedQuestions.push({
+                level, topic, subtopic: subtopic || "", heuristic: heuristic || null, 
+                difficulty, gradeLevel, subject: "Math",
+                type: validatedData.meta.type === 'SHORT_QUESTION' ? 'Short Question' : 
+                      validatedData.meta.type === 'STRUCTURED' ? 'Structured' : 
+                      validatedData.meta.type,
+                strand: strand || blueprintMeta?.strand || "Number and Algebra",
+                isApproved: false,
+                finalAnswer: validatedData.content.finalAnswer,
+                options: validatedData.content.options || [],
+                modelData: {
+                  ...validatedData.visualEngine.componentData,
+                  type: validatedData.visualEngine.componentToRender,
+                  hideVisual: validatedData.visualEngine.componentData?.hideVisual !== undefined 
+                    ? validatedData.visualEngine.componentData.hideVisual 
+                    : validatedData.visualEngine.componentToRender === 'NONE',
+                  inputRequirement: validatedData.inputRequirement.inputType,
+                  finalAnswer: validatedData.content.finalAnswer,
+                  items: (() => {
+                    const items = validatedData.visualEngine.componentData?.items;
+                    // If items is a stringified JSON array, parse it. Otherwise, use as is or default to empty array.
+                    return (typeof items === 'string' && (items.startsWith('[') || items.startsWith('{'))) ? JSON.parse(items) : (items || []);
+                  })()
+                },
+                question: validatedData.content.questionText,
+                solution: validatedData.content.solutionSteps
+              });
+            } catch (zodError) {
+              // STRANGLER FIG: Fallback for older syllabus blueprints using q
+              const { visualItems, modelData, ...cleanQ } = q; 
+              parsedQuestions.push({
+                ...cleanQ,
+                question: cleanQ.question || q.question,
+                solution: cleanQ.solution || q.solution,
+                finalAnswer: typeof cleanQ.finalAnswer === 'object' ? JSON.stringify(cleanQ.finalAnswer) : String(cleanQ.finalAnswer || ""),
+                options: parseAiOptions(q.options),
+                subject, level, gradeLevel, topic, subtopic: subtopic || "", type, difficulty,
+                heuristic: heuristic || "Standard", strand: strand || blueprintMeta?.strand || "Number and Algebra", isApproved: false,
+                modelData: {
+                  ...(modelData || {}),
+                  type: blueprintMeta?.visualType === 'DYNAMIC' ? (modelData?.type || "NONE") : (blueprintMeta?.visualType || modelData?.type || "NONE"),
+                  items: (Array.isArray(visualItems) && visualItems.length > 0) ? visualItems : (modelData?.items || []),
+                  hideVisual: !!stepResult.metadata?.hideVisual || !!modelData?.hideVisual,
+                  finalAnswer: typeof cleanQ.finalAnswer === 'object' ? JSON.stringify(cleanQ.finalAnswer) : String(cleanQ.finalAnswer || "")
+                }
+              });
             }
-          });
+          }
         }
         // Small stagger for safety
         if (count > 1) await new Promise(r => setTimeout(r, 800));
@@ -274,30 +304,56 @@ export async function POST(request) {
         }
 
         const rawQData = parseAiResponse(result.response.text());
-        // Handle both single objects and arrays from AI response
-        const qData = Array.isArray(rawQData) ? rawQData[0] : rawQData;
-        
-        // Destructure to separate AI's creative items from the database fields
-        const { visualItems: aiVisualItems, ...cleanQData } = qData;
+        const aiDataBatch = Array.isArray(rawQData) ? rawQData : [rawQData];
 
-        parsedQuestions.push({
-          question: cleanQData.question,
-          solution: cleanQData.solution,
-          finalAnswer: typeof cleanQData.finalAnswer === 'object' ? JSON.stringify(cleanQData.finalAnswer) : String(cleanQData.finalAnswer || ""),
-          options: parseAiOptions(cleanQData.options),
-          subject: "Math",
-          level, gradeLevel, topic, subtopic, type, difficulty,
-          heuristic: heuristic || "Standard",
-          // Task 2: Dynamic Metadata Injection
-          strand: strand || blueprint.strand || "Number and Algebra",
-          isApproved: false,
-          modelData: { 
-            ...(qData.modelData || {}),
-            type: blueprint.visualType === 'DYNAMIC' ? (qData.modelData?.type || "NONE") : blueprint.visualType,
-            items: aiVisualItems || ["❓", "❓", "❓", "❓", "❓", "❓"],
-            finalAnswer: typeof cleanQData.finalAnswer === 'object' ? JSON.stringify(cleanQData.finalAnswer) : String(cleanQData.finalAnswer || "")
+        for (const q of aiDataBatch) {
+          try {
+            const validatedData = UniversalQuestionSchema.parse(q);
+            parsedQuestions.push({
+              level, topic, subtopic, heuristic: heuristic || null, difficulty, gradeLevel, subject: "Math",
+              type: validatedData.meta.type === 'SHORT_QUESTION' ? 'Short Question' : 
+                    validatedData.meta.type === 'STRUCTURED' ? 'Structured' : 
+                    validatedData.meta.type,
+              strand: strand || blueprint.strand || "Number and Algebra",
+              isApproved: false,
+              finalAnswer: validatedData.content.finalAnswer,
+              options: validatedData.content.options || [],
+              modelData: {
+                ...validatedData.visualEngine.componentData,
+                type: validatedData.visualEngine.componentToRender,
+                hideVisual: validatedData.visualEngine.componentData?.hideVisual !== undefined 
+                  ? validatedData.visualEngine.componentData.hideVisual 
+                  : validatedData.visualEngine.componentToRender === 'NONE',
+                inputRequirement: validatedData.inputRequirement.inputType,
+                finalAnswer: validatedData.content.finalAnswer,
+                  items: (() => {
+                    const items = validatedData.visualEngine.componentData?.items;
+                    // If items is a stringified JSON array, parse it. Otherwise, use as is or default to empty array.
+                    return (typeof items === 'string' && (items.startsWith('[') || items.startsWith('{'))) ? JSON.parse(items) : (items || []);
+                  })()
+              },
+              question: validatedData.content.questionText,
+              solution: validatedData.content.solutionSteps
+            });
+          } catch (zodError) {
+            const { visualItems, modelData, ...cleanQ } = q;
+            parsedQuestions.push({
+              ...cleanQ,
+              question: cleanQ.question || q.question,
+              solution: cleanQ.solution || q.solution,
+              finalAnswer: typeof cleanQ.finalAnswer === 'object' ? JSON.stringify(cleanQ.finalAnswer) : String(cleanQ.finalAnswer || ""),
+              options: parseAiOptions(q.options),
+              subject: "Math", level, gradeLevel, topic, subtopic, type, difficulty,
+              heuristic: heuristic || "Standard", strand: strand || blueprint.strand || "Number and Algebra", isApproved: false,
+              modelData: { 
+                ...(modelData || {}),
+                type: blueprint.visualType === 'DYNAMIC' ? (modelData?.type || "NONE") : blueprint.visualType,
+                items: (Array.isArray(visualItems) && visualItems.length > 0) ? visualItems : (modelData?.items || []),
+                finalAnswer: typeof cleanQ.finalAnswer === 'object' ? JSON.stringify(cleanQ.finalAnswer) : String(cleanQ.finalAnswer || "")
+              }
+            });
           }
-        });
+        }
         await new Promise(r => setTimeout(r, 1500));
       }
     } else {
@@ -331,31 +387,53 @@ export async function POST(request) {
           const rawData = parseAiResponse(aiResponseText);
           const rawQuestions = Array.isArray(rawData) ? rawData : [rawData];
           
-          parsedQuestions = (Array.isArray(rawQuestions) ? rawQuestions : []).map(q => {
-            // Extract visual properties to prevent them from crashing Prisma's root schema
-            const { visualItems, modelData, ...cleanQ } = q; 
-            
-            return {
-              ...cleanQ,
-              subject: "Math",
-              level, gradeLevel, topic, subtopic, type, difficulty,
-              heuristic: heuristic || "Standard",
-              strand: strand || "Number and Algebra",
-              isApproved: false,
-              finalAnswer: typeof cleanQ.finalAnswer === 'object' ? JSON.stringify(cleanQ.finalAnswer) : String(cleanQ.finalAnswer),
-              options: parseAiOptions(q.options),
-              
-              // UNIVERSAL PIPELINE FIX: 
-              // Package all visual arrays and the component type into modelData JSON
-              modelData: {
-                ...(modelData || {}),
-                type: bpMeta?.visualType === 'DYNAMIC' ? (modelData?.type || null) : (bpMeta?.visualType || q.visualType || null),
-                // ONLY overwrite modelData.items if visualItems actually contains data
-                items: (Array.isArray(visualItems) && visualItems.length > 0) ? visualItems : (modelData?.items || []),
-                finalAnswer: typeof cleanQ.finalAnswer === 'object' ? JSON.stringify(cleanQ.finalAnswer) : String(cleanQ.finalAnswer)
-              }
-            };
-          });
+          for (const q of rawQuestions) {
+            try {
+              const validatedData = UniversalQuestionSchema.parse(q);
+              parsedQuestions.push({
+                level, topic, subtopic: subtopic || "", heuristic: heuristic || null, 
+                difficulty, gradeLevel, subject: "Math",
+                type: validatedData.meta.type === 'SHORT_QUESTION' ? 'Short Question' : 
+                      validatedData.meta.type === 'STRUCTURED' ? 'Structured' : 
+                      validatedData.meta.type,
+                strand: strand || bpMeta?.strand || "Number and Algebra",
+                isApproved: false,
+                finalAnswer: validatedData.content.finalAnswer,
+                options: validatedData.content.options || [],
+                modelData: {
+                  ...validatedData.visualEngine.componentData,
+                  type: validatedData.visualEngine.componentToRender,
+                  hideVisual: validatedData.visualEngine.componentData?.hideVisual !== undefined 
+                    ? validatedData.visualEngine.componentData.hideVisual 
+                    : validatedData.visualEngine.componentToRender === 'NONE',
+                  inputRequirement: validatedData.inputRequirement.inputType,
+                  items: (() => {
+                    const items = validatedData.visualEngine.componentData?.items;
+                    // If items is a stringified JSON array, parse it. Otherwise, use as is or default to empty array.
+                    return (typeof items === 'string' && (items.startsWith('[') || items.startsWith('{'))) ? JSON.parse(items) : (items || []);
+                  })()
+                },
+                question: validatedData.content.questionText,
+                solution: validatedData.content.solutionSteps
+              });
+            } catch (zodError) {
+              const { visualItems, modelData, ...cleanQ } = q; 
+              parsedQuestions.push({
+                ...cleanQ,
+                subject: "Math", level, gradeLevel, topic, subtopic, type, difficulty,
+                heuristic: heuristic || "Standard", strand: strand || "Number and Algebra", isApproved: false,
+                finalAnswer: typeof cleanQ.finalAnswer === 'object' ? JSON.stringify(cleanQ.finalAnswer) : String(cleanQ.finalAnswer),
+                options: parseAiOptions(q.options),
+                modelData: {
+                  ...(modelData || {}),
+                  type: bpMeta?.visualType === 'DYNAMIC' ? (modelData?.type || null) : (bpMeta?.visualType || q.visualType || null),
+                  items: (Array.isArray(visualItems) && visualItems.length > 0) ? visualItems : (modelData?.items || []),
+                  finalAnswer: typeof cleanQ.finalAnswer === 'object' ? JSON.stringify(cleanQ.finalAnswer) : String(cleanQ.finalAnswer)
+                }
+              });
+            }
+          }
+          if (parsedQuestions.length > 0) break;
           break;
         } catch (err) {
           modelCooldowns[selectedModelId] = Date.now() + COOLDOWN_MS;

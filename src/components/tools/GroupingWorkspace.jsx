@@ -15,11 +15,40 @@ export default function GroupingWorkspace({ modelData, onClose, questionId, diff
   const [lockedGroupSize, setLockedGroupSize] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
 
+  // --- DEFENSIVE DATA EXTRACTION (Strangler Fig Pattern) ---
+  // Support legacy keys (groups, itemsPerGroup) and new Zod schema (totalItems, targetGroupSize)
+  const safeMode = modelData.mode || mode || 'GROUPING';
+
+  const safeTargetGroupSize = parseInt(
+    modelData.targetGroupSize || 
+    modelData.itemsPerGroup || 
+    modelData.groupSize || 
+    targetGroupSize || 
+    10
+  );
+
+  const safeExpectedGroups = parseInt(
+    modelData.expectedGroups || 
+    modelData.groups || 
+    modelData.groupCount || 
+    expectedGroups || 
+    0
+  );
+
+  const safeTotalItems = parseInt(
+    modelData.totalItems || 
+    (Array.isArray(modelData.items) ? modelData.items.length : 0) ||
+    (safeExpectedGroups * (safeTargetGroupSize || 1)) || 
+    0
+  );
+
+  const safeIcon = modelData.icon || (Array.isArray(modelData.items) && typeof modelData.items[0] === 'string' ? modelData.items[0] : '🍎');
+
   // Dynamic scaling for high quantity items
-  const isCompact = items.length > 60;
-  const itemSizeClass = isCompact ? 'text-xl' : items.length > 30 ? 'text-2xl' : 'text-4xl';
+  const isCompact = (items.length || safeTotalItems) > 60;
+  const itemSizeClass = isCompact ? 'text-xl' : (items.length || safeTotalItems) > 30 ? 'text-2xl' : 'text-4xl';
   // Centering offset scales with size: text-xl (~20px) -> offset 10, text-4xl (~36px) -> offset 18
-  const iconOffset = isCompact ? 10 : (items.length > 30 ? 12 : 18);
+  const iconOffset = isCompact ? 10 : ((items.length || safeTotalItems) > 30 ? 12 : 18);
 
   // Resize handler to ensure coordinate translations stay accurate
   useEffect(() => {
@@ -37,30 +66,24 @@ export default function GroupingWorkspace({ modelData, onClose, questionId, diff
   }, []);
 
   useEffect(() => {
-    // Handle both array-based (Counting) and scalar-based (Mult/Div) group structures
-    let groupsData = [];
-    if (modelData.type === 'EQUAL_GROUPS' || modelData.type === 'MULTIPLICATION_PICTORIAL') {
-      // Convert "4 groups of 3" into [3, 3, 3, 3] for the position generator
-      groupsData = Array(modelData.groups).fill(modelData.itemsPerGroup);
-    } else {
-      groupsData = Array.isArray(modelData.groups) ? modelData.groups : [];
-    }
+    // Mathematically safe initialization using Array.from to prevent RangeError
+    const safeCount = !isNaN(safeTotalItems) && safeTotalItems >= 0 ? Math.floor(safeTotalItems) : 0;
     
-    const iconPool = modelData.icons || [modelData.icon || '🍎'];
+    // We scatter all items as a single loose collection in the workspace initially
+    const initialLayout = [safeCount];
+    const iconPool = modelData.icons || [safeIcon];
     
     // Use shared deterministic utility
-    const positions = generatePositions(groupsData, questionId || JSON.stringify(groupsData), difficulty);
+    const positions = generatePositions(initialLayout, questionId || JSON.stringify(modelData), difficulty);
 
-    const scattered = positions.map((pos, idx) => {
-      const groupIdx = parseInt(pos.id.split('-')[1]);
-      return {
-        ...pos,
-        icon: iconPool[groupIdx] || iconPool[0],
-        isGrouped: false
-      };
-    });
+    const scattered = positions.map((pos, index) => ({
+      ...pos,
+      id: `item-${index}`,
+      icon: iconPool[0],
+      isGrouped: false
+    }));
     setItems(scattered);
-  }, [modelData, questionId, difficulty]);
+  }, [modelData, questionId, difficulty, safeTotalItems, safeIcon]);
 
   const handlePointerDown = (e) => {
     const rect = containerRef.current.getBoundingClientRect();
@@ -115,7 +138,7 @@ export default function GroupingWorkspace({ modelData, onClose, questionId, diff
     }
 
     let isValidSelection = false;
-    if (mode === 'SHARING') {
+    if (safeMode === 'SHARING') {
       if (!lockedGroupSize) {
         setLockedGroupSize(selectedCount);
         isValidSelection = true;
@@ -125,7 +148,7 @@ export default function GroupingWorkspace({ modelData, onClose, questionId, diff
         setErrorMessage("All groups must be the same size!");
       }
     } else {
-      isValidSelection = selectedCount === targetGroupSize;
+      isValidSelection = selectedCount === safeTargetGroupSize;
     }
 
     if (isValidSelection) {
@@ -149,8 +172,8 @@ export default function GroupingWorkspace({ modelData, onClose, questionId, diff
       ));
     } else {
       // Provide visual feedback for incorrect counts
-      if (mode === 'GROUPING' && selectedCount !== targetGroupSize) {
-        setErrorMessage(`Try to group exactly ${targetGroupSize} items!`);
+      if (safeMode === 'GROUPING' && selectedCount !== safeTargetGroupSize) {
+        setErrorMessage(`Try to group exactly ${safeTargetGroupSize} items!`);
       }
       setIsShaking(true);
       setTimeout(() => {
@@ -178,9 +201,9 @@ export default function GroupingWorkspace({ modelData, onClose, questionId, diff
   // Track items that haven't been assigned to a group (remainders)
   const remainingCount = items.filter(i => !i.isGrouped).length;
 
-  const isSharingError = mode === 'SHARING' && lockedGroupSize && remainingCount > 0 && remainingCount < lockedGroupSize;
-  const isSharingComplete = mode === 'SHARING' && lockedGroupSize && remainingCount === 0;
-  const isSharingSuccess = isSharingComplete && groups.length === expectedGroups;
+  const isSharingError = safeMode === 'SHARING' && lockedGroupSize && remainingCount > 0 && remainingCount < lockedGroupSize;
+  const isSharingComplete = safeMode === 'SHARING' && lockedGroupSize && remainingCount === 0;
+  const isSharingSuccess = isSharingComplete && groups.length === safeExpectedGroups;
 
   const handleReset = () => {
     setGroups([]);
@@ -196,9 +219,9 @@ export default function GroupingWorkspace({ modelData, onClose, questionId, diff
           <div className="space-y-1">
             <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Grouping Workspace</h2>
             <p className="text-xs font-bold text-slate-400 min-h-[1rem]">
-              {mode === 'SHARING' 
-                ? `Drag a box to form ${expectedGroups} equal groups!` 
-                : showTargetSize ? <span>Drag a box around <span className="text-blue-500">{targetGroupSize} items</span> to group them!</span> : null}
+              {safeMode === 'SHARING' 
+                ? `Drag a box to form ${safeExpectedGroups} equal groups!` 
+                : showTargetSize ? <span>Drag a box around <span className="text-blue-500">{safeTargetGroupSize} items</span> to group them!</span> : null}
             </p>
           </div>
           <button onClick={onClose} className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center font-black hover:bg-red-50 hover:text-red-500 transition-colors">✕</button>
@@ -217,11 +240,11 @@ export default function GroupingWorkspace({ modelData, onClose, questionId, diff
                 left: g.x - 90, 
                 top: g.y - 55, 
                 width: 180, 
-                height: targetGroupSize > 10 ? 140 : 100 // Dynamically grow group box for larger sets
+                height: safeTargetGroupSize > 10 ? 140 : 100 // Dynamically grow group box for larger sets
               }}
             >
               <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-md">
-                {mode === 'SHARING' ? `Group ${idx + 1}` : targetGroupSize}
+                {safeMode === 'SHARING' ? `Group ${idx + 1}` : safeTargetGroupSize}
               </span>
             </motion.div>
           ))}
@@ -259,15 +282,15 @@ export default function GroupingWorkspace({ modelData, onClose, questionId, diff
               <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Live Helper</span>
               <span className="text-sm font-bold text-white leading-relaxed">
                 {errorMessage || (
-                  mode === 'SHARING' 
+                  safeMode === 'SHARING' 
                     ? (!lockedGroupSize 
                         ? "Drag a box to start. How many will be in each group?" 
                         : isSharingError 
                           ? `Oh no! You have ${remainingCount} items left over. ${items.length} cannot be shared equally into groups of ${lockedGroupSize}. Click Reset to try a different size.`
                           : isSharingComplete
-                            ? (isSharingSuccess ? `Success! You shared ${items.length} into ${expectedGroups} groups of ${lockedGroupSize}.` : `You made ${groups.length} equal groups, but we need ${expectedGroups}. Click Reset to try a different size!`)
+                            ? (isSharingSuccess ? `Success! You shared ${items.length} into ${safeExpectedGroups} groups of ${lockedGroupSize}.` : `You made ${groups.length} equal groups, but we need ${safeExpectedGroups}. Click Reset to try a different size!`)
                             : `You are making groups of ${lockedGroupSize}. Try to share all items equally.`)
-                    : `${groups.length} groups of ${targetGroupSize} formed`
+                    : `${groups.length} groups of ${safeTargetGroupSize} formed`
                 )}
               </span>
             </div>
@@ -277,7 +300,7 @@ export default function GroupingWorkspace({ modelData, onClose, questionId, diff
             </div>
           </div>
           <div className="flex gap-4">
-            {lockedGroupSize && (
+            {(lockedGroupSize || groups.length > 0) && (
               <button onClick={handleReset} className="px-8 py-3 bg-slate-700 text-white font-black rounded-2xl hover:bg-slate-600 transition-all active:scale-95">
                 Reset
               </button>

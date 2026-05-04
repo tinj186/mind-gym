@@ -55,16 +55,19 @@ export default function DiagramRenderer({ modelData: inputModelData, isQuestion,
   }
 
   if (type === 'GROUPING_WORKSPACE') {
+    const total = parseInt(modelData.totalItems || (Array.isArray(modelData.items) ? modelData.items.length : 0));
+    const icon = modelData.icon || (Array.isArray(modelData.items) ? modelData.items[0] : '❓');
+    const safeTotal = !isNaN(total) && total >= 0 ? Math.floor(total) : 0;
+
     return (
       <div className="mt-4 space-y-4">
-        {/* PICTORIAL PREVIEW: Shows the items in a diagram box before launching the tool */}
-        <div className="bg-slate-50/50 rounded-3xl p-6 border-2 border-dashed border-slate-200">
-          <CountingObjects 
-            data={{ ...modelData, items: modelData.items || [] }} 
-            isQuestion={isQuestion} 
-            questionId={questionId} 
-            difficulty={difficulty} 
-          />
+        {/* PICTORIAL PREVIEW: Flat icon list rendered directly for maximum robustness */}
+        <div className="bg-slate-50/50 rounded-3xl p-6 border-2 border-dashed border-slate-200 flex flex-wrap gap-4 justify-center items-center min-h-[100px]">
+          {Array.from({ length: safeTotal }).map((_, i) => (
+            <span key={i} className="text-4xl grayscale-0 select-none">
+              {icon}
+            </span>
+          ))}
         </div>
 
         <div className="flex justify-center">
