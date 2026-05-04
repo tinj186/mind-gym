@@ -45,14 +45,14 @@ export default function TrainingPage() {
   useEffect(() => {
     const fetchQuestion = async () => {
       try {
-        // Hardcode question ID for testing purposes
-        const hardcodedQuestionId = '1af29fcb-00c4-48cd-bb5e-679395c61464';
+         // Hardcode question ID for testing purposes
+        const hardcodedQuestionId = '92ed9cdb-b5e8-4283-a014-664e6101d491';
         const response = await fetch(`/api/question?id=${hardcodedQuestionId}`, { cache: 'no-store' });
-        if (!response.ok) throw new Error('Failed to fetch question');
+       if (!response.ok) throw new Error('Failed to fetch question');
         let data = await response.json();
 
         // Initialize modelData if missing (common in bulk fallback/legacy questions)
-        if (!data.modelData && data.visualItems) {
+        if (!data.modelData) {
           data.modelData = { type: "NONE", items: [] };
         }
 
@@ -65,19 +65,18 @@ export default function TrainingPage() {
           }
         }
 
-        // Sync top-level visualItems into modelData.items if missing
-        // This ensures compatibility with legacy bulk-generated questions
-        if (data.modelData && !data.modelData.items && data.visualItems) {
-          let items = data.visualItems;
-          // Handle cases where visualItems column is a stringified JSON
-          if (typeof items === 'string' && (items.startsWith('[') || items.startsWith('{'))) {
-            try {
-              items = JSON.parse(items);
-            } catch (e) {
-              console.error("Failed to parse visualItems string:", e);
+        // UNIVERSAL DATA SYNC: Ensure modelData.items is populated from visualItems column if missing
+        if (data.modelData && (!data.modelData.items || data.modelData.items.length === 0) && data.visualItems) {
+            let items = data.visualItems;
+            // Handle cases where visualItems column is a stringified JSON
+            if (typeof items === 'string' && (items.startsWith('[') || items.startsWith('{'))) {
+                try {
+                    items = JSON.parse(items);
+                } catch (e) {
+                    console.error("Failed to parse visualItems string:", e);
+                }
             }
-          }
-          data.modelData.items = Array.isArray(items) ? items : [];
+            data.modelData.items = Array.isArray(items) ? items : [];
         }
 
         setQuestion(data);
@@ -327,7 +326,7 @@ export default function TrainingPage() {
       </nav>
 
       <main className="flex-1 flex flex-col items-center py-12 px-6">
-        <div className="w-full max-w-3xl space-y-12">
+        <div className="w-full max-w-4xl space-y-12">
           <section className="text-center min-h-[4rem]">
             {isLoading ? (
               <div className="animate-pulse text-slate-300 font-black">CHARGING LOGIC...</div>
@@ -513,6 +512,39 @@ export default function TrainingPage() {
             {error && (
               <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-center font-bold animate-in fade-in slide-in-from-top-2">
                 ⚠️ {error}
+              </div>
+            )}
+
+            {/* MCQ Options Display */}
+            {question?.type === 'MCQ' && question.options && Array.isArray(question.options) && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                {question.options.map((opt, i) => {
+                  const optStr = String(opt ?? "");
+                  // Clean value if AI included "A:", "B:", etc. in the string
+                  const cleanLabel = String.fromCharCode(65 + i);
+                  const cleanValue = optStr.includes(':') ? optStr.split(':').slice(1).join(':').trim() : optStr;
+                  const isSelected = normalizeAnswer(answer) === normalizeAnswer(cleanValue);
+
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => handleInputChange(cleanValue)}
+                      className={`p-6 rounded-3xl border-2 font-bold text-lg transition-all text-left flex items-center gap-4 group ${
+                        isSelected
+                          ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md scale-[1.02]'
+                          : 'border-slate-100 bg-white text-slate-600 hover:border-slate-200 hover:bg-slate-50 active:scale-95'
+                      }`}
+                    >
+                      <div className={`w-10 h-10 rounded-2xl border-2 flex items-center justify-center shrink-0 font-black text-sm transition-colors ${
+                        isSelected ? 'border-blue-500 bg-blue-500 text-white' : 'border-slate-200 text-slate-300 group-hover:text-slate-400 group-hover:border-slate-300'
+                      }`}>
+                        {cleanLabel}
+                      </div>
+                      <span className="flex-1">{cleanValue}</span>
+                    </button>
+                  );
+                })}
               </div>
             )}
 

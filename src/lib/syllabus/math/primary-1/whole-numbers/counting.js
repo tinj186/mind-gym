@@ -124,14 +124,14 @@ export const countingBlueprint = {
         ${formatInstructions}
         
         CREATIVE INSTRUCTIONS:
-        - Choose a simple theme (e.g., fruits, animals, toys).
+        - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).
         - The "visualItems" array MUST contain exactly ${total} strings of the SAME emoji (e.g., ["🍎", "🍎", ...]).
         - Each string MUST be a single emoji representing the chosen theme (e.g., "🍎", "⚽", "🐻").
         - KEEP THE STRINGS SHORT. Do not write long sentences in the array.
         
         OUTPUT FORMAT (Return ONLY valid JSON):
         {
-          "question": "Your creative question text...",
+          "question": "[Insert full localized Singaporean word problem here]",
           "options": ${type === 'MCQ' ? JSON.stringify(formattedOptions) : 'null'},
           "visualItems": ["emoji", "emoji", ...],
           "modelData": {
@@ -205,12 +205,12 @@ export const countingBlueprint = {
         ${formatInstructions}
         
         CREATIVE INSTRUCTIONS:
-        - Use a simple scenario (e.g., reading page ${startNum} and reading ${countOnAmount} more pages).
+        - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).
         - Do not use arrays or visual items.
         
         OUTPUT FORMAT (Return ONLY valid JSON):
         {
-          "question": "Your creative question...",
+          "question": "[Insert full localized Singaporean word problem here]",
           "options": ${type === 'MCQ' ? `["${answer - 2}", "${answer - 1}", "${answer}", "${answer + 1}"]` : 'null'},
           "visualItems": [],
           "finalAnswer": "${answer}",
@@ -392,12 +392,12 @@ export const countingBlueprint = {
         ${formatInstructions}
         
         CREATIVE INSTRUCTIONS:
-        - Present this as a riddle from a character (e.g., a robot, a wizard, or an owl).
+        - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).
         - Do NOT include visuals.
         
         OUTPUT FORMAT (Return ONLY valid JSON):
         {
-          "question": "Your creative question...",
+          "question": "[Insert full localized Singaporean word problem here]",
           "options": ${type === 'MCQ' ? `["${(tens * 10) + (extraOnes % 10)}", "${tens + extraOnes}", "${total}", "${total + 10}"]` : 'null'},
           "visualItems": [],
           "finalAnswer": "${total}",
@@ -430,12 +430,12 @@ export const countingBlueprint = {
         ${formatInstructions}
         
         CREATIVE INSTRUCTIONS:
-        - Present this as a detective mystery or treasure safe code.
+        - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).
         - Do NOT include visuals.
         
         OUTPUT FORMAT (Return ONLY valid JSON):
         {
-          "question": "Your creative question...",
+          "question": "[Insert full localized Singaporean word problem here]",
           "options": ${type === 'MCQ' ? `["${total - 10}", "${total}", "${total + 1}", "${total + 10}"]` : 'null'},
           "visualItems": [],
           "finalAnswer": "${total}",
@@ -512,7 +512,7 @@ export const countingBlueprint = {
       const optionsArray = type === 'MCQ' ? `["${(boxes * 10) + (singles % 10)}", "${boxes + singles}", "${total}", "${total + 10}"]` : 'null';
 
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Applied Regrouping Word Problem\n - Final Answer MUST be: "${total}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "A shop sells pencils in boxes of 10 and as single pieces. John bought ${boxes} boxes and ${singles} single pencils. How many pencils did he buy altogether?", "options": ${optionsArray}, "visualItems": [], "finalAnswer": "${total}", "solution": "${boxes} boxes of 10 is ${boxes * 10}. ${boxes * 10} + ${singles} singles = ${total} pencils." }`,
+        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Applied Regrouping Word Problem\n - Final Answer MUST be: "${total}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "[Insert full localized Singaporean word problem here]", "options": ${optionsArray}, "visualItems": [], "finalAnswer": "${total}", "solution": "Calculate total from groups of 10 and singles." }`,
         metadata: { difficulty, steps: 3, logic: "applied_regrouping", hideVisual: true }
       };
     }

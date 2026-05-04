@@ -21,7 +21,16 @@ function getSyllabusPrompt(quantity, level, strand, topic, subtopic, heuristic, 
   instructions.push(`TONE AND VOCABULARY:
     - CRITICAL: You are writing for a primary school student. Use simple, natural language.
     - NEVER use technical jargon like "BASE_TEN_BLOCKS" or "VISUAL_TYPE" in the question text.
-    - If the finalAnswer is an equation, format it strictly as "A + B = C" or "C - B = A".`);
+    - If the finalAnswer is an equation, format it strictly as "A + B = C" or "C - B = A".
+    - CRITICAL: DO NOT use any emojis in the "question" or "options" text.
+    - LOCALIZATION (CRITICAL): Automatically inject a Singaporean context into ALL word problems. Use local names (e.g., Muthu, Siti, Wei Ling, Ahmad), local items (e.g., curry puffs, ang baos, saga seeds, rambutan), and local settings (e.g., hawker centre, HDB void deck, MRT station, library).`);
+
+  instructions.push(`SINGAPORE CONTEXT:
+    - CRITICAL: Infuse a natural Singaporean flavor into the word problems.
+    - Use local names (e.g., Ali, Mei Ling, Ravi, Siti, Jun Jie, Wei Ming).
+    - Use local locations where appropriate (e.g., hawker centre, MRT train, HDB void deck, NTUC supermarket, school canteen).
+    - Use local items where appropriate (e.g., curry puffs, rambutans, saga seeds, ang pows, stickers).
+    - Keep it subtle and natural; do not force it if the question logic (like a direct calculation) does not require a story scenario.`);
 
   if (blueprintData) {
     instructions.push(`MANDATORY BLUEPRINT: ${blueprintData.blueprint}`);
@@ -123,43 +132,59 @@ export async function POST(request) {
     let parsedQuestions = [];
 
     // --- PATH 1: HYBRID GENERATION (Blueprint Logic + AI Creativity) ---
-    const count = Math.min(quantity || 1, 10); // Local generation is cheap, allowing more
-    // Robust matching logic to find the blueprint by subtopic title
-    const blueprintMeta = Object.values(blueprintRegistry).find(bp => bp.title === subtopic) || blueprintRegistry[`${level}-${topic}-${subtopic}`];
-    const blueprintResult = getGeneratedQuestion(level, topic, subtopic, difficulty, variant, type);
+    const count = Math.min(quantity || 1, 10); 
+    
+    const safeDifficulty = String(difficulty || "foundation").toLowerCase();
+    // Bulletproof case-insensitive matching to guarantee the blueprint is found
+    const safeSubtopic = String(subtopic || "").trim().toLowerCase();
+    const blueprintId = `${level}-${topic}-${subtopic}`;
+    console.log("BLUEPRINT SEARCH KEY:", blueprintId);
+    const blueprintMeta = blueprintRegistry[blueprintId] || Object.values(blueprintRegistry).find(bp => String(bp.title).toLowerCase() === safeSubtopic);
+
+    let blueprintResult = null;
+    if (blueprintMeta && typeof blueprintMeta.generate === 'function') {
+        try {
+            // Test generation to confirm the blueprint is valid
+            blueprintResult = blueprintMeta.generate(safeDifficulty, variant, type);
+        } catch (e) {
+            console.warn("Blueprint valid check failed:", e);
+        }
+    }
 
     if (blueprintResult && blueprintResult.aiPrompt) {
       for (let i = 0; i < count; i++) {
         
         // --- DYNAMIC VARIANT RANDOMIZATION ---
-        // If frontend sent a legacy/generic variant (e.g., 'visual_line'), 
-        // randomly pick a strict variant matching the requested difficulty.
         let loopVariant = variant;
         if (blueprintMeta && blueprintMeta.variants && !blueprintMeta.variants.hasOwnProperty(variant)) {
-            const matchingVariants = Object.keys(blueprintMeta.variants).filter(k => k.startsWith(difficulty));
+            const matchingVariants = Object.keys(blueprintMeta.variants).filter(k => k.startsWith(safeDifficulty));
             if (matchingVariants.length > 0) {
                 loopVariant = matchingVariants[Math.floor(Math.random() * matchingVariants.length)];
             }
         }
         
-        const stepResult = getGeneratedQuestion(level, topic, subtopic, difficulty, loopVariant, type);
+        // Call the blueprint directly, bypassing legacy registry key mismatches
+        const stepResult = blueprintMeta.generate(safeDifficulty, loopVariant, type);
         
         let result;
-        let retries = 2;
-        while (retries >= 0) {
+        let retries = 3;
+        while (retries > 0) {
           const currentModelId = getBestModel();
           const model = genAI.getGenerativeModel({ 
             model: currentModelId,
-            generationConfig: { responseMimeType: "application/json", temperature: 0.8 } 
-          });
+            generationConfig: { responseMimeType: "application/json", temperature: 0.8, maxOutputTokens: 2048 } 
+          }, { apiVersion: 'v1beta' });
           try {
             result = await model.generateContent(stepResult.aiPrompt);
             break; 
           } catch (error) {
-            if (retries === 0) throw error;
-            modelCooldowns[currentModelId] = Date.now() + COOLDOWN_MS;
-            retries--;
-            await new Promise(r => setTimeout(r, 1000));
+            // Handle 503 (Busy) or 429 (Rate Limit) by rotating models
+            if ((error.status === 503 || error.status === 429) && retries > 1) {
+              console.warn(`⚠️ Model ${currentModelId} busy. Cooling down and rotating...`);
+              modelCooldowns[currentModelId] = Date.now() + COOLDOWN_MS;
+              retries--;
+              await new Promise(r => setTimeout(r, 1500));
+            } else throw error;
           }
         }
 
@@ -168,9 +193,6 @@ export async function POST(request) {
           
           // AI sometimes wraps a requested single object in an array; handle both
           const aiData = Array.isArray(rawAiData) ? rawAiData[0] : rawAiData;
-
-          // Extract items from either root or modelData to package into the JSON column
-          const itemsToSave = Array.isArray(aiData.visualItems) ? aiData.visualItems : (Array.isArray(aiData.modelData?.items) ? aiData.modelData.items : []);
 
           parsedQuestions.push({
             question: aiData.question,
@@ -182,15 +204,15 @@ export async function POST(request) {
             heuristic: heuristic || "Standard",
             strand: strand || blueprintMeta?.strand || "Number and Algebra",
             isApproved: false,
-            
-            // UNIVERSAL PIPELINE FIX (Hybrid Path):
-            // We must spread aiData.modelData to preserve layout properties like 'groups'
-            // while ensuring the system-defined 'type' and 'items' are correctly nested.
             modelData: {
               ...(aiData.modelData || {}),
-              type: blueprintMeta?.visualType || aiData.modelData?.type || "NONE",
-              items: stepResult.visualItems && stepResult.visualItems.length === 0 ? [] : itemsToSave,
-              hideVisual: !!stepResult.metadata?.hideVisual || !!aiData.modelData?.hideVisual
+              type: blueprintMeta?.visualType === 'DYNAMIC' ? (aiData.modelData?.type || "NONE") : (blueprintMeta?.visualType || aiData.modelData?.type || "NONE"),
+              // ONLY overwrite modelData.items if visualItems actually contains data
+              items: (Array.isArray(aiData.visualItems) && aiData.visualItems.length > 0) 
+                ? aiData.visualItems 
+                : (aiData.modelData?.items || []),
+              hideVisual: !!stepResult.metadata?.hideVisual || !!aiData.modelData?.hideVisual,
+              finalAnswer: String(aiData.finalAnswer)
             }
           });
         }
@@ -207,7 +229,7 @@ export async function POST(request) {
         // Fix: Variants in current blueprints (counting.js, ordinals.js) are Objects, not Arrays.
         // We convert to entries or filter keys to avoid the .filter() crash.
         let availableVariants = Object.keys(blueprint.variants || {});
-        const difficultyVariants = availableVariants.filter(v => v.startsWith(difficulty));
+        const difficultyVariants = availableVariants.filter(v => v.startsWith(safeDifficulty));
         
         if (difficultyVariants.length > 0) {
           availableVariants = difficultyVariants;
@@ -224,7 +246,7 @@ export async function POST(request) {
         Creative Freedom: Choose a theme and emojis that are contextually relevant to the Topic (${topic}) and Subtopic (${subtopic}).
         Requirement: You MUST return a visualItems array of 5-8 emojis that match your theme. These emojis must correspond exactly to the items mentioned in your question text.
 
-        Output ONLY a valid JSON object: { question, options, solution, finalAnswer, visualItems }. Do not output an array or metadata.`;
+        Output ONLY a valid JSON object: { question, options, solution, finalAnswer, visualItems, modelData }. Do not output an array or metadata. Inside modelData, include a "direction" field ("left" or "right") if applicable.`;
         
         let result;
         let retries = 3;
@@ -270,8 +292,10 @@ export async function POST(request) {
           strand: strand || blueprint.strand || "Number and Algebra",
           isApproved: false,
           modelData: { 
-            type: blueprint.visualType, 
-            items: aiVisualItems || ["❓", "❓", "❓", "❓", "❓", "❓"]
+            ...(qData.modelData || {}),
+            type: blueprint.visualType === 'DYNAMIC' ? (qData.modelData?.type || "NONE") : blueprint.visualType,
+            items: aiVisualItems || ["❓", "❓", "❓", "❓", "❓", "❓"],
+            finalAnswer: typeof cleanQData.finalAnswer === 'object' ? JSON.stringify(cleanQData.finalAnswer) : String(cleanQData.finalAnswer || "")
           }
         });
         await new Promise(r => setTimeout(r, 1500));
@@ -325,8 +349,10 @@ export async function POST(request) {
               // Package all visual arrays and the component type into modelData JSON
               modelData: {
                 ...(modelData || {}),
-                type: bpMeta?.visualType || q.visualType || null,
-                items: Array.isArray(visualItems) ? visualItems : []
+                type: bpMeta?.visualType === 'DYNAMIC' ? (modelData?.type || null) : (bpMeta?.visualType || q.visualType || null),
+                // ONLY overwrite modelData.items if visualItems actually contains data
+                items: (Array.isArray(visualItems) && visualItems.length > 0) ? visualItems : (modelData?.items || []),
+                finalAnswer: typeof cleanQ.finalAnswer === 'object' ? JSON.stringify(cleanQ.finalAnswer) : String(cleanQ.finalAnswer)
               }
             };
           });

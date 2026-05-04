@@ -1,5 +1,10 @@
 import { ordinalsBlueprint } from './math/primary-1/whole-numbers/ordinals';
 import { countingBlueprint } from './math/primary-1/whole-numbers/counting';
+import { placeValuesBlueprint } from './math/primary-1/whole-numbers/place_values';
+import { comparingOrderingBlueprint } from './math/primary-1/whole-numbers/comparing_ordering';
+import { numberPatternBlueprint } from './math/primary-1/whole-numbers/number_pattern';
+import { additionSubtractionBlueprint } from './math/primary-1/whole-numbers/addition_subtraction';
+import { multiplicationDivisionBlueprint } from './math/primary-1/whole-numbers/multiplication_division';
 
 /**
  * Registry mapping metadata to modular blueprints.
@@ -7,6 +12,11 @@ import { countingBlueprint } from './math/primary-1/whole-numbers/counting';
 export const blueprintRegistry = {
   'Primary 1-Whole Numbers-Ordinal Numbers': ordinalsBlueprint,
   'Primary 1-Whole Numbers-Counting to 100': countingBlueprint,
+  'Primary 1-Whole Numbers-Place Value (Tens/Ones)': placeValuesBlueprint,
+  'Primary 1-Whole Numbers-Comparing and Ordering': comparingOrderingBlueprint, // Slug format: "Level-Topic-Subtopic"
+  'Primary 1-Whole Numbers-Number Patterns': numberPatternBlueprint,
+  'Primary 1-Whole Numbers-Addition and Subtraction': additionSubtractionBlueprint,
+  'Primary 1-Whole Numbers-Multiplication and Division': multiplicationDivisionBlueprint,
   // Slug format: "Level-Topic-Subtopic"
 };
 
