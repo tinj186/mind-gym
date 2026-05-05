@@ -19,20 +19,6 @@ function getSyllabusPrompt(quantity, level, strand, topic, subtopic, heuristic, 
     - Standard: Grade level expectation. Multi-step word problems.
     - Advanced: Complex logic, high-order heuristics, or non-routine integration.`);
 
-  instructions.push(`TONE AND VOCABULARY:
-    - CRITICAL: You are writing for a primary school student. Use simple, natural language.
-    - NEVER use technical jargon like "BASE_TEN_BLOCKS" or "VISUAL_TYPE" in the question text.
-    - If the finalAnswer is an equation, format it strictly as "A + B = C" or "C - B = A".
-    - CRITICAL: DO NOT use any emojis in the "question" or "options" text.
-    - LOCALIZATION (CRITICAL): Automatically inject a Singaporean context into ALL word problems. Use local names (e.g., Muthu, Siti, Wei Ling, Ahmad), local items (e.g., curry puffs, ang baos, saga seeds, rambutan), and local settings (e.g., hawker centre, HDB void deck, MRT station, library).`);
-
-  instructions.push(`SINGAPORE CONTEXT:
-    - CRITICAL: Infuse a natural Singaporean flavor into the word problems.
-    - Use local names (e.g., Ali, Mei Ling, Ravi, Siti, Jun Jie, Wei Ming).
-    - Use local locations where appropriate (e.g., hawker centre, MRT train, HDB void deck, NTUC supermarket, school canteen).
-    - Use local items where appropriate (e.g., curry puffs, rambutans, saga seeds, ang pows, stickers).
-    - Keep it subtle and natural; do not force it if the question logic (like a direct calculation) does not require a story scenario.`);
-
   if (blueprintData) {
     instructions.push(`MANDATORY BLUEPRINT: ${blueprintData.blueprint}`);
     instructions.push(`MANDATORY VOCABULARY: Use these words: ${blueprintData.vocabulary.join(', ')}`);
@@ -157,14 +143,21 @@ export async function POST(request) {
         
         // --- DYNAMIC VARIANT RANDOMIZATION ---
         let loopVariant = variant;
-        if (blueprintMeta && blueprintMeta.variants && !blueprintMeta.variants.hasOwnProperty(variant)) {
-            const matchingVariants = Object.keys(blueprintMeta.variants).filter(k => k.startsWith(safeDifficulty));
+        // The engine (not the AI) must select the variant logic. 
+        // We re-roll if the variant is generic ('visual_line'), missing from the blueprint, or belongs to a different difficulty tier.
+        const isGeneric = variant === 'visual_line' || !variant;
+        const isValidForTier = blueprintMeta?.variants?.hasOwnProperty(variant) && variant.startsWith(safeDifficulty);
+
+        if (!isValidForTier || isGeneric) {
+            const matchingVariants = Object.keys(blueprintMeta.variants || {}).filter(k => k.startsWith(safeDifficulty));
             if (matchingVariants.length > 0) {
                 loopVariant = matchingVariants[Math.floor(Math.random() * matchingVariants.length)];
             }
         }
+
+        console.log(`[Path 1] Generation ${i+1}/${count} | Selected Variant: ${loopVariant}`);
         
-        // Call the blueprint directly, bypassing legacy registry key mismatches
+        // Call the blueprint directly with the chosen variant
         const stepResult = blueprintMeta.generate(safeDifficulty, loopVariant, type);
         
         let result;
@@ -215,11 +208,7 @@ export async function POST(request) {
                     : validatedData.visualEngine.componentToRender === 'NONE',
                   inputRequirement: validatedData.inputRequirement.inputType,
                   finalAnswer: validatedData.content.finalAnswer,
-                  items: (() => {
-                    const items = validatedData.visualEngine.componentData?.items;
-                    // If items is a stringified JSON array, parse it. Otherwise, use as is or default to empty array.
-                    return (typeof items === 'string' && (items.startsWith('[') || items.startsWith('{'))) ? JSON.parse(items) : (items || []);
-                  })()
+                  items: validatedData.visualEngine.componentData?.items || []
                 },
                 question: validatedData.content.questionText,
                 solution: validatedData.content.solutionSteps
@@ -326,11 +315,7 @@ export async function POST(request) {
                   : validatedData.visualEngine.componentToRender === 'NONE',
                 inputRequirement: validatedData.inputRequirement.inputType,
                 finalAnswer: validatedData.content.finalAnswer,
-                  items: (() => {
-                    const items = validatedData.visualEngine.componentData?.items;
-                    // If items is a stringified JSON array, parse it. Otherwise, use as is or default to empty array.
-                    return (typeof items === 'string' && (items.startsWith('[') || items.startsWith('{'))) ? JSON.parse(items) : (items || []);
-                  })()
+                items: validatedData.visualEngine.componentData?.items || []
               },
               question: validatedData.content.questionText,
               solution: validatedData.content.solutionSteps
@@ -407,11 +392,7 @@ export async function POST(request) {
                     ? validatedData.visualEngine.componentData.hideVisual 
                     : validatedData.visualEngine.componentToRender === 'NONE',
                   inputRequirement: validatedData.inputRequirement.inputType,
-                  items: (() => {
-                    const items = validatedData.visualEngine.componentData?.items;
-                    // If items is a stringified JSON array, parse it. Otherwise, use as is or default to empty array.
-                    return (typeof items === 'string' && (items.startsWith('[') || items.startsWith('{'))) ? JSON.parse(items) : (items || []);
-                  })()
+                  items: validatedData.visualEngine.componentData?.items || []
                 },
                 question: validatedData.content.questionText,
                 solution: validatedData.content.solutionSteps

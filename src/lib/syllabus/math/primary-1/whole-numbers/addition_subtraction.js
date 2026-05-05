@@ -1,3 +1,6 @@
+import { getRandomContext } from '@/lib/utils/localization';
+
+
 /**
  * Blueprint for Primary 1: Addition and Subtraction
  * ENGINE: Generates AI prompt constraints, strictly pre-calculating math logic.
@@ -106,13 +109,19 @@ export const additionSubtractionBlueprint = {
       }
     }
 
+    // Prepare Zod Schema Meta
+    const zodType = isMCQ ? 'MCQ' : isShort ? 'SHORT_QUESTION' : 'STRUCTURED';
+    const zodDiff = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+    const level = 'Primary 1';
+    const topic = 'Whole Numbers';
+
     let formatInstructions = '';
     if (isMCQ) {
       formatInstructions = `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.`;
     } else if (isShort) {
-      formatInstructions = `Format as Short Answer. The "options" field in your JSON should be null. CRITICAL: For the "question" string, output ONLY the mathematical equation (e.g., "12 + 15 = ?"). Do not use any English words.`;
+      formatInstructions = `Format as Short Answer. The "options" field in your JSON should be null. CRITICAL: For the "questionText" string, output ONLY the mathematical equation (e.g., "12 + 15 = ?"). Do not use any English words.`;
     } else {
-      formatInstructions = `Format as Structured Question. The "options" field in your JSON should be null. CRITICAL: For the "question" string, write a clear text-based word problem.`;
+      formatInstructions = `Format as Structured Question. The "options" field in your JSON should be null. CRITICAL: For the "questionText" string, write a clear localized word problem.`;
     }
 
     const getOptions = (ans) => {
@@ -133,7 +142,20 @@ export const additionSubtractionBlueprint = {
       const b = Math.floor(Math.random() * 6) + 4; // 4 to 9
       const answer = String(a + b);
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Addition within 20\n - Equation: ${a} + ${b} = ?\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "${getQText('Find the sum.', a + ' + ' + b + ' = ?')}", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NUMBER_CARDS", "items": ["${a}", "+", "${b}", "=", "?"], "hideVisual": ${hideVis} }, "finalAnswer": "${answer}", "solution": "${a} + ${b} = ${answer}." }`,
+        aiPrompt: `STRICT VARIANT MANDATE: You are generating a ${activeVariant} question. DO NOT modify the mathematical structure or the final answer.\nYou are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Addition within 20\n - Equation: ${a} + ${b} = ?\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CRITICAL VISUAL RULE: DO NOT modify the "visualEngine" block below. You MUST copy the "items" array exactly as provided in the template. Do not change them to match the final answer.\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${getQText('Find the sum.', a + ' + ' + b + ' = ?')}",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "${a} + ${b} = ${answer}."
+          },
+          "visualEngine": ${hideVis
+            ? `{ "componentToRender": "NONE", "componentData": null }`
+            : `{ "componentToRender": "NUMBER_CARDS", "componentData": { "items": ["${a}", "+", "${b}", "=", "?"], "totalItems": 5 } }`
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 1, logic: "add_20", hideVisual: hideVis }
       };
     }
@@ -144,7 +166,20 @@ export const additionSubtractionBlueprint = {
       const a = b + answerNum; // 8 to 18
       const answer = String(answerNum);
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Subtraction within 20\n - Equation: ${a} - ${b} = ?\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "${getQText('Find the difference.', a + ' - ' + b + ' = ?')}", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NUMBER_CARDS", "items": ["${a}", "-", "${b}", "=", "?"], "hideVisual": ${hideVis} }, "finalAnswer": "${answer}", "solution": "${a} - ${b} = ${answer}." }`,
+        aiPrompt: `STRICT VARIANT MANDATE: You are generating a ${activeVariant} question. DO NOT modify the mathematical structure or the final answer.\nYou are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Subtraction within 20\n - Equation: ${a} - ${b} = ?\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CRITICAL VISUAL RULE: DO NOT modify the "visualEngine" block below. You MUST copy the "items" array exactly as provided in the template. Do not change them to match the final answer.\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${getQText('Find the difference.', a + ' - ' + b + ' = ?')}",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "${a} - ${b} = ${answer}."
+          },
+          "visualEngine": ${hideVis
+            ? `{ "componentToRender": "NONE", "componentData": null }`
+            : `{ "componentToRender": "NUMBER_CARDS", "componentData": { "items": ["${a}", "-", "${b}", "=", "?"], "totalItems": 5 } }`
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 1, logic: "sub_20", hideVisual: hideVis }
       };
     }
@@ -155,7 +190,20 @@ export const additionSubtractionBlueprint = {
       const sum = a + b;
       const answer = String(b);
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Missing Addend\n - Equation: ${a} + ? = ${sum}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "${getQText('What is the missing number in the equation?', a + ' + ? = ' + sum)}", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NUMBER_CARDS", "items": ["${a}", "+", "?", "=", "${sum}"], "hideVisual": ${hideVis} }, "finalAnswer": "${answer}", "solution": "To find the missing part, we subtract the part we know from the whole. ${sum} - ${a} = ${answer}." }`,
+        aiPrompt: `STRICT VARIANT MANDATE: You are generating a ${activeVariant} question. DO NOT modify the mathematical structure or the final answer.\nYou are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Missing Addend\n - Equation: ${a} + ? = ${sum}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CRITICAL VISUAL RULE: DO NOT modify the "visualEngine" block below. You MUST copy the "items" array exactly as provided in the template. Do not change them to match the final answer.\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${getQText('What is the missing number in the equation?', a + ' + ? = ' + sum)}",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "To find the missing part, we subtract the part we know from the whole. ${sum} - ${a} = ${answer}."
+          },
+          "visualEngine": ${hideVis
+            ? `{ "componentToRender": "NONE", "componentData": null }`
+            : `{ "componentToRender": "NUMBER_CARDS", "componentData": { "items": ["${a}", "+", "?", "=", "${sum}"], "totalItems": 5 } }`
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 1, logic: "missing_addend", hideVisual: hideVis }
       };
     }
@@ -166,7 +214,20 @@ export const additionSubtractionBlueprint = {
       const sum = b + ansNum;
       const answer = String(ansNum);
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Missing Subtrahend\n - Equation: ${sum} - ? = ${b}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "${getQText('What is the missing number in the equation?', sum + ' - ? = ' + b)}", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NUMBER_CARDS", "items": ["${sum}", "-", "?", "=", "${b}"], "hideVisual": ${hideVis} }, "finalAnswer": "${answer}", "solution": "To find the part taken away, we subtract the part left over from the whole. ${sum} - ${b} = ${answer}." }`,
+        aiPrompt: `STRICT VARIANT MANDATE: You are generating a ${activeVariant} question. DO NOT modify the mathematical structure or the final answer.\nYou are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Missing Subtrahend\n - Equation: ${sum} - ? = ${b}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CRITICAL VISUAL RULE: DO NOT modify the "visualEngine" block below. You MUST copy the "items" array exactly as provided in the template. Do not change them to match the final answer.\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${getQText('What is the missing number in the equation?', sum + ' - ? = ' + b)}",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "To find the part taken away, we subtract the part left over from the whole. ${sum} - ${b} = ${answer}."
+          },
+          "visualEngine": ${hideVis
+            ? `{ "componentToRender": "NONE", "componentData": null }`
+            : `{ "componentToRender": "NUMBER_CARDS", "componentData": { "items": ["${sum}", "-", "?", "=", "${b}"], "totalItems": 5 } }`
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 1, logic: "missing_subtrahend", hideVisual: hideVis }
       };
     }
@@ -176,8 +237,21 @@ export const additionSubtractionBlueprint = {
       const b = Math.floor(Math.random() * 6) + 4;
       const answer = String(a + b);
       
+      const context = getRandomContext('FOOD'); // New context for this block
+      const selectedContextItem = context.items[Math.floor(Math.random() * context.items.length)];
+      const promptStart = `STRICT VARIANT MANDATE: You are writing a ${activeVariant} story. You MUST use the name ${context.name} and the item ${selectedContextItem}. The setting should be ${context.setting}.\nYou are an expert Primary 1 math generator.`;
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Addition Word Problem within 20\n - Numbers to use: ${a} and ${b}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "[Insert full localized Singaporean word problem here]", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "To find the total, we add. ${a} + ${b} = ${answer}." }`,
+        aiPrompt: `${promptStart}\n MATH CONSTRAINTS:\n - Topic: Addition Word Problem within 20\n - Numbers to use: ${a} and ${b}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "[Insert full localized Singaporean word problem here]",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "To find the total, we add. ${a} + ${b} = ${answer}."
+          },
+          "visualEngine": { "componentToRender": "NONE", "componentData": null },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 1, logic: "word_problem_add_20", hideVisual: true }
       };
     }
@@ -187,8 +261,21 @@ export const additionSubtractionBlueprint = {
       const b = Math.floor(Math.random() * 6) + 2;
       const answer = String(a - b);
       
+      const context = getRandomContext('FOOD'); // New context for this block
+      const selectedContextItem = context.items[Math.floor(Math.random() * context.items.length)];
+      const promptStart = `STRICT VARIANT MANDATE: You are writing a ${activeVariant} story. You MUST use the name ${context.name} and the item ${selectedContextItem}. The setting should be ${context.setting}.\nYou are an expert Primary 1 math generator.`;
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Subtraction Word Problem within 20\n - Numbers to use: Start with ${a}, remove ${b}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "[Insert full localized Singaporean word problem here]", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "To find how many are left, we subtract. ${a} - ${b} = ${answer}." }`,
+        aiPrompt: `${promptStart}\n MATH CONSTRAINTS:\n - Topic: Subtraction Word Problem within 20\n - Numbers to use: Start with ${a}, remove ${b}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "[Insert full localized Singaporean word problem here]",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "To find how many are left, we subtract. ${a} - ${b} = ${answer}."
+          },
+          "visualEngine": { "componentToRender": "NONE", "componentData": null },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 1, logic: "word_problem_sub_20", hideVisual: true }
       };
     }
@@ -206,7 +293,20 @@ export const additionSubtractionBlueprint = {
       const b = (tensB * 10) + onesB;
       const answer = String(a + b);
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: 2-Digit Addition (No Regrouping)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "${getQText('Find the sum.', a + ' + ' + b + ' = ?')}", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NUMBER_CARDS", "items": ["${a}", "+", "${b}", "=", "?"], "hideVisual": ${hideVis} }, "finalAnswer": "${answer}", "solution": "Add the ones: ${onesA} + ${onesB} = ${onesA + onesB}. Add the tens: ${tensA} tens + ${tensB} tens = ${tensA + tensB} tens. So, ${a} + ${b} = ${answer}." }`,
+        aiPrompt: `STRICT VARIANT MANDATE: You are generating a ${activeVariant} question. DO NOT modify the mathematical structure or the final answer.\nYou are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: 2-Digit Addition (No Regrouping)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CRITICAL VISUAL RULE: DO NOT modify the "visualEngine" block below. You MUST copy the "items" array exactly as provided in the template. Do not change them to match the final answer.\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${getQText('Find the sum.', a + ' + ' + b + ' = ?')}",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "Add the ones: ${onesA} + ${onesB} = ${onesA + onesB}. Add the tens: ${tensA} tens + ${tensB} tens = ${tensA + tensB} tens. So, ${a} + ${b} = ${answer}."
+          },
+          "visualEngine": ${hideVis
+            ? `{ "componentToRender": "NONE", "componentData": null }`
+            : `{ "componentToRender": "NUMBER_CARDS", "componentData": { "items": ["${a}", "+", "${b}", "=", "?"], "totalItems": 5 } }`
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 2, logic: "add_100_no_regroup", hideVisual: hideVis }
       };
     }
@@ -220,7 +320,20 @@ export const additionSubtractionBlueprint = {
       const b = (tensB * 10) + onesB;
       const answer = String(a - b);
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: 2-Digit Subtraction (No Regrouping)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "${getQText('Find the difference.', a + ' - ' + b + ' = ?')}", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NUMBER_CARDS", "items": ["${a}", "-", "${b}", "=", "?"], "hideVisual": ${hideVis} }, "finalAnswer": "${answer}", "solution": "Subtract the ones: ${onesA} - ${onesB} = ${onesA - onesB}. Subtract the tens: ${tensA} tens - ${tensB} tens = ${tensA - tensB} tens. So, ${a} - ${b} = ${answer}." }`,
+        aiPrompt: `STRICT VARIANT MANDATE: You are generating a ${activeVariant} question. DO NOT modify the mathematical structure or the final answer.\nYou are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: 2-Digit Subtraction (No Regrouping)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CRITICAL VISUAL RULE: DO NOT modify the "visualEngine" block below. You MUST copy the "items" array exactly as provided in the template. Do not change them to match the final answer.\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${getQText('Find the difference.', a + ' - ' + b + ' = ?')}",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "Subtract the ones: ${onesA} - ${onesB} = ${onesA - onesB}. Subtract the tens: ${tensA} tens - ${tensB} tens = ${tensA - tensB} tens. So, ${a} - ${b} = ${answer}."
+          },
+          "visualEngine": ${hideVis
+            ? `{ "componentToRender": "NONE", "componentData": null }`
+            : `{ "componentToRender": "NUMBER_CARDS", "componentData": { "items": ["${a}", "-", "${b}", "=", "?"], "totalItems": 5 } }`
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 2, logic: "sub_100_no_regroup", hideVisual: hideVis }
       };
     }
@@ -229,9 +342,22 @@ export const additionSubtractionBlueprint = {
       const a = Math.floor(Math.random() * 30) + 20; 
       const b = Math.floor(Math.random() * 30) + 10;
       const answer = String(a + b);
-      
+
+      const context = getRandomContext('GENERAL'); // New context for this block
+      const selectedContextItem = context.items[Math.floor(Math.random() * context.items.length)];
+      const promptStart = `STRICT VARIANT MANDATE: You are writing a ${activeVariant} story. You MUST use the name ${context.name} and the item ${selectedContextItem}. The setting should be ${context.setting}.\nYou are an expert Primary 1 math generator.`;
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Addition Word Problem\n - Numbers to use: ${a} and ${b}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "[Insert full localized Singaporean word problem here]", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "To find the total, we add the two groups together. ${a} + ${b} = ${answer}." }`,
+        aiPrompt: `${promptStart}\n MATH CONSTRAINTS:\n - Topic: Addition Word Problem\n - Numbers to use: ${a} and ${b}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "[Insert full localized Singaporean word problem here]",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "To find the total, we add the two groups together. ${a} + ${b} = ${answer}."
+          },
+          "visualEngine": { "componentToRender": "NONE", "componentData": null },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 2, logic: "word_problem_add", hideVisual: true }
       };
     }
@@ -240,9 +366,22 @@ export const additionSubtractionBlueprint = {
       const total = Math.floor(Math.random() * 40) + 50; 
       const b = Math.floor(Math.random() * 20) + 10;
       const answer = String(total - b);
-      
+
+      const context = getRandomContext('GENERAL'); // New context for this block
+      const selectedContextItem = context.items[Math.floor(Math.random() * context.items.length)];
+      const promptStart = `STRICT VARIANT MANDATE: You are writing a ${activeVariant} story. You MUST use the name ${context.name} and the item ${selectedContextItem}. The setting should be ${context.setting}.\nYou are an expert Primary 1 math generator.`;
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Subtraction Word Problem\n - Numbers to use: Start with ${total}, give away/lose ${b}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "[Insert full localized Singaporean word problem here]", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "To find how many are left, we subtract the amount given away from the total. ${total} - ${b} = ${answer}." }`,
+        aiPrompt: `${promptStart}\n MATH CONSTRAINTS:\n - Topic: Subtraction Word Problem\n - Numbers to use: Start with ${total}, give away/lose ${b}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "[Insert full localized Singaporean word problem here]",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "To find how many are left, we subtract the amount given away from the total. ${total} - ${b} = ${answer}."
+          },
+          "visualEngine": { "componentToRender": "NONE", "componentData": null },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 2, logic: "word_problem_sub", hideVisual: true }
       };
     }
@@ -253,9 +392,21 @@ export const additionSubtractionBlueprint = {
       const b = Math.floor(Math.random() * 5) + 3; // 3 to 7
       const c = Math.floor(Math.random() * 5) + 3; // 3 to 7
       const answer = String(a + b + c);
-      
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Adding Three Numbers\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "${getQText('Find the sum.', a + ' + ' + b + ' + ' + c + ' = ?')}", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NUMBER_CARDS", "items": ["${a}", "+", "${b}", "+", "${c}", "=", "?"], "hideVisual": ${hideVis} }, "finalAnswer": "${answer}", "solution": "First add the first two numbers: ${a} + ${b} = ${a+b}. Then add the third number: ${a+b} + ${c} = ${answer}." }`,
+        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Adding Three Numbers\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CRITICAL VISUAL RULE: DO NOT modify the "visualEngine" block below. You MUST copy the "totalItems" number and the "items" array exactly as provided in the template. Do not change them to match the final answer.\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${getQText('Find the sum.', a + ' + ' + b + ' + ' + c + ' = ?')}",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "First add the first two numbers: ${a} + ${b} = ${a+b}. Then add the third number: ${a+b} + ${c} = ${answer}."
+          },
+          "visualEngine": ${hideVis
+            ? `{ "componentToRender": "NONE", "componentData": null }`
+            : `{ "componentToRender": "NUMBER_CARDS", "componentData": { "items": ["${a}", "+", "${b}", "+", "${c}", "=", "?"], "totalItems": 7 } }`
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 2, logic: "add_three_numbers", hideVisual: hideVis }
       };
     }
@@ -270,9 +421,21 @@ export const additionSubtractionBlueprint = {
       const b = (tensB * 10) + onesB;
       const sum = a + b;
       const answer = String(b);
-      
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Missing Addend (Within 100)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "${getQText('What is the missing number?', a + ' + ? = ' + sum)}", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NUMBER_CARDS", "items": ["${a}", "+", "?", "=", "${sum}"], "hideVisual": ${hideVis} }, "finalAnswer": "${answer}", "solution": "To find the missing part, subtract the part you know from the whole: ${sum} - ${a} = ${answer}." }`,
+        aiPrompt: `STRICT VARIANT MANDATE: You are generating a ${activeVariant} question. DO NOT modify the mathematical structure or the final answer.\nYou are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Missing Addend (Within 100)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CRITICAL VISUAL RULE: DO NOT modify the "visualEngine" block below. You MUST copy the "items" array exactly as provided in the template. Do not change them to match the final answer.\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${getQText('What is the missing number?', a + ' + ? = ' + sum)}",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "To find the missing part, subtract the part you know from the whole: ${sum} - ${a} = ${answer}."
+          },
+          "visualEngine": ${hideVis
+            ? `{ "componentToRender": "NONE", "componentData": null }`
+            : `{ "componentToRender": "NUMBER_CARDS", "componentData": { "items": ["${a}", "+", "?", "=", "${sum}"], "totalItems": 5 } }`
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 2, logic: "missing_addend_100", hideVisual: hideVis }
       };
     }
@@ -286,9 +449,21 @@ export const additionSubtractionBlueprint = {
       const total = (tensTotal * 10) + onesTotal;
       const b = (tensB * 10) + onesB;
       const answer = String(total - b); // The missing subtrahend
-      
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Missing Subtrahend (Within 100)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "${getQText('What is the missing number?', total + ' - ? = ' + b)}", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NUMBER_CARDS", "items": ["${total}", "-", "?", "=", "${b}"], "hideVisual": ${hideVis} }, "finalAnswer": "${answer}", "solution": "To find the part that was taken away, subtract the part left over from the whole: ${total} - ${b} = ${answer}." }`,
+        aiPrompt: `STRICT VARIANT MANDATE: You are generating a ${activeVariant} question. DO NOT modify the mathematical structure or the final answer.\nYou are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Missing Subtrahend (Within 100)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CRITICAL VISUAL RULE: DO NOT modify the "visualEngine" block below. You MUST copy the "items" array exactly as provided in the template. Do not change them to match the final answer.\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${getQText('What is the missing number?', total + ' - ? = ' + b)}",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "To find the part that was taken away, subtract the part left over from the whole: ${total} - ${b} = ${answer}."
+          },
+          "visualEngine": ${hideVis
+            ? `{ "componentToRender": "NONE", "componentData": null }`
+            : `{ "componentToRender": "NUMBER_CARDS", "componentData": { "items": ["${total}", "-", "?", "=", "${b}"], "totalItems": 5 } }`
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 2, logic: "missing_subtrahend_100", hideVisual: hideVis }
       };
     }
@@ -299,10 +474,22 @@ export const additionSubtractionBlueprint = {
       const b = Math.floor(Math.random() * 10) + 5;
       const c = Math.floor(Math.random() * 10) + 5;
       const answer = String(a + b + c);
-      
+
+      const context = getRandomContext('GENERAL'); // New context for this block
+      const selectedContextItem = context.items[Math.floor(Math.random() * context.items.length)];
+      const promptStart = `STRICT VARIANT MANDATE: You are writing a ${activeVariant} story. You MUST use the name ${context.name} and the item ${selectedContextItem}. The setting should be ${context.setting}.\nYou are an expert Primary 1 math generator.`;
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Addition Word Problem (3 items)\n - Numbers to use: ${a}, ${b}, and ${c}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Write a simple story about collecting 3 different types of items.\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "[Your short story]. How many items are there altogether?", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "Add all the groups together: ${a} + ${b} + ${c} = ${answer}." }`,
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Addition Word Problem (3 items)\n - Numbers to use: ${a}, ${b}, and ${c}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "[Insert full localized Singaporean word problem here]", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "Add all the groups together: ${a} + ${b} + ${c} = ${answer}." }`,
+        aiPrompt: `${promptStart}\n MATH CONSTRAINTS:\n - Topic: Addition Word Problem (3 items)\n - Numbers to use: ${a}, ${b}, and ${c}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "[Insert full localized Singaporean word problem here]",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "Add all the groups together: ${a} + ${b} + ${c} = ${answer}."
+          },
+          "visualEngine": { "componentToRender": "NONE", "componentData": null },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 2, logic: "word_problem_add_three", hideVisual: true }
       };
     }
@@ -312,10 +499,21 @@ export const additionSubtractionBlueprint = {
       const item1 = (Math.floor(Math.random() * 4) + 1) * 10; // 10, 20, 30, 40
       const item2 = (Math.floor(Math.random() * 4) + 1) * 10; // 10, 20, 30, 40
       const answer = String(item1 + item2);
-      
+
+      const context = getRandomContext('GENERAL'); // New context for this block
+      const promptStart = `STRICT VARIANT MANDATE: You are writing a ${activeVariant} story. You MUST use the name ${context.name}. The setting should be ${context.setting}.\nYou are an expert Primary 1 math generator.`;
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Money Addition Word Problem\n - Numbers to use: ${item1} cents and ${item2} cents\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Write a simple story about buying 2 items. Use the word \"cents\" or the symbol \"¢\".\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "[Your short story]. How much do the items cost altogether?", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "To find the total cost, we add the amounts. ${item1} + ${item2} = ${answer} cents." }`,
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Money Addition Word Problem\n - Numbers to use: ${item1} cents and ${item2} cents\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "[Insert full localized Singaporean word problem here]", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "To find the total cost, we add the amounts. ${item1} + ${item2} = ${answer} cents." }`,
+        aiPrompt: `${promptStart}\n MATH CONSTRAINTS:\n - Topic: Money Addition Word Problem\n - Numbers to use: ${item1} cents and ${item2} cents\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "[Insert full localized Singaporean word problem here]",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "To find the total cost, we add the amounts. ${item1} + ${item2} = ${answer} cents."
+          },
+          "visualEngine": { "componentToRender": "NONE", "componentData": null },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 2, logic: "word_problem_money_add", hideVisual: true }
       };
     }
@@ -325,10 +523,21 @@ export const additionSubtractionBlueprint = {
       const start = (Math.floor(Math.random() * 3) + 7) * 10; // 70, 80, 90
       const spent = (Math.floor(Math.random() * 4) + 2) * 10; // 20, 30, 40, 50
       const answer = String(start - spent);
-      
+
+      const context = getRandomContext('GENERAL'); // New context for this block
+      const promptStart = `STRICT VARIANT MANDATE: You are writing a ${activeVariant} story. You MUST use the name ${context.name}. The setting should be ${context.setting}.\nYou are an expert Primary 1 math generator.`;
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Money Subtraction Word Problem\n - Numbers to use: Started with ${start} cents, spent ${spent} cents\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Write a simple story about having money and buying an item. Use the word \"cents\" or the symbol \"¢\".\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "[Your short story]. How much money is left?", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "To find how much money is left, we subtract the amount spent from the starting amount. ${start} - ${spent} = ${answer} cents." }`,
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Money Subtraction Word Problem\n - Numbers to use: Started with ${start} cents, spent ${spent} cents\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "[Insert full localized Singaporean word problem here]", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "To find how much money is left, we subtract the amount spent from the starting amount. ${start} - ${spent} = ${answer} cents." }`,
+        aiPrompt: `${promptStart}\n MATH CONSTRAINTS:\n - Topic: Money Subtraction Word Problem\n - Numbers to use: Started with ${start} cents, spent ${spent} cents\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "[Insert full localized Singaporean word problem here]",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "To find how much money is left, we subtract the amount spent from the starting amount. ${start} - ${spent} = ${answer} cents."
+          },
+          "visualEngine": { "componentToRender": "NONE", "componentData": null },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 2, logic: "word_problem_money_sub", hideVisual: true }
       };
     }
@@ -346,7 +555,20 @@ export const additionSubtractionBlueprint = {
       const b = (tensB * 10) + onesB;
       const answer = String(a + b);
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: 2-Digit Addition (With Regrouping)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "${getQText('Find the sum.', a + ' + ' + b + ' = ?')}", "options": ${isMCQ ? '["' + ((a+b)-10) + '", "' + answer + '", "' + ((a+b)+1) + '", "' + ((a+b)+10) + '"]' : 'null'}, "visualItems": [], "modelData": { "type": "NUMBER_CARDS", "items": ["${a}", "+", "${b}", "=", "?"], "hideVisual": ${hideVis} }, "finalAnswer": "${answer}", "solution": "Add the ones: ${onesA} + ${onesB} = ${onesA + onesB}. Rename ${onesA + onesB} ones as 1 ten and ${(onesA + onesB)%10} ones. Add the tens: 1 + ${tensA} + ${tensB} = ${(1 + tensA + tensB)} tens. So, ${a} + ${b} = ${answer}." }`,
+        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: 2-Digit Addition (With Regrouping)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CRITICAL VISUAL RULE: DO NOT modify the "visualEngine" block below. You MUST copy the "items" array exactly as provided in the template. Do not change them to match the final answer.\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${getQText('Find the sum.', a + ' + ' + b + ' = ?')}",
+            "options": ${isMCQ ? '["' + ((a+b)-10) + '", "' + answer + '", "' + ((a+b)+1) + '", "' + ((a+b)+10) + '"]' : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "Add the ones: ${onesA} + ${onesB} = ${onesA + onesB}. Rename ${onesA + onesB} ones as 1 ten and ${(onesA + onesB)%10} ones. Add the tens: 1 + ${tensA} + ${tensB} = ${(1 + tensA + tensB)} tens. So, ${a} + ${b} = ${answer}."
+          },
+          "visualEngine": ${hideVis
+            ? `{ "componentToRender": "NONE", "componentData": null }`
+            : `{ "componentToRender": "NUMBER_CARDS", "componentData": { "items": ["${a}", "+", "${b}", "=", "?"], "totalItems": 5 } }`
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 3, logic: "add_100_regroup", hideVisual: hideVis }
       };
     }
@@ -360,7 +582,20 @@ export const additionSubtractionBlueprint = {
       const b = (tensB * 10) + onesB;
       const answer = String(a - b);
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: 2-Digit Subtraction (With Regrouping)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "${getQText('Find the difference.', a + ' - ' + b + ' = ?')}", "options": ${isMCQ ? '["' + ((a-b)+10) + '", "' + ((a-b)-1) + '", "' + answer + '", "' + ((a-b)-10) + '"]' : 'null'}, "visualItems": [], "modelData": { "type": "NUMBER_CARDS", "items": ["${a}", "-", "${b}", "=", "?"], "hideVisual": ${hideVis} }, "finalAnswer": "${answer}", "solution": "We cannot subtract ${onesB} ones from ${onesA} ones. Regroup 1 ten from ${tensA} tens into 10 ones. Now subtract the ones: ${onesA + 10} - ${onesB} = ${(onesA + 10) - onesB}. Subtract the remaining tens: ${tensA - 1} - ${tensB} = ${(tensA - 1) - tensB}. So, ${a} - ${b} = ${answer}." }`,
+        aiPrompt: `STRICT VARIANT MANDATE: You are generating a ${activeVariant} question. DO NOT modify the mathematical structure or the final answer.\nYou are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: 2-Digit Subtraction (With Regrouping)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CRITICAL VISUAL RULE: DO NOT modify the "visualEngine" block below. You MUST copy the "items" array exactly as provided in the template. Do not change them to match the final answer.\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${getQText('Find the difference.', a + ' - ' + b + ' = ?')}",
+            "options": ${isMCQ ? '["' + ((a-b)+10) + '", "' + ((a-b)-1) + '", "' + answer + '", "' + ((a-b)-10) + '"]' : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "We cannot subtract ${onesB} ones from ${onesA} ones. Regroup 1 ten from ${tensA} tens into 10 ones. Now subtract the ones: ${onesA + 10} - ${onesB} = ${(onesA + 10) - onesB}. Subtract the remaining tens: ${tensA - 1} - ${tensB} = ${(tensA - 1) - tensB}. So, ${a} - ${b} = ${answer}."
+          },
+          "visualEngine": ${hideVis
+            ? `{ "componentToRender": "NONE", "componentData": null }`
+            : `{ "componentToRender": "NUMBER_CARDS", "componentData": { "items": ["${a}", "-", "${b}", "=", "?"], "totalItems": 5 } }`
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 3, logic: "sub_100_regroup", hideVisual: hideVis }
       };
     }
@@ -369,9 +604,22 @@ export const additionSubtractionBlueprint = {
       const a = Math.floor(Math.random() * 20) + 15;
       const diff = Math.floor(Math.random() * 20) + 15;
       const answer = String(a + diff);
-      
+
+      const context = getRandomContext('GENERAL'); // New context for this block
+      const selectedContextItem = context.items[Math.floor(Math.random() * context.items.length)];
+      const promptStart = `STRICT VARIANT MANDATE: You are writing a ${activeVariant} story. You MUST use the name ${context.name} and the item ${selectedContextItem}. The setting should be ${context.setting}.\nYou are an expert Primary 1 math generator.`;
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Comparison Word Problem (More Than)\n - Constraints: Person 1 has ${a}. Person 2 has ${diff} MORE than Person 1.\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "[Insert full localized Singaporean word problem here]", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "Since Person 2 has MORE, we must add. ${a} + ${diff} = ${answer}." }`,
+        aiPrompt: `${promptStart}\n MATH CONSTRAINTS:\n - Topic: Comparison Word Problem (More Than)\n - Constraints: Person 1 has ${a}. Person 2 has ${diff} MORE than Person 1.\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "[Insert full localized Singaporean word problem here]",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "Since Person 2 has MORE, we must add. ${a} + ${diff} = ${answer}."
+          },
+          "visualEngine": { "componentToRender": "NONE", "componentData": null },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 3, logic: "compare_more", hideVisual: true }
       };
     }
@@ -380,9 +628,22 @@ export const additionSubtractionBlueprint = {
       const a = Math.floor(Math.random() * 40) + 50;
       const diff = Math.floor(Math.random() * 20) + 15;
       const answer = String(a - diff);
-      
+
+      const context = getRandomContext('GENERAL'); // New context for this block
+      const selectedContextItem = context.items[Math.floor(Math.random() * context.items.length)];
+      const promptStart = `STRICT VARIANT MANDATE: You are writing a ${activeVariant} story. You MUST use the name ${context.name} and the item ${selectedContextItem}. The setting should be ${context.setting}.\nYou are an expert Primary 1 math generator.`;
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Comparison Word Problem (Fewer Than)\n - Constraints: Person 1 has ${a}. Person 2 has ${diff} FEWER than Person 1.\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "[Insert full localized Singaporean word problem here]", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "Since Person 2 has FEWER, we must subtract. ${a} - ${diff} = ${answer}." }`,
+        aiPrompt: `${promptStart}\n MATH CONSTRAINTS:\n - Topic: Comparison Word Problem (Fewer Than)\n - Constraints: Person 1 has ${a}. Person 2 has ${diff} FEWER than Person 1.\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "[Insert full localized Singaporean word problem here]",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "Since Person 2 has FEWER, we must subtract. ${a} - ${diff} = ${answer}."
+          },
+          "visualEngine": { "componentToRender": "NONE", "componentData": null },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 3, logic: "compare_fewer", hideVisual: true }
       };
     }
@@ -394,13 +655,25 @@ export const additionSubtractionBlueprint = {
       const sum = (tensTotal * 10) + onesTotal; // e.g., 72
       
       const tensA = Math.floor(Math.random() * 3) + 2; // 2 to 4
-      const onesA = Math.floor(Math.random() * 4) + 5; // 5 to 8 (Forces regrouping since onesA > onesTotal)
+      const onesA = Math.floor(Math.random() * 4) + 5; // 5 to 8 (Forces regrouping since onesA might be > onesTotal)
       const a = (tensA * 10) + onesA; // e.g., 37
       
       const answer = String(sum - a); // e.g., 35
-      
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Missing Addend with Regrouping\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "${getQText('What is the missing number?', a + ' + ? = ' + sum)}", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NUMBER_CARDS", "items": ["${a}", "+", "?", "=", "${sum}"], "hideVisual": ${hideVis} }, "finalAnswer": "${answer}", "solution": "To find the missing part, subtract the part you know from the whole: ${sum} - ${a} = ${answer} (requires regrouping)." }`,
+        aiPrompt: `STRICT VARIANT MANDATE: You are generating a ${activeVariant} question. DO NOT modify the mathematical structure or the final answer.\nYou are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Missing Addend with Regrouping\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CRITICAL VISUAL RULE: DO NOT modify the "visualEngine" block below. You MUST copy the "items" array exactly as provided in the template. Do not change them to match the final answer.\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${getQText('What is the missing number?', a + ' + ? = ' + sum)}",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "To find the missing part, subtract the part you know from the whole: ${sum} - ${a} = ${answer} (requires regrouping)."
+          },
+          "visualEngine": ${hideVis
+            ? `{ "componentToRender": "NONE", "componentData": null }`
+            : `{ "componentToRender": "NUMBER_CARDS", "componentData": { "items": ["${a}", "+", "?", "=", "${sum}"], "totalItems": 5 } }`
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 3, logic: "missing_addend_regroup", hideVisual: hideVis }
       };
     }
@@ -416,9 +689,21 @@ export const additionSubtractionBlueprint = {
       const left = (tensLeft * 10) + onesLeft; // e.g., 36
       
       const answer = String(total - left); // e.g., 47
-      
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Missing Subtrahend with Regrouping\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "${getQText('What is the missing number?', total + ' - ? = ' + left)}", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NUMBER_CARDS", "items": ["${total}", "-", "?", "=", "${left}"], "hideVisual": ${hideVis} }, "finalAnswer": "${answer}", "solution": "To find the part that was taken away, subtract the part left over from the whole: ${total} - ${left} = ${answer}." }`,
+        aiPrompt: `STRICT VARIANT MANDATE: You are generating a ${activeVariant} question. DO NOT modify the mathematical structure or the final answer.\nYou are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Missing Subtrahend with Regrouping\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CRITICAL VISUAL RULE: DO NOT modify the "visualEngine" block below. You MUST copy the "items" array exactly as provided in the template. Do not change them to match the final answer.\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${getQText('What is the missing number?', total + ' - ? = ' + left)}",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "To find the part that was taken away, subtract the part left over from the whole: ${total} - ${left} = ${answer}."
+          },
+          "visualEngine": ${hideVis
+            ? `{ "componentToRender": "NONE", "componentData": null }`
+            : `{ "componentToRender": "NUMBER_CARDS", "componentData": { "items": ["${total}", "-", "?", "=", "${left}"], "totalItems": 5 } }`
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 3, logic: "missing_subtrahend_regroup", hideVisual: hideVis }
       };
     }
@@ -432,7 +717,20 @@ export const additionSubtractionBlueprint = {
       const answer = String(sum - c);
       
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Balancing Equations\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "${getQText('Balance the equation to find the missing number.', a + ' + ' + b + ' = ' + c + ' + ?')}", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NUMBER_CARDS", "items": ["${a}", "+", "${b}", "=", "${c}", "+", "?"], "hideVisual": ${hideVis} }, "finalAnswer": "${answer}", "solution": "First, find the total on the left side: ${a} + ${b} = ${sum}. Both sides must be equal. To find the missing number on the right, subtract: ${sum} - ${c} = ${answer}." }`,
+        aiPrompt: `STRICT VARIANT MANDATE: You are generating a ${activeVariant} question. DO NOT modify the mathematical structure or the final answer.\nYou are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Balancing Equations\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CRITICAL VISUAL RULE: DO NOT modify the "visualEngine" block below. You MUST copy the "items" array exactly as provided in the template. Do not change them to match the final answer.\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "${getQText('Balance the equation to find the missing number.', a + ' + ' + b + ' = ' + c + ' + ?')}",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "First, find the total on the left side: ${a} + ${b} = ${sum}. Both sides must be equal. To find the missing number on the right, subtract: ${sum} - ${c} = ${answer}."
+          },
+          "visualEngine": ${hideVis
+            ? `{ "componentToRender": "NONE", "componentData": null }`
+            : `{ "componentToRender": "NUMBER_CARDS", "componentData": { "items": ["${a}", "+", "${b}", "=", "${c}", "+", "?"], "totalItems": 7 } }`
+          },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 3, logic: "balance_equation", hideVisual: hideVis }
       };
     }
@@ -442,10 +740,22 @@ export const additionSubtractionBlueprint = {
       const a = Math.floor(Math.random() * 30) + 50; // 50 to 79
       const b = Math.floor(Math.random() * 20) + 15; // 15 to 34
       const answer = String(a - b);
-      
+
+      const context = getRandomContext('GENERAL'); // New context for this block
+      const selectedContextItem = context.items[Math.floor(Math.random() * context.items.length)];
+      const promptStart = `STRICT VARIANT MANDATE: You are writing a ${activeVariant} story. You MUST use the name ${context.name} and the item ${selectedContextItem}. The setting should be ${context.setting}.\nYou are an expert Primary 1 math generator.`;
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Find the Difference Word Problem\n - Numbers to use: ${a} and ${b}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "[Insert full localized Singaporean word problem here]", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "To find how many more, we must find the difference by subtracting the smaller amount from the larger amount. ${a} - ${b} = ${answer}." }`,
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Find the Difference Word Problem\n - Numbers to use: ${a} and ${b}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "[Insert full localized Singaporean word problem here]", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "To find how many more, we must find the difference by subtracting the smaller amount from the larger amount. ${a} - ${b} = ${answer}." }`,
+        aiPrompt: `${promptStart}\n MATH CONSTRAINTS:\n - Topic: Find the Difference Word Problem\n - Numbers to use: ${a} and ${b}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "[Insert full localized Singaporean word problem here]",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "To find how many more, we must find the difference by subtracting the smaller amount from the larger amount. ${a} - ${b} = ${answer}."
+          },
+          "visualEngine": { "componentToRender": "NONE", "componentData": null },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 3, logic: "word_problem_compare_diff", hideVisual: true }
       };
     }
@@ -455,10 +765,22 @@ export const additionSubtractionBlueprint = {
       const total = Math.floor(Math.random() * 20) + 70; // 70 to 89
       const spent1 = Math.floor(Math.random() * 15) + 15; // 15 to 29
       const spent2 = Math.floor(Math.random() * 15) + 15; // 15 to 29
-      const answer = String(total - spent1 - spent2);
-      
+      const answer = String(total - spent1 - spent2);      
+      const context = getRandomContext('GENERAL'); // New context for this block
+      const selectedContextItem = context.items[Math.floor(Math.random() * context.items.length)];
+      const promptStart = `STRICT VARIANT MANDATE: You are writing a ${activeVariant} story. You MUST use the name ${context.name} and the item ${selectedContextItem}. The setting should be ${context.setting}.\nYou are an expert Primary 1 math generator.`;
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Two-Step Subtraction Word Problem\n - Numbers to use: Start with ${total}, give away ${spent1}, then give away ${spent2}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "[Insert full localized Singaporean word problem here]", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "First, subtract the first amount: ${total} - ${spent1} = ${total - spent1}. Then, subtract the second amount: ${total - spent1} - ${spent2} = ${answer}." }`,
+        aiPrompt: `${promptStart}\n MATH CONSTRAINTS:\n - Topic: Two-Step Subtraction Word Problem\n - Numbers to use: Start with ${total}, give away ${spent1}, then give away ${spent2}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "[Insert full localized Singaporean word problem here]",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "First, subtract the first amount: ${total} - ${spent1} = ${total - spent1}. Then, subtract the second amount: ${total - spent1} - ${spent2} = ${answer}."
+          },
+          "visualEngine": { "componentToRender": "NONE", "componentData": null },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 3, logic: "word_problem_two_step", hideVisual: true }
       };
     }
@@ -467,9 +789,21 @@ export const additionSubtractionBlueprint = {
     if (activeVariant === 'advanced_word_problem_money_change') {
       const cost = Math.floor(Math.random() * 40) + 45; // 45 to 84 cents
       const answer = String(100 - cost);
-      
+      const moneyContext = getRandomContext('FOOD'); // Specific context for money
+      const selectedMoneyItem = moneyContext.items[Math.floor(Math.random() * moneyContext.items.length)];
+      const promptStart = `STRICT VARIANT MANDATE: You are writing a ${activeVariant} story. You MUST use the name ${moneyContext.name} and the item ${selectedMoneyItem}. The setting should be ${moneyContext.setting}.\nYou are an expert Primary 1 math generator.`;
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Change from 100 Cents\n - Numbers to use: Cost is ${cost} cents. Paid with 100 cents.\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "[Insert full localized Singaporean word problem here]", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "To find the change, subtract the cost from the amount paid. 100 - ${cost} = ${answer} cents." }`,
+        aiPrompt: `${promptStart}\n MATH CONSTRAINTS:\n - Topic: Change from 100 Cents\n - Numbers to use: Cost is ${cost} cents. Paid with 100 cents.\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "[Insert full localized Singaporean word problem here]",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "To find the change, subtract the cost from the amount paid. 100 - ${cost} = ${answer} cents."
+          },
+          "visualEngine": { "componentToRender": "NONE", "componentData": null },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 3, logic: "word_problem_money_change", hideVisual: true }
       };
     }
@@ -480,9 +814,22 @@ export const additionSubtractionBlueprint = {
       const diff = Math.floor(Math.random() * 15) + 10; // 10 to 24
       const lengthB = lengthA - diff;
       const answer = String(lengthA + lengthB); // Total length
-
+      
+      const context = getRandomContext('GENERAL'); // New context for this block
+      const selectedContextItem = context.items[Math.floor(Math.random() * context.items.length)];
+      const promptStart = `STRICT VARIANT MANDATE: You are writing a ${activeVariant} story. You MUST use the name ${context.name} and the item ${selectedContextItem}. The setting should be ${context.setting}. The units MUST be 'cm'.\nYou are an expert Primary 1 math generator.`;
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Cross-Topical (Addition/Subtraction + Length)\n - Constraints: Ribbon A is ${lengthA} cm. Ribbon B is ${diff} cm shorter than Ribbon A.\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station). Use "cm" for centimeters.\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "[Insert full localized Singaporean word problem here]", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "Step 1: Find the length of the second item. ${lengthA} - ${diff} = ${lengthB} cm. Step 2: Find the total length by adding them together. ${lengthA} + ${lengthB} = ${answer} cm." }`,
+        aiPrompt: `${promptStart}\n MATH CONSTRAINTS:\n - Topic: Cross-Topical (Addition/Subtraction + Length)\n - Constraints: Ribbon A is ${lengthA} cm. Ribbon B is ${diff} cm shorter than Ribbon A.\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station). Use "cm" for centimeters.\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "[Insert full localized Singaporean word problem here]",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "Step 1: Find the length of the second item. ${lengthA} - ${diff} = ${lengthB} cm. Step 2: Find the total length by adding them together. ${lengthA} + ${lengthB} = ${answer} cm."
+          },
+          "visualEngine": { "componentToRender": "NONE", "componentData": null },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 3, logic: "cross_length_total", hideVisual: true }
       };
     }
@@ -492,10 +839,22 @@ export const additionSubtractionBlueprint = {
       const massA = Math.floor(Math.random() * 15) + 15; // 15 to 29
       const diff = Math.floor(Math.random() * 10) + 5; // 5 to 14
       const massB = massA + diff;
-      const answer = String(massA + massB); // Total mass
-
+      const answer = String(massA + massB); // Total mass      
+      const context = getRandomContext('GENERAL'); // New context for this block
+      const selectedContextItem = context.items[Math.floor(Math.random() * context.items.length)];
+      const promptStart = `STRICT VARIANT MANDATE: You are writing a ${activeVariant} story. You MUST use the name ${context.name} and the item ${selectedContextItem}. The setting should be ${context.setting}. The units MUST be 'kg'.\nYou are an expert Primary 1 math generator.`;
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Cross-Topical (Addition + Mass)\n - Constraints: Box A is ${massA} kg. Box B is ${diff} kg heavier than Box A.\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station). Use "kg" for kilograms.\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "[Insert full localized Singaporean word problem here]", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "Step 1: Find the mass of the second object. ${massA} + ${diff} = ${massB} kg. Step 2: Find the total mass. ${massA} + ${massB} = ${answer} kg." }`,
+        aiPrompt: `${promptStart}\n MATH CONSTRAINTS:\n - Topic: Cross-Topical (Addition + Mass)\n - Constraints: Box A is ${massA} kg. Box B is ${diff} kg heavier than Box A.\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station). Use "kg" for kilograms.\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "[Insert full localized Singaporean word problem here]",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "Step 1: Find the mass of the second object. ${massA} + ${diff} = ${massB} kg. Step 2: Find the total mass. ${massA} + ${massB} = ${answer} kg."
+          },
+          "visualEngine": { "componentToRender": "NONE", "componentData": null },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 3, logic: "cross_mass_total", hideVisual: true }
       };
     }
@@ -510,9 +869,22 @@ export const additionSubtractionBlueprint = {
       const suffixes = ["th","st","nd","rd","th","th","th","th","th","th"];
       const getSuffix = (n) => (n % 100 >= 11 && n % 100 <= 13) ? "th" : suffixes[n % 10];
       const ordinalStr = `${position}${getSuffix(position)}`;
-
+      
+      const context = getRandomContext('GENERAL'); // New context for this block
+      const selectedContextItem = context.items[Math.floor(Math.random() * context.items.length)];
+      const promptStart = `STRICT VARIANT MANDATE: You are writing a ${activeVariant} story. You MUST use the name ${context.name} and the item ${selectedContextItem}. The setting should be ${context.setting}.\nYou are an expert Primary 1 math generator.`;
       return {
-        aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Cross-Topical (Subtraction + Ordinal Numbers)\n - Constraints: ${total} people total. A specific person is in the ${ordinalStr} position from the front.\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON):\n { "question": "[Insert full localized Singaporean word problem here]", "options": ${isMCQ ? getOptions(answer) : 'null'}, "visualItems": [], "modelData": { "type": "NONE", "hideVisual": true }, "finalAnswer": "${answer}", "solution": "If the person is ${ordinalStr} from the front, that means they occupy position number ${position}. To find how many people are behind them, subtract their position from the total number of people: ${total} - ${position} = ${answer} people." }`,
+        aiPrompt: `${promptStart}\n MATH CONSTRAINTS:\n - Topic: Cross-Topical (Subtraction + Ordinal Numbers)\n - Constraints: ${total} people total. A specific person is in the ${ordinalStr} position from the front.\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "[Insert full localized Singaporean word problem here]",
+            "options": ${isMCQ ? getOptions(answer) : 'null'},
+            "finalAnswer": "${answer}",
+            "solutionSteps": "If the person is ${ordinalStr} from the front, that means they occupy position number ${position}. To find how many people are behind them, subtract their position from the total number of people: ${total} - ${position} = ${answer} people."
+          },
+          "visualEngine": { "componentToRender": "NONE", "componentData": null },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
         metadata: { difficulty, steps: 3, logic: "cross_ordinal_queue", hideVisual: true }
       };
     }
