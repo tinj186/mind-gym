@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { getBestModel, modelCooldowns, COOLDOWN_MS, refreshModelPriority, modelPriorityList } from '@/lib/ai-config';
+import { getBestModel, modelCooldowns, COOLDOWN_MS, refreshModelPriority, modelPriorityList, getDynamicDelays } from '@/lib/ai-config';
 import { SYLLABUS_DATA } from '@/lib/syllabus';
 import { getGeneratedQuestion, blueprintRegistry } from '@/lib/syllabus/index.js';
 import { UniversalQuestionSchema } from './questionSchema';
@@ -162,8 +162,9 @@ export async function POST(request) {
         
         let result;
         let retries = 3;
+        let currentModelId;
         while (retries > 0) {
-          const currentModelId = getBestModel();
+          currentModelId = getBestModel();
           const model = genAI.getGenerativeModel({ 
             model: currentModelId,
             generationConfig: { responseMimeType: "application/json", temperature: 0.8, maxOutputTokens: 2048 } 
@@ -175,7 +176,8 @@ export async function POST(request) {
             // Handle 503 (Busy) or 429 (Rate Limit) by rotating models
             if ((error.status === 503 || error.status === 429) && retries > 1) {
               console.warn(`⚠️ Model ${currentModelId} busy. Cooling down and rotating...`);
-              modelCooldowns[currentModelId] = Date.now() + COOLDOWN_MS;
+              const { cooldown } = await getDynamicDelays(currentModelId);
+              modelCooldowns[currentModelId] = Date.now() + cooldown;
               retries--;
               await new Promise(r => setTimeout(r, 1500));
             } else throw error;
@@ -215,28 +217,48 @@ export async function POST(request) {
               });
             } catch (zodError) {
               // STRANGLER FIG: Fallback for older syllabus blueprints using q
-              const { visualItems, modelData, ...cleanQ } = q; 
-              parsedQuestions.push({
-                ...cleanQ,
-                question: cleanQ.question || q.question,
-                solution: cleanQ.solution || q.solution,
-                finalAnswer: typeof cleanQ.finalAnswer === 'object' ? JSON.stringify(cleanQ.finalAnswer) : String(cleanQ.finalAnswer || ""),
+              const aiResponseModelData = q.modelData || {};
+              const aiResponseVisualItems = q.visualItems;
+
+              const prismaModelData = {
+                ...aiResponseModelData,
+                type: blueprintMeta?.visualType === 'DYNAMIC' ? (aiResponseModelData?.type || "NONE") : (blueprintMeta?.visualType || aiResponseModelData?.type || "NONE"),
+                items: (Array.isArray(aiResponseVisualItems) && aiResponseVisualItems.length > 0) ? aiResponseVisualItems : (aiResponseModelData?.items || []),
+                hideVisual: !!stepResult.metadata?.hideVisual || !!aiResponseModelData?.hideVisual,
+              };
+              // Clean up modelData if properties are undefined
+              if (prismaModelData.type === undefined) delete prismaModelData.type;
+              if (prismaModelData.items === undefined) delete prismaModelData.items;
+              if (prismaModelData.hideVisual === undefined) delete prismaModelData.hideVisual;
+
+              // Explicitly construct the object for Prisma to avoid unknown arguments
+              const prismaQuestionObject = {
+                level,
+                topic,
+                subtopic: subtopic || "",
+                heuristic: heuristic || null, 
+                difficulty,
+                gradeLevel,
+                subject: "Math",
+                type: type === 'MCQ' ? 'MCQ' : (type.toLowerCase().includes('short') ? 'Short Question' : 'Structured'),
+                strand: strand || blueprintMeta?.strand || "Number and Algebra",
+                isApproved: false,
+                finalAnswer: typeof q.finalAnswer === 'object' ? JSON.stringify(q.finalAnswer) : String(q.finalAnswer || ""),
                 options: parseAiOptions(q.options),
-                subject, level, gradeLevel, topic, subtopic: subtopic || "", type, difficulty,
-                heuristic: heuristic || "Standard", strand: strand || blueprintMeta?.strand || "Number and Algebra", isApproved: false,
-                modelData: {
-                  ...(modelData || {}),
-                  type: blueprintMeta?.visualType === 'DYNAMIC' ? (modelData?.type || "NONE") : (blueprintMeta?.visualType || modelData?.type || "NONE"),
-                  items: (Array.isArray(visualItems) && visualItems.length > 0) ? visualItems : (modelData?.items || []),
-                  hideVisual: !!stepResult.metadata?.hideVisual || !!modelData?.hideVisual,
-                  finalAnswer: typeof cleanQ.finalAnswer === 'object' ? JSON.stringify(cleanQ.finalAnswer) : String(cleanQ.finalAnswer || "")
-                }
-              });
+                modelData: prismaModelData,
+                question: q.question || q.questionText || "Problem data missing",
+                solution: q.solution || q.solutionSteps || "No solution provided"
+              };
+              
+              parsedQuestions.push(prismaQuestionObject);
             }
           }
         }
         // Small stagger for safety
-        if (count > 1) await new Promise(r => setTimeout(r, 800));
+        if (count > 1) {
+          const { stagger } = await getDynamicDelays(currentModelId);
+          await new Promise(r => setTimeout(r, stagger));
+        }
       }
     } else {
       // --- PATH 2 & 3: LEGACY AI PATHS (For non-migrated topics) ---
@@ -269,9 +291,10 @@ export async function POST(request) {
         
         let result;
         let retries = 3;
+        let currentModelId;
         while (retries > 0) {
           // Select model INSIDE the retry loop to allow rotation if one is busy
-          const currentModelId = getBestModel();
+          currentModelId = getBestModel();
           const model = genAI.getGenerativeModel({ 
             model: currentModelId,
             // Increased temperature to 0.8 for creative variety in question selection
@@ -285,7 +308,8 @@ export async function POST(request) {
             // Handle 503 (Busy) or 429 (Rate Limit) by rotating models
             if ((error.status === 503 || error.status === 429) && retries > 1) {
               console.warn(`⚠️ Model ${currentModelId} busy. Cooling down and rotating...`);
-              modelCooldowns[currentModelId] = Date.now() + COOLDOWN_MS;
+              const { cooldown } = await getDynamicDelays(currentModelId);
+              modelCooldowns[currentModelId] = Date.now() + cooldown;
               retries--;
               await new Promise(r => setTimeout(r, 1500));
             } else throw error;
@@ -322,21 +346,38 @@ export async function POST(request) {
             });
           } catch (zodError) {
             const { visualItems, modelData, ...cleanQ } = q;
-            parsedQuestions.push({
-              ...cleanQ,
-              question: cleanQ.question || q.question,
-              solution: cleanQ.solution || q.solution,
-              finalAnswer: typeof cleanQ.finalAnswer === 'object' ? JSON.stringify(cleanQ.finalAnswer) : String(cleanQ.finalAnswer || ""),
+            const aiResponseModelData = q.modelData || {};
+            const aiResponseVisualItems = q.visualItems;
+
+            const prismaModelData = { 
+              ...aiResponseModelData,
+              type: blueprint.visualType === 'DYNAMIC' ? (aiResponseModelData?.type || "NONE") : blueprint.visualType,
+              items: (Array.isArray(aiResponseVisualItems) && aiResponseVisualItems.length > 0) ? aiResponseVisualItems : (aiResponseModelData?.items || []),
+              hideVisual: !!aiResponseModelData?.hideVisual, // No stepResult.metadata here
+            };
+            // Clean up modelData if properties are undefined
+            if (prismaModelData.type === undefined) delete prismaModelData.type;
+            if (prismaModelData.items === undefined) delete prismaModelData.items;
+            if (prismaModelData.hideVisual === undefined) delete prismaModelData.hideVisual;
+
+            // Explicitly construct the object for Prisma to avoid unknown arguments
+            const prismaQuestionObject = {
+              level,
+              topic,
+              subtopic: subtopic || "",
+              heuristic: heuristic || "Standard", 
+              difficulty, gradeLevel, subject: "Math",
+              type: type === 'MCQ' ? 'MCQ' : (type.toLowerCase().includes('short') ? 'Short Question' : 'Structured'),
+              strand: strand || blueprint.strand || "Number and Algebra",
+              isApproved: false,
+              finalAnswer: typeof q.finalAnswer === 'object' ? JSON.stringify(q.finalAnswer) : String(q.finalAnswer || ""),
               options: parseAiOptions(q.options),
-              subject: "Math", level, gradeLevel, topic, subtopic, type, difficulty,
-              heuristic: heuristic || "Standard", strand: strand || blueprint.strand || "Number and Algebra", isApproved: false,
-              modelData: { 
-                ...(modelData || {}),
-                type: blueprint.visualType === 'DYNAMIC' ? (modelData?.type || "NONE") : blueprint.visualType,
-                items: (Array.isArray(visualItems) && visualItems.length > 0) ? visualItems : (modelData?.items || []),
-                finalAnswer: typeof cleanQ.finalAnswer === 'object' ? JSON.stringify(cleanQ.finalAnswer) : String(cleanQ.finalAnswer || "")
-              }
-            });
+              modelData: prismaModelData,
+              question: q.question || q.questionText,
+              solution: q.solution || q.solutionSteps
+            };
+
+            parsedQuestions.push(prismaQuestionObject);
           }
         }
         await new Promise(r => setTimeout(r, 1500));
@@ -398,26 +439,42 @@ export async function POST(request) {
                 solution: validatedData.content.solutionSteps
               });
             } catch (zodError) {
-              const { visualItems, modelData, ...cleanQ } = q; 
-              parsedQuestions.push({
-                ...cleanQ,
-                subject: "Math", level, gradeLevel, topic, subtopic, type, difficulty,
-                heuristic: heuristic || "Standard", strand: strand || "Number and Algebra", isApproved: false,
-                finalAnswer: typeof cleanQ.finalAnswer === 'object' ? JSON.stringify(cleanQ.finalAnswer) : String(cleanQ.finalAnswer),
+              const aiResponseModelData = q.modelData || {};
+              const aiResponseVisualItems = q.visualItems;
+
+              const prismaModelData = {
+                ...aiResponseModelData,
+                type: bpMeta?.visualType === 'DYNAMIC' ? (aiResponseModelData?.type || null) : (bpMeta?.visualType || aiResponseModelData?.type || null),
+                items: (Array.isArray(aiResponseVisualItems) && aiResponseVisualItems.length > 0) ? aiResponseVisualItems : (aiResponseModelData?.items || []),
+                hideVisual: !!aiResponseModelData?.hideVisual, // No stepResult.metadata here
+              };
+              // Clean up modelData if properties are undefined
+              if (prismaModelData.type === undefined) delete prismaModelData.type;
+              if (prismaModelData.items === undefined) delete prismaModelData.items;
+              if (prismaModelData.hideVisual === undefined) delete prismaModelData.hideVisual;
+
+              // Explicitly construct the object for Prisma to avoid unknown arguments
+              const prismaQuestionObject = {
+                level, topic, subtopic: subtopic || "", heuristic: heuristic || null, 
+                difficulty, gradeLevel, subject: "Math",
+                type: type === 'MCQ' ? 'MCQ' : (type.toLowerCase().includes('short') ? 'Short Question' : 'Structured'),
+                strand: strand || bpMeta?.strand || "Number and Algebra",
+                isApproved: false,
+                finalAnswer: typeof q.finalAnswer === 'object' ? JSON.stringify(q.finalAnswer) : String(q.finalAnswer),
                 options: parseAiOptions(q.options),
-                modelData: {
-                  ...(modelData || {}),
-                  type: bpMeta?.visualType === 'DYNAMIC' ? (modelData?.type || null) : (bpMeta?.visualType || q.visualType || null),
-                  items: (Array.isArray(visualItems) && visualItems.length > 0) ? visualItems : (modelData?.items || []),
-                  finalAnswer: typeof cleanQ.finalAnswer === 'object' ? JSON.stringify(cleanQ.finalAnswer) : String(cleanQ.finalAnswer)
-                }
-              });
+                modelData: prismaModelData,
+                question: q.question || q.questionText,
+                solution: q.solution || q.solutionSteps
+              };
+
+              parsedQuestions.push(prismaQuestionObject);
             }
           }
           if (parsedQuestions.length > 0) break;
           break;
         } catch (err) {
-          modelCooldowns[selectedModelId] = Date.now() + COOLDOWN_MS;
+          const { cooldown } = await getDynamicDelays(selectedModelId);
+          modelCooldowns[selectedModelId] = Date.now() + cooldown;
           attempts++;
           lastError = err;
         }

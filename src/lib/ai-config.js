@@ -36,3 +36,34 @@ export function getBestModel() {
   }
   return modelPriorityList[0]; // Fallback to primary if everything is in cooldown
 }
+
+/**
+ * Calculates dynamic delays based on the model's historical latency.
+ * Retrieves metrics from the database and scales wait times accordingly.
+ * @param {string} modelId - The ID of the model to check.
+ */
+export async function getDynamicDelays(modelId) {
+  const LATENCY_TARGET = 600;
+  const DEFAULT_STAGGER = 800;
+
+  try {
+    const latestMetric = await prisma.aiMetric.findFirst({
+      where: { modelId },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    if (!latestMetric || !latestMetric.latency) {
+      return { stagger: DEFAULT_STAGGER, cooldown: 30000 };
+    }
+
+    // Apply the Scaling Formula
+    const ratio = latestMetric.latency / LATENCY_TARGET;
+    return {
+      stagger: Math.min(Math.max(DEFAULT_STAGGER * ratio, 500), 5000),
+      cooldown: Math.min(Math.max(30000 * ratio, 30000), 120000)
+    };
+  } catch (err) {
+    console.error(`⚠️ Database error in getDynamicDelays:`, err);
+    return { stagger: DEFAULT_STAGGER, cooldown: 30000 }; // Safety Fallback
+  }
+}
