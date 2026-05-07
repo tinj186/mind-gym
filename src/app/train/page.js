@@ -523,7 +523,11 @@ export default function TrainingPage() {
                   // Clean value if AI included "A:", "B:", etc. in the string
                   const cleanLabel = String.fromCharCode(65 + i);
                   const cleanValue = optStr.includes(':') ? optStr.split(':').slice(1).join(':').trim() : optStr;
-                  const isSelected = normalizeAnswer(answer) === normalizeAnswer(cleanValue);
+                  
+                  // Use strict equality to prevent "5" from matching "50"
+                  const normalizedInput = normalizeAnswer(answer).trim();
+                  const normalizedOption = normalizeAnswer(cleanValue).trim();
+                  const isSelected = normalizedInput === normalizedOption;
 
                   return (
                     <button

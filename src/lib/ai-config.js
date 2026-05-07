@@ -47,6 +47,7 @@ export async function getDynamicDelays(modelId) {
   const DEFAULT_STAGGER = 800;
 
   try {
+
     const latestMetric = await prisma.aiMetric.findFirst({
       where: { modelId },
       orderBy: { createdAt: 'desc' }

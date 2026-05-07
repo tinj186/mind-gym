@@ -101,7 +101,14 @@ function parseAiOptions(optionsData) {
   }
   
   if (Array.isArray(parsed)) {
-    return parsed.map(opt => (opt === null || opt === undefined) ? "" : String(opt));
+    return parsed.map(opt => {
+      if (opt === null || opt === undefined) return "";
+      if (typeof opt === 'object' && opt !== null) {
+        // Handle cases where AI returns {"text": "...", "label": "A"}
+        return opt.text || opt.value || opt.label || JSON.stringify(opt);
+      }
+      return String(opt);
+    });
   }
   return null;
 }
@@ -216,23 +223,22 @@ export async function POST(request) {
                 solution: validatedData.content.solutionSteps
               });
             } catch (zodError) {
-              // STRANGLER FIG: Fallback for older syllabus blueprints using q
-              const aiResponseModelData = q.modelData || {};
-              const aiResponseVisualItems = q.visualItems;
+              // Pull out AI-specific keys to prevent Prisma Unknown Argument errors
+              const { visualItems, modelData, questionText, solutionSteps, ...cleanQ } = q; 
 
               const prismaModelData = {
-                ...aiResponseModelData,
-                type: blueprintMeta?.visualType === 'DYNAMIC' ? (aiResponseModelData?.type || "NONE") : (blueprintMeta?.visualType || aiResponseModelData?.type || "NONE"),
-                items: (Array.isArray(aiResponseVisualItems) && aiResponseVisualItems.length > 0) ? aiResponseVisualItems : (aiResponseModelData?.items || []),
-                hideVisual: !!stepResult.metadata?.hideVisual || !!aiResponseModelData?.hideVisual,
+                ...(modelData || {}),
+                type: blueprintMeta?.visualType === 'DYNAMIC' ? (modelData?.type || "NONE") : (blueprintMeta?.visualType || modelData?.type || "NONE"),
+                items: (Array.isArray(visualItems) && visualItems.length > 0) ? visualItems : (modelData?.items || []),
+                hideVisual: !!stepResult.metadata?.hideVisual || !!modelData?.hideVisual,
               };
               // Clean up modelData if properties are undefined
               if (prismaModelData.type === undefined) delete prismaModelData.type;
               if (prismaModelData.items === undefined) delete prismaModelData.items;
               if (prismaModelData.hideVisual === undefined) delete prismaModelData.hideVisual;
 
-              // Explicitly construct the object for Prisma to avoid unknown arguments
-              const prismaQuestionObject = {
+              parsedQuestions.push({
+                ...cleanQ,
                 level,
                 topic,
                 subtopic: subtopic || "",
@@ -246,11 +252,9 @@ export async function POST(request) {
                 finalAnswer: typeof q.finalAnswer === 'object' ? JSON.stringify(q.finalAnswer) : String(q.finalAnswer || ""),
                 options: parseAiOptions(q.options),
                 modelData: prismaModelData,
-                question: q.question || q.questionText || "Problem data missing",
-                solution: q.solution || q.solutionSteps || "No solution provided"
-              };
-              
-              parsedQuestions.push(prismaQuestionObject);
+                question: typeof (cleanQ.question || questionText || q.question) === 'object' ? JSON.stringify(cleanQ.question || questionText || q.question) : String(cleanQ.question || questionText || q.question || "Problem data missing"),
+                solution: typeof (cleanQ.solution || solutionSteps || q.solution) === 'object' ? JSON.stringify(cleanQ.solution || solutionSteps || q.solution) : String(cleanQ.solution || solutionSteps || q.solution || "No solution provided")
+              });
             }
           }
         }
@@ -345,23 +349,22 @@ export async function POST(request) {
               solution: validatedData.content.solutionSteps
             });
           } catch (zodError) {
-            const { visualItems, modelData, ...cleanQ } = q;
-            const aiResponseModelData = q.modelData || {};
-            const aiResponseVisualItems = q.visualItems;
+            // Pull out AI-specific keys to prevent Prisma Unknown Argument errors
+            const { visualItems, modelData, questionText, solutionSteps, ...cleanQ } = q; 
 
             const prismaModelData = { 
-              ...aiResponseModelData,
-              type: blueprint.visualType === 'DYNAMIC' ? (aiResponseModelData?.type || "NONE") : blueprint.visualType,
-              items: (Array.isArray(aiResponseVisualItems) && aiResponseVisualItems.length > 0) ? aiResponseVisualItems : (aiResponseModelData?.items || []),
-              hideVisual: !!aiResponseModelData?.hideVisual, // No stepResult.metadata here
+              ...(modelData || {}),
+              type: blueprint.visualType === 'DYNAMIC' ? (modelData?.type || "NONE") : blueprint.visualType,
+              items: (Array.isArray(visualItems) && visualItems.length > 0) ? visualItems : (modelData?.items || []),
+              hideVisual: !!modelData?.hideVisual, // No stepResult.metadata here
             };
             // Clean up modelData if properties are undefined
             if (prismaModelData.type === undefined) delete prismaModelData.type;
             if (prismaModelData.items === undefined) delete prismaModelData.items;
             if (prismaModelData.hideVisual === undefined) delete prismaModelData.hideVisual;
 
-            // Explicitly construct the object for Prisma to avoid unknown arguments
-            const prismaQuestionObject = {
+            parsedQuestions.push({
+              ...cleanQ,
               level,
               topic,
               subtopic: subtopic || "",
@@ -373,11 +376,9 @@ export async function POST(request) {
               finalAnswer: typeof q.finalAnswer === 'object' ? JSON.stringify(q.finalAnswer) : String(q.finalAnswer || ""),
               options: parseAiOptions(q.options),
               modelData: prismaModelData,
-              question: q.question || q.questionText,
-              solution: q.solution || q.solutionSteps
-            };
-
-            parsedQuestions.push(prismaQuestionObject);
+              question: typeof (cleanQ.question || questionText || q.question) === 'object' ? JSON.stringify(cleanQ.question || questionText || q.question) : String(cleanQ.question || questionText || q.question || "Problem data missing"),
+              solution: typeof (cleanQ.solution || solutionSteps || q.solution) === 'object' ? JSON.stringify(cleanQ.solution || solutionSteps || q.solution) : String(cleanQ.solution || solutionSteps || q.solution || "No solution provided")
+            });
           }
         }
         await new Promise(r => setTimeout(r, 1500));
@@ -439,22 +440,22 @@ export async function POST(request) {
                 solution: validatedData.content.solutionSteps
               });
             } catch (zodError) {
-              const aiResponseModelData = q.modelData || {};
-              const aiResponseVisualItems = q.visualItems;
+              // Pull out AI-specific keys to prevent Prisma Unknown Argument errors
+              const { visualItems, modelData, questionText, solutionSteps, ...cleanQ } = q; 
 
               const prismaModelData = {
-                ...aiResponseModelData,
-                type: bpMeta?.visualType === 'DYNAMIC' ? (aiResponseModelData?.type || null) : (bpMeta?.visualType || aiResponseModelData?.type || null),
-                items: (Array.isArray(aiResponseVisualItems) && aiResponseVisualItems.length > 0) ? aiResponseVisualItems : (aiResponseModelData?.items || []),
-                hideVisual: !!aiResponseModelData?.hideVisual, // No stepResult.metadata here
+                ...(modelData || {}),
+                type: bpMeta?.visualType === 'DYNAMIC' ? (modelData?.type || null) : (bpMeta?.visualType || modelData?.type || null),
+                items: (Array.isArray(visualItems) && visualItems.length > 0) ? visualItems : (modelData?.items || []),
+                hideVisual: !!modelData?.hideVisual, // No stepResult.metadata here
               };
               // Clean up modelData if properties are undefined
               if (prismaModelData.type === undefined) delete prismaModelData.type;
               if (prismaModelData.items === undefined) delete prismaModelData.items;
               if (prismaModelData.hideVisual === undefined) delete prismaModelData.hideVisual;
 
-              // Explicitly construct the object for Prisma to avoid unknown arguments
-              const prismaQuestionObject = {
+              parsedQuestions.push({
+                ...cleanQ,
                 level, topic, subtopic: subtopic || "", heuristic: heuristic || null, 
                 difficulty, gradeLevel, subject: "Math",
                 type: type === 'MCQ' ? 'MCQ' : (type.toLowerCase().includes('short') ? 'Short Question' : 'Structured'),
@@ -463,11 +464,9 @@ export async function POST(request) {
                 finalAnswer: typeof q.finalAnswer === 'object' ? JSON.stringify(q.finalAnswer) : String(q.finalAnswer),
                 options: parseAiOptions(q.options),
                 modelData: prismaModelData,
-                question: q.question || q.questionText,
-                solution: q.solution || q.solutionSteps
-              };
-
-              parsedQuestions.push(prismaQuestionObject);
+                question: typeof (cleanQ.question || questionText || q.question) === 'object' ? JSON.stringify(cleanQ.question || questionText || q.question) : String(cleanQ.question || questionText || q.question || "Problem data missing"),
+                solution: typeof (cleanQ.solution || solutionSteps || q.solution) === 'object' ? JSON.stringify(cleanQ.solution || solutionSteps || q.solution) : String(cleanQ.solution || solutionSteps || q.solution || "No solution provided")
+              });
             }
           }
           if (parsedQuestions.length > 0) break;
