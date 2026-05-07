@@ -46,6 +46,8 @@ export async function getDynamicDelays(modelId) {
   const LATENCY_TARGET = 600;
   const DEFAULT_STAGGER = 800;
 
+  if (!prisma?.aiMetric) return { stagger: 1000, cooldown: 60000 };
+
   try {
 
     const latestMetric = await prisma.aiMetric.findFirst({
