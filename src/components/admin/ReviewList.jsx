@@ -293,7 +293,16 @@ export default function ReviewList({ initialQuestions, isViewOnly }) {
                 {q.options.map((opt, i) => {
                   // Highlight the option that matches the final answer
                   const optStr = String(opt ?? "");
-                  const isCorrect = optStr.includes(q.finalAnswer) || optStr.startsWith(q.finalAnswer + ':');
+                  // Helper to strip labels (e.g., "A: 2" -> "2") and trim whitespace
+                  const extractValue = (s) => {
+                    const str = String(s ?? "");
+                    return str.includes(':') ? str.split(':').slice(1).join(':').trim() : str.trim();
+                  };
+
+                  const cleanOpt = extractValue(optStr);
+                  const cleanFinal = extractValue(q.finalAnswer);
+                  const isCorrect = cleanOpt !== '' && cleanOpt === cleanFinal;
+
                   return (
                     <div 
                       key={i} 

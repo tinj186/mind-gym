@@ -2,7 +2,7 @@ import { prisma } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
 export async function PATCH(req, { params }) {
-  const { id } = params;
+  const { id } = await params;
   try {
     const body = await req.json();
     const updated = await prisma.questionBank.update({
@@ -17,7 +17,7 @@ export async function PATCH(req, { params }) {
 }
 
 export async function DELETE(req, { params }) {
-  const { id } = params;
+  const { id } = await params;
   try {
     await prisma.questionBank.delete({
       where: { id },

@@ -111,9 +111,7 @@ export default function DiagramRenderer({ modelData: inputModelData, isQuestion,
   }
 
   if (type === 'NUMBER_BOND') {
-    // Map 'items' from the universal fix to 'numbers'
-    const cardData = { ...modelData, numbers: modelData.numbers || modelData.items || [] };
-    return <NumberCards data={cardData} />;
+    return <NumberBond data={modelData} isQuestion={isQuestion} />;
   }
 
   return null;
