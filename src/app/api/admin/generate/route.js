@@ -123,6 +123,41 @@ export async function POST(request) {
     const gradeLevel = level === 'Primary 1' ? 'P1' : level;
     console.log("API RECEIVED -> Level:", level, "Topic:", topic, "Subtopic:", subtopic, "Type:", type, "Difficulty:", difficulty, "Variant:", variant);
 
+    const safeMapToSchema = (q) => {
+      // If the question is already flat (Old Style), return it as is
+      if (!q.meta && !q.content) return q;
+
+      // If it's the New Style (Nested), flatten it for the Database
+      return {
+        // Metadata
+        level: q.meta?.level || q.level,
+        topic: q.meta?.topic || q.topic,
+        subtopic: q.meta?.subtopic || q.subtopic,
+        difficulty: q.meta?.difficulty || q.difficulty,
+        type: q.meta?.type || q.type,
+        strand: q.meta?.strand || q.strand || 'Number and Algebra',
+        subject: q.meta?.subject || q.subject || 'Math',
+        gradeLevel: q.meta?.gradeLevel || q.gradeLevel || 'P1',
+        heuristic: q.meta?.heuristic || q.heuristic || 'Whole Numbers',
+
+        // Content
+        question: q.content?.questionText || q.question || '',
+        solution: q.content?.solutionSteps || q.solution || '',
+        finalAnswer: String(q.content?.finalAnswer ?? q.finalAnswer ?? ''),
+        options: q.content?.options || q.options || null,
+
+        // Visuals (Maps visualEngine to modelData)
+        modelData: q.visualEngine ? {
+          type: q.visualEngine.componentToRender,
+          ...q.visualEngine.componentData
+        } : (q.modelData || null),
+
+        // Input
+        inputType: q.inputRequirement?.inputType || q.inputType || 'STANDARD_TEXT',
+        isApproved: false
+      };
+    };
+
     let parsedQuestions = [];
 
     // --- PATH 1: HYBRID GENERATION (Blueprint Logic + AI Creativity) ---
@@ -174,7 +209,7 @@ export async function POST(request) {
           currentModelId = getBestModel();
           const model = genAI.getGenerativeModel({ 
             model: currentModelId,
-            generationConfig: { responseMimeType: "application/json", temperature: 0.8, maxOutputTokens: 2048 } 
+            generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: 4096 } 
           }, { apiVersion: 'v1beta' });
           try {
             result = await model.generateContent(stepResult.aiPrompt);
@@ -483,8 +518,19 @@ export async function POST(request) {
     }
 
     if (parsedQuestions.length > 0) {
-      await prisma.questionBank.createMany({ data: parsedQuestions });
-      return NextResponse.json({ success: true, count: parsedQuestions.length });
+      // 1. Map all questions (New or Old style) to the flat Schema
+      const finalData = parsedQuestions
+        .filter(q => q !== null) // Safety filter
+        .map(safeMapToSchema);
+
+      // 2. Perform a SINGLE database insertion
+      await prisma.questionBank.createMany({ data: finalData });
+
+      // 3. Return the success response
+      return NextResponse.json({ 
+        success: true, 
+        count: finalData.length 
+      });
     }
     
     throw new Error("No questions generated.");

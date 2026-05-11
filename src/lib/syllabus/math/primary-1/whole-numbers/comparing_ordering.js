@@ -114,7 +114,9 @@ export const comparingOrderingBlueprint = {
     }
 
     // Localization Context (defined once, used in structured prompts)
-    const context = getRandomContext('GENERAL'); // Comparing and Ordering can use general items
+    const levelNum = parseInt(level.replace('Primary ', ''));
+    const tier = levelNum <= 2 ? 'LOWER_BLOCK' : (levelNum <= 4 ? 'MIDDLE_BLOCK' : 'UPPER_BLOCK');
+    const context = getRandomContext('GENERAL', tier); // Comparing and Ordering can use general items
     const selectedContextItem = context.items[Math.floor(Math.random() * context.items.length)];
     // Dynamic visual item selection for diagrams (concrete objects) - not directly used in current logic, but good to pass
     const funIcons = ['⚽', '🏀', '⭐', '🚗', '🍎', '🥕', '🍪', '🍬', '🎈', '🧸', '🥟', '🍢', '🍡'];

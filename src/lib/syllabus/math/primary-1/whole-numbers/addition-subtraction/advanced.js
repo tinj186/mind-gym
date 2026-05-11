@@ -6,6 +6,13 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   const inputType = isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT';
   const isShortQ = zodType === 'SHORT_QUESTION';
 
+  const levelNum = parseInt(level.replace('Primary ', ''));
+  const readingMandate = levelNum <= 2 
+    ? "STRICT READING LEVEL: Use sentences with maximum 10-12 words. Use simple nouns and verbs (Sight Words). No words with more than 2 syllables."
+    : (levelNum >= 5 
+        ? "ADVANCED READING LEVEL: You may use complex sentences and technical Singaporean context (e.g., GST, interest rates, or logistics). Use a professional, descriptive tone."
+        : "");
+
   // Safety check for localization context
   const itemLabel = selectedContextItem?.item || 'items';
 
@@ -45,7 +52,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `STRICT: Return ONLY valid JSON.
+      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
       ${isShortQ 
         ? `JSON TEMPLATE:\n${JSON.stringify(promptObject)}`
         : `Task: Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story about ${context.name} having ${num1} and ${num2} ${itemLabel}. This is a regrouping problem, so use context like collecting items.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
@@ -83,7 +90,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `STRICT: Return ONLY valid JSON.
+      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
       ${isShortQ 
         ? `JSON TEMPLATE:\n${JSON.stringify(promptObject)}`
         : `Task: Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story where ${context.name} has ${num1} ${itemLabel} and another person has ${num2} more than ${context.name}.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
@@ -121,7 +128,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `STRICT: Return ONLY valid JSON.
+      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
       ${isShortQ 
         ? `JSON TEMPLATE:\n${JSON.stringify(promptObject)}`
         : `Task: Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story where ${context.name} has ${num1} ${itemLabel} and another person has ${num2} fewer than ${context.name}.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
@@ -159,7 +166,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `STRICT: Return ONLY valid JSON.
+      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
       ${isShortQ 
         ? `JSON TEMPLATE:\n${JSON.stringify(promptObject)}`
         : `Task: Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story about ${context.name} in a queue with ${inFront} people in front and ${behind} people behind.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
@@ -197,7 +204,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `STRICT: Return ONLY valid JSON.
+      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
       ${isShortQ 
         ? `JSON TEMPLATE:\n${JSON.stringify(promptObject)}`
         : `Task: Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story about balancing two groups: "Group A has ${left1} and ${left2} items. Group B has ${right1} items."\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
@@ -230,7 +237,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `STRICT: Return ONLY valid JSON.
+      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
       ${isShortQ 
         ? `JSON TEMPLATE:\n${JSON.stringify(promptObject)}`
         : `Task: Replace the "[STORY]" placeholder in the questionText with a Singaporean word problem where ${context.name} had some items, gave away ${change1}, then received ${change2}, and now has ${finalAmount}.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
@@ -263,7 +270,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `STRICT: Return ONLY valid JSON.
+      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
       ${isShortQ 
         ? `JSON TEMPLATE:\n${JSON.stringify(promptObject)}`
         : `Task: Replace the "[STORY]" placeholder in the questionText with a Singaporean story: "Person A has ${aAmount} items. Person B has ${diff} MORE items than Person A."\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
@@ -302,7 +309,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `STRICT: Return ONLY valid JSON.
+      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
       ${isShortQ 
         ? `JSON TEMPLATE:\n${JSON.stringify(promptObject)}`
         : `Task: Replace the "[STORY]" placeholder in the questionText with a story: "Two triangles add up to ${eq1Sum}. A triangle and a circle add up to ${eq2Sum}."\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
@@ -335,7 +342,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `STRICT: Return ONLY valid JSON.
+      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
       ${isShortQ 
         ? `JSON TEMPLATE:\n${JSON.stringify(promptObject)}`
         : `Task: Replace the "[STORY]" placeholder in the questionText with a story about an ink blot covering the ones digit of ${tens1 * 10 + ones1} being added to ${num2} to make ${sum}.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`

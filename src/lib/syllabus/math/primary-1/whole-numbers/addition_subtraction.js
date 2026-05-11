@@ -109,7 +109,9 @@ export const additionSubtractionBlueprint = {
     const getQText = (words, equation) => isShort ? equation : words;
 
     const formatInstructions = ''; // Creative instructions are handled within the aiPrompt of sub-modules
-    const context = getRandomContext('GENERAL');
+    const levelNum = parseInt(level.replace('Primary ', ''));
+    const tier = levelNum <= 2 ? 'LOWER_BLOCK' : (levelNum <= 4 ? 'MIDDLE_BLOCK' : 'UPPER_BLOCK');
+    const context = getRandomContext('GENERAL', tier);
     const selectedContextItem = context.items[Math.floor(Math.random() * context.items.length)];
     const selectedIcon = '➕'; // Generic icon for addition/subtraction
     const hideVisual = false; // Visuals are controlled by sub-modules based on isShortQ

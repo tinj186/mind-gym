@@ -99,7 +99,9 @@ export const ordinalsBlueprint = {
     const topic = 'Whole Numbers';
 
     const getQText = (words, equation) => isShort ? equation : words;
-    const context = getRandomContext('GENERAL');
+    const levelNum = parseInt(level.replace('Primary ', ''));
+    const tier = levelNum <= 2 ? 'LOWER_BLOCK' : (levelNum <= 4 ? 'MIDDLE_BLOCK' : 'UPPER_BLOCK');
+    const context = getRandomContext('GENERAL', tier);
 
     let formatInstructions = isMCQ 
       ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.` 

@@ -6,6 +6,13 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
   const inputType = isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT';
   const isShortQ = zodType === 'SHORT_QUESTION';
 
+  const levelNum = parseInt(level.replace('Primary ', ''));
+  const readingMandate = levelNum <= 2 
+    ? "STRICT READING LEVEL: Use sentences with maximum 10-12 words. Use simple nouns and verbs (Sight Words). No words with more than 2 syllables."
+    : (levelNum >= 5 
+        ? "ADVANCED READING LEVEL: You may use complex sentences and technical Singaporean context (e.g., GST, interest rates, or logistics). Use a professional, descriptive tone."
+        : "");
+
   // Safety check for localization context
   const itemLabel = selectedContextItem?.item || 'items';
 
@@ -35,7 +42,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     };
 
     return {
-      aiPrompt: `You are a text editor. 
+      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}You are a text editor. 
       STRICT: Replace the "[STORY]" tag in the questionText with a 1-sentence Singaporean story about ${context.name} having ${num1} ${itemLabel} and ${isAdd ? 'getting' : 'giving away'} ${num2} more.
       ${isShortQ 
         ? 'DO NOT add a story for Short Questions.' 
@@ -76,7 +83,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     };
 
     return {
-      aiPrompt: `You are a text editor. 
+      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}You are a text editor. 
       STRICT: Replace the "[STORY]" tag in the questionText with a 1-sentence Singaporean story where ${context.name} has ${part} ${itemLabel} but needs ${sum} in total.
       
       ${isShortQ ? 'DO NOT add a story for Short Questions.'         : `The story MUST be localized (e.g., using names like Ahmad and settings like a playground) and include the numbers ${part} and ${sum}.`}
@@ -136,7 +143,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     };
 
     return {
-      aiPrompt: `You are a text editor. 
+      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}You are a text editor. 
       STRICT: Replace the "[STORY]" tag in the questionText with a 1-sentence Singaporean story.
       ${missingPos === 0
         ? `The story should be about ${context.name} having ${part1} ${itemLabel} and ${part2} ${itemLabel} and combining them.`

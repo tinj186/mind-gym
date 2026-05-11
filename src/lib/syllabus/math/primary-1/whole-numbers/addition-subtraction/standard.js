@@ -6,6 +6,13 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   const inputType = isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT';
   const isShortQ = zodType === 'SHORT_QUESTION';
 
+  const levelNum = parseInt(level.replace('Primary ', ''));
+  const readingMandate = levelNum <= 2 
+    ? "STRICT READING LEVEL: Use sentences with maximum 10-12 words. Use simple nouns and verbs (Sight Words). No words with more than 2 syllables."
+    : (levelNum >= 5 
+        ? "ADVANCED READING LEVEL: You may use complex sentences and technical Singaporean context (e.g., GST, interest rates, or logistics). Use a professional, descriptive tone."
+        : "");
+
   // Safety check for localization context
   const itemLabel = selectedContextItem?.item || 'items';
 
@@ -56,7 +63,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `STRICT: Return ONLY valid JSON.
+      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
       ${isShortQ 
         ? `JSON TEMPLATE:\n${JSON.stringify(promptObject)}`
         : `Task: Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story about ${context.name} having ${num1} and ${num2} ${itemLabel}. DO NOT reveal the answer, but include the numbers ${num1} and ${num2}.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
@@ -112,7 +119,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `STRICT: Return ONLY valid JSON.
+      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
       ${isShortQ 
         ? `JSON TEMPLATE:\n${JSON.stringify(promptObject)}`
         : `Task: Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story about ${context.name} having ${num1} and ${num2} ${itemLabel}. include the numbers ${num1} and ${num2}.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
@@ -149,7 +156,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `STRICT: Return ONLY valid JSON.
+      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
       ${isShortQ 
         ? `JSON TEMPLATE:\n${JSON.stringify(promptObject)}`
         : `Task: Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story about ${context.name} and ${n1}, ${n2}, and ${n3} ${itemLabel}.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
@@ -188,7 +195,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `STRICT: Return ONLY valid JSON.
+      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
       ${isShortQ 
         ? `JSON TEMPLATE:\n${JSON.stringify(promptObject)}`
         : `Task: Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story using only the numbers ${isAdd ? part1 : whole} and ${isAdd ? whole : part1}. DO NOT mention or reveal the missing number (${answer}) in the story text.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
@@ -220,7 +227,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `STRICT: Return ONLY valid JSON.
+      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
       ${isShortQ 
         ? `JSON TEMPLATE:\n${JSON.stringify(promptObject)}`
         : `Task: Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story about related addition and subtraction facts.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
@@ -253,7 +260,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `STRICT: Return ONLY valid JSON.
+      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
       Task: Replace the "[STORY]" tag in the questionText with a Singaporean story: "${context.name} has ${val1} ${itemLabel}. Another person has ${diff} ${isMore ? 'more' : 'fewer'} than ${context.name}."
       
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
@@ -305,7 +312,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `STRICT: Return ONLY valid JSON.
+      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
       ${isShortQ 
         ? `JSON TEMPLATE:\n${JSON.stringify(promptObject)}`
         : `Task: Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story.
