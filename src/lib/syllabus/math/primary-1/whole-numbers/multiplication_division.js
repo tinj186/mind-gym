@@ -40,14 +40,14 @@ export const multiplicationDivisionBlueprint = {
     foundation_grouping_interactive: "Interactive: Group items into sets of a specific size.",
     foundation_sharing_interactive: "Interactive: Share items equally into a given number of groups.",
 
-//    standard_repeated_addition_convert: "Convert repeated addition to a multiplication equation.",
-//    standard_array_rows_cols: "Find the total items in an array (rows and columns).",
-//    standard_comparison_times_as_many: "Solve 'times as many' word problems within 40.",
-//    standard_skip_count_total: "Use skip counting by 2, 5, or 10 to find a total.",
-//    standard_unit_price_calc: "Calculate the total cost of multiple identical items.",
-//    standard_sharing_missing_each: "Find how many in each group (Sharing).",
-//    standard_grouping_missing_groups: "Find the number of groups (Grouping).",
-//    standard_inverse_fact_families: "Solve division using a related multiplication fact.",
+    standard_repeated_addition_convert: "Convert repeated addition to a multiplication equation.",
+    standard_array_rows_cols: "Find the total items in an array (rows and columns).",
+    standard_comparison_times_as_many: "Solve 'times as many' word problems within 40.",
+    standard_skip_count_total: "Use skip counting by 2, 5, or 10 to find a total.",
+    standard_unit_price_calc: "Calculate the total cost of multiple identical items.",
+    standard_sharing_missing_each: "Find how many in each group (Sharing).",
+    standard_grouping_missing_groups: "Find the number of groups (Grouping).",
+    standard_inverse_fact_families: "Solve division using a related multiplication fact.",
     standard_even_odd_sharing: "Identify if a number can be shared equally (Even/Odd logic).",
     standard_attribute_multiplication: "Count total attributes (e.g., wheels on 5 cars).",
 
@@ -132,18 +132,18 @@ export const multiplicationDivisionBlueprint = {
     const selectedIcon = selectedContextItem?.icon || funIcons[Math.floor(Math.random() * funIcons.length)];
 
     // FIX: Only hide visuals for pure equations, NOT for interactive workspaces
-    const hideVis = isShort && !activeVariant.includes('interactive');
+    const hideVisual = isShort && !activeVariant.includes('interactive');
 
     if (activeVariant.startsWith('foundation_')) {
-      return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVis);
+      return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual);
     }
 
     if (activeVariant.startsWith('standard_')) {
-      return standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVis);
+      return standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual);
     }
 
     if (activeVariant.startsWith('advanced_')) {
-      return advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVis);
+      return advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual);
     }
 
     throw new Error(`Variant '${activeVariant}' logic block not implemented.`);

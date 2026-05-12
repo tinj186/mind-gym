@@ -7,20 +7,30 @@ datasource db {
   provider = "postgresql"
 }
 
+model StudentProfile {
+  id           String           @id @default(uuid())
+  primaryLevel String?          // Stores the auto-saved division (e.g., "Primary 1")
+  mastery      StudentMastery[]
+}
+
 model StudentMastery {
   id              String   @id @default(uuid())
   studentId       String   @default("default-student") // Track individual student
+  student         StudentProfile @relation(fields: [studentId], references: [id])
   subject         String   @default("Math")
   level           String   @default("Primary 4")
   topic           String
   subtopic        String?
-  synapseStrength Float    @default(0.0) 
+  topicId         String   // Phase 3 Identifier
+  subTopicId      String?  // Phase 3 Identifier
+  synapseStrength Int      @default(0)    // Range: 0-100
   totalReps       Int      @default(0)
+  defectLog       Json?    @default("{}") // Stores frequency of Defect Codes (e.g., CARELESS_CALCULATION)
   consecutiveWins Int      @default(0)
   lastTrained     DateTime @updatedAt
 
   // Ensure one mastery record per student per subtopic
-  @@unique([studentId, subject, level, topic, subtopic])
+  @@unique([studentId, topicId, subTopicId])
 }
 
 model QuestionBank {

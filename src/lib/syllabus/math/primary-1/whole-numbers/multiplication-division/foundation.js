@@ -47,11 +47,12 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         solutionSteps: isMult ? `${groups} groups of ${itemsPerGroup} makes ${total}.` : `${total} shared into ${groups} groups gives ${itemsPerGroup} in each group.`
       },
       visualEngine: {
-        componentToRender: isShortQ ? "NUMBER_CARDS" : "COUNTING_OBJECTS",
+        componentToRender: isShortQ ? "NUMBER_CARDS" : "EQUAL_GROUPS",
         componentData: { 
-          items: isMult ? [String(groups), String(itemsPerGroup)] : [String(total), String(groups)], 
-          operator: operator, 
-          hideVisual: isShortQ 
+          numGroups: groups,
+          itemsPerGroup: itemsPerGroup,
+          emoji: selectedIcon,
+          hideVisual: isShortQ
         }
       },
       inputRequirement: { inputType }

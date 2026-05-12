@@ -126,9 +126,14 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         finalAnswer: answer,
         solutionSteps: getQText(`1 ${typeLabel.slice(0,-1)} has ${legsPer} wheels. ${count} ${typeLabel} have ${count} x ${legsPer} = ${answer} wheels.`, `${count} x ${legsPer} = ${answer}`)
       },
-      visualEngine: {
-        componentToRender: hideVisual ? "NONE" : "COUNTING_OBJECTS",
-        componentData: { items: [String(count), String(legsPer)], operator: "x", hideVisual: hideVisual }
+      visualEngine: { // Change to EQUAL_GROUPS to show the objects
+        componentToRender: hideVisual ? "NONE" : "EQUAL_GROUPS",
+        componentData: { 
+          numGroups: count, 
+          itemsPerGroup: legsPer, 
+          emoji: selectedIcon, // Use the selectedIcon for the visual items
+          hideVisual: hideVisual 
+        }
       },
       inputRequirement: { inputType }
     };

@@ -1,44 +1,37 @@
 import { prisma } from '@/lib/db';
-import { SYLLABUS_DATA } from '@/lib/syllabus'; // Ensure this contains your topic mappings
+import { SYLLABUS_DATA } from '@/lib/syllabus';
 import DivisionBadge from '@/components/gym/DivisionBadge';
 import MathDashboardClient from '@/components/gym/MathDashboardClient';
 
 export default async function MathWingDashboard() {
-  // 1. Fetch real student data from your updated Prisma schema
-  const studentId = "default-student"; // In production, this comes from your session
+  // Placeholder for session-based student selection
+  const studentId = "default-student"; 
   
   const profile = await prisma.studentProfile.findUnique({
     where: { id: studentId },
     include: { mastery: true }
   });
 
-  // 2. Identify current division for automated scaling (Universal Engine Protocol)
+  // If no profile exists, the DivisionBadge's automated check will trigger the modal
   const currentLevel = profile?.primaryLevel || "";
-  const masteryData = profile?.mastery || [];
-  
-  // 3. Load the specific syllabus blueprint for the selected level
   const syllabus = SYLLABUS_DATA[currentLevel] || [];
+  const masteryData = profile?.mastery || [];
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Gym Header with Division Auto-Save Badge */}
+      {/* Gym Header */}
       <header className="p-6 flex justify-between items-center border-b border-slate-50 sticky top-0 bg-white/80 backdrop-blur-md z-50">
         <div className="flex flex-col">
-          <span className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] block">
-            Mathematics Wing
-          </span>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tighter">
-            Neuro-Trainer Dashboard
-          </h1>
+          <span className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] block">Mathematics Wing</span>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tighter">Neuro-Trainer Dashboard</h1>
         </div>
         
         <div className="flex items-center gap-4">
-          {/* This component handles the automated check-in and auto-save */}
           <DivisionBadge studentId={studentId} currentLevel={currentLevel} />
         </div>
       </header>
 
-      {/* The Three Training Zones & Synapse Map Interaction */}
+      {/* Main Dashboard Interaction Layer */}
       <MathDashboardClient 
         studentId={studentId}
         syllabus={syllabus} 

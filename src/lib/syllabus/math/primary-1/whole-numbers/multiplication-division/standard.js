@@ -127,8 +127,11 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         solutionSteps: getQText(`Counting by ${step} for ${groups} times: ${Array.from({length: groups}, (_, i) => (i + 1) * step).join(', ')}. The total is ${answer}.`, `${groups} x ${step} = ${answer}`)
       },
       visualEngine: {
-        componentToRender: "NUMBER_CARDS",
-        componentData: { items: [String(groups), "groups of", String(step)], hideVisual: hideVisual }
+        componentToRender: hideVisual ? "NONE" : "EQUAL_GROUPS",
+        componentData: { 
+          numGroups: groups, itemsPerGroup: step, emoji: selectedIcon,
+          hideVisual: hideVisual 
+        }
       },
       inputRequirement: { inputType }
     };
@@ -279,9 +282,16 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         finalAnswer: answer,
         solutionSteps: getQText(`${total} is an ${isEven ? 'even' : 'odd'} number. ${isEven ? 'Even numbers can be shared equally into 2 groups.' : 'Odd numbers will always have 1 left over when shared into 2 groups.'}`, `${total} ÷ 2 = ${Math.floor(total/2)}${isEven ? '' : ' remainder 1'}`)
       },
-      visualEngine: {
-        componentToRender: "COUNTING_OBJECTS",
-        componentData: { items: [String(total), "2"], operator: "÷", hideVisual: hideVisual }
+      visualEngine: { // Use GROUPING_WORKSPACE to show the total items for sharing
+        componentToRender: "GROUPING_WORKSPACE",
+        componentData: { 
+          totalItems: total, 
+          groups: 2, // Implicitly sharing among 2 friends
+          mode: "SHARING",
+          icon: selectedIcon,
+          items: Array(total).fill(selectedIcon),
+          hideVisual: hideVisual 
+        }
       },
       inputRequirement: { inputType: 'MCQ_BUTTONS' }
     };
@@ -317,8 +327,11 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         solutionSteps: getQText(`Each ${scenario.type.slice(0, -1)} has ${scenario.per} ${scenario.attr}. ${count} ${scenario.type} have ${count} x ${scenario.per} = ${answer} ${scenario.attr}.`, `${count} x ${scenario.per} = ${answer}`)
       },
       visualEngine: {
-        componentToRender: hideVisual ? "NONE" : "COUNTING_OBJECTS",
-        componentData: { items: [String(count), String(scenario.per)], operator: "x", hideVisual: hideVisual }
+        componentToRender: hideVisual ? "NONE" : "EQUAL_GROUPS",
+        componentData: { 
+          numGroups: count, itemsPerGroup: scenario.per, emoji: selectedIcon,
+          hideVisual: hideVisual 
+        }
       },
       inputRequirement: { inputType }
     };

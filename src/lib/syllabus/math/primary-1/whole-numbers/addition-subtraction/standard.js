@@ -53,7 +53,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           : `Subtract the ones: ${num1 % 10} - ${num2 % 10} = ${(num1 % 10) - (num2 % 10)}. Subtract the tens: ${Math.floor(num1 / 10)}0 - ${Math.floor(num2 / 10)}0 = ${Math.floor(num1 / 10) * 10 - Math.floor(num2 / 10) * 10}. Total is ${answer}.`
       },
       visualEngine: {
-        componentToRender: isShortQ ? "NONE" : "COUNTING_OBJECTS", // Remove Number Cards for equations as they are redundant
+        componentToRender: "NUMBER_CARDS", // Always render number cards for these types
         componentData: { 
           items: [String(num1), String(num2)], 
           hideVisual: isShortQ 
@@ -112,7 +112,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         solutionSteps: `${num1} ${operator} ${num2} = ${answer}.`
       },
       visualEngine: {
-        componentToRender: isShortQ ? "NONE" : "COUNTING_OBJECTS", 
+        componentToRender: "NUMBER_CARDS", 
         componentData: { items: [String(num1), String(num2)], hideVisual: isShortQ }
       },
       inputRequirement: { inputType }
@@ -149,7 +149,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         solutionSteps: `${n1} + ${n2} = ${n1 + n2}. Then ${n1 + n2} + ${n3} = ${answer}.`
       },
       visualEngine: {
-        componentToRender: isShortQ ? "NONE" : "COUNTING_OBJECTS",
+        componentToRender: "NUMBER_CARDS",
         componentData: { items: [String(n1), String(n2), String(n3)], operator: "+", hideVisual: isShortQ }
       },
       inputRequirement: { inputType }
