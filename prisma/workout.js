@@ -11,9 +11,52 @@ import { prisma } from '@/lib/db';
  * @param {string} studentId - The unique ID of the student.
  * @param {string} level - The primary level (e.g., "Primary 1").
  */
+
+// UNIVERSAL ENGINE: Standardized formatting and legacy data bridging
+function formatWorkoutQuestion(q) {
+  if (!q) return null;
+  return {
+    ...q,
+    modelData: (() => {
+      let data = typeof q.modelData === 'string' ? JSON.parse(q.modelData) : (q.modelData || { type: 'NONE' });
+      if ((!data.items || data.items.length === 0) && q.visualItems) {
+        try {
+          const legacyItems = typeof q.visualItems === 'string' ? JSON.parse(q.visualItems) : q.visualItems;
+          data.items = Array.isArray(legacyItems) ? legacyItems : [];
+        } catch (e) { console.error(`[Bridge Error] Question ${q.id}:`, e); }
+      }
+      return data;
+    })(),
+    options: typeof q.options === 'string' ? JSON.parse(q.options) : q.options,
+  };
+}
+
 export async function getDailyWorkout(studentId, level) {
   const totalQuestions = 10;
   
+  // 0. SESSION LOCK: Check if a workout is already in progress
+  const profile = await prisma.studentProfile.findUnique({
+    where: { id: studentId },
+    select: { activeWorkout: true }
+  });
+
+  if (profile?.activeWorkout) {
+    const active = profile.activeWorkout;
+    if (active.questionIds && active.questionIds.length > 0) {
+      // Safety: If current index is out of bounds, clear and start fresh
+      if (active.currentIndex >= active.questionIds.length) {
+        await prisma.studentProfile.update({ where: { id: studentId }, data: { activeWorkout: null } });
+      } else {
+        const existingQuestions = await prisma.questionBank.findMany({ where: { id: { in: active.questionIds } } });
+        const ordered = active.questionIds.map(id => existingQuestions.find(q => q.id === id)).filter(Boolean);
+        if (ordered.length === active.questionIds.length) {
+          console.log(`[Trainer] Resuming locked session for student ${studentId}`);
+          return ordered.map(formatWorkoutQuestion);
+        }
+      }
+    }
+  }
+
   // 1. Fetch Student Mastery records
   const masteryRecords = await prisma.studentMastery.findMany({
     where: { studentId },
@@ -24,21 +67,32 @@ export async function getDailyWorkout(studentId, level) {
   const coreTopics = masteryRecords.filter(m => m.synapseStrength >= 30 && m.synapseStrength < 60).map(m => m.subTopicId);
   const challengeTopics = masteryRecords.filter(m => m.synapseStrength < 30).map(m => m.subTopicId);
 
+  console.log(`[Trainer Logic] Warmup: ${warmUpTopics.length}, Core: ${coreTopics.length}, Challenge: ${challengeTopics.length}`);
+
   const workout = [];
 
-  // Helper to fetch random questions from specific subtopics
+  // ENHANCED: Fetch with Random Offset to prevent static repetition
   const fetchRandomQuestions = async (subtopicIds, limit, excludeIds = []) => {
     if (subtopicIds.length === 0) return [];
-    return prisma.$queryRaw`
-      SELECT * FROM "QuestionBank" 
-      WHERE "level" = ${level} 
-      AND "subtopic" IN (${subtopicIds})
-      AND "isApproved" = true
-      AND "difficulty" IN ('Foundation', 'Standard', 'Advanced')
-      AND "id" NOT IN (${excludeIds.length > 0 ? excludeIds : ['']})
-      ORDER BY RANDOM()
-      LIMIT ${limit}
-    `;
+    
+    const where = {
+      level,
+      isApproved: true,
+      difficulty: { in: ['Foundation', 'Standard', 'Advanced'] },
+      id: { notIn: excludeIds },
+      subtopic: { in: subtopicIds }
+    };
+
+    const count = await prisma.questionBank.count({ where });
+    if (count === 0) return [];
+
+    const randomSkip = Math.floor(Math.random() * Math.max(0, count - limit));
+
+    return prisma.questionBank.findMany({
+      where,
+      skip: randomSkip,
+      take: limit
+    });
   };
 
   // 2. 20% Warm-up (2 Reps)
@@ -73,21 +127,43 @@ export async function getDailyWorkout(studentId, level) {
   // 5. Fallback logic: If we don't have enough specific questions, fill with random ones for that level
   if (workout.length < totalQuestions) {
     const remaining = totalQuestions - workout.length;
+    const fallbackCount = await prisma.questionBank.count({
+      where: { level, isApproved: true, id: { notIn: workout.map(q => q.id) } }
+    });
+    const fallbackSkip = Math.floor(Math.random() * Math.max(0, fallbackCount - remaining));
+
     const fillers = await prisma.questionBank.findMany({
-      where: { 
-        level,
-        isApproved: true,
-        difficulty: { in: ['Foundation', 'Standard', 'Advanced'] },
-        id: { notIn: workout.map(q => q.id) }
-      },
+      where: { level, isApproved: true, id: { notIn: workout.map(q => q.id) } },
+      skip: fallbackSkip,
       take: remaining
     });
     workout.push(...fillers);
   }
 
-  return workout.map(q => ({
-    ...q,
-    modelData: typeof q.modelData === 'string' ? JSON.parse(q.modelData) : q.modelData,
-    options: typeof q.options === 'string' ? JSON.parse(q.options) : q.options,
-  }));
+  const finalWorkout = workout.map(formatWorkoutQuestion);
+
+  // PIN THE SESSION: Save IDs and reset progress using upsert for safety
+  await prisma.studentProfile.upsert({
+    where: { id: studentId },
+    update: {
+      activeWorkout: {
+        questionIds: finalWorkout.map(q => q.id),
+        currentIndex: 0,
+        answersLog: []
+      }
+    },
+    create: {
+      id: studentId,
+      name: studentId === "default-student" ? "Default Student" : "New Student",
+      externalId: studentId === "default-student" ? "default-external-id" : studentId,
+      primaryLevel: level,
+      activeWorkout: {
+        questionIds: finalWorkout.map(q => q.id),
+        currentIndex: 0,
+        answersLog: []
+      }
+    }
+  });
+
+  return finalWorkout;
 }

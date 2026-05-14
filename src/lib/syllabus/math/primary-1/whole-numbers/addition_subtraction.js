@@ -112,8 +112,19 @@ export const additionSubtractionBlueprint = {
     const levelNum = parseInt(level.replace('Primary ', ''));
     const tier = levelNum <= 2 ? 'LOWER_BLOCK' : (levelNum <= 4 ? 'MIDDLE_BLOCK' : 'UPPER_BLOCK');
     const context = getRandomContext('GENERAL', tier);
-    const selectedContextItem = context.items[Math.floor(Math.random() * context.items.length)];
-    const selectedIcon = '➕'; // Generic icon for addition/subtraction
+    const itemData = context.items[Math.floor(Math.random() * context.items.length)];
+
+    // ROBUST EXTRACTION: Handle nested localization objects
+    const selectedContextItem = typeof itemData === 'object'
+      ? (itemData.item || itemData.singular || itemData.name?.singular || (typeof itemData.name === 'string' ? itemData.name : null) || itemData.text || itemData.name?.text || itemData.val || String(itemData))
+      : itemData;
+
+    if (String(selectedContextItem).includes('[object')) console.warn("⚠️ [Blueprint: Addition] Context item extraction failed for:", itemData);
+
+    // Dynamic visual item selection
+    const funIcons = ['⚽', '🏀', '⭐', '🚗', '🍎', '🥕', '🍪', '🍬', '🎈', '🧸', '🥟', '🍢', '🍡'];
+    const selectedIcon = itemData?.icon || '➕';
+
     const hideVisual = false; // Visuals are controlled by sub-modules based on isShortQ
 
     if (activeVariant.startsWith('foundation_')) {

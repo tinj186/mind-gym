@@ -45,37 +45,37 @@ export default function TrainingPage() {
   useEffect(() => {
     const fetchQuestion = async () => {
       try {
-         // Hardcode question ID for testing purposes
-        const hardcodedQuestionId = '92ed9cdb-b5e8-4283-a014-664e6101d491';
-        const response = await fetch(`/api/question?id=${hardcodedQuestionId}`, { cache: 'no-store' });
+        const searchParams = new URLSearchParams(window.location.search);
+        const qId = searchParams.get('id');
+        
+        if (!qId) {
+          throw new Error("No Question ID provided in URL.");
+        }
+
+        const response = await fetch(`/api/question?id=${qId}`, { 
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+        });
        if (!response.ok) throw new Error('Failed to fetch question');
         let data = await response.json();
 
-        // Initialize modelData if missing (common in bulk fallback/legacy questions)
-        if (!data.modelData) {
-          data.modelData = { type: "NONE", items: [] };
-        }
-
-        // Robust parsing of modelData if it arrived as a string
+        // UNIVERSAL DATA SYNC: Ensure modelData is parsed and contains items
         if (data.modelData && typeof data.modelData === 'string') {
           try {
             data.modelData = JSON.parse(data.modelData);
           } catch (e) {
             console.error("Failed to parse modelData:", e);
+            data.modelData = { type: "NONE", items: [] };
           }
+        } else if (!data.modelData) {
+          data.modelData = { type: "NONE", items: [] };
         }
 
-        // UNIVERSAL DATA SYNC: Ensure modelData.items is populated from visualItems column if missing
+        // Map legacy visualItems column if modelData.items is missing
         if (data.modelData && (!data.modelData.items || data.modelData.items.length === 0) && data.visualItems) {
-            let items = data.visualItems;
-            // Handle cases where visualItems column is a stringified JSON
-            if (typeof items === 'string' && (items.startsWith('[') || items.startsWith('{'))) {
-                try {
-                    items = JSON.parse(items);
-                } catch (e) {
-                    console.error("Failed to parse visualItems string:", e);
-                }
-            }
+            const items = typeof data.visualItems === 'string' 
+              ? JSON.parse(data.visualItems) 
+              : data.visualItems;
             data.modelData.items = Array.isArray(items) ? items : [];
         }
 

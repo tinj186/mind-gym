@@ -100,19 +100,33 @@ export const countingBlueprint = {
     const levelNum = parseInt(level.replace('Primary ', ''));
     const tier = levelNum <= 2 ? 'LOWER_BLOCK' : (levelNum <= 4 ? 'MIDDLE_BLOCK' : 'UPPER_BLOCK');
     const context = getRandomContext('GENERAL', tier); // Counting typically uses general items
-    const selectedContextItem = context.items[Math.floor(Math.random() * context.items.length)];
+    const itemData = context.items[Math.floor(Math.random() * context.items.length)];
+
+    // ROBUST EXTRACTION: Handle nested objects (e.g. { name: { singular: '...' } }) or direct keys
+    const selectedContextItem = typeof itemData === 'object' 
+      ? (itemData.item || itemData.singular || itemData.name?.singular || (typeof itemData.name === 'string' ? itemData.name : null) || itemData.text || itemData.name?.text || itemData.val || String(itemData)) 
+      : itemData;
+
+    if (String(selectedContextItem).includes('[object')) console.warn("⚠️ [Blueprint] Context item extraction failed for:", itemData);
 
     // Dynamic visual item selection for diagrams (concrete objects)
     const funIcons = ['⚽', '🏀', '⭐', '🚗', '🍎', '🥕', '🍪', '🍬', '🎈', '🧸', '🥟', '🍢', '🍡'];
-    const selectedIcon = funIcons[Math.floor(Math.random() * funIcons.length)];
+    const selectedIcon = itemData?.icon || funIcons[Math.floor(Math.random() * funIcons.length)];
 
+
+    const hintProtocol = `\nCRITICAL HINT PROTOCOL: You MUST provide a "hint" field.
+Forbidden: "The answer is 8," "Try 4+4."
+Required: Ask a guiding question or point to a visual cue.
+Example: "Try counting on from the bigger number. What comes after 7?" or "How many are in just one of the groups?"`;
+
+    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: For the "visualItems" array and any "modelData" icons, you MUST use the emoji: "${selectedIcon}". Do not pick any other emoji.`;
 
     if (isMCQ) {
-      formatInstructions = `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.`;
+      formatInstructions = `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}${visualProtocol}`;
     } else if (isShort) {
-      formatInstructions = `Format as Short Answer. The "options" field in your JSON should be null.`;
+      formatInstructions = `Format as Short Answer. The "options" field in your JSON should be null.${hintProtocol}${visualProtocol}`;
     } else {
-      formatInstructions = `Format as Structured Question. The "options" field in your JSON should be null. CRITICAL: For the "questionText" string, write a clear localized word problem.`;
+      formatInstructions = `Format as Structured Question. The "options" field in your JSON should be null. CRITICAL: For the "questionText" string, write a clear localized word problem.${hintProtocol}${visualProtocol}`;
     }
     
     // ==========================================

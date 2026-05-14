@@ -2,12 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { getMissingHintCount, processHintBatchAction } from '@/lib/admin/hintActions';
 
 export default function AdminSettingsPage() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [dbStatus, setDbStatus] = useState('checking'); // 'checking' | 'online' | 'offline'
   const [dbError, setDbError] = useState(null);
+
+  // AI Hint Backfill States
+  const [hintStatus, setHintStatus] = useState('idle'); // 'idle' | 'running' | 'finished'
+  const [hintProgress, setHintProgress] = useState({ current: 0, total: 0 });
 
   const checkDbStatus = async () => {
     try {
@@ -47,21 +52,52 @@ export default function AdminSettingsPage() {
     }
   };
 
+  const runHintGeneration = async () => {
+    try {
+      setHintStatus('running');
+      
+      const totalToProcess = await getMissingHintCount();
+      if (totalToProcess === 0) {
+        setHintStatus('finished');
+        return;
+      }
+      setHintProgress({ current: 0, total: totalToProcess });
+
+      let processed = 0;
+      while (processed < totalToProcess) {
+        const result = await processHintBatchAction(5);
+        // Break loop if the server action fails or returns no progress
+        if (!result || result.count === 0) break;
+        
+        processed += result.count;
+        setHintProgress(prev => ({ ...prev, current: processed }));
+      }
+
+      setHintStatus('finished');
+    } catch (err) {
+      console.error("Neural Processing interrupted:", err);
+      alert(`Sync Failed: ${err.message}. Please restart the container to clear Server Action cache.`);
+      setHintStatus('idle');
+    }
+  };
+
   useEffect(() => {
     checkDbStatus();
   }, []);
 
+  const hintPercentage = hintProgress.total > 0 
+    ? Math.round((hintProgress.current / hintProgress.total) * 100) 
+    : 0;
+
   return (
     <div className="min-h-screen bg-slate-50 p-8">
       <div className="max-w-5xl mx-auto space-y-8">
-        <header>
-          <Link href="/admin/questions" className="text-blue-600 font-bold text-sm uppercase tracking-widest hover:underline mb-2 block">
-            ← Back to Dashboard
+        <header className="border-b-4 border-slate-900 pb-6">
+          <Link href="/admin/questions" className="text-blue-600 font-bold text-xs uppercase tracking-[0.2em] hover:underline mb-4 block">
+            ← Return to Command Center
           </Link>
-          <h1 className="text-4xl font-extrabold text-slate-900 tracking-tighter uppercase">
-            Admin Settings
-          </h1>
-          <p className="text-slate-400 font-medium">Manage AI models and core infrastructure health.</p>
+          <h1 className="text-5xl font-black italic tracking-tighter uppercase">Engine Room</h1>
+          <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">System Maintenance // Data Calibration</p>
         </header>
 
         <div className="grid grid-cols-1 gap-8">
@@ -76,6 +112,47 @@ export default function AdminSettingsPage() {
                 {dbError && <p className="text-[10px] text-red-500 font-mono mt-1 max-w-md break-words">{dbError}</p>}
               </div>
             </div>
+          </section>
+
+          {/* Module: AI Hint Backfill */}
+          <section className="bg-white rounded-[3rem] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-10 border-4 border-slate-900 space-y-8">
+            <div className="flex justify-between items-end">
+              <div>
+                <h2 className="text-2xl font-black">AI HINT BACKFILL</h2>
+                <p className="text-slate-500 font-medium text-sm">Injecting conceptual scaffolding into the Question Bank.</p>
+              </div>
+              <button 
+                onClick={runHintGeneration}
+                disabled={hintStatus === 'running'}
+                className={`px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-md ${
+                  hintStatus === 'running' 
+                    ? 'bg-slate-100 text-slate-400' 
+                    : 'bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95 shadow-lg'
+                }`}
+              >
+                {hintStatus === 'running' ? 'CALIBRATING...' : 'START SYNC'}
+              </button>
+            </div>
+
+            {(hintStatus === 'running' || hintStatus === 'finished') && (
+              <div className="space-y-4 animate-in fade-in zoom-in-95 duration-500">
+                <div className="flex justify-between font-black text-[10px] uppercase tracking-widest text-slate-400">
+                  <span>{hintStatus === 'finished' ? 'Sync Complete' : 'Neural Processing...'}</span>
+                  <span>{hintProgress.current} / {hintProgress.total} Questions</span>
+                </div>
+                <div className="h-10 w-full bg-slate-50 rounded-2xl overflow-hidden border-4 border-slate-900 p-1">
+                  <div 
+                    className="h-full bg-indigo-500 rounded-xl transition-all duration-500 ease-out flex items-center justify-end px-4"
+                    style={{ width: `${hintPercentage}%` }}
+                  >
+                    <span className="text-white text-[10px] font-black">{hintPercentage}%</span>
+                  </div>
+                </div>
+                {hintStatus === 'finished' && (
+                  <p className="text-center text-green-600 font-black text-xs uppercase tracking-widest">✅ Question Bank successfully enriched.</p>
+                )}
+              </div>
+            )}
           </section>
 
           {/* Module: AI Performance & Benchmarks */}

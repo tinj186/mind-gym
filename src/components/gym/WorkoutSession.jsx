@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect, useTransition, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { finalizeWorkoutAction } from '@/lib/intelligence/workoutActions';
+import { finalizeWorkoutAction, updateWorkoutProgressAction, saveAttemptAction } from '@/lib/intelligence/workoutActions';
 import GroupingWorkspace from '@/components/tools/GroupingWorkspace'; // Import the interactive tool
+import confetti from 'canvas-confetti';
 
-export default function WorkoutSession({ studentId, level, initialQuestions }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [answersLog, setAnswersLog] = useState([]);
+export default function WorkoutSession({ studentId, level, initialQuestions = [], initialIndex = 0, initialLog = [] }) {
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [answersLog, setAnswersLog] = useState(initialLog);
   const [startTime] = useState(Date.now());
   const [attempts, setAttempts] = useState(0);
   const [showHint, setShowHint] = useState(false);
@@ -21,72 +22,112 @@ export default function WorkoutSession({ studentId, level, initialQuestions }) {
   const currentQuestion = initialQuestions[currentIndex];
   const isP1 = level === "Primary 1";
 
-  // --- PHASE 3: TROUBLESHOOTING & PROP DERIVATION ---
-  // We extract these to variables to allow logging and prevent NaN issues
-  const modelData = currentQuestion?.modelData || {};
-  
-  const derivedTotal = 
-    modelData.totalItems || 
-    modelData.total || 
-    (Array.isArray(modelData.groups) ? modelData.groups.reduce((sum, c) => sum + (Number(c) || 0), 0) : null) ||
-    (Array.isArray(modelData.items) ? modelData.items.length : null) ||
-    (Array.isArray(modelData.numbers) ? modelData.numbers.length : null) ||
-    (modelData.numGroups && modelData.itemsPerGroup ? (modelData.numGroups * modelData.itemsPerGroup) : null) ||
-    (Number(currentQuestion.finalAnswer) || 10);
+  // --- PHASE 4: MEMOIZED PROP DERIVATION ---
+  const visualProps = useMemo(() => {
+    const modelData = currentQuestion?.modelData || {};
+    
+    const total = 
+      modelData.totalItems || 
+      modelData.total || 
+      (Array.isArray(modelData.groups) ? modelData.groups.reduce((sum, c) => sum + (Number(c) || 0), 0) : null) ||
+      (Array.isArray(modelData.items) ? modelData.items.length : null) ||
+      (Array.isArray(modelData.numbers) ? modelData.numbers.length : null) ||
+      (modelData.numGroups && modelData.itemsPerGroup ? (modelData.numGroups * modelData.itemsPerGroup) : null) ||
+      (Number(currentQuestion?.finalAnswer) || 10);
 
-  const derivedIcon = 
-    modelData.emoji || 
-    modelData.icon || 
-    (Array.isArray(modelData.icons) ? modelData.icons[0] : null) || 
-    (Array.isArray(modelData.items) ? modelData.items[0] : null) || 
-    '🎈';
+    const icon = 
+      modelData.emoji || 
+      modelData.icon || 
+      (Array.isArray(modelData.icons) ? modelData.icons[0] : null) || 
+      (Array.isArray(modelData.items) ? modelData.items[0] : null) || 
+      '🎈';
 
-  const derivedMode = (currentQuestion.subtopic?.includes('Division') || currentQuestion.topic?.includes('Division')) 
-    ? 'SHARING' : (modelData.mode || 'GROUPING');
+    const mode = (currentQuestion?.subtopic?.includes('Division') || currentQuestion?.topic?.includes('Division')) 
+      ? 'SHARING' : (modelData.mode || 'GROUPING');
 
-  const derivedExpectedGroups = modelData.numGroups || modelData.groups || modelData.groupCount;
-  
-  const derivedTargetSize = modelData.targetGroupSize || modelData.itemsPerGroup || modelData.size || 10;
+    return {
+      modelData,
+      totalItems: total,
+      icon,
+      mode,
+      expectedGroups: modelData.numGroups || modelData.groups || modelData.groupCount,
+      targetSize: modelData.targetGroupSize || modelData.itemsPerGroup || modelData.size || 10
+    };
+  }, [currentQuestion]);
 
   // Injecting Console Debugger
   useEffect(() => {
+    if (!currentQuestion) return;
     console.group(`🔍 [WorkoutSession] Question ${currentIndex + 1} Logic Trace`);
     console.log("Question ID:", currentQuestion?.id);
-    console.log("Topic / Subtopic:", `${currentQuestion?.topic} / ${currentQuestion?.subtopic}`);
-    console.log("Difficulty:", currentQuestion?.difficulty);
-    console.log("Raw ModelData:", modelData);
-    console.log("Derived Values:", {
-      totalItems: derivedTotal,
-      icon: derivedIcon,
-      mode: derivedMode,
-      expectedGroups: derivedExpectedGroups,
-      targetSize: derivedTargetSize
-    });
+    console.log("Visual Context:", visualProps);
     
     // Troubleshooting common failure points
-    if (isNaN(derivedTotal)) console.error("❌ ERROR: totalItems is NaN. Check finalAnswer conversion.");
-    if (derivedTotal === 100) console.warn("⚠️ WARNING: totalItems is 100. This is likely a fallback.");
-    if (!modelData.type) console.error("❌ ERROR: modelData.type is missing! Visuals will not render.");
+    if (isNaN(visualProps.totalItems)) console.error("❌ ERROR: totalItems is NaN.");
+    if (visualProps.totalItems === 100) console.warn("⚠️ WARNING: totalItems is 100 (Fallback detected).");
+    if (!visualProps.modelData.type) console.error("❌ ERROR: modelData.type is missing!");
     
     console.groupEnd();
-  }, [currentIndex, currentQuestion]);
+  }, [currentIndex, currentQuestion, visualProps]);
+
+  // Part 2: Resume Logic (Mount check)
+  useEffect(() => {
+    const saved = localStorage.getItem(`active_workout_${studentId}`);
+    if (saved) {
+      const data = JSON.parse(saved);
+      // Only resume if the saved session is incomplete and has more progress
+      if (data.answersLog?.length > answersLog.length && data.answersLog?.length < 10) {
+        setAnswersLog(data.answersLog);
+        setCurrentIndex(data.currentIndex);
+        console.log("💪 Workout resumed from local storage.");
+      }
+    }
+  }, [studentId]);
+
+  // Handle Rank Up Celebration
+  useEffect(() => {
+    if (summary && summary.rankUps.length > 0) {
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#3b82f6', '#10b981', '#f59e0b']
+      });
+    }
+  }, [summary]);
   // --------------------------------------------------
 
-  const moveToNext = (result) => {
+  const moveToNext = useCallback((result) => {
     const nextIndex = currentIndex + 1;
     const newLog = [...answersLog, result];
     setAnswersLog(newLog);
     setAttempts(0);
     setShowHint(false);
     setShowSolution(false);
+    setShowBarModel(false);
     setFeedback(null);
+
+    // Part 2: Real-Time Saving & Persistence
+    startTransition(async () => {
+      try {
+        await saveAttemptAction(studentId, result);
+        if (nextIndex < initialQuestions.length) {
+          await updateWorkoutProgressAction(studentId, { currentIndex: nextIndex, answersLog: newLog });
+          localStorage.setItem(`active_workout_${studentId}`, JSON.stringify({
+            initialQuestions,
+            currentIndex: nextIndex,
+            answersLog: newLog
+          }));
+        }
+      } catch (e) { console.error("Real-time save failed:", e); }
+    });
 
     if (nextIndex < initialQuestions.length) {
       setCurrentIndex(nextIndex);
     } else {
       handleFinish(newLog);
     }
-  };
+  }, [currentIndex, answersLog, initialQuestions.length, studentId]);
 
   const handleAnswer = async (submittedAnswer) => {
     const isCorrect = String(submittedAnswer).trim().toLowerCase() === String(currentQuestion.finalAnswer).trim().toLowerCase();
@@ -100,6 +141,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions }) {
         level: currentQuestion.level,
         subject: currentQuestion.subject,
         isCorrect: attempts === 0, // Mastery is only "Success" if gotten right on the 1st try
+        assistedCorrect: attempts > 0,
         actualCorrect: true,
         attempts: attempts + 1,
         timeSpent: Math.floor((Date.now() - startTime) / 1000)
@@ -110,30 +152,25 @@ export default function WorkoutSession({ studentId, level, initialQuestions }) {
       }, 1500);
     } else {
       setFeedback('wrong');
-      const newAttempts = attempts + 1;
-      setAttempts(newAttempts);
-      
-      if (newAttempts >= 2) {
-        // "Double-Strike" - Show solution and move to next question
-        setShowSolution(true);
-        const failedResult = {
-          questionId: currentQuestion.id,
-          subTopicId: currentQuestion.subtopic || "",
-          topicId: currentQuestion.topic,
-          level: currentQuestion.level,
-          subject: currentQuestion.subject,
-          isCorrect: false, // Mastery will decay for this sub-topic
-          actualCorrect: false,
-          attempts: newAttempts,
-          timeSpent: Math.floor((Date.now() - startTime) / 1000)
-        };
-        
-        setTimeout(() => {
-          moveToNext(failedResult);
-        }, 3000); // Give them 3s to see the solution before moving on
-      } else {
+      const nextAttempt = attempts + 1;
+      setAttempts(nextAttempt);
+
+      if (nextAttempt === 1) {
+        // STRIKE 1: Show conceptual hint
         setShowHint(true);
+        if (isP1) setShowBarModel(true);
+        
+        // Automatically open the grouping tool for relevant question types
+        if (['COUNTING_OBJECTS', 'EQUAL_GROUPS'].includes(currentQuestion.modelData?.type)) {
+          setIsToolOpen(true);
+        }
+        
         setTimeout(() => setFeedback(null), 1500);
+      } else {
+        // STRIKE 2: Reveal solution and block further input
+        setShowHint(false);
+        setShowSolution(true);
+        setFeedback('solution_revealed');
       }
     }
   };
@@ -141,6 +178,9 @@ export default function WorkoutSession({ studentId, level, initialQuestions }) {
   const handleFinish = (finalLog) => {
     startTransition(async () => {
       const summaryData = await finalizeWorkoutAction(studentId, finalLog);
+      // CLEAR SESSION: Remove the lock once complete
+      await updateWorkoutProgressAction(studentId, null);
+      localStorage.removeItem(`active_workout_${studentId}`);
       setSummary(summaryData);
     });
   };
@@ -165,6 +205,21 @@ export default function WorkoutSession({ studentId, level, initialQuestions }) {
           </motion.div>
         )}
         <button onClick={() => window.location.href = '/gym'} className="px-12 py-4 bg-slate-900 text-white rounded-full font-black">Finish Training</button>
+      </div>
+    );
+  }
+
+  // Safety Catch for empty workouts or loading errors
+  if (!currentQuestion) {
+    return (
+      <div className="max-w-4xl mx-auto p-12 text-center space-y-8 bg-white border-4 border-slate-50 rounded-[3rem] shadow-xl">
+        <div className="text-4xl mb-4">🏋️</div>
+        <h2 className="text-2xl font-black text-slate-900">Arena Empty</h2>
+        <p className="text-slate-400">We couldn't find enough exercises for your current level.</p>
+        <div className="flex gap-4 justify-center pt-4">
+          <button onClick={() => window.location.reload()} className="px-8 py-3 bg-blue-600 text-white rounded-full font-black text-sm hover:bg-blue-700 transition-colors">↻ Retry Load</button>
+          <button onClick={() => window.location.href = '/gym'} className="px-8 py-3 bg-slate-100 text-slate-600 rounded-full font-black text-sm hover:bg-slate-200 transition-colors">Exit Arena</button>
+        </div>
       </div>
     );
   }
@@ -310,12 +365,12 @@ export default function WorkoutSession({ studentId, level, initialQuestions }) {
                       onClose={() => { /* No explicit close needed for workout session */ }}
                       questionId={currentQuestion.id}
                       difficulty={currentQuestion.difficulty}
-                      mode={derivedMode}
-                      totalItems={derivedTotal}
-                      expectedGroups={derivedExpectedGroups}
-                      targetGroupSize={derivedTargetSize}
+                      mode={visualProps.mode}
+                      totalItems={visualProps.totalItems}
+                      expectedGroups={visualProps.expectedGroups}
+                      targetGroupSize={visualProps.targetSize}
                       showTargetSize={currentQuestion.topic !== 'Division'} // Assuming 'Division' topic implies target size is the answer
-                      icon={derivedIcon}
+                      icon={visualProps.icon}
                     />
                   )}
 
@@ -334,29 +389,54 @@ export default function WorkoutSession({ studentId, level, initialQuestions }) {
             </div>
           )}
 
-          {feedback && (
+          {feedback && feedback !== 'solution_revealed' && (
             <div className={`p-6 rounded-2xl text-center font-black text-white ${feedback === 'correct' ? 'bg-green-500' : 'bg-rose-500'}`}>
               {feedback === 'correct' ? 'PERFECT FORM!' : 'ADJUSTING GRIP...'}
             </div>
           )}
 
-          <input 
-            autoFocus
-            onKeyDown={(e) => e.key === 'Enter' && handleAnswer(e.target.value)}
-            className="w-full text-4xl font-black p-8 bg-slate-50 rounded-3xl outline-none text-center"
-            placeholder="?"
-          />
+          {feedback !== 'solution_revealed' ? (
+            <input 
+              key={`input-${currentIndex}-${attempts}`}
+              autoFocus
+              onKeyDown={(e) => e.key === 'Enter' && handleAnswer(e.target.value)}
+              className="w-full text-4xl font-black p-8 bg-slate-50 rounded-3xl outline-none text-center"
+              placeholder="?"
+              disabled={feedback === 'correct'}
+            />
+          ) : (
+            <button
+              onClick={() => {
+                const failedResult = {
+                  questionId: currentQuestion.id,
+                  subTopicId: currentQuestion.subtopic || "",
+                  topicId: currentQuestion.topic,
+                  level: currentQuestion.level,
+                  subject: currentQuestion.subject,
+                  isCorrect: false,
+                  assistedCorrect: false,
+                  actualCorrect: false,
+                  attempts: attempts,
+                  timeSpent: Math.floor((Date.now() - startTime) / 1000)
+                };
+                moveToNext(failedResult);
+              }}
+              className="w-full py-8 bg-slate-900 text-white rounded-3xl font-black text-2xl hover:bg-slate-800 transition-all active:scale-95"
+            >
+              NEXT REP →
+            </button>
+          )}
 
           {showHint && (
-            <div className="p-6 bg-blue-50 rounded-2xl border-2 border-blue-100">
-              <p className="text-blue-900 font-bold text-sm">{currentQuestion.solution.split('\n')[0]}</p>
+            <div className="p-6 bg-amber-50 rounded-2xl border-2 border-amber-200 animate-in fade-in slide-in-from-bottom-4">
+              <p className="text-amber-900 font-bold text-sm">💡 HINT: {currentQuestion.hint || "Try counting carefully!"}</p>
             </div>
           )}
 
-          {showSolution && (
-            <div className="p-6 bg-slate-900 text-white rounded-2xl border-4 border-slate-800">
-              <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Trainer's Solution</p>
-              <p className="font-bold text-sm leading-relaxed">{currentQuestion.solution}</p>
+          {feedback === 'solution_revealed' && (
+            <div className="p-6 bg-rose-50 rounded-2xl border-2 border-rose-200 animate-in zoom-in-95">
+              <p className="text-rose-900 font-black text-xs uppercase tracking-widest mb-2">Form Check: Let's see the steps</p>
+              <p className="text-slate-700 text-sm italic leading-relaxed">{currentQuestion.solution}</p>
             </div>
           )}
         </motion.div>
@@ -389,11 +469,11 @@ export default function WorkoutSession({ studentId, level, initialQuestions }) {
                   onClose={() => setIsToolOpen(false)}
                   questionId={currentQuestion.id}
                   difficulty={currentQuestion.difficulty}
-                      mode={derivedMode}
-                      totalItems={derivedTotal}
-                      icon={derivedIcon}
-                      expectedGroups={derivedExpectedGroups}
-                      targetGroupSize={derivedTargetSize}
+                  mode={visualProps.mode}
+                  totalItems={visualProps.totalItems}
+                  icon={visualProps.icon}
+                  expectedGroups={visualProps.expectedGroups}
+                  targetGroupSize={visualProps.targetSize}
                   showTargetSize={currentQuestion.topic !== 'Division'}
                 />
               </div>

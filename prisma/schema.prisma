@@ -8,9 +8,13 @@ datasource db {
 }
 
 model StudentProfile {
-  id           String           @id @default(uuid())
-  primaryLevel String?          // Stores the auto-saved division (e.g., "Primary 1")
-  mastery      StudentMastery[]
+  id            String           @id @default(uuid())
+  name          String           @default("Default Student") // Temporary default for existing rows
+  externalId    String           @unique @default("default-external-id") // Temporary default for existing rows
+  primaryLevel  String?          // Stores the auto-saved division (e.g., "Primary 1")
+  mastery       StudentMastery[]
+  activeWorkout Json?            // Stores { questionIds: String[], currentIndex: Int, answersLog: Json }
+  createdAt     DateTime         @default(now()) // Added for sorting
 }
 
 model StudentMastery {
@@ -47,6 +51,8 @@ model QuestionBank {
   question    String   @db.Text
   options     Json?    // Stores ["A: ..", "B: ..", "C: ..", "D: .."] or null for MCQ
   modelData   Json?    // Visual Bar Model coordinates/values
+  visualItems Json?    // Legacy column for bridged items
+  hint        String?  @db.Text // Conceptual hint for "Spotter" system
   solution    String   @db.Text
   finalAnswer String
   isApproved  Boolean  @default(false)
@@ -63,6 +69,8 @@ model AttemptLog {
   isLogicCorrect   Boolean?     // Tier 2/3: AI's assessment of the bar model logic
   studentAnswer String?      
   modelDescription String?      @db.Text // The serialized "story" of the bars
+  attempts      Int          @default(1) // Number of attempts taken
+  assistedCorrect Boolean    @default(false) // True if answered correctly after a hint
   timeSpentSecs Int
   defectCode       String?      // e.g., "CONSTANT_VIOLATION"
   gradingTier      Int          @default(1) 

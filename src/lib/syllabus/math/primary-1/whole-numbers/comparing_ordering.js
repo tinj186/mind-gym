@@ -108,19 +108,36 @@ export const comparingOrderingBlueprint = {
     const getQText = (words, equation) => isShort ? equation : words;
 
     let formatInstructions = '';
+    const hintProtocol = `\nCRITICAL HINT PROTOCOL: You MUST provide a conceptual "hint" field.
+Forbidden: "Choose 15," "It's the smallest one."
+Required: Point to place value or relative clues.
+Example: "Compare the tens place first. Which number has more tens?" or "If A is more than B, who is standing closer to the front?"`;
+
+    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: For the "visualItems" array and any "modelData" icons, you MUST use the emoji: "${selectedIcon || '⭐'}". Do not pick any other emoji.`;
+
     // Only provide creative instructions for structured word problems
     if (isStructure) {
-      formatInstructions = `CRITICAL: For the "questionText" string, write a clear localized word problem.`;
+      formatInstructions = `CRITICAL: For the "questionText" string, write a clear localized word problem.${hintProtocol}${visualProtocol}`;
+    } else {
+      formatInstructions = `${hintProtocol}${visualProtocol}`;
     }
 
     // Localization Context (defined once, used in structured prompts)
     const levelNum = parseInt(level.replace('Primary ', ''));
     const tier = levelNum <= 2 ? 'LOWER_BLOCK' : (levelNum <= 4 ? 'MIDDLE_BLOCK' : 'UPPER_BLOCK');
     const context = getRandomContext('GENERAL', tier); // Comparing and Ordering can use general items
-    const selectedContextItem = context.items[Math.floor(Math.random() * context.items.length)];
+    const itemData = context.items[Math.floor(Math.random() * context.items.length)];
+
+    // ROBUST EXTRACTION: Handle nested objects or direct singular/plural keys
+    const selectedContextItem = typeof itemData === 'object'
+      ? (itemData.item || itemData.singular || itemData.name?.singular || (typeof itemData.name === 'string' ? itemData.name : null) || itemData.text || itemData.name?.text || itemData.val || String(itemData))
+      : itemData;
+
+    if (String(selectedContextItem).includes('[object')) console.warn("⚠️ [Blueprint: Comparing] Context item extraction failed for:", itemData);
+
     // Dynamic visual item selection for diagrams (concrete objects) - not directly used in current logic, but good to pass
     const funIcons = ['⚽', '🏀', '⭐', '🚗', '🍎', '🥕', '🍪', '🍬', '🎈', '🧸', '🥟', '🍢', '🍡'];
-    const selectedIcon = funIcons[Math.floor(Math.random() * funIcons.length)];
+    const selectedIcon = itemData?.icon || funIcons[Math.floor(Math.random() * funIcons.length)];
     
     // Enable visuals for all question types in Comparing and Ordering to ensure consistent rendering between MCQ and Short Questions
     const hideVisual = false; 

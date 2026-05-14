@@ -1,7 +1,9 @@
 import { prisma } from '@/lib/db';
 
 export let modelPriorityList = [
-  "gemini-3.1-flash-lite-preview", // 🟢 Fastest & highly intelligent (Newest)
+  "gemini-3.1-flash-lite",
+//  "gemini-3.1-flash",
+//  "gemini-3.1-pro", // 🟢 Fastest & highly intelligent (Newest)
   "gemini-2.5-flash",              // 🟡 Excellent reasoning, very stable
   "gemini-2.5-pro"                 // 🔴 Powerhouse for complex logic (Fallback)
 ];

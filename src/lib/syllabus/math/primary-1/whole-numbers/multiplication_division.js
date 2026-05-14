@@ -123,13 +123,20 @@ export const multiplicationDivisionBlueprint = {
     
     // Ensure alignment between the story item and the visual icon by filtering for items with icons
     const itemsWithIcons = context.items.filter(i => i.icon && i.icon.trim() !== '');
-    const selectedContextItem = itemsWithIcons.length > 0 
+    const itemData = itemsWithIcons.length > 0 
       ? itemsWithIcons[Math.floor(Math.random() * itemsWithIcons.length)]
       : context.items[Math.floor(Math.random() * context.items.length)];
 
+    // ROBUST EXTRACTION: Extract display name and handle icons separately
+    const selectedContextItem = typeof itemData === 'object'
+      ? (itemData.item || itemData.singular || itemData.name?.singular || (typeof itemData.name === 'string' ? itemData.name : null) || itemData.text || itemData.name?.text || itemData.val || String(itemData))
+      : itemData;
+
+    if (String(selectedContextItem).includes('[object')) console.warn("⚠️ [Blueprint: Mult/Div] Context item extraction failed for:", itemData);
+
     // Dynamic visual item selection
     const funIcons = ['⚽', '🏀', '⭐', '🚗', '🥟', '🍢', '🍡', '🍎'];
-    const selectedIcon = selectedContextItem?.icon || funIcons[Math.floor(Math.random() * funIcons.length)];
+    const selectedIcon = itemData?.icon || funIcons[Math.floor(Math.random() * funIcons.length)];
 
     // FIX: Only hide visuals for pure equations, NOT for interactive workspaces
     const hideVisual = isShort && !activeVariant.includes('interactive');

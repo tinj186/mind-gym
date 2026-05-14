@@ -68,7 +68,7 @@ services:
       echo '⏳ Waiting for network stabilization...' && sleep 15 &&
       npx prisma generate && 
       echo '🚀 Synchronizing database...' &&
-      for i in {1..10}; do npx prisma db push --accept-data-loss && break || (echo 'Retrying DB connection in 5s...' && sleep 5); done &&
+      for i in {1..10}; do npx prisma db push && break || (echo 'Retrying DB connection in 5s...' && sleep 5); done &&
       chmod -R +x node_modules/@prisma/engines node_modules/.prisma &&
       npm run dev"
     depends_on:

@@ -325,6 +325,16 @@ export default function ReviewList({ initialQuestions, isViewOnly }) {
                   {/* Solution-level Visuals (Abstract Bar Models) */}
                   {isSolutionVisual && <DiagramRenderer modelData={modelData} isQuestion={false} questionId={q.id} difficulty={q.difficulty} />}
                 <p className="text-sm text-slate-600 leading-relaxed italic whitespace-pre-line">{q.solution}</p>
+                
+                {/* NEW: Render the Pedagogical Hint if it exists */}
+                {q.hint && (
+                  <div className="mt-4 p-4 bg-amber-50 border-2 border-amber-100 rounded-2xl animate-in fade-in slide-in-from-bottom-2">
+                    <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-1 flex items-center gap-1">
+                      <span>💡</span> Pedagogical Scaffolding (Hint)
+                    </p>
+                    <p className="text-xs text-amber-900 font-bold italic leading-relaxed">{q.hint}</p>
+                  </div>
+                )}
               </div>
               <div className="space-y-2">
                 <span className="text-[10px] font-black text-green-500 uppercase tracking-widest">Final Answer</span>
