@@ -59,7 +59,9 @@ export default async function QuestionReviewPage({ searchParams }) {
                 <h1 className="text-4xl font-extrabold text-slate-900 uppercase tracking-tighter">
                   {isApprovedFilter ? 'Approved Content' : 'Pending Review'}
                 </h1>
-                <p className="text-slate-400 font-medium">{level} • {topic} • {type} • {difficulty}</p>
+                <p className="text-slate-400 font-medium">
+                  {[level, topic, subtopic?.replace(/\s+to\s+\d+/, ''), type, difficulty].filter(Boolean).join(' • ')}
+                </p>
               </div>
             </div>
 

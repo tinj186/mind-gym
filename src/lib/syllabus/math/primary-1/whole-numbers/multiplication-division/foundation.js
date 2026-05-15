@@ -1,6 +1,6 @@
 import { numberToWords } from '@/lib/utils/math-helpers';
 
-export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual) {
+export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual, supportsStructured) {
   const commonMeta = { 
     level, 
     topic, 
@@ -41,28 +41,33 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const promptObject = {
       meta: commonMeta,
       content: {
-        questionText: getQText(`[STORY] How many are there ${isMult ? 'altogether' : 'in each group'}?`, equationStr),
+        questionText: getQText(`[STORY] How many are there ${isMult ? 'altogether' : 'in each group'}?`, equationStr, zodType),
+        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         options: options,
         finalAnswer: answer,
-        solutionSteps: isMult ? `${groups} groups of ${itemsPerGroup} makes ${total}.` : `${total} shared into ${groups} groups gives ${itemsPerGroup} in each group.`
+        solutionSteps: isMult ? `${groups} groups of ${itemsPerGroup} makes ${total}.` : `${total} shared into ${groups} groups gives ${itemsPerGroup} in each group.`,
       },
       visualEngine: {
-        componentToRender: isShortQ ? "NUMBER_CARDS" : "EQUAL_GROUPS",
+        componentToRender: (isShortQ && supportsStructured) ? "NONE" : (isShortQ ? "NUMBER_CARDS" : "EQUAL_GROUPS"),
         componentData: { 
           numGroups: groups,
           itemsPerGroup: itemsPerGroup,
           emoji: selectedIcon,
-          hideVisual: isShortQ
+          hideVisual: (isShortQ && supportsStructured)
         }
       },
       inputRequirement: { inputType }
     };
 
     return {
-      aiPrompt: `${readingMandate}\nSTRICT: Return ONLY valid JSON. ${formatInstructions}\n${isShortQ 
-        ? 'Task: Return the JSON exactly as provided. Do not add any text.' 
-        : `Task: Replace the "[STORY]" tag with a 1-sentence Singaporean context about ${context.name} and ${isMult ? `${groups} groups of ${itemsPerGroup} ${itemLabel}` : `sharing ${total} ${itemLabel} among ${groups} friends`}. Return the JSON exactly as provided.`
-      }\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      aiPrompt: `${readingMandate}
+      STRICT: Return ONLY valid JSON.
+      HINT PROTOCOL:
+      - 1 short sentence focusing on the "${isMult ? 'Equal Groups' : 'Sharing'}" concept.
+      - NEVER reveal the final answer: ${answer}.
+      ARCHITECTURE MODE: ${supportsStructured ? '3-TYPE (Pure Math for Short Q)' : '2-TYPE (Brief Story allowed for Short Q)'}
+      
+      TEMPLATE: ${JSON.stringify(promptObject)}`,
       metadata: { difficulty: 'foundation', logic: activeVariant, hideVisual: hideVisual }
     };
   }
@@ -78,13 +83,14 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const promptObject = {
       meta: commonMeta,
       content: {
-        questionText: `[STORY] Use the grouping tool to find the answer.`,
+        questionText: getQText(`[STORY] Use the grouping tool to find the answer.`, isSharing ? `${total} ÷ ${groups} = ?` : `${total} ÷ ${itemsPerGroup} = ?`, zodType),
+        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         options: null, 
         finalAnswer: answer,
         solutionSteps: isSharing ? `Share ${total} items equally into ${groups} groups. There are ${answer} items in each group.` : `Group ${total} items into sets of ${itemsPerGroup}. You get ${answer} groups.`
       },
       visualEngine: {
-        componentToRender: "GROUPING_WORKSPACE",
+        componentToRender: (isShortQ && supportsStructured) ? "NONE" : "GROUPING_WORKSPACE",
         componentData: { 
           totalItems: total, 
           groups: isSharing ? groups : null, 
@@ -92,20 +98,21 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
           mode: isSharing ? 'SHARING' : 'GROUPING',
           icon: selectedIcon,
           items: Array(total).fill(selectedIcon),
-          hideVisual: false 
+          hideVisual: (isShortQ && supportsStructured)
         }
       },
       inputRequirement: { inputType: 'STANDARD_TEXT' }
     };
 
     return {
-      aiPrompt: `${readingMandate}\nSTRICT: Return ONLY valid JSON. ${formatInstructions}\n${isShortQ 
-        ? 'Task: Return the JSON exactly as provided. Do not add any text.' 
-        : `Task: Replace the "[STORY]" tag with a 1-sentence Singaporean context about ${isSharing 
-            ? `sharing ${total} ${itemLabel} equally into ${groups} groups` 
-            : `putting ${total} ${itemLabel} into groups of ${itemsPerGroup}`
-          }. Return the JSON exactly as provided.`
-      }\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      aiPrompt: `${readingMandate}
+      STRICT: Return ONLY valid JSON.
+      HINT PROTOCOL:
+      - 1 short sentence focusing on the "${isSharing ? 'Sharing' : 'Grouping'}" concept.
+      - NEVER reveal the final answer: ${answer}.
+      ARCHITECTURE MODE: ${supportsStructured ? '3-TYPE (Pure Math for Short Q)' : '2-TYPE (Brief Story allowed for Short Q)'}
+      
+      TEMPLATE: ${JSON.stringify(promptObject)}`,
       metadata: { difficulty: 'foundation', logic: activeVariant, hideVisual: false }
     };
   }

@@ -45,7 +45,7 @@ function getSyllabusPrompt(quantity, level, strand, topic, subtopic, heuristic, 
       "modelData": object,
       "solution": "step-by-step mathematical explanation with each step on a new line",
       "finalAnswer": "string or JSON object",
-      "hint": "conceptual scaffolding hint (no answers or numbers)",
+      "hint": "MANDATORY: Provide a conceptual scaffolding hint (do NOT include the answer or specific numbers)",
       "context": {
         "item": "string name",
         "icon": "string emoji"
@@ -129,37 +129,41 @@ export async function POST(request) {
     console.log("API RECEIVED -> Level:", level, "Topic:", topic, "Subtopic:", subtopic, "Type:", type, "Difficulty:", difficulty, "Variant:", variant);
 
     const safeMapToSchema = (q) => {
-      // If the question is already flat (Old Style), return it as is
-      if (!q.meta && !q.content) return q;
+      // Determine if we are processing raw AI output (Nested) or pre-flattened push object
+      const isRawAI = !!(q.meta || q.content || q.visualEngine);
+      
+      let prismaModelData = q.modelData || null;
 
-      // If it's the New Style (Nested), flatten it for the Database
-      return {
-        // Metadata
-        level: q.meta?.level || q.level,
-        topic: q.meta?.topic || q.topic,
-        subtopic: q.meta?.subtopic || q.subtopic,
-        difficulty: q.meta?.difficulty || q.difficulty,
-        type: q.meta?.type || q.type,
-        strand: q.meta?.strand || q.strand || 'Number and Algebra',
-        subject: q.meta?.subject || q.subject || 'Math',
-        gradeLevel: q.meta?.gradeLevel || q.gradeLevel || 'P1',
-        heuristic: q.meta?.heuristic || q.heuristic || 'Whole Numbers',
-
-        // Content
-        question: q.content?.questionText || q.question || '',
-        solution: q.content?.solutionSteps || q.solution || '',
-        hint: q.content?.hint || q.hint || null,
-        finalAnswer: String(q.content?.finalAnswer ?? q.finalAnswer ?? ''),
-        options: q.content?.options || q.options || null,
-
-        // Visuals (Maps visualEngine to modelData)
-        modelData: q.visualEngine ? {
+      // TRANSFORM: Map visualEngine to modelData, respecting blueprint-level overrides
+      if (isRawAI && q.visualEngine) {
+        prismaModelData = {
           type: q.visualEngine.componentToRender,
-          ...q.visualEngine.componentData
-        } : (q.modelData || null),
+          ...q.visualEngine.componentData,
+          // AUDIT FIX: Prefer q.modelData.hideVisual (the blueprint decision) over AI defaults
+          hideVisual: q.modelData?.hideVisual ?? q.visualEngine.componentData?.hideVisual ?? (q.visualEngine.componentToRender === 'NONE')
+        };
+      }
 
-        // Input
-        inputType: q.inputRequirement?.inputType || q.inputType || 'STANDARD_TEXT',
+      const getStr = (val) => typeof val === 'object' ? JSON.stringify(val) : String(val || "");
+
+      return {
+        subject: q.subject || q.meta?.subject || subject || 'Math',
+        strand: q.strand || q.meta?.strand || strand || 'Number and Algebra',
+        level: q.level || q.meta?.level || level || 'Primary 1',
+        gradeLevel: q.gradeLevel || q.meta?.gradeLevel || gradeLevel || 'P1',
+        heuristic: q.heuristic || q.meta?.heuristic || heuristic || 'Standard',
+        topic: q.topic || q.meta?.topic || topic || 'Whole Numbers',
+        subtopic: q.subtopic || q.meta?.subtopic || subtopic || '',
+        type: q.type || q.meta?.type || type || 'Short Question',
+        difficulty: q.difficulty || q.meta?.difficulty || difficulty || 'Foundation',
+        question: getStr(q.content?.questionText || q.questionText || q.question || 'Missing question text'),
+        options: q.content?.options || q.options || null,
+        modelData: prismaModelData ? JSON.parse(JSON.stringify(prismaModelData)) : null,
+        // AUDIT FIX: Ensure visualItems (emojis) are mapped even if nested inside modelData
+        visualItems: q.visualItems || prismaModelData?.items || null,
+        hint: q.content?.hint || q.hint || q.conceptualHint || q.content?.conceptualHint || null,
+        solution: getStr(q.content?.solutionSteps || q.solutionSteps || q.solution || 'Missing solution steps'),
+        finalAnswer: String(q.content?.finalAnswer ?? q.finalAnswer ?? ''),
         isApproved: false
       };
     };
@@ -262,7 +266,7 @@ export async function POST(request) {
                 },
                 question: validatedData.content.questionText,
                 solution: validatedData.content.solutionSteps,
-                hint: q.content?.hint || q.hint || null
+                hint: q.content?.hint || q.hint || q.conceptualHint || q.content?.conceptualHint || null
               });
             } catch (zodError) {
               // Pull out AI-specific keys to prevent Prisma Unknown Argument errors
@@ -296,7 +300,7 @@ export async function POST(request) {
                 modelData: prismaModelData,
                 question: typeof (cleanQ.question || questionText || q.question) === 'object' ? JSON.stringify(cleanQ.question || questionText || q.question) : String(cleanQ.question || questionText || q.question || "Problem data missing"),
                 solution: typeof (cleanQ.solution || solutionSteps || q.solution) === 'object' ? JSON.stringify(cleanQ.solution || solutionSteps || q.solution) : String(cleanQ.solution || solutionSteps || q.solution || "No solution provided"),
-                hint: q.content?.hint || q.hint || null
+                hint: q.content?.hint || q.hint || q.conceptualHint || q.content?.conceptualHint || null
               });
             }
           }
@@ -335,7 +339,7 @@ export async function POST(request) {
         Requirement: You MUST return a visualItems array where every element is the emoji "${selectedIcon}". 
         Consistency: Ensure the question text mentions "${selectedContextItem}".
 
-        Output ONLY a valid JSON object: { question, options, solution, finalAnswer, visualItems, modelData, hint, context }. Do not output an array or metadata.`;
+        Output ONLY a valid JSON object: { question, options, solution, finalAnswer, visualItems, modelData, hint, context }. The "hint" field is MANDATORY and must contain conceptual scaffolding. Do not output an array or metadata.`;
         
         let result;
         let retries = 3;
@@ -391,7 +395,7 @@ export async function POST(request) {
               },
               question: validatedData.content.questionText,
                 solution: validatedData.content.solutionSteps,
-                hint: q.content?.hint || q.hint || null
+                hint: q.content?.hint || q.hint || q.conceptualHint || q.content?.conceptualHint || null
             });
           } catch (zodError) {
             // Pull out AI-specific keys to prevent Prisma Unknown Argument errors
@@ -423,7 +427,7 @@ export async function POST(request) {
               modelData: prismaModelData,
               question: typeof (cleanQ.question || questionText || q.question) === 'object' ? JSON.stringify(cleanQ.question || questionText || q.question) : String(cleanQ.question || questionText || q.question || "Problem data missing"),
               solution: typeof (cleanQ.solution || solutionSteps || q.solution) === 'object' ? JSON.stringify(cleanQ.solution || solutionSteps || q.solution) : String(cleanQ.solution || solutionSteps || q.solution || "No solution provided"),
-              hint: q.content?.hint || q.hint || null
+              hint: q.content?.hint || q.hint || q.conceptualHint || q.content?.conceptualHint || null
             });
           }
         }
@@ -484,7 +488,7 @@ export async function POST(request) {
                 },
                 question: validatedData.content.questionText,
                 solution: validatedData.content.solutionSteps,
-                hint: q.content?.hint || q.hint || null
+                hint: q.content?.hint || q.hint || q.conceptualHint || q.content?.conceptualHint || null
               });
             } catch (zodError) {
               // Pull out AI-specific keys to prevent Prisma Unknown Argument errors
@@ -513,7 +517,7 @@ export async function POST(request) {
                 modelData: prismaModelData,
                 question: typeof (cleanQ.question || questionText || q.question) === 'object' ? JSON.stringify(cleanQ.question || questionText || q.question) : String(cleanQ.question || questionText || q.question || "Problem data missing"),
                 solution: typeof (cleanQ.solution || solutionSteps || q.solution) === 'object' ? JSON.stringify(cleanQ.solution || solutionSteps || q.solution) : String(cleanQ.solution || solutionSteps || q.solution || "No solution provided"),
-                hint: q.content?.hint || q.hint || null
+                hint: q.content?.hint || q.hint || q.conceptualHint || q.content?.conceptualHint || null
               });
             }
           }

@@ -1,5 +1,5 @@
 import { numberToWords } from '@/lib/utils/math-helpers';
-export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual) {
+export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon) {
   const commonMeta = { level, topic, type: zodType, difficulty: zodDiff };
   const inputType = isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT';
 
@@ -17,11 +17,13 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const options = isMCQ ? [answer, ...distractors].sort(() => Math.random() - 0.5) : null;
     const items = [...sequence.map(String), "?"];
 
+    const hideVisual = isShort; // Visual is redundant if questionText contains the sequence
     const promptObject = {
       meta: commonMeta,
       content: {
         questionText: getQText(`What is the next number in this pattern?`, `What is the next number: ${sequence.join(', ')}, ?`),
         options: options,
+        hint: null,
         finalAnswer: answer,
         solutionSteps: getQText(`The pattern is counting ${isForward ? 'on' : 'back'} by 1. So, ${sequence[3]} ${isForward ? '+' : '-'} 1 = ${answer}.`, `${sequence[3]} ${isForward ? '+' : '-'} 1 = ${answer}.`)
       },
@@ -33,7 +35,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     };
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. 
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
     STRICT: Use the [STORY] placeholder below to create a 1-sentence Singaporean math story (e.g., using names like Siti, items like curry puffs, and settings like an MRT station).
     The story MUST provide context for the sequence (e.g., Siti is counting her stickers). DO NOT mention the number 1 in your story.
     
@@ -53,11 +55,13 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const options = isMCQ ? [answer, String(sequence[2] - 2), String(sequence[2] + 1), String(sequence[2] + 2)].sort(() => Math.random() - 0.5) : null;
     const items = [String(sequence[0]), String(sequence[1]), "?", String(sequence[3]), String(sequence[4])];
 
+    const hideVisual = isShort; // Visual is redundant if questionText contains the sequence
     const promptObject = {
       meta: commonMeta,
       content: {
         questionText: getQText(`What is the missing number in the middle?`, `What is the missing number? ${items.join(', ')}`),
         options: options,
+        hint: null,
         finalAnswer: answer,
         solutionSteps: getQText(`The pattern is counting ${isForward ? 'on' : 'back'} by 1. So, ${sequence[1]} ${isForward ? '+' : '-'} 1 = ${answer}.`, `${sequence[1]} ${isForward ? '+' : '-'} 1 = ${answer}.`)
       },
@@ -69,7 +73,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     };
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. 
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
     STRICT: Use the [STORY] placeholder below to create a 1-sentence Singaporean math story (e.g., using names like Siti, items like curry puffs, and settings like an MRT station).
     The story MUST provide context for the sequence (e.g., Ahmad is arranging his toy cars). DO NOT mention the number 1 in your story.
     
@@ -87,11 +91,13 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const options = isMCQ ? [answer, String(start - 1), String(start + 4), String(start + 2)].sort(() => Math.random() - 0.5) : null;
     const items = ["?", String(sequence[1]), String(sequence[2]), String(sequence[3])];
 
+    const hideVisual = isShort; // Visual is redundant if questionText contains the sequence
     const promptObject = {
       meta: commonMeta,
       content: {
         questionText: getQText(`What is the first number in the pattern?`, `What is the missing number? ${items.join(', ')}`),
         options: options,
+        hint: null,
         finalAnswer: answer,
         solutionSteps: getQText(`The pattern is counting on by 1. To find the first number, we count back by 1 from ${sequence[1]}. So, ${sequence[1]} - 1 = ${answer}.`, `${sequence[1]} - 1 = ${answer}.`)
       },
@@ -103,7 +109,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     };
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. 
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
     STRICT: Use the [STORY] placeholder below to create a 1-sentence Singaporean math story (e.g., using names like Siti, items like curry puffs, and settings like an MRT station).
     The story MUST provide context for the sequence (e.g., Wei Ling is collecting seashells). DO NOT mention the number 1 in your story.
     

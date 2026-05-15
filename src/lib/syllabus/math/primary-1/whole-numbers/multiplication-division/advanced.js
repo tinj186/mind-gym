@@ -1,4 +1,4 @@
-export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual) {
+export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual, supportsStructured) {
   const commonMeta = { 
     level, 
     topic, 
@@ -43,27 +43,32 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const promptObject = {
       meta: commonMeta,
       content: {
-        questionText: getQText(`[STORY] How many items are there altogether?`, equationStr),
+        questionText: getQText(`[STORY] How many items are there altogether?`, equationStr, zodType),
+        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         options: options,
         finalAnswer: answer,
         solutionSteps: getQText(`Step 1 (Groups): ${groups} x ${size} = ${groupsTotal}. Step 2 (Add extra): ${groupsTotal} + ${extra} = ${answer}.`, `(${groups} x ${size}) + ${extra} = ${answer}`)
       },
       visualEngine: {
-        componentToRender: "NUMBER_CARDS",
+        componentToRender: (isShortQ && supportsStructured) ? "NONE" : "NUMBER_CARDS",
         componentData: { 
           items: ["(", String(groups), "x", String(size), ")", "+", String(extra)], 
-          hideVisual: hideVisual 
+          hideVisual: hideVisual || (isShortQ && supportsStructured)
         }
       },
       inputRequirement: { inputType }
     };
 
     return {
-      aiPrompt: `${readingMandate}\nSTRICT: Return ONLY valid JSON. ${formatInstructions}\n${isShortQ 
-        ? 'Task: Return the JSON exactly as provided. Do not add any text.' 
-        : `Task: Replace the "[STORY]" tag with a 1-sentence Singaporean context about ${context.name} having ${groups} groups of ${size} ${itemLabel} and finding ${extra} more. Return the JSON exactly as provided.`
-      }\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
-      metadata: { difficulty: 'advanced', logic: activeVariant }
+      aiPrompt: `${readingMandate}
+      STRICT: Return ONLY valid JSON.
+      HINT PROTOCOL:
+      - 1 short sentence focusing on the "Equal Groups" followed by addition concept.
+      - NEVER reveal the final answer: ${answer}.
+      ARCHITECTURE MODE: ${supportsStructured ? '3-TYPE (Pure Math for Short Q)' : '2-TYPE (Brief Story allowed for Short Q)'}
+      
+      TEMPLATE: ${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'advanced', logic: activeVariant, hideVisual: hideVisual }
     };
   }
 
@@ -87,27 +92,32 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const promptObject = {
       meta: commonMeta,
       content: {
-        questionText: getQText(`[STORY] How many items are left?`, equationStr),
+        questionText: getQText(`[STORY] How many items are left?`, equationStr, zodType),
+        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         options: options,
         finalAnswer: answer,
         solutionSteps: getQText(`Step 1 (Groups): ${groups} x ${size} = ${groupsTotal}. Step 2 (Subtract): ${groupsTotal} - ${remove} = ${answer}.`, `(${groups} x ${size}) - ${remove} = ${answer}`)
       },
       visualEngine: {
-        componentToRender: "NUMBER_CARDS",
+        componentToRender: (isShortQ && supportsStructured) ? "NONE" : "NUMBER_CARDS",
         componentData: { 
           items: ["(", String(groups), "x", String(size), ")", "-", String(remove)], 
-          hideVisual: hideVisual 
+          hideVisual: hideVisual || (isShortQ && supportsStructured)
         }
       },
       inputRequirement: { inputType }
     };
 
     return {
-      aiPrompt: `${readingMandate}\nSTRICT: Return ONLY valid JSON. ${formatInstructions}\n${isShortQ 
-        ? 'Task: Return the JSON exactly as provided. Do not add any text.' 
-        : `Task: Replace the "[STORY]" tag with a 1-sentence Singaporean context about ${context.name} having ${groups} groups of ${size} ${itemLabel} and giving away ${remove} to a friend. Return the JSON exactly as provided.`
-      }\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
-      metadata: { difficulty: 'advanced', logic: activeVariant }
+      aiPrompt: `${readingMandate}
+      STRICT: Return ONLY valid JSON.
+      HINT PROTOCOL:
+      - 1 short sentence focusing on the "Equal Groups" followed by subtraction concept.
+      - NEVER reveal the final answer: ${answer}.
+      ARCHITECTURE MODE: ${supportsStructured ? '3-TYPE (Pure Math for Short Q)' : '2-TYPE (Brief Story allowed for Short Q)'}
+      
+      TEMPLATE: ${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'advanced', logic: activeVariant, hideVisual: hideVisual }
     };
   }
 
@@ -121,29 +131,35 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const promptObject = {
       meta: commonMeta,
       content: {
-        questionText: getQText(`[STORY] How many wheels are there altogether?`, `${count} x ${legsPer} = ?`),
+        questionText: getQText(`[STORY] How many wheels are there altogether?`, `${count} x ${legsPer} = ?`, zodType),
+        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         options: isMCQ ? [answer, String((count-1)*legsPer), String(count*(legsPer+1)), String(count+legsPer)].sort(() => Math.random() - 0.5) : null,
         finalAnswer: answer,
         solutionSteps: getQText(`1 ${typeLabel.slice(0,-1)} has ${legsPer} wheels. ${count} ${typeLabel} have ${count} x ${legsPer} = ${answer} wheels.`, `${count} x ${legsPer} = ${answer}`)
       },
       visualEngine: { // Change to EQUAL_GROUPS to show the objects
-        componentToRender: hideVisual ? "NONE" : "EQUAL_GROUPS",
+        componentToRender: (isShortQ && supportsStructured) ? "NONE" : (hideVisual ? "NONE" : "EQUAL_GROUPS"),
         componentData: { 
           numGroups: count, 
           itemsPerGroup: legsPer, 
           emoji: selectedIcon, // Use the selectedIcon for the visual items
-          hideVisual: hideVisual 
+          items: Array(count * legsPer).fill(selectedIcon),
+          hideVisual: (isShortQ && supportsStructured)
         }
       },
       inputRequirement: { inputType }
     };
 
     return {
-      aiPrompt: `${readingMandate}\nSTRICT: Return ONLY valid JSON. ${formatInstructions}\n${isShortQ 
-        ? 'Task: Return the JSON exactly as provided. Do not add any text.' 
-        : `Task: Replace the "[STORY]" tag with a 1-sentence Singaporean context about counting ${count} ${typeLabel} at a park. Return the JSON exactly as provided.`
-      }\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
-      metadata: { difficulty: 'advanced', logic: "wheels_legs" }
+      aiPrompt: `${readingMandate}
+      STRICT: Return ONLY valid JSON.
+      HINT PROTOCOL:
+      - 1 short sentence focusing on the "Equal Groups" concept in a logic context.
+      - NEVER reveal the final answer: ${answer}.
+      ARCHITECTURE MODE: ${supportsStructured ? '3-TYPE (Pure Math for Short Q)' : '2-TYPE (Brief Story allowed for Short Q)'}
+      
+      TEMPLATE: ${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'advanced', logic: "wheels_legs", hideVisual: hideVisual }
     };
   }
 }

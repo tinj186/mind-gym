@@ -1,7 +1,7 @@
 import { numberToWords } from '@/lib/utils/math-helpers';
 import { getRandomContext } from '@/lib/utils/localization';
 
-export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual) {
+export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, displayName, getQText, selectedIcon, hideVisual) {
   const commonMeta = { level, topic, type: zodType, difficulty: zodDiff };
   const inputType = isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT';
   const isShortQ = zodType === 'SHORT_QUESTION';
@@ -14,7 +14,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         : "");
 
   // Safety check for localization context
-  const itemLabel = selectedContextItem?.item || 'items';
+  const itemLabel = displayName;
 
   // 1. Standard Addition/Subtraction within 100 (No Regrouping)
   if (activeVariant === 'standard_add_100_no_regroup' || activeVariant === 'standard_sub_100_no_regroup') {
@@ -46,6 +46,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       meta: commonMeta,
       content: {
         questionText: getQText(`[STORY] How many items does ${context.name} have ${isAdd ? 'in total' : 'left'}?`, `${num1} ${operator} ${num2} = ?`),
+        hint: "[AI: INJECT HINT]",
         options: options,
         finalAnswer: answer,
         solutionSteps: isAdd 
@@ -64,9 +65,12 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
+      Task: 
+      1. Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story about ${context.name} having ${num1} and ${num2} ${itemLabel}.
+      2. In the "hint" field, provide a conceptual clue. Point to place value (tens and ones) as a strategy.
       ${isShortQ 
-        ? `JSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-        : `Task: Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story about ${context.name} having ${num1} and ${num2} ${itemLabel}. DO NOT reveal the answer, but include the numbers ${num1} and ${num2}.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
+        ? `3. DO NOT add a story for Short Questions.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
+        : `3. The story MUST be localized.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
       }`,
       metadata: { 
         difficulty: 'standard', 
@@ -107,6 +111,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       meta: commonMeta,
       content: {
         questionText: getQText(`[STORY] How many does ${context.name} have ${isAdd ? 'altogether' : 'left'}?`, `${num1} ${operator} ${num2} = ?`),
+        hint: "[AI: INJECT HINT]",
         options: options,
         finalAnswer: answer,
         solutionSteps: `${num1} ${operator} ${num2} = ${answer}.`
@@ -120,9 +125,12 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
+      Task: 
+      1. Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story about ${context.name} having ${num1} and ${num2} ${itemLabel}.
+      2. In the "hint" field, provide a conceptual clue about adding or subtracting.
       ${isShortQ 
-        ? `JSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-        : `Task: Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story about ${context.name} having ${num1} and ${num2} ${itemLabel}. include the numbers ${num1} and ${num2}.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
+        ? `3. DO NOT add a story for Short Questions.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
+        : `3. The story MUST be localized.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
       }`,
       metadata: { 
         difficulty: 'standard', 
@@ -144,6 +152,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       meta: commonMeta,
       content: {
         questionText: getQText(`[STORY] How many are there in total?`, `${n1} + ${n2} + ${n3} = ?`),
+        hint: "[AI: INJECT HINT]",
         options: isMCQ ? [answer, String(n1 + n2), String(parseInt(answer) + 2), String(parseInt(answer) - 1)].sort(() => Math.random() - 0.5) : null,
         finalAnswer: answer,
         solutionSteps: `${n1} + ${n2} = ${n1 + n2}. Then ${n1 + n2} + ${n3} = ${answer}.`
@@ -157,9 +166,12 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
+      Task: 
+      1. Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story about ${context.name} and ${n1}, ${n2}, and ${n3} ${itemLabel}.
+      2. In the "hint" field, provide a conceptual clue (e.g., adding two numbers first).
       ${isShortQ 
-        ? `JSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-        : `Task: Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story about ${context.name} and ${n1}, ${n2}, and ${n3} ${itemLabel}.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
+        ? `3. DO NOT add a story for Short Questions.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
+        : `3. The story MUST be localized.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
       }`,
       metadata: { difficulty: 'standard', logic: "add_3_num", hideVisual: isShortQ }
     };
@@ -179,6 +191,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       meta: commonMeta,
       content: {
         questionText: getQText(`[STORY] What is the missing number?`, `Find the missing number: ${equation}`),
+        hint: "[AI: INJECT HINT]",
         options: isMCQ ? [answer, String(part2 + 10), String(part2 + 1), String(part1)].sort(() => Math.random() - 0.5) : null,
         finalAnswer: answer,
         solutionSteps: isAdd ? `${whole} - ${part1} = ${answer}.` : `${whole} - ${part1} = ${answer}.`
@@ -196,9 +209,12 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
+      Task: 
+      1. Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story.
+      2. In the "hint" field, provide a conceptual clue about finding a missing part.
       ${isShortQ 
-        ? `JSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-        : `Task: Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story using only the numbers ${isAdd ? part1 : whole} and ${isAdd ? whole : part1}. DO NOT mention or reveal the missing number (${answer}) in the story text.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
+        ? `3. DO NOT add a story for Short Questions.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
+        : `3. The story MUST be localized.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
       }`,
       metadata: { difficulty: 'standard', logic: "missing_part_100", hideVisual: true }
     };
@@ -215,6 +231,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       meta: commonMeta,
       content: {
         questionText: getQText(`[STORY] If ${part1} + ${part2} = ${whole}, what is ${whole} - ${part2}?`, `If ${part1} + ${part2} = ${whole}, then ${whole} - ${part2} = ?`),
+        hint: "[AI: INJECT HINT]",
         options: isMCQ ? [answer, String(part2), String(whole), String(part1 + 10)].sort(() => Math.random() - 0.5) : null,
         finalAnswer: answer,
         solutionSteps: `Since ${part1} + ${part2} = ${whole}, we know that ${whole} - ${part2} must be the other part, which is ${part1}.`
@@ -228,9 +245,12 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
+      Task: 
+      1. Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story about related facts.
+      2. In the "hint" field, provide a conceptual clue about fact families.
       ${isShortQ 
-        ? `JSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-        : `Task: Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story about related addition and subtraction facts.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
+        ? `3. DO NOT add a story for Short Questions.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
+        : `3. The story MUST be localized.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
       }`,
       metadata: { difficulty: 'standard', logic: "fact_families", hideVisual: true }
     };
@@ -243,11 +263,13 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const diff = Math.floor(Math.random() * 5) + 2;
     const val2 = isMore ? val1 + diff : val1 - diff;
     const answer = String(val2);
+    const equation = isMore ? `${val1} + ${diff} = ?` : `${val1} - ${diff} = ?`;
 
     const promptObject = {
       meta: commonMeta,
       content: {
-        questionText: `[STORY] How many ${itemLabel} does the other person have?`,
+        questionText: getQText(`[STORY] How many ${itemLabel} does the other person have?`, equation),
+        hint: "[AI: INJECT HINT]",
         options: isMCQ ? [answer, String(val1), String(val1 + 10), String(val2 + 1)].sort(() => Math.random() - 0.5) : null,
         finalAnswer: answer,
         solutionSteps: isMore ? `${val1} + ${diff} = ${answer}` : `${val1} - ${diff} = ${answer}`
@@ -261,8 +283,13 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
-      Task: Replace the "[STORY]" tag in the questionText with a Singaporean story: "${context.name} has ${val1} ${itemLabel}. Another person has ${diff} ${isMore ? 'more' : 'fewer'} than ${context.name}."
-      
+      Task: 
+      1. Replace the "[STORY]" tag in the questionText with a Singaporean story: "${context.name} has ${val1} ${itemLabel}. Another person has ${diff} ${isMore ? 'more' : 'fewer'} than ${context.name}."
+      2. In the "hint" field, provide a conceptual clue about comparing quantities.
+      ${isShortQ 
+        ? `3. DO NOT add a story for Short Questions.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
+        : `3. The story MUST be localized.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
+      }
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
       metadata: { difficulty: 'standard', logic: "comparison_basic", hideVisual: false }
     };
@@ -300,6 +327,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       meta: commonMeta,
       content: {
         questionText: getQText(`[STORY] ${qTextSuffix}`, missingPos === 0 ? "Complete the number bond." : `Complete the number bond for ${whole}.`),
+        hint: "[AI: INJECT HINT]",
         options: isMCQ ? [answer, String(parseInt(answer) + 10), String(parseInt(answer) + 1), String(missingPos === 0 ? part1 : whole)].sort(() => Math.random() - 0.5) : null,
         finalAnswer: answer,
         solutionSteps: solutionSteps
@@ -313,14 +341,17 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
-      ${isShortQ 
-        ? `JSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-        : `Task: Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story.
+      Task: 
+      1. Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story.
       ${missingPos === 0
         ? `The story should be about combining ${part1} ${itemLabel} and ${part2} ${itemLabel} to find the total.`
         : `The story should be about splitting ${whole} ${itemLabel} into two groups, where one has ${missingPos === 1 ? part2 : part1}.`
       }
-      The story MUST be localized (e.g., using names like Siti and settings like a hawker centre) and include the relevant numbers.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
+      2. In the "hint" field, provide a conceptual clue about finding the whole or a part in a number bond.
+
+      ${isShortQ 
+        ? `3. DO NOT add a story for Short Questions.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
+        : `3. The story MUST be localized.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
       }`,
       metadata: { difficulty: 'standard', logic: "bond_100", hideVisual: false }
     };

@@ -17,6 +17,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       content: {
         questionText: getQText(`What is the number if I have ${tens} tens and ${extraOnes} ones?`, `${tens} tens ${extraOnes} ones = ?`),
         options: isMCQ ? [String((tens * 10) + (extraOnes % 10)), String(tens + extraOnes), String(total), String(total + 10)] : null,
+        hint: "[Insert conceptual hint here]",
         finalAnswer: String(total),
         solutionSteps: `${tens} tens is ${tens * 10}. ${tens * 10} + ${extraOnes} ones = ${total}.`
       },
@@ -26,6 +27,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
+    ${formatInstructions}
     STRICT: Use the [STORY] placeholder below to create a 1-sentence Singaporean math story (e.g., using names like Siti, items like curry puffs, and settings like an MRT station).
     
     RETURN ONLY VALID JSON. DO NOT OMIT THE visualEngine DATA:
@@ -48,6 +50,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       content: {
         questionText: getQText(`What is the number if it is between ${lowerBound} and ${upperBound}, and the ones digit is ${onesDigit}?`, `Mystery number clues: ${lowerBound} < ? < ${upperBound}, ones = ${onesDigit}`),
         options: isMCQ ? [String(total - 10), String(total), String(total + 1), String(total + 10)] : null,
+        hint: "[Insert conceptual hint here]",
         finalAnswer: String(total),
         solutionSteps: `The numbers between ${lowerBound} and ${upperBound} start with ${tensDigit} tens. If the ones digit is ${onesDigit}, the number is ${total}.`
       },
@@ -57,6 +60,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
+    ${formatInstructions}
     STRICT: Use the [STORY] placeholder below to create a 1-sentence Singaporean math story (e.g., using names like Siti, items like curry puffs, and settings like an MRT station).
     
     RETURN ONLY VALID JSON. DO NOT OMIT THE visualEngine DATA:
@@ -76,6 +80,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       content: {
         questionText: getQText(`What is the number if I have ${tens} tens and ${ones} ones?`, `${tens} tens ${ones} ones = ?`),
         options: isMCQ ? [String(tens + ones), String(total - 10), String(total), String(total + 10)] : null,
+        hint: "[Insert conceptual hint here]",
         finalAnswer: String(total),
         solutionSteps: `${tens} ten is ${tens * 10}. ${tens * 10} + ${ones} = ${total}.`
       },
@@ -85,6 +90,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
+    ${formatInstructions}
     STRICT: Use the [STORY] placeholder below to create a 1-sentence Singaporean math story (e.g., using names like Siti, items like curry puffs, and settings like an MRT station).
     
     RETURN ONLY VALID JSON. DO NOT OMIT THE visualEngine DATA:
@@ -105,6 +111,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       content: {
         questionText: getQText(`What is the 2-digit number if its tens digit is ${tensDigit} and the sum of its digits is ${sum}?`, `Tens=${tensDigit}, Sum=${sum} -> ?`),
         options: isMCQ ? [String(total - 10), String((onesDigit * 10) + tensDigit), String(total), String(total + 1)] : null,
+        hint: "[Insert conceptual hint here]",
         finalAnswer: String(total),
         solutionSteps: `Since the tens digit is ${tensDigit}, we need a ones digit that makes the sum ${sum}. ${tensDigit} + ${onesDigit} = ${sum}, so the number is ${total}.`
       },
@@ -114,6 +121,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
+    ${formatInstructions}
     STRICT: Use the [STORY] placeholder below to create a 1-sentence Singaporean math story (e.g., using names like Siti, items like curry puffs, and settings like an MRT station).
     
     RETURN ONLY VALID JSON. DO NOT OMIT THE visualEngine DATA:
@@ -136,6 +144,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       content: {
         questionText: getQText(`What is the number between ${lowerBound} and ${upperBound} if its ones digit is ${diff} more than its tens digit?`, `${lowerBound} < ? < ${upperBound}, ones=tens+${diff} -> ?`),
         options: isMCQ ? [String(total - diff), String(total), String((onesDigit * 10) + tensDigit), String(total + 10)] : null,
+        hint: "[Insert conceptual hint here]",
         finalAnswer: String(total),
         solutionSteps: `The number is in the ${tensDigit}0s, so the tens digit is ${tensDigit}. The ones digit is ${tensDigit} + ${diff} = ${onesDigit}. The number is ${total}.`
       },
@@ -145,6 +154,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
+    ${formatInstructions}
     STRICT: Use the [STORY] placeholder below to create a 1-sentence Singaporean math story (e.g., using names like Siti, items like curry puffs, and settings like an MRT station).
     
     RETURN ONLY VALID JSON. DO NOT OMIT THE visualEngine DATA:
@@ -166,6 +176,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       content: {
         questionText: getQText(`What is the number between ${lower} and ${upper} that has a ${onesDigit} in its ones place?`, `${lower} < ? < ${upper}, ones=${onesDigit} -> ?`),
         options: isMCQ ? [String(lower - 1), String(total - 10), String(total), String(upper + 1)] : null,
+        hint: "[Insert conceptual hint here]",
         finalAnswer: String(total),
         solutionSteps: `The only number between ${lower} and ${upper} ending in ${onesDigit} is ${total}.`
       },
@@ -175,6 +186,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
+    ${formatInstructions}
     STRICT: Use the [STORY] placeholder below to create a 1-sentence Singaporean math story (e.g., using names like Siti, items like curry puffs, and settings like an MRT station).
     
     RETURN ONLY VALID JSON. DO NOT OMIT THE visualEngine DATA:
@@ -194,6 +206,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       content: {
         questionText: getQText(`What is the total number if there are ${boxes} boxes of 10 and ${singles} single items?`, `${boxes} groups of 10 + ${singles} = ?`),
         options: isMCQ ? [String((boxes * 10) + (singles % 10)), String(boxes + singles), String(total), String(total + 10)] : null,
+        hint: "[Insert conceptual hint here]",
         finalAnswer: String(total),
         solutionSteps: `Calculate total from groups of 10 and singles: (${boxes} x 10) + ${singles} = ${total}.`
       },
@@ -203,6 +216,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
+    ${formatInstructions}
     STRICT: Use the [STORY] placeholder below to create a 1-sentence Singaporean math story (e.g., using names like Siti, items like curry puffs, and settings like an MRT station).
     
     RETURN ONLY VALID JSON. DO NOT OMIT THE visualEngine DATA:
@@ -223,6 +237,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       content: {
         questionText: getQText(`What is the value of the digit ${tens} in the number ${total}?`, `${total}: digit ${tens} value = ?`),
         options: isMCQ ? [String(tens), String(ones), String(answer), String(total)] : null,
+        hint: "[Insert conceptual hint here]",
         finalAnswer: String(answer),
         solutionSteps: `The digit ${tens} is in the tens place, so it stands for ${tens} tens, which is ${answer}.`
       },
@@ -232,6 +247,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
+    ${formatInstructions}
     STRICT: Use the [STORY] placeholder below to create a 1-sentence Singaporean math story (e.g., using names like Siti, items like curry puffs, and settings like an MRT station).
     
     RETURN ONLY VALID JSON. DO NOT OMIT THE visualEngine DATA:
@@ -251,6 +267,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       content: {
         questionText: getQText(`What is the number you land on if you start at ${start} and count on by 10s ${jumps} times?`, `${start} + (${jumps} x 10) = ?`),
         options: isMCQ ? [String(total - 10), String(total), String(total + 1), String(total + 10)] : null,
+        hint: "[Insert conceptual hint here]",
         finalAnswer: String(total),
         solutionSteps: `Starting at ${start} and making ${jumps} jumps of 10: ${start + 10}, ${start + 20}... you land on ${total}.`
       },
@@ -260,6 +277,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
+    ${formatInstructions}
     STRICT: Use the [STORY] placeholder below to create a 1-sentence Singaporean math story (e.g., using names like Siti, items like curry puffs, and settings like an MRT station).
     
     RETURN ONLY VALID JSON. DO NOT OMIT THE visualEngine DATA:
@@ -281,6 +299,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       content: {
         questionText: getQText(`Look at this number pattern: ${seq.join(", ")}. What is the SECOND missing number?`, seq.join(", ")),
         options: isMCQ ? [String(parseInt(answer) - step), String(start + (step * 2)), String(answer), String(parseInt(answer) + step)] : null,
+        hint: "[Insert conceptual hint here]",
         finalAnswer: String(answer),
         solutionSteps: `The pattern increases by ${step}. The first missing number is ${start + (step * 2)}. The second missing number is ${start + (step * 3)} + ${step} = ${answer}.`
       },
@@ -290,6 +309,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
+    ${formatInstructions}
     STRICT: Use the [STORY] placeholder below to create a 1-sentence Singaporean math story (e.g., using names like Siti, items like curry puffs, and settings like an MRT station).
     
     RETURN ONLY VALID JSON. DO NOT OMIT THE visualEngine DATA:

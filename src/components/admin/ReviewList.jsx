@@ -7,7 +7,7 @@ import useSWR from 'swr';
 
 const fetcher = url => fetch(url).then(res => res.json());
 
-export default function ReviewList({ initialQuestions, isViewOnly }) {
+export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh = false }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -22,7 +22,7 @@ export default function ReviewList({ initialQuestions, isViewOnly }) {
     swrKey,
     fetcher,
     {
-      refreshInterval: 3000, // Auto-refresh every 3 seconds
+      refreshInterval: autoRefresh ? 3000 : 0, // Only sync if explicitly enabled (e.g. on main filter page)
       revalidateOnFocus: true, // Refresh when the admin switches back to the tab
       dedupingInterval: 2000, // Prevent multiple identical requests
       fallbackData: initialQuestions

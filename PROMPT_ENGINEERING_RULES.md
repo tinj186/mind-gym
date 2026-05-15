@@ -86,3 +86,22 @@ The trainer curates a 10-question set using the 20/60/20 Rep Structure:
 60% Core Workout: High-focus on the student’s primary bottleneck (Synapse 30-60).
 
 20% Challenge: Introduction of new subtopics or higher difficulty tiers.
+
+9. Question Type Architecture (Structural Logic)
+The Engine enforces distinct content rules based on the syllabus "Type Count" to maintain mathematical focus and reading stamina.
+
+I. The 2-Type Protocol (Short & MCQ Only)
+Applied when a topic lacks a "Structured" tier.
+
+Short Question: A simplified math equation or a brief descriptive problem. Multiple steps are allowed as difficulty increases.
+
+MCQ: A combination of the short question logic with 4 distinct answer options.
+
+II. The 3-Type Protocol (Short, MCQ, & Structured)
+Applied when a topic includes "Structured" complex word problems.
+
+Short Question (Pure Math): Strictly a simplified math equation problem. No backstory is permitted; only a brief mathematical description if necessary.
+
+Structured Question (Word Problem): A complex, descriptive narrative. Requires multiple logical steps and localized context.
+
+MCQ: A hybrid of Short and Structured logic, formatted with 4 distinct answer options.

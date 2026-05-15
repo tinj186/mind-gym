@@ -6,6 +6,114 @@ import { finalizeWorkoutAction, updateWorkoutProgressAction, saveAttemptAction }
 import GroupingWorkspace from '@/components/tools/GroupingWorkspace'; // Import the interactive tool
 import confetti from 'canvas-confetti';
 
+/**
+ * Neural Scaffold Visual Renderer
+ * Handles specific rendering logic for various tool types in the syllabus.
+ */
+function VisualRenderer({ type, data, visualProps, setIsToolOpen, questionId, difficulty, topic }) {
+  if (!type || type === "NONE") return null;
+
+  switch (type) {
+    case 'COUNTING_OBJECTS':
+      return (
+        <div className="flex flex-col items-center gap-6">
+          <div className="flex flex-wrap justify-center gap-3">
+            {(data.items || data.groups?.flatMap(count => 
+              Array(count).fill(data.icons?.[0] || '⭐')
+            ))?.map((item, idx) => (
+              <span key={idx} className="text-5xl drop-shadow-sm">{item}</span>
+            ))}
+          </div>
+          <button 
+            onClick={() => setIsToolOpen(true)}
+            className="px-6 py-2 bg-indigo-600 text-white text-[10px] font-black uppercase rounded-full shadow-xl hover:bg-indigo-500 transition-all active:scale-95"
+          >
+            ✨ Open Grouping Tool to Help
+          </button>
+        </div>
+      );
+
+    case 'NUMBER_CARDS':
+      return (
+        <div className="flex flex-wrap justify-center gap-4 py-2">
+          {(data.items || data.numbers || [])?.map((val, idx) => (
+            <div key={idx} className="w-20 h-28 md:w-24 md:h-32 bg-white rounded-2xl border-4 border-slate-200 flex items-center justify-center shadow-lg transform rotate-[-1deg] odd:rotate-[1deg] hover:rotate-0 transition-transform">
+              <span className="text-3xl font-black text-slate-900">{val}</span>
+            </div>
+          ))}
+        </div>
+      );
+
+    case 'NUMBER_PATTERN':
+      return (
+        <div className="flex flex-wrap justify-center items-center gap-4 py-2">
+          {(data.items || [])?.map((val, idx) => (
+            <div key={idx} className={`w-24 h-24 md:w-28 md:h-28 bg-white rounded-2xl border-4 flex items-center justify-center shadow-lg transition-all ${
+              val === '?' ? 'border-blue-500 bg-blue-50 text-blue-700 animate-pulse' : 'border-slate-200 text-slate-900'
+            }`}>
+              <span className="text-3xl font-black">{val}</span>
+            </div>
+          ))}
+          {data.rule && <p className="text-sm text-slate-500 mt-4">Rule: {data.rule}</p>}
+        </div>
+      );
+
+    case 'EQUAL_GROUPS':
+      const numGroups = data.numGroups || data.groups || data.groupCount || 0;
+      const itemsPerGroup = data.itemsPerGroup || data.size || 1;
+      return (
+        <div className="flex flex-col items-center gap-6">
+          <div className="flex flex-wrap justify-center gap-8">
+            {Array.from({ length: numGroups }).map((_, gIdx) => (
+              <div key={gIdx} className="relative p-6 bg-white rounded-[2rem] border-4 border-dashed border-slate-200 flex gap-3 shadow-inner">
+                <span className="absolute -top-3 -left-2 bg-slate-900 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase">
+                  Grp {gIdx + 1}
+                </span>
+                {Array.from({ length: itemsPerGroup }).map((_, iIdx) => (
+                  <span key={iIdx} className="text-4xl animate-in zoom-in duration-300" style={{ animationDelay: `${(gIdx * 5 + iIdx) * 50}ms` }}>
+                    {data.emoji || data.icon || '🎈'}
+                  </span>
+                ))}
+              </div>
+            ))}
+          </div>
+          <button 
+            onClick={() => setIsToolOpen(true)}
+            className="px-6 py-2 bg-indigo-600 text-white text-[10px] font-black uppercase rounded-full shadow-xl hover:bg-indigo-500 transition-all active:scale-95"
+          >
+            ✨ Open Grouping Tool to Help
+          </button>
+        </div>
+      );
+
+    case 'GROUPING_WORKSPACE':
+      return (
+        <GroupingWorkspace
+          modelData={data}
+          onClose={() => {}}
+          questionId={questionId}
+          difficulty={difficulty}
+          mode={visualProps.mode}
+          totalItems={visualProps.totalItems}
+          expectedGroups={visualProps.expectedGroups}
+          targetGroupSize={visualProps.targetSize}
+          showTargetSize={topic !== 'Division'}
+          icon={visualProps.icon}
+        />
+      );
+
+    default:
+      return (
+        <div className="text-center space-y-2">
+          <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Unknown Visual Signature</p>
+          <code className="text-[10px] bg-white p-2 rounded-lg text-slate-400">
+            {JSON.stringify(data)}
+          </code>
+        </div>
+      );
+  }
+}
+
 export default function WorkoutSession({ studentId, level, initialQuestions = [], initialIndex = 0, initialLog = [] }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [answersLog, setAnswersLog] = useState(initialLog);
@@ -15,6 +123,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
   const [showSolution, setShowSolution] = useState(false);
   const [showBarModel, setShowBarModel] = useState(false);
   const [isToolOpen, setIsToolOpen] = useState(false);
+  const [hasAutoOpened, setHasAutoOpened] = useState(false);
   const [feedback, setFeedback] = useState(null); // 'correct' | 'wrong'
   const [isPending, startTransition] = useTransition();
   const [summary, setSummary] = useState(null);
@@ -97,6 +206,25 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
   }, [summary]);
   // --------------------------------------------------
 
+  // --- TOOL AUTO-OPEN LOGIC ---
+  useEffect(() => {
+    // Reset for the new question
+    setHasAutoOpened(false);
+    setIsToolOpen(false);
+  }, [currentIndex]);
+
+  useEffect(() => {
+    const isWorkspace = currentQuestion?.visualEngine?.componentToRender === "GROUPING_WORKSPACE" || 
+                       currentQuestion?.modelData?.type === "GROUPING_WORKSPACE";
+    
+    // Only auto-open if it hasn't opened for this specific question yet
+    if (isWorkspace && !hasAutoOpened && attempts === 0) {
+      setIsToolOpen(true);
+      setHasAutoOpened(true); // Mark as triggered so it won't fight the Close button
+    }
+  }, [currentQuestion, hasAutoOpened, attempts]);
+  // --------------------------------------------------
+
   const moveToNext = useCallback((result) => {
     const nextIndex = currentIndex + 1;
     const newLog = [...answersLog, result];
@@ -161,8 +289,9 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
         if (isP1) setShowBarModel(true);
         
         // Automatically open the grouping tool for relevant question types
-        if (['COUNTING_OBJECTS', 'EQUAL_GROUPS'].includes(currentQuestion.modelData?.type)) {
+        if (!hasAutoOpened && ['COUNTING_OBJECTS', 'EQUAL_GROUPS'].includes(currentQuestion.modelData?.type)) {
           setIsToolOpen(true);
+          setHasAutoOpened(true);
         }
         
         setTimeout(() => setFeedback(null), 1500);
@@ -258,134 +387,22 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
           */}
 
           {/* Robust Visual Engine */}
-          {currentQuestion.modelData && (
-            <div className="space-y-4">
-              {/* Spotter UI: Visual Assist Toggle for P1 */}
-              {isP1 && currentQuestion.modelData.hideVisual && (
-                <button 
-                  onClick={() => setShowBarModel(!showBarModel)} 
-                  className="text-xs font-black text-blue-500 uppercase tracking-widest"
-                >
-                  {showBarModel ? 'Hide Visual Assist' : 'Show Visual Assist 🔬'}
-                </button>
-              )}
-
-              {(!currentQuestion.modelData.hideVisual || (isP1 && showBarModel)) && (
-                <div className="p-8 bg-slate-50 rounded-[2rem] min-h-[200px] flex flex-col items-center justify-center border-2 border-slate-100">
-                  
-                  {/* 1. Standard Counting Type */}
-                  {currentQuestion.modelData.type === 'COUNTING_OBJECTS' && (
-                    <div className="flex flex-wrap justify-center gap-3">
-                      {(currentQuestion.modelData.items || 
-                        currentQuestion.modelData.groups?.flatMap(count => 
-                          Array(count).fill(currentQuestion.modelData.icons?.[0] || '⭐')
-                        ))?.map((item, idx) => (
-                        <span key={idx} className="text-5xl drop-shadow-sm">{item}</span>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* 1.5 Number Cards Renderer (Comparing / Patterns / Equations) */}
-                  {currentQuestion.modelData.type === 'NUMBER_CARDS' && (
-                    <div className="flex flex-wrap justify-center gap-4 py-2">
-                      {(currentQuestion.modelData.items || currentQuestion.modelData.numbers || [])?.map((val, idx) => (
-                        <div key={idx} className="w-20 h-28 md:w-24 md:h-32 bg-white rounded-2xl border-4 border-slate-200 flex items-center justify-center shadow-lg transform rotate-[-1deg] odd:rotate-[1deg] hover:rotate-0 transition-transform">
-                          <span className="text-3xl font-black text-slate-900">{val}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* 1.6 Number Pattern Renderer */}
-                  {currentQuestion.modelData.type === 'NUMBER_PATTERN' && (
-                    <div className="flex flex-wrap justify-center items-center gap-4 py-2">
-                      {(currentQuestion.modelData.items || [])?.map((val, idx) => (
-                        <div key={idx} className={`w-24 h-24 md:w-28 md:h-28 bg-white rounded-2xl border-4 flex items-center justify-center shadow-lg transition-all ${
-                          val === '?' ? 'border-blue-500 bg-blue-50 text-blue-700 animate-pulse' : 'border-slate-200 text-slate-900'
-                        }`}>
-                          <span className="text-3xl font-black">{val}</span>
-                        </div>
-                      ))}
-                      {currentQuestion.modelData.rule && <p className="text-sm text-slate-500 mt-4">Rule: {currentQuestion.modelData.rule}</p>}
-                    </div>
-                  )}
-
-                  {/* Trigger for Interactive Tool (The Spotter) */}
-                  {['COUNTING_OBJECTS', 'EQUAL_GROUPS'].includes(currentQuestion.modelData.type) && (
-                    <button 
-                      onClick={() => setIsToolOpen(true)}
-                      className="mt-6 px-6 py-2 bg-indigo-600 text-white text-[10px] font-black uppercase rounded-full shadow-xl hover:bg-indigo-500 transition-all active:scale-95"
-                    >
-                      ✨ Open Grouping Tool to Help
-                    </button>
-                  )}
-
-                  {/* 2. Equal Groups / Grouping Workspace (Multiplication/Division) */}
-                  {/* Render for EQUAL_GROUPS (pre-grouped, static visual) */}
-                  {currentQuestion.modelData.type === 'EQUAL_GROUPS' && (
-                    <div className="flex flex-wrap justify-center gap-8">
-                      {Array.from({ 
-                        length: currentQuestion.modelData.numGroups || 
-                                currentQuestion.modelData.groups || 
-                                currentQuestion.modelData.groupCount || 0 
-                      }).map((_, gIdx) => (
-                        <div key={gIdx} className="relative p-6 bg-white rounded-[2rem] border-4 border-dashed border-slate-200 flex gap-3 shadow-inner">
-                          {/* Group Label (Helper) */}
-                          <span className="absolute -top-3 -left-2 bg-slate-900 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase">
-                            Grp {gIdx + 1}
-                          </span>
-                          
-                          {Array.from({ 
-                            length: currentQuestion.modelData.itemsPerGroup || 
-                                    currentQuestion.modelData.size || 
-                                    // Infer size from final answer if missing (e.g. 40 total / 4 groups)
-                                    (currentQuestion.modelData.finalAnswer / (currentQuestion.modelData.groupCount || 1)) ||
-                                    1 
-                          }).map((_, iIdx) => (
-                            <span 
-                              key={iIdx} 
-                              className="text-4xl animate-in zoom-in duration-300" 
-                              style={{ animationDelay: `${(gIdx * 5 + iIdx) * 50}ms` }}
-                            >
-                              {currentQuestion.modelData.emoji || 
-                               currentQuestion.modelData.icon || 
-                               currentQuestion.modelData.items?.[0] || 
-                               '🎈'}
-                            </span>
-                          ))}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Render the INTERACTIVE GROUPING_WORKSPACE tool */}
-                  {currentQuestion.modelData.type === 'GROUPING_WORKSPACE' && (
-                    <GroupingWorkspace
-                      modelData={currentQuestion.modelData}
-                      onClose={() => { /* No explicit close needed for workout session */ }}
-                      questionId={currentQuestion.id}
-                      difficulty={currentQuestion.difficulty}
-                      mode={visualProps.mode}
-                      totalItems={visualProps.totalItems}
-                      expectedGroups={visualProps.expectedGroups}
-                      targetGroupSize={visualProps.targetSize}
-                      showTargetSize={currentQuestion.topic !== 'Division'} // Assuming 'Division' topic implies target size is the answer
-                      icon={visualProps.icon}
-                    />
-                  )}
-
-                  {/* 3. Safety Catch: If nothing renders, show the raw data keys to debug */}
-                  {(!currentQuestion.modelData.type || 
-                    !['COUNTING_OBJECTS', 'EQUAL_GROUPS', 'GROUPING_WORKSPACE', 'NUMBER_CARDS', 'NUMBER_PATTERN'].includes(currentQuestion.modelData.type)) && (
-                    <div className="text-center space-y-2">
-                      <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Unknown Visual Signature</p>
-                      <code className="text-[10px] bg-white p-2 rounded-lg text-slate-400">
-                        {JSON.stringify(currentQuestion.modelData)}
-                      </code>
-                    </div>
-                  )}
-                </div>
-              )}
+          {currentQuestion.visualEngine && 
+           currentQuestion.visualEngine.componentToRender !== "NONE" && (
+            <div className="mt-8 p-8 bg-slate-50 border-4 border-dashed border-slate-200 rounded-[2rem]">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">
+                NEURAL_SCAFFOLD // VISUAL AID
+              </p>
+              
+              <VisualRenderer 
+                type={currentQuestion.visualEngine.componentToRender} 
+                data={currentQuestion.visualEngine.componentData}
+                visualProps={visualProps}
+                setIsToolOpen={setIsToolOpen}
+                questionId={currentQuestion.id}
+                difficulty={currentQuestion.difficulty}
+                topic={currentQuestion.topic}
+              />
             </div>
           )}
 

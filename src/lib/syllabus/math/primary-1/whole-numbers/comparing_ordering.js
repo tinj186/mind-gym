@@ -104,28 +104,16 @@ export const comparingOrderingBlueprint = {
     const level = 'Primary 1';
     const topic = 'Whole Numbers';
 
+    // Logic: Identify if this is a notation-only variant (no word problems/stories)
+    const isNotationVariant = !activeVariant.includes('word') && !activeVariant.includes('clue') && !activeVariant.includes('logic');
+
     // Helper to dynamically strip English words for short questions
-    const getQText = (words, equation) => isShort ? equation : words;
-
-    let formatInstructions = '';
-    const hintProtocol = `\nCRITICAL HINT PROTOCOL: You MUST provide a conceptual "hint" field.
-Forbidden: "Choose 15," "It's the smallest one."
-Required: Point to place value or relative clues.
-Example: "Compare the tens place first. Which number has more tens?" or "If A is more than B, who is standing closer to the front?"`;
-
-    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: For the "visualItems" array and any "modelData" icons, you MUST use the emoji: "${selectedIcon || '⭐'}". Do not pick any other emoji.`;
-
-    // Only provide creative instructions for structured word problems
-    if (isStructure) {
-      formatInstructions = `CRITICAL: For the "questionText" string, write a clear localized word problem.${hintProtocol}${visualProtocol}`;
-    } else {
-      formatInstructions = `${hintProtocol}${visualProtocol}`;
-    }
+    const getQText = (words, equation) => (isShort || (isMCQ && isNotationVariant)) ? equation : words;
 
     // Localization Context (defined once, used in structured prompts)
     const levelNum = parseInt(level.replace('Primary ', ''));
     const tier = levelNum <= 2 ? 'LOWER_BLOCK' : (levelNum <= 4 ? 'MIDDLE_BLOCK' : 'UPPER_BLOCK');
-    const context = getRandomContext('GENERAL', tier); // Comparing and Ordering can use general items
+    const context = getRandomContext('GENERAL', tier); 
     const itemData = context.items[Math.floor(Math.random() * context.items.length)];
 
     // ROBUST EXTRACTION: Handle nested objects or direct singular/plural keys
@@ -135,23 +123,38 @@ Example: "Compare the tens place first. Which number has more tens?" or "If A is
 
     if (String(selectedContextItem).includes('[object')) console.warn("⚠️ [Blueprint: Comparing] Context item extraction failed for:", itemData);
 
-    // Dynamic visual item selection for diagrams (concrete objects) - not directly used in current logic, but good to pass
     const funIcons = ['⚽', '🏀', '⭐', '🚗', '🍎', '🥕', '🍪', '🍬', '🎈', '🧸', '🥟', '🍢', '🍡'];
     const selectedIcon = itemData?.icon || funIcons[Math.floor(Math.random() * funIcons.length)];
-    
-    // Enable visuals for all question types in Comparing and Ordering to ensure consistent rendering between MCQ and Short Questions
-    const hideVisual = false; 
 
+    let formatInstructions = '';
+    const hintProtocol = `\nCRITICAL HINT PROTOCOL: You MUST provide a conceptual "hint" field.
+Forbidden: "Choose 15," "It's the smallest one."
+Required: Point to place value or relative clues.
+Example: "Compare the tens place first. Which number has more tens?" or "If A is more than B, who is standing closer to the front?"`;
+
+    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: For the "visualItems" array and any "COMPARE_OBJECTS" icons, you MUST use the emoji: "${selectedIcon || '⭐'}". Do not pick any other emoji. DO NOT use emojis inside "NUMBER_CARDS" items.`;
+
+    // Only provide creative instructions for actual stories/logic puzzles
+    if (isStructure || (isMCQ && !isNotationVariant)) {
+      formatInstructions = `CRITICAL: For the "questionText" string, write a clear localized word problem.${hintProtocol}${visualProtocol}`;
+    } else {
+      formatInstructions = `${hintProtocol}`;
+    }
+
+    // Pass calculated hideVisual to sub-modules
+    // We hide visuals for notation questions in Short/MCQ modes because text is explicit
+    const hideVisual = isNotationVariant && (isShort || isMCQ);
+    
     if (activeVariant.startsWith('foundation_')) {
-      return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual); // formatInstructions will be empty string for non-word problems
+      return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual);
     }
 
     if (activeVariant.startsWith('standard_')) {
-      return standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual); // formatInstructions will be empty string for non-word problems, or creative for word problems
+      return standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual);
     }
 
     if (activeVariant.startsWith('advanced_')) {
-      return advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual); // formatInstructions will be empty string for non-word problems, or creative for word problems
+      return advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual);
     }
 
     throw new Error(`Variant '${variant}' not valid for difficulty '${difficulty}'`);

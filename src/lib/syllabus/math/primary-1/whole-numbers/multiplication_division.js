@@ -99,40 +99,45 @@ export const multiplicationDivisionBlueprint = {
         ? `Format as Short Answer. The "options" field in your JSON should be null. CRITICAL: For the "questionText" string, output ONLY the mathematical equation using 'x' or '÷' (e.g., "4 x 5 = ?"). Do not use any English words. TOPIC: Multiplication/Division only. NO addition/subtraction.`
         : `Format as Structured Question. The "options" field in your JSON should be null. CRITICAL: For the "questionText" string, write a clear localized word problem. CREATIVE INSTRUCTIONS: Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).`;
 
-    const getOptions = (ans) => {
-      const a = parseInt(ans);
-      let d1 = a + 2;
-      let d2 = a + 5;
-      let d3 = Math.max(0, a - 5);
-      if (d1 === a) d1 += 1;
-      if (d2 === a || d2 === d1) d2 = a + 10;
-      if (d3 === a || d3 === d1 || d3 === d2) d3 = a + 15;
-      return JSON.stringify([String(a), String(d1), String(d2), String(d3)].sort(() => Math.random() - 0.5));
-    };
-    const getQText = (words, equation) => isShort ? equation : words;
-    
     // Map to Zod enums
     const zodType = isMCQ ? 'MCQ' : isShort ? 'SHORT_QUESTION' : 'STRUCTURED';
     const zodDiff = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
     const level = 'Primary 1';
     const topic = 'Whole Numbers';
 
+    // Determine if this topic supports Structured Questions (3-Type Protocol)
+    const supportsStructured = Object.keys(multiplicationDivisionBlueprint.variants).some(v => v.includes('advanced'));
+
+    const getQText = (story, equation, type) => {
+      if (supportsStructured) {
+        if (type === 'SHORT_QUESTION') return equation; // Equation only for 3-Type Short
+        if (type === 'STRUCTURED') return story; // Descriptive for Structured
+        return `${story} ${equation}`; // Combined for MCQ
+      }
+      // 2-Type Protocol
+      return type === 'SHORT_QUESTION' ? (story || equation) : `${story} ${equation}`;
+    };
+
+    const getOptions = (ans) => {
+      const a = parseInt(ans);
+      let d1 = a + 2, d2 = a + 5, d3 = Math.max(0, a - 5);
+      if (d1 === a) d1 += 1;
+      if (d2 === a || d2 === d1) d2 = a + 10;
+      if (d3 === a || d3 === d1 || d3 === d2) d3 = a + 15;
+      return JSON.stringify([String(a), String(d1), String(d2), String(d3)].sort(() => Math.random() - 0.5));
+    };
+
     const levelNum = parseInt(level.replace('Primary ', ''));
     const tier = levelNum <= 2 ? 'LOWER_BLOCK' : (levelNum <= 4 ? 'MIDDLE_BLOCK' : 'UPPER_BLOCK');
     const context = getRandomContext('GENERAL', tier);
     
-    // Ensure alignment between the story item and the visual icon by filtering for items with icons
-    const itemsWithIcons = context.items.filter(i => i.icon && i.icon.trim() !== '');
-    const itemData = itemsWithIcons.length > 0 
-      ? itemsWithIcons[Math.floor(Math.random() * itemsWithIcons.length)]
-      : context.items[Math.floor(Math.random() * context.items.length)];
+    // Normalizing the label to prevent the [object Object] bug
+    const itemData = context?.selectedItem || { item: 'item', icon: '⭐' };
+    const cleanItemLabel = typeof itemData === 'string' 
+      ? itemData 
+      : (itemData.item || itemData.name?.singular || itemData.name || 'item');
 
-    // ROBUST EXTRACTION: Extract display name and handle icons separately
-    const selectedContextItem = typeof itemData === 'object'
-      ? (itemData.item || itemData.singular || itemData.name?.singular || (typeof itemData.name === 'string' ? itemData.name : null) || itemData.text || itemData.name?.text || itemData.val || String(itemData))
-      : itemData;
-
-    if (String(selectedContextItem).includes('[object')) console.warn("⚠️ [Blueprint: Mult/Div] Context item extraction failed for:", itemData);
+    if (String(cleanItemLabel).includes('[object')) console.warn("⚠️ [Blueprint: Mult/Div] Context item extraction failed for:", itemData);
 
     // Dynamic visual item selection
     const funIcons = ['⚽', '🏀', '⭐', '🚗', '🥟', '🍢', '🍡', '🍎'];
@@ -142,15 +147,15 @@ export const multiplicationDivisionBlueprint = {
     const hideVisual = isShort && !activeVariant.includes('interactive');
 
     if (activeVariant.startsWith('foundation_')) {
-      return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual);
+      return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, cleanItemLabel, getQText, selectedIcon, hideVisual, supportsStructured);
     }
 
     if (activeVariant.startsWith('standard_')) {
-      return standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual);
+      return standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, cleanItemLabel, getQText, selectedIcon, hideVisual, supportsStructured);
     }
 
     if (activeVariant.startsWith('advanced_')) {
-      return advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual);
+      return advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, cleanItemLabel, getQText, selectedIcon, hideVisual, supportsStructured);
     }
 
     throw new Error(`Variant '${activeVariant}' logic block not implemented.`);

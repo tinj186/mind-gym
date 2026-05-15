@@ -21,21 +21,23 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     
     const targetWord = askAsc ? "smallest to greatest" : "greatest to smallest";
     const options = isMCQ ? [answer, distractor1, distractor2, distractor3] : null;
+    const hint = getQText(`Compare the tens of all numbers. Start with the one that has the ${askAsc ? 'least' : 'most'} tens.`, `Which number is the ${askAsc ? 'smallest' : 'greatest'}?`);
 
     const questionText = getQText(`Arrange these number cards from ${targetWord}:`, `Arrange from ${targetWord}: ${nums.join(', ')}`);
     const solutionSteps = getQText(`Comparing the tens and ones, the correct order from ${targetWord} is ${answer}.`, answer);
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Ordering Numbers\n - Numbers: ${nums.join(', ')}\n - Final Answer MUST be exactly: "${answer}"\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({ // Removed formatInstructions
+      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Ordering Numbers\n - Numbers: ${nums.join(', ')}\n - Final Answer MUST be exactly: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({
         meta: commonMeta,
         content: {
           questionText: questionText,
           options: options,
+          hint: hint,
           finalAnswer: answer,
           solutionSteps: solutionSteps
         },
         visualEngine: {
-          componentToRender: "NUMBER_CARDS",
+          componentToRender: hideVisual ? "NONE" : "NUMBER_CARDS",
           componentData: { items: [`${nums[0]}`, `${nums[1]}`, `${nums[2]}`, `${nums[3]}`], hideVisual: hideVisual }
         },
         inputRequirement: { inputType: inputType }
@@ -56,22 +58,24 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const d2 = upper + Math.floor(Math.random() * 5) + 1;
     const d3 = upper + Math.floor(Math.random() * 10) + 6;
     const options = isMCQ ? [String(d1), answer, String(d2), String(d3)] : null;
+    const hint = getQText(`The number must be larger than ${lower} and less than ${upper}.`, `${lower} < ? < ${upper}`);
 
     const questionText = getQText(`Look at the number cards. Which number can replace the question mark so that the numbers are in order from smallest to greatest?`, `What number is between ${lower} and ${upper}?`);
     const explanation = isShort ? `${answer} is the only number between ${lower} and ${upper}.` : `${answer} is the only option that is larger than ${lower} and less than ${upper}.`;
     const solutionSteps = getQText(explanation, `${lower} < ${answer} < ${upper}`);
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Number Bounds\n - Final Answer MUST be: "${answer}"\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({ // Removed formatInstructions
+      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Number Bounds\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({
         meta: commonMeta,
         content: {
           questionText: questionText,
           options: options,
+          hint: hint,
           finalAnswer: answer,
           solutionSteps: solutionSteps
         },
         visualEngine: {
-          componentToRender: "NUMBER_CARDS",
+          componentToRender: hideVisual ? "NONE" : "NUMBER_CARDS",
           componentData: { items: [`${lower}`, "?", `${upper}`], hideVisual: hideVisual }
         },
         inputRequirement: { inputType: inputType }
@@ -101,6 +105,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         content: {
           questionText: "[Insert full localized Singaporean word problem here]", // AI fills this
           options: options,
+          hint: "[Insert conceptual hint here]",
           finalAnswer: answer,
           solutionSteps: solutionSteps
         },
@@ -123,21 +128,23 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     displaySeq[missingIdx] = "?";
     
     const options = isMCQ ? [String(sequence[missingIdx] - 1), answer, String(sequence[missingIdx] + 1), String(start + 10)] : null;
+    const hint = getQText(`The numbers are going up by 1. What comes after ${sequence[missingIdx - 1]}?`, `Count forward by 1.`);
 
     const questionText = getQText(`Look at the number cards. What is the missing number in the pattern?`, `Find the missing number: ${displaySeq.join(', ')}`);
     const solutionSteps = getQText(`The numbers are increasing by 1. After ${sequence[missingIdx - 1]} comes ${answer}.`, `${sequence[missingIdx - 1]} + 1 = ${answer}`);
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Missing Number (Ascending)\n - Final Answer MUST be: "${answer}"\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({ // Removed formatInstructions
+      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Missing Number (Ascending)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({
         meta: commonMeta,
         content: {
           questionText: questionText,
           options: options,
+          hint: hint,
           finalAnswer: answer,
           solutionSteps: solutionSteps
         },
         visualEngine: {
-          componentToRender: "NUMBER_CARDS",
+          componentToRender: hideVisual ? "NONE" : "NUMBER_CARDS",
           componentData: { items: displaySeq, hideVisual: hideVisual }
         },
         inputRequirement: { inputType: inputType }
@@ -155,21 +162,23 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     displaySeq[missingIdx] = "?";
     
     const options = isMCQ ? [String(sequence[missingIdx] + 1), answer, String(sequence[missingIdx] - 1), String(start - 10)] : null;
+    const hint = getQText(`The numbers are going down by 1. What comes before ${sequence[missingIdx - 1]}?`, `Count backward by 1.`);
 
     const questionText = getQText(`Look at the number cards. What is the missing number in the pattern?`, `Find the missing number: ${displaySeq.join(', ')}`);
     const solutionSteps = getQText(`The numbers are decreasing by 1. Before ${sequence[missingIdx - 1]} comes ${answer}.`, `${sequence[missingIdx - 1]} - 1 = ${answer}`);
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Missing Number (Descending)\n - Final Answer MUST be: "${answer}"\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({ // Removed formatInstructions
+      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Missing Number (Descending)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({
         meta: commonMeta,
         content: {
           questionText: questionText,
           options: options,
+          hint: hint,
           finalAnswer: answer,
           solutionSteps: solutionSteps
         },
         visualEngine: {
-          componentToRender: "NUMBER_CARDS",
+          componentToRender: hideVisual ? "NONE" : "NUMBER_CARDS",
           componentData: { items: displaySeq, hideVisual: hideVisual }
         },
         inputRequirement: { inputType: inputType }
@@ -186,21 +195,23 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
     const answer = String(Math.max(...nums));
     const options = isMCQ ? nums.map(String) : null;
+    const hint = getQText(`Compare the tens digits of all cards. Which one is the biggest?`, `Look for the most tens.`);
 
     const questionText = getQText(`Which is the greatest number among the cards?`, `Which is the greatest: ${nums.join(', ')}?`);
     const solutionSteps = getQText(`Comparing all four numbers, ${answer} has the highest value.`, `${answer} is the greatest.`);
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Greatest of Four\n - Final Answer MUST be: "${answer}"\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({ // Removed formatInstructions
+      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Greatest of Four\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({
         meta: commonMeta,
         content: {
           questionText: questionText,
           options: options,
+          hint: hint,
           finalAnswer: answer,
           solutionSteps: solutionSteps
         },
         visualEngine: {
-          componentToRender: "NUMBER_CARDS",
+          componentToRender: hideVisual ? "NONE" : "NUMBER_CARDS",
           componentData: { items: nums, hideVisual: hideVisual }
         },
         inputRequirement: { inputType: inputType }
@@ -217,21 +228,23 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
     const answer = String(Math.min(...nums));
     const options = isMCQ ? nums.map(String) : null;
+    const hint = getQText(`Compare the tens digits of all cards. Which one is the smallest?`, `Look for the least tens.`);
 
     const questionText = getQText(`Which is the smallest number among the cards?`, `Which is the smallest: ${nums.join(', ')}?`);
     const solutionSteps = getQText(`Comparing all four numbers, ${answer} has the lowest value.`, `${answer} is the smallest.`);
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Smallest of Four\n - Final Answer MUST be: "${answer}"\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({ // Removed formatInstructions
+      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Smallest of Four\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({
         meta: commonMeta,
         content: {
           questionText: questionText,
           options: options,
+          hint: hint,
           finalAnswer: answer,
           solutionSteps: solutionSteps
         },
         visualEngine: {
-          componentToRender: "NUMBER_CARDS",
+          componentToRender: hideVisual ? "NONE" : "NUMBER_CARDS",
           componentData: { items: nums, hideVisual: hideVisual }
         },
         inputRequirement: { inputType: inputType }
@@ -249,21 +262,23 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const targetWord = askGreater ? "greater" : "smaller";
     
     const options = isMCQ ? [String(tenMore), String(compareVal), String(base), String(tenMore + 5)] : null;
+    const hint = getQText(`First find what is 10 more than ${base}. Then compare it with ${compareVal}.`, `Calculate 10 more first.`);
 
     const questionText = getQText(`Which is ${targetWord}: 10 more than ${base} or ${compareVal}?`, `Which is ${targetWord}: 10 more than ${base} or ${compareVal}?`);
     const solutionSteps = getQText(`10 more than ${base} is ${tenMore}. Comparing ${tenMore} and ${compareVal}, the ${targetWord} is ${answer}.`, `${base} + 10 = ${tenMore}, compare ${tenMore} & ${compareVal}`);
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: 10 More Comparison\n - Final Answer MUST be: "${answer}"\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({ // Removed formatInstructions
+      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: 10 More Comparison\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({
         meta: commonMeta,
         content: {
           questionText: questionText,
           options: options,
+          hint: hint,
           finalAnswer: answer,
           solutionSteps: solutionSteps
         },
         visualEngine: {
-          componentToRender: "NUMBER_CARDS",
+          componentToRender: hideVisual ? "NONE" : "NUMBER_CARDS",
           componentData: { items: [`10 more than ${base}`, `${compareVal}`], hideVisual: hideVisual }
         },
         inputRequirement: { inputType: inputType }
@@ -281,21 +296,23 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const targetWord = askGreater ? "greater" : "smaller";
     
     const options = isMCQ ? [String(tenLess), String(compareVal), String(base), String(tenLess - 5)] : null;
+    const hint = getQText(`First find what is 10 less than ${base}. Then compare it with ${compareVal}.`, `Calculate 10 less first.`);
 
     const questionText = getQText(`Which is ${targetWord}: 10 less than ${base} or ${compareVal}?`, `Which is ${targetWord}: 10 less than ${base} or ${compareVal}?`);
     const solutionSteps = getQText(`10 less than ${base} is ${tenLess}. Comparing ${tenLess} and ${compareVal}, the ${targetWord} is ${answer}.`, `${base} - 10 = ${tenLess}, compare ${tenLess} & ${compareVal}`);
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: 10 Less Comparison\n - Final Answer MUST be: "${answer}"\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({ // Removed formatInstructions
+      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: 10 Less Comparison\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({
         meta: commonMeta,
         content: {
           questionText: questionText,
           options: options,
+          hint: hint,
           finalAnswer: answer,
           solutionSteps: solutionSteps
         },
         visualEngine: {
-          componentToRender: "NUMBER_CARDS",
+          componentToRender: hideVisual ? "NONE" : "NUMBER_CARDS",
           componentData: { items: [`10 less than ${base}`, `${compareVal}`], hideVisual: hideVisual }
         },
         inputRequirement: { inputType: inputType }

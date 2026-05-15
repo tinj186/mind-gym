@@ -103,9 +103,12 @@ export const ordinalsBlueprint = {
     const tier = levelNum <= 2 ? 'LOWER_BLOCK' : (levelNum <= 4 ? 'MIDDLE_BLOCK' : 'UPPER_BLOCK');
     const context = getRandomContext('GENERAL', tier);
 
+    const hintProtocol = `\nCRITICAL HINT PROTOCOL: You MUST provide a conceptual "hint" field in your JSON.
+    Focus on counting from the correct direction (left or right) without giving the answer.`;
+
     let formatInstructions = isMCQ 
-      ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.` 
-      : `Format as Short Answer. The "options" field in your JSON should be null.`;
+      ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}` 
+      : `Format as Short Answer. The "options" field in your JSON should be null.${hintProtocol}`;
 
     if (activeVariant.startsWith('foundation_')) {
       return foundationLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);

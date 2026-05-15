@@ -12,7 +12,7 @@ export const placeValuesBlueprint = {
   id: 'p1-place-values',
   title: 'Place Value (Tens/Ones)',
   strand: 'Number and Algebra',
-  visualType: null, // Null avoids triggering untested UI components
+  visualType: 'BASE_TEN_BLOCKS', 
 
   // 1. OVERARCHING CONDITIONS
   difficultyLevels: {
@@ -91,16 +91,23 @@ export const placeValuesBlueprint = {
     const level = 'Primary 1';
     const topic = 'Whole Numbers';
 
-    const getQText = (words, equation) => isShort ? equation : words;
+    // Logic: Identify if this is a notation-only variant (no word problems/stories)
+    const isNotationVariant = !activeVariant.includes('word') && !activeVariant.includes('clue') && !activeVariant.includes('logic');
+
+    const getQText = (words, equation) => (isShort || (isMCQ && isNotationVariant)) ? equation : words;
     const levelNum = parseInt(level.replace('Primary ', ''));
     const tier = levelNum <= 2 ? 'LOWER_BLOCK' : (levelNum <= 4 ? 'MIDDLE_BLOCK' : 'UPPER_BLOCK');
     const context = getRandomContext('GENERAL', tier);
 
+    const hintProtocol = `\nCRITICAL HINT PROTOCOL: You MUST provide a conceptual "hint" field in your JSON.
+    Forbidden: Giving the answer or numbers directly.
+    Required: Point to place value concepts (e.g., "Look at the digit on the left...").`;
+
     let formatInstructions = isMCQ 
-      ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.` 
+      ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}` 
       : isStructure
-        ? `Format as Structured Question. The "options" field in your JSON should be null. CRITICAL: For the "questionText" string, write a clear localized word problem.`
-        : `Format as Short Answer. The "options" field in your JSON should be null.`;
+        ? `Format as Structured Question. The "options" field in your JSON should be null. CRITICAL: For the "questionText" string, write a clear localized word problem.${hintProtocol}`
+        : `Format as Short Answer. The "options" field in your JSON should be null.${hintProtocol}`;
 
     if (activeVariant.startsWith('foundation_')) {
       return foundationLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);

@@ -1,7 +1,7 @@
 import { numberToWords } from '@/lib/utils/math-helpers';
 import { getRandomContext } from '@/lib/utils/localization';
 
-export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual) {
+export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, displayName, getQText, selectedIcon, hideVisual) {
   const commonMeta = { level, topic, type: zodType, difficulty: zodDiff };
   const inputType = isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT';
   const isShortQ = zodType === 'SHORT_QUESTION';
@@ -14,7 +14,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         : "");
 
   // Safety check for localization context
-  const itemLabel = selectedContextItem?.item || 'items';
+  const itemLabel = displayName;
 
   // 1. Foundation Addition/Subtraction within 20
   if (activeVariant === 'foundation_add_20' || activeVariant === 'foundation_sub_20') {
@@ -30,6 +30,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       meta: commonMeta,
       content: {
         questionText: getQText(`[STORY] How many ${isAdd ? 'altogether' : 'are left'}?`, `${num1} ${operator} ${num2} = ?`), // Use getQText
+        hint: "[AI: INJECT HINT]",
         options: options,
         finalAnswer: answer,
         solutionSteps: `${num1} ${operator} ${num2} = ${answer}.`
@@ -42,15 +43,17 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     };
 
     return {
-      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}You are a text editor. 
-      STRICT: Replace the "[STORY]" tag in the questionText with a 1-sentence Singaporean story about ${context.name} having ${num1} ${itemLabel} and ${isAdd ? 'getting' : 'giving away'} ${num2} more.
-      ${isShortQ 
-        ? 'DO NOT add a story for Short Questions.' 
-        : `The story MUST be localized (e.g., using names like Siti and settings like a hawker centre) and include the numbers ${num1} and ${num2}.`
-      }
+      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
+      Task: 
+      1. Replace the "[STORY]" tag in the questionText with a 1-sentence Singaporean math story about ${context.name} having ${num1} ${itemLabel} and ${isAdd ? 'getting' : 'giving away'} ${num2} more.
+      2. In the "hint" field, provide a conceptual clue. 
+         - WRONG: "${isAdd ? 'Add' : 'Subtract'} ${num1} and ${num2}."
+         - RIGHT: "Try counting ${isAdd ? 'all' : 'what is left of'} the ${itemLabel} ${isAdd ? 'together starting from the bigger group' : 'after taking some away'}."
       
-      RETURN ONLY VALID JSON:
-      ${JSON.stringify(promptObject)}`,
+      ${isShortQ 
+        ? `3. DO NOT add a story for Short Questions.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
+        : `3. The story MUST be localized (e.g., using names like Siti and settings like a hawker centre) and include the numbers ${num1} and ${num2}.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
+      }`,
       metadata: { 
         difficulty: 'foundation', 
         steps: 1, 
@@ -71,6 +74,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       meta: commonMeta,
       content: {
         questionText: getQText(`[STORY] How many more does ${context.name} need?`, isFirstMissing ? `? + ${part} = ${sum}` : `${part} + ? = ${sum}`), // Use getQText
+        hint: "[AI: INJECT HINT]",
         options: isMCQ ? [answer, String(sum), String(part), String(sum + 1)].sort(() => Math.random() - 0.5) : null,
         finalAnswer: answer,
         solutionSteps: `To find the missing part, subtract the known part from the whole: ${sum} - ${part} = ${answer}.`
@@ -83,14 +87,17 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     };
 
     return {
-      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}You are a text editor. 
-      STRICT: Replace the "[STORY]" tag in the questionText with a 1-sentence Singaporean story where ${context.name} has ${part} ${itemLabel} but needs ${sum} in total.
+      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
+      Task: 
+      1. Replace the "[STORY]" tag in the questionText with a 1-sentence Singaporean story where ${context.name} has ${part} ${itemLabel} but needs ${sum} in total.
+      2. In the "hint" field, provide a conceptual clue. 
+         - WRONG: "Subtract ${part} from ${sum}."
+         - RIGHT: "Think about how many more you need to add to ${part} to reach ${sum}."
       
-      ${isShortQ ? 'DO NOT add a story for Short Questions.'         : `The story MUST be localized (e.g., using names like Ahmad and settings like a playground) and include the numbers ${part} and ${sum}.`}
-
-      
-      RETURN ONLY VALID JSON:
-      ${JSON.stringify(promptObject)}`,
+      ${isShortQ 
+        ? `3. DO NOT add a story for Short Questions.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
+        : `3. The story MUST be localized (e.g., using names like Ahmad and settings like a playground) and include the numbers ${part} and ${sum}.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
+      }`,
       metadata: { 
         difficulty: 'foundation', 
         steps: 1, 
@@ -130,31 +137,32 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const promptObject = {
       meta: commonMeta,
       content: {
-        questionText: getQText(`[STORY] ${qTextSuffix}`, missingPos === 0 ? "Find the missing whole in the number bond." : `Find the missing part in the number bond for ${whole}.`),
+        questionText: getQText(`[STORY] ${qTextSuffix}`, "Find the missing number in the number bond."),
+        hint: "[AI: INJECT HINT]",
         options: isMCQ ? [answer, String(whole), String(part1), String(parseInt(answer) + 1)].sort(() => Math.random() - 0.5) : null,
         finalAnswer: answer,
         solutionSteps: solutionSteps
       },
       visualEngine: {
         componentToRender: "NUMBER_BOND", // Always show number bonds for this variant
-        componentData: visualData
+        componentData: { ...visualData, icon: selectedIcon }
       },
       inputRequirement: { inputType }
     };
 
     return {
-      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}You are a text editor. 
-      STRICT: Replace the "[STORY]" tag in the questionText with a 1-sentence Singaporean story.
+      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
+      Task: 
+      1. Replace the "[STORY]" tag in the questionText with a 1-sentence Singaporean story.
+      2. In the "hint" field, provide a conceptual clue about finding the missing part or whole.
       ${missingPos === 0
         ? `The story should be about ${context.name} having ${part1} ${itemLabel} and ${part2} ${itemLabel} and combining them.`
         : `The story should be about ${context.name} splitting ${whole} ${itemLabel} into two groups, where one has ${missingPos === 1 ? part2 : part1}.`
       }
-      
-      ${isShortQ ? 'DO NOT add a story for Short Questions.'         : `The story MUST be localized (e.g., using names like Wei Ling and settings like a library) and include the relevant numbers.`}
-
-      
-      RETURN ONLY VALID JSON:
-      ${JSON.stringify(promptObject)}`,
+      ${isShortQ 
+        ? `3. DO NOT add a story for Short Questions.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
+        : `3. The story MUST be localized (e.g., using names like Wei Ling and settings like a library) and include the relevant numbers.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
+      }`,
       metadata: { 
         difficulty: 'foundation', 
         steps: 1, 

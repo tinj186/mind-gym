@@ -1,11 +1,18 @@
 import { numberToWords } from '@/lib/utils/math-helpers';
 
+// Robust extraction helper for localized context objects
+const extract = (val) => {
+  if (typeof val !== 'object' || val === null) return String(val);
+  return val.item || val.singular || val.name?.singular || val.text || val.val || String(val);
+};
+
 export const advancedVariants = {
   advanced_extreme_regrouping: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const tens = Math.floor(Math.random() * 3) + 1; // 1 to 3 tens
     const ones = Math.floor(Math.random() * 10) + 11; // 11 to 20 ones
     const num = (tens * 10) + ones;
     const answer = String(num);
+    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: For the "visualItems" array, you MUST use the symbols provided (▮ and ▪).`;
 
     // Ensure options are distinct and include the correct answer
     const options = [num, num - 10, num + 10, (tens + 1) * 10 + (ones % 10)].filter(
@@ -15,7 +22,7 @@ export const advancedVariants = {
     while (options.length < 4) options.push(Math.floor(Math.random() * 89) + 10); // Fill with random if needed
 
     return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating an advanced_extreme_regrouping question. DO NOT modify the mathematical structure or the final answer. NO addition or subtraction stories.
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating an advanced_extreme_regrouping question. DO NOT modify the mathematical structure or the final answer. NO addition or subtraction stories.${visualProtocol}
         MATH CONSTRAINTS:
         - Input: ${tens} tens and ${ones} ones.
         - Final Answer MUST strictly be: "${answer}"
@@ -26,11 +33,12 @@ export const advancedVariants = {
         {
           "questionText": ${JSON.stringify(getQText(`What number is ${tens} tens and ${ones} ones?`, `${tens} tens ${ones} ones = ?`))},
           "options": ${type === 'MCQ' ? JSON.stringify(options) : 'null'},
+          "hint": ${JSON.stringify(getQText(`Remember that ${ones} ones can make another ten. ${tens} tens is ${tens * 10}. Add ${ones} to it.`, `What is ${tens * 10} + ${ones}?`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`${tens} tens is ${tens * 10}. ${tens * 10} + ${ones} = ${num}.`, `${tens * 10} + ${ones} = ${num}`))},
           "visualItems": ${JSON.stringify([...Array(tens).fill('▮'), ...Array(ones).fill('▪')])}
         }`,
-      metadata: { difficulty: 'advanced', steps: 3, logic: "extreme_regroup", hideVisual: false }
+      metadata: { difficulty: 'advanced', steps: 3, logic: "extreme_regroup", hideVisual: true }
     };
   },
   advanced_digit_clues: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
@@ -40,6 +48,7 @@ export const advancedVariants = {
     const num = (tensDigit * 10) + onesDigit;
     const sum = tensDigit + onesDigit;
     const diff = onesDigit - tensDigit;
+    const sName = extract(context?.name || 'Wei Ling');
 
     // Ensure options are distinct and include the correct answer
     const options = [num, num - 1, num + 1, (onesDigit * 10) + tensDigit].filter(
@@ -49,7 +58,7 @@ export const advancedVariants = {
     while (options.length < 4) options.push(Math.floor(Math.random() * 89) + 10);
 
     return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating an advanced_digit_clues question. DO NOT modify the mathematical structure or the final answer. Use the name ${context?.name || 'Wei Ling'}. NO addition or subtraction stories.
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating an advanced_digit_clues question. DO NOT modify the mathematical structure or the final answer. Use the name ${sName}. NO addition or subtraction stories.
         MATH CONSTRAINTS:
         - Target Number: ${num}
         - Clue: Sum of digits is ${sum}, tens digit is ${diff} less than ones.
@@ -61,6 +70,7 @@ export const advancedVariants = {
         {
           "questionText": ${JSON.stringify(getQText(`I am a 2-digit number. The sum of my digits is ${sum}. My tens digit is ${diff} less than my ones digit. What number am I?`, `2-digit number: Sum of digits is ${sum}, tens digit is ${diff} less than ones?`))},
           "options": ${type === 'MCQ' ? JSON.stringify(options) : 'null'},
+          "hint": ${JSON.stringify(getQText(`Find two numbers that add up to ${sum}, where one number is ${diff} smaller than the other.`, `Try splitting ${sum} into two digits.`))},
           "finalAnswer": "${num}",
           "solutionSteps": ${JSON.stringify(getQText(`Ones digit is ${onesDigit}, tens digit is ${tensDigit}. ${tensDigit} + ${onesDigit} = ${sum}. The number is ${num}.`, `${tensDigit}+${onesDigit}=${sum}, ${tensDigit}=${onesDigit}-${diff}`))},
           "visualItems": []
@@ -95,6 +105,7 @@ export const advancedVariants = {
         {
           "questionText": ${JSON.stringify(getQText(`I am a number between ${lowerBound} and ${upperBound}. My tens digit is 1 more than my ones digit. What number am I?`, `Number between ${lowerBound} and ${upperBound}: Tens digit is 1 more than ones?`))},
           "options": ${type === 'MCQ' ? JSON.stringify(options) : 'null'},
+          "hint": ${JSON.stringify(getQText(`If I am between ${lowerBound} and ${upperBound}, my tens digit must be ${tensDigit}. Now find the ones digit.`, `Tens digit is ${tensDigit}.`))},
           "finalAnswer": "${num}",
           "solutionSteps": ${JSON.stringify(getQText(`The tens digit must be ${tensDigit}. So the ones digit is ${onesDigit}. The number is ${num}.`, `tens=${tensDigit}, ones=${tensDigit}-1=${onesDigit}`))},
           "visualItems": []
@@ -130,6 +141,7 @@ export const advancedVariants = {
         {
           "questionText": ${JSON.stringify(getQText(`If I swap the digits of ${startNum}, by how much does the number change?`, `How much does ${startNum} change if you swap its digits?`))},
           "options": ${type === 'MCQ' ? JSON.stringify(options) : 'null'},
+          "hint": ${JSON.stringify(getQText(`First, find the new number by swapping the tens and ones. Then find the difference between the numbers.`, `Swap digits and subtract.`))},
           "finalAnswer": "${diff}",
           "solutionSteps": ${JSON.stringify(getQText(`Swapping ${startNum} gives ${swappedNum}. The difference is ${Math.max(startNum, swappedNum)} - ${Math.min(startNum, swappedNum)} = ${diff}.`, `${Math.max(startNum, swappedNum)} - ${Math.min(startNum, swappedNum)} = ${diff}`))},
           "visualItems": []
@@ -164,6 +176,7 @@ export const advancedVariants = {
         {
           "questionText": ${JSON.stringify(getQText(`Balance the equation: ${tensA} tens ${onesA} ones = ${tensB} tens ____ ones.`, `${tensA} tens ${onesA} ones = ${tensB} tens ? ones`))},
           "options": ${type === 'MCQ' ? JSON.stringify(options) : 'null'},
+          "hint": ${JSON.stringify(getQText(`Calculate the total value on the left side first. Then subtract the value of ${tensB} tens.`, `Find total, then subtract ${tensB * 10}.`))},
           "finalAnswer": "${onesB}",
           "solutionSteps": ${JSON.stringify(getQText(`${tensA} tens ${onesA} ones is ${numA}. ${tensB} tens is ${tensB * 10}. ${numA} - ${tensB * 10} = ${onesB}.`, `${numA} - ${tensB * 10} = ${onesB}`))},
           "visualItems": []
@@ -197,6 +210,7 @@ export const advancedVariants = {
         {
           "questionText": ${JSON.stringify(getQText(`The digits of a number are consecutive. Their sum is ${sum}. What is the 2-digit number?`, `2-digit number with consecutive digits that sum to ${sum}?`))},
           "options": ${type === 'MCQ' ? JSON.stringify(options) : 'null'},
+          "hint": ${JSON.stringify(getQText(`Consecutive numbers are like 1 and 2, or 3 and 4. Which two next-door numbers add up to ${sum}?`, `Try pairs like (1,2), (2,3)...`))},
           "finalAnswer": "${num}",
           "solutionSteps": ${JSON.stringify(getQText(`The digits ${tensDigit} and ${onesDigit} are consecutive and sum to ${sum}. The number is ${num}.`, `${tensDigit}+${onesDigit}=${sum}`))},
           "visualItems": []
@@ -229,6 +243,7 @@ export const advancedVariants = {
         {
           "questionText": ${JSON.stringify(getQText(`My tens digit and ones digit are the same. Their sum is ${sum}. What number am I?`, `2-digit number where tens and ones digits are the same and sum to ${sum}?`))},
           "options": ${type === 'MCQ' ? JSON.stringify(options) : 'null'},
+          "hint": ${JSON.stringify(getQText(`If the digits are the same, divide ${sum} by 2 to find the digit.`, `Half of ${sum} is the digit.`))},
           "finalAnswer": "${num}",
           "solutionSteps": ${JSON.stringify(getQText(`The digits must be ${digit} and ${digit} because ${digit} + ${digit} = ${sum}.`, `${digit}+${digit}=${sum}`))},
           "visualItems": []
@@ -263,6 +278,7 @@ export const advancedVariants = {
         {
           "questionText": ${JSON.stringify(getQText(`The value of my tens digit is ${tensValue}. The sum of my digits is ${sum}. What number am I?`, `2-digit number: Tens value is ${tensValue}, sum of digits is ${sum}?`))},
           "options": ${type === 'MCQ' ? JSON.stringify(options) : 'null'},
+          "hint": ${JSON.stringify(getQText(`If the tens value is ${tensValue}, the tens digit is ${tensDigit}. Now find what ones digit adds to ${tensDigit} to make ${sum}.`, `Tens digit is ${tensDigit}.`))},
           "finalAnswer": "${num}",
           "solutionSteps": ${JSON.stringify(getQText(`Tens digit is ${tensDigit}. ${tensDigit} + ones digit = ${sum}, so ones digit is ${onesDigit}. The number is ${num}.`, `${tensValue}=${tensDigit} tens, ${tensDigit}+${onesDigit}=${sum}`))},
           "visualItems": []
@@ -296,6 +312,7 @@ export const advancedVariants = {
         {
           "questionText": ${JSON.stringify(getQText(`Fill in the blank: ____ tens ${ones} ones = ${num}`, `____ tens ${ones} ones = ${num}`))},
           "options": ${type === 'MCQ' ? JSON.stringify(options) : 'null'},
+          "hint": ${JSON.stringify(getQText(`Subtract the ${ones} ones from ${num}. The result is the value of the missing tens.`, `${num} - ${ones} = ?`))},
           "finalAnswer": "${tens}",
           "solutionSteps": ${JSON.stringify(getQText(`${num} - ${ones} = ${tens * 10}. ${tens * 10} is ${tens} tens.`, `${num} - ${ones} = ${tens * 10}`))},
           "visualItems": []
@@ -329,6 +346,7 @@ export const advancedVariants = {
         {
           "questionText": ${JSON.stringify(getQText(`Which is smaller: ${tens} tens or ${numOnes} ones?`, `Which is smaller: ${tens} tens or ${numOnes} ones?`))},
           "options": ${type === 'MCQ' ? JSON.stringify(options) : 'null'},
+          "hint": ${JSON.stringify(getQText(`Convert ${tens} tens into a single number. Then compare it to ${numOnes}.`, `${tens} tens = ?`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`${tens} tens is ${numTens}. ${numOnes} ones is also ${numOnes}. They are ${answer === "They are equal" ? "the same" : (numTens < numOnes ? "90" : "9 tens")}.`, `${tens}*10=${numTens}, ${numOnes}*1=${numOnes}`))},
           "visualItems": []

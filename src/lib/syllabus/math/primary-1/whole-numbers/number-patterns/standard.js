@@ -1,6 +1,6 @@
 import { numberToWords } from '@/lib/utils/math-helpers';
 
-export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual) {
+export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon) {
   const commonMeta = { level, topic, type: zodType, difficulty: zodDiff };
   const inputType = isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT';
 
@@ -35,6 +35,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const distractorsSet = new Set();
     while (distractorsSet.size < 3) {
       const offset = (Math.floor(Math.random() * 10) + 1) * (Math.random() > 0.5 ? 1 : -1);
+      // Ensure candidate is not already in the sequence
       const candidate = parseInt(answer) + offset;
       if (candidate >= 0 && candidate <= 100 && !sequence.includes(candidate)) {
         distractorsSet.add(String(candidate));
@@ -47,11 +48,13 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const prevNum = sequence[isStart ? 1 : missingIdx - 1];
     const solutionText = `The pattern is counting ${isForward ? 'on' : 'back'} by ${stepValue}. ${isStart ? `To find the first number, count ${isForward ? 'back' : 'on'} from ${prevNum}.` : ''} So, ${prevNum} ${isStart ? (isForward ? '-' : '+') : (isForward ? '+' : '-')} ${stepValue} = ${answer}.`;
 
+    const hideVisual = isShort; // Visual is redundant if questionText contains the sequence
     const promptObject = {
       meta: commonMeta,
       content: {
         questionText: getQText(`What is the missing number in the skip counting pattern?`, `What is the missing number? ${items.join(', ')}`),
         options: options,
+        hint: null,
         finalAnswer: answer,
         solutionSteps: getQText(solutionText, `${prevNum} ${isStart ? (isForward ? '-' : '+') : (isForward ? '+' : '-')} ${stepValue} = ${answer}.`)
       },
@@ -63,7 +66,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. 
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
     STRICT: Use the [STORY] placeholder below to create a 1-sentence Singaporean math story (e.g., using names like Siti, items like curry puffs, and settings like an MRT station).
     The story MUST provide context for the sequence (e.g., Siti is packing an equal number of items into each bag). DO NOT reveal the specific number ${stepValue} in the story text.
     

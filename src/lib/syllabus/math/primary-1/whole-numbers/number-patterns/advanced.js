@@ -1,6 +1,6 @@
 import { numberToWords } from '@/lib/utils/math-helpers';
 
-export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual) {
+export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon) {
   const commonMeta = { level, topic, type: zodType, difficulty: zodDiff };
   const inputType = isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT';
 
@@ -19,11 +19,13 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     ];
     const answer = String(sequence[4]);
 
+    const hideVisual = false; // Visual is essential for story-based questionText
     const lockedData = {
       meta: commonMeta,
       content: {
         questionText: "[STORY] Find the missing number at the end.",
         options: [answer, String(sequence[4] + growth), String(sequence[4] - initialJump), String(sequence[4] + 1)].sort(() => Math.random() - 0.5),
+        hint: null,
         finalAnswer: answer,
         solutionSteps: `The jumps are getting larger. We add ${initialJump}, then ${initialJump + growth}, then ${initialJump + 2 * growth}. The next jump should be ${initialJump + 3 * growth}. So, ${sequence[3]} + ${initialJump + 3 * growth} = ${answer}.`
       },
@@ -35,7 +37,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. STRICT: Replace [STORY] with a 1-sentence localized Singaporean context about saving or collecting items (e.g., Siti is saving money). DO NOT mention the numbers, jump sizes, or the increasing logic in the story. \n${JSON.stringify(lockedData)}`,
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions} STRICT: Replace [STORY] with a 1-sentence localized Singaporean context about saving or collecting items (e.g., Siti is saving money). DO NOT mention the numbers, jump sizes, or the increasing logic in the story. \n${JSON.stringify(lockedData)}`,
       metadata: { difficulty: 'advanced', logic: "growing_step", hideVisual: hideVisual }
     };
   }
@@ -53,11 +55,13 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const items = [String(sequence[0]), String(sequence[1]), String(sequence[2]), String(sequence[3]), String(sequence[4]), String(sequence[5])];
     items[missingIdx] = "?";
 
+    const hideVisual = false; // Visual is essential for story-based questionText
     const lockedData = {
       meta: commonMeta,
       content: {
         questionText: "[STORY] Look closely at the pattern. What is the missing number?",
         options: [answer, String(parseInt(answer) + 1), String(parseInt(answer) - 2), String(startA + startB)].sort(() => Math.random() - 0.5),
+        hint: null,
         finalAnswer: answer,
         solutionSteps: `This sequence has two patterns mixed together. Pattern 1 (1st, 3rd, 5th) counts by ${stepA}. Pattern 2 (2nd, 4th, 6th) counts by ${stepB}. The missing number follows ${missingIdx === 4 ? `Pattern 1: ${sequence[2]} + ${stepA} = ${answer}` : `Pattern 2: ${sequence[3]} + ${stepB} = ${answer}`}.`
       },
@@ -69,7 +73,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. STRICT: Replace [STORY] with a 1-sentence localized Singaporean context involving two people (e.g., Ali and Raju comparing their stickers). DO NOT mention that there are two alternating patterns. \n${JSON.stringify(lockedData)}`,
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions} STRICT: Replace [STORY] with a 1-sentence localized Singaporean context involving two people (e.g., Ali and Raju comparing their stickers). DO NOT mention that there are two alternating patterns. \n${JSON.stringify(lockedData)}`,
       metadata: { difficulty: 'advanced', logic: "interleaved", hideVisual: hideVisual }
     };
   }
@@ -89,11 +93,13 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     ];
     const answer = String(sequence[4]);
 
+    const hideVisual = false; // Visual is essential for story-based questionText
     const lockedData = {
       meta: commonMeta,
       content: {
         questionText: "[STORY] Find the missing number at the end.",
         options: [answer, String(sequence[4] - growth), String(sequence[4] + initialJump), String(sequence[4] - 1)].sort(() => Math.random() - 0.5),
+        hint: null,
         finalAnswer: answer,
         solutionSteps: `The jumps are getting larger. We subtract ${initialJump}, then ${initialJump + growth}, then ${initialJump + 2 * growth}. The next jump should be ${initialJump + 3 * growth}. So, ${sequence[3]} - ${initialJump + 3 * growth} = ${answer}.`
       },
@@ -105,7 +111,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. STRICT: Replace [STORY] with a 1-sentence localized Singaporean context about eating snacks or using items (e.g., Muthu is eating his crackers). DO NOT mention the numbers or the shrinking jump sizes in the story. \n${JSON.stringify(lockedData)}`,
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions} STRICT: Replace [STORY] with a 1-sentence localized Singaporean context about eating snacks or using items (e.g., Muthu is eating his crackers). DO NOT mention the numbers or the shrinking jump sizes in the story. \n${JSON.stringify(lockedData)}`,
       metadata: { difficulty: 'advanced', logic: "shrinking_step", hideVisual: hideVisual }
     };
   }
@@ -117,11 +123,13 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const sequence = [start, start + step, start + 2 * step, start + 3 * step, start + 4 * step];
     const answer = String(sequence[2]); // Missing middle
 
+    const hideVisual = false; // Visual is essential for story-based questionText
     const lockedData = {
       meta: commonMeta,
       content: {
         questionText: "[STORY] What number is missing in this pattern?",
         options: [answer, String(sequence[2] + 1), String(sequence[2] - 1), String(sequence[1] + 10)].sort(() => Math.random() - 0.5),
+        hint: null,
         finalAnswer: answer,
         solutionSteps: `The numbers increase by ${step} every time. ${sequence[1]} + ${step} = ${answer}.`
       },
@@ -133,7 +141,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. STRICT: Replace [STORY] with a 1-sentence localized Singaporean context about buying items in groups or boxes (e.g., Siti is buying boxes of chicken wings). DO NOT reveal the specific number ${step}. \n${JSON.stringify(lockedData)}`,
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions} STRICT: Replace [STORY] with a 1-sentence localized Singaporean context about buying items in groups or boxes (e.g., Siti is buying boxes of chicken wings). DO NOT reveal the specific number ${step}. \n${JSON.stringify(lockedData)}`,
       metadata: { difficulty: 'advanced', logic: "double_digit_step", hideVisual: hideVisual }
     };
   }
@@ -149,11 +157,13 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const sequence = [start, start + j1, start + j1 + j2, start + 2*j1 + j2, start + 2*j1 + 2*j2];
     const answer = String(sequence[3]); // Missing 4th
 
+    const hideVisual = false; // Visual is essential for story-based questionText
     const lockedData = {
       meta: commonMeta,
       content: {
         questionText: "[STORY] Find the missing number.",
         options: [answer, String(sequence[3] + Math.abs(j2)), String(sequence[3] - Math.abs(j2)), String(sequence[3] + 1)].sort(() => Math.random() - 0.5),
+        hint: null,
         finalAnswer: answer,
         solutionSteps: `The rule is to add ${j1}, then subtract ${Math.abs(j2)}. After ${sequence[2]}, we add ${j1} to get ${answer}.`
       },
@@ -165,7 +175,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. STRICT: Replace [STORY] with a 1-sentence localized Singaporean context about receiving an allowance and spending some of it. DO NOT reveal the numbers ${j1} or ${Math.abs(j2)} in the story. \n${JSON.stringify(lockedData)}`,
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions} STRICT: Replace [STORY] with a 1-sentence localized Singaporean context about receiving an allowance and spending some of it. DO NOT reveal the numbers ${j1} or ${Math.abs(j2)} in the story. \n${JSON.stringify(lockedData)}`,
       metadata: { difficulty: 'advanced', logic: "big_alternating", hideVisual: hideVisual }
     };
   }
@@ -195,6 +205,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const answer = String(sequence[missingIdx]);
     const items = sequence.map((val, idx) => (idx === missingIdx) ? "?" : String(val));
 
+    const hideVisual = isShort; // Visual is redundant if questionText contains the sequence
     // Generate distractors that are not directly part of the sequence or simple +/- step
     let distractors = [];
     while (distractors.length < 3) {
@@ -221,6 +232,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       content: {
         questionText: getQText(`What is the missing number in this alternating number pattern?`, `What is the missing number? ${items.join(', ')}`),
         options: options,
+        hint: null,
         finalAnswer: answer,
         solutionSteps: getQText(solutionExplanation, `Rules: ${j1 > 0 ? '+' : ''}${j1}, ${j2 > 0 ? '+' : ''}${j2}. Missing: ${answer}.`)
       },
@@ -232,7 +244,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. 
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
     STRICT: Use the [STORY] placeholder below to create a 1-sentence Singaporean math story (e.g., using names like Siti, items like curry puffs, and settings like an MRT station).
     The story MUST provide a simple context for the sequence (e.g., Siti is collecting items). DO NOT reveal the jump sizes, the rules, or any numbers in your story.
     

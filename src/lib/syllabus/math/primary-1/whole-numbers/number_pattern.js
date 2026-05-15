@@ -106,24 +106,29 @@ export const numberPatternBlueprint = {
     // Helper to dynamically strip English words for short questions
     const getQText = (words, equation) => isShort ? equation : words;
 
-    let formatInstructions = isMCQ 
-      ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.` 
-      : `Format as Short Answer. The "options" field in your JSON should be null.`;
+    const hintProtocol = `\nCRITICAL HINT PROTOCOL: You MUST provide a "hint" field in your JSON.
+    Forbidden: "The answer is 12."
+    Required: Ask a guiding question.
+    Example: "Look at the difference between the first two numbers." or "Are the numbers getting bigger or smaller?"`;
+
+    let formatInstructions = isMCQ
+      ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}`
+      : `Format as Short Answer. The "options" field in your JSON should be null.${hintProtocol}`;
+
     const context = getRandomContext('GENERAL'); // Not heavily used in number patterns, but passed for consistency
     const selectedContextItem = context.items[Math.floor(Math.random() * context.items.length)];
     const selectedIcon = '🔢'; // Generic icon for number patterns
-    const hideVisual = false; // Always show visuals for number patterns
 
     if (activeVariant.startsWith('foundation_')) {
-      return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual);
+      return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon);
     }
 
     if (activeVariant.startsWith('standard_')) {
-      return standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual);
+      return standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon);
     }
 
     if (activeVariant.startsWith('advanced_')) {
-      return advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual);
+      return advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon);
     }
 
     throw new Error(`Variant '${variant}' not valid for difficulty '${difficulty}'`);

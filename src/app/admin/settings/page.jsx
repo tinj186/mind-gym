@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getMissingHintCount, processHintBatchAction } from '@/lib/admin/hintActions';
+import { getBackupStatusAction, triggerJsonDumpAction, restoreJsonBackupAction } from '@/lib/admin/backupActions';
 
 export default function AdminSettingsPage() {
   const [results, setResults] = useState([]);
@@ -10,9 +10,9 @@ export default function AdminSettingsPage() {
   const [dbStatus, setDbStatus] = useState('checking'); // 'checking' | 'online' | 'offline'
   const [dbError, setDbError] = useState(null);
 
-  // AI Hint Backfill States
-  const [hintStatus, setHintStatus] = useState('idle'); // 'idle' | 'running' | 'finished'
-  const [hintProgress, setHintProgress] = useState({ current: 0, total: 0 });
+  // Data Fortress States
+  const [backupStatus, setBackupStatus] = useState(null);
+  const [backupLoading, setBackupLoading] = useState(false);
 
   const checkDbStatus = async () => {
     try {
@@ -52,52 +52,61 @@ export default function AdminSettingsPage() {
     }
   };
 
-  const runHintGeneration = async () => {
-    try {
-      setHintStatus('running');
-      
-      const totalToProcess = await getMissingHintCount();
-      if (totalToProcess === 0) {
-        setHintStatus('finished');
-        return;
-      }
-      setHintProgress({ current: 0, total: totalToProcess });
+  const fetchBackupStatus = async () => {
+    const data = await getBackupStatusAction();
+    setBackupStatus(data);
+  };
 
-      let processed = 0;
-      while (processed < totalToProcess) {
-        const result = await processHintBatchAction(5);
-        // Break loop if the server action fails or returns no progress
-        if (!result || result.count === 0) break;
-        
-        processed += result.count;
-        setHintProgress(prev => ({ ...prev, current: processed }));
-      }
-
-      setHintStatus('finished');
-    } catch (err) {
-      console.error("Neural Processing interrupted:", err);
-      alert(`Sync Failed: ${err.message}. Please restart the container to clear Server Action cache.`);
-      setHintStatus('idle');
+  const handleDump = async () => {
+    setBackupLoading(true);
+    const result = await triggerJsonDumpAction();
+    if (result.success) {
+      await fetchBackupStatus();
+      alert(`Fortress Updated: ${result.count} questions secured.`);
     }
+    setBackupLoading(false);
+  };
+
+  const handleRestore = async () => {
+    const confirmed = confirm("⚠️ EMERGENCY RESTORE: This will inject all questions from your JSON backup into the database. Proceed?");
+    if (!confirmed) return;
+
+    setBackupLoading(true);
+    const result = await restoreJsonBackupAction();
+    if (result.success) {
+      alert(`NEURAL RECOVERY COMPLETE: ${result.count} questions restored.`);
+      await fetchBackupStatus();
+      await checkDbStatus();
+    } else {
+      alert(`RESTORATION FAILED: ${result.error}`);
+    }
+    setBackupLoading(false);
   };
 
   useEffect(() => {
     checkDbStatus();
+    fetchBackupStatus();
   }, []);
 
-  const hintPercentage = hintProgress.total > 0 
-    ? Math.round((hintProgress.current / hintProgress.total) * 100) 
-    : 0;
+  const isDesynced = backupStatus?.dbCount !== backupStatus?.backupCount;
 
   return (
     <div className="min-h-screen bg-slate-50 p-8">
       <div className="max-w-5xl mx-auto space-y-8">
-        <header className="border-b-4 border-slate-900 pb-6">
-          <Link href="/admin/questions" className="text-blue-600 font-bold text-xs uppercase tracking-[0.2em] hover:underline mb-4 block">
-            ← Return to Command Center
-          </Link>
-          <h1 className="text-5xl font-black italic tracking-tighter uppercase">Engine Room</h1>
-          <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">System Maintenance // Data Calibration</p>
+        <header className="border-b-8 border-slate-900 pb-6 flex justify-between items-end">
+          <div>
+            <Link href="/admin/questions" className="text-blue-600 font-bold text-xs uppercase tracking-[0.2em] hover:underline mb-4 block">
+              ← Return to Command Center
+            </Link>
+            <h1 className="text-5xl font-black italic tracking-tighter uppercase">Engine Room</h1>
+            <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Data Persistence // Disaster Recovery</p>
+          </div>
+
+          {backupStatus?.dbCount === 0 && (
+            <div className="bg-rose-600 text-white px-4 py-2 rounded-lg font-black animate-bounce text-xs">
+              ⚠️ DATABASE EMPTY
+            </div>
+          )}
         </header>
 
         <div className="grid grid-cols-1 gap-8">
@@ -114,44 +123,70 @@ export default function AdminSettingsPage() {
             </div>
           </section>
 
-          {/* Module: AI Hint Backfill */}
+          {/* Module: Data Fortress (Replacing AI Hint Backfill) */}
           <section className="bg-white rounded-[3rem] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-10 border-4 border-slate-900 space-y-8">
-            <div className="flex justify-between items-end">
+            <div className="flex justify-between items-start">
               <div>
-                <h2 className="text-2xl font-black">AI HINT BACKFILL</h2>
-                <p className="text-slate-500 font-medium text-sm">Injecting conceptual scaffolding into the Question Bank.</p>
+                <h2 className="text-3xl font-black italic">DATA_FORTRESS</h2>
+                <p className="text-slate-500 font-medium">Single-file JSON sync for Question Bank integrity.</p>
               </div>
-              <button 
-                onClick={runHintGeneration}
-                disabled={hintStatus === 'running'}
-                className={`px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-md ${
-                  hintStatus === 'running' 
-                    ? 'bg-slate-100 text-slate-400' 
-                    : 'bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95 shadow-lg'
-                }`}
-              >
-                {hintStatus === 'running' ? 'CALIBRATING...' : 'START SYNC'}
-              </button>
+              
+              <div className="flex gap-4">
+                <button 
+                  onClick={handleDump}
+                  disabled={backupLoading || !backupStatus}
+                  className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black hover:bg-slate-800 transition-all active:scale-95 disabled:opacity-50"
+                >
+                  TRIGGER DUMP
+                </button>
+                
+                <button 
+                  onClick={handleRestore}
+                  disabled={backupLoading || !backupStatus?.exists}
+                  className="bg-rose-600 text-white px-8 py-4 rounded-2xl font-black hover:bg-rose-700 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] disabled:opacity-50 disabled:grayscale"
+                >
+                  EMERGENCY RESTORE
+                </button>
+              </div>
             </div>
 
-            {(hintStatus === 'running' || hintStatus === 'finished') && (
-              <div className="space-y-4 animate-in fade-in zoom-in-95 duration-500">
-                <div className="flex justify-between font-black text-[10px] uppercase tracking-widest text-slate-400">
-                  <span>{hintStatus === 'finished' ? 'Sync Complete' : 'Neural Processing...'}</span>
-                  <span>{hintProgress.current} / {hintProgress.total} Questions</span>
+            {backupStatus ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <StatusCard 
+                    label="LIVE DB REPS" 
+                    value={backupStatus.dbCount} 
+                  />
+                  <StatusCard 
+                    label="VAULTED REPS" 
+                    value={backupStatus.backupCount} 
+                    highlight={isDesynced}
+                  />
+                  <StatusCard 
+                    label="VAULT STATUS" 
+                    value={backupStatus.exists ? "SECURED" : "MISSING"} 
+                    color={backupStatus.exists ? "text-green-600" : "text-rose-600"}
+                  />
                 </div>
-                <div className="h-10 w-full bg-slate-50 rounded-2xl overflow-hidden border-4 border-slate-900 p-1">
-                  <div 
-                    className="h-full bg-indigo-500 rounded-xl transition-all duration-500 ease-out flex items-center justify-end px-4"
-                    style={{ width: `${hintPercentage}%` }}
-                  >
-                    <span className="text-white text-[10px] font-black">{hintPercentage}%</span>
+
+                {isDesynced && (
+                  <div className="p-6 bg-amber-50 border-4 border-amber-400 rounded-2xl flex items-center gap-4 animate-pulse">
+                    <span className="text-3xl">⚠️</span>
+                    <p className="text-amber-900 font-black text-sm uppercase">
+                      Desync Detected: {backupStatus.dbCount - backupStatus.backupCount} new questions are not yet protected!
+                    </p>
                   </div>
-                </div>
-                {hintStatus === 'finished' && (
-                  <p className="text-center text-green-600 font-black text-xs uppercase tracking-widest">✅ Question Bank successfully enriched.</p>
                 )}
-              </div>
+
+                {backupStatus.exists && (
+                  <div className="pt-4 border-t-2 border-slate-100 flex justify-between items-center text-[10px] font-mono text-slate-400 uppercase tracking-widest">
+                    <span>File Path: /public/backups/questions_backup.json</span>
+                    <span>Last Sync: {new Date(backupStatus.lastGenerated).toLocaleString()}</span>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="p-6 font-black text-slate-400">LOADING BACKUP STATUS...</div>
             )}
           </section>
 
@@ -216,6 +251,16 @@ export default function AdminSettingsPage() {
           </section>
         </div>
       </div>
+    </div>
+  );
+}
+
+function StatusCard({ label, value, sub, highlight, color = "text-slate-900" }) {
+  return (
+    <div className={`p-8 rounded-[2rem] border-4 ${highlight ? 'border-amber-400 bg-amber-50' : 'border-slate-900 bg-slate-50'}`}>
+      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">{label}</p>
+      <p className={`text-5xl font-black tracking-tighter ${color}`}>{value}</p>
+      {sub && <p className="text-xs font-bold text-slate-500 mt-1 uppercase">{sub}</p>}
     </div>
   );
 }

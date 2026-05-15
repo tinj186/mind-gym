@@ -105,38 +105,49 @@ export const additionSubtractionBlueprint = {
     const level = 'Primary 1';
     const topic = 'Whole Numbers';
 
-    // Helper to dynamically strip English words for short questions
-    const getQText = (words, equation) => isShort ? equation : words;
+    // UNIVERSAL ENGINE: Question Type Constitution
+    const supportsStructured = Object.keys(additionSubtractionBlueprint.variants).some(v => v.includes('advanced'));
+
+    const getQText = (story, equation) => {
+      // RULE 1: If it's a 3-Type syllabus (has Structured questions)
+      if (supportsStructured) {
+        if (zodType === 'SHORT_QUESTION') return equation; // Simplified, no backstory
+        if (zodType === 'STRUCTURED') return story; // Complex descriptive
+        return `${story} ${equation}`; // MCQ: Combination
+      }
+
+      // RULE 2: If it's a 2-Type syllabus (Short & MCQ only)
+      if (zodType === 'SHORT_QUESTION') {
+        return story || equation; // Brief description or equation
+      }
+      return `${story} ${equation}`; // MCQ
+    };
 
     const formatInstructions = ''; // Creative instructions are handled within the aiPrompt of sub-modules
     const levelNum = parseInt(level.replace('Primary ', ''));
     const tier = levelNum <= 2 ? 'LOWER_BLOCK' : (levelNum <= 4 ? 'MIDDLE_BLOCK' : 'UPPER_BLOCK');
     const context = getRandomContext('GENERAL', tier);
-    const itemData = context.items[Math.floor(Math.random() * context.items.length)];
+    const itemData = context?.selectedItem || context.items[Math.floor(Math.random() * context.items.length)] || { name: 'item', icon: '⭐' };
 
-    // ROBUST EXTRACTION: Handle nested localization objects
-    const selectedContextItem = typeof itemData === 'object'
-      ? (itemData.item || itemData.singular || itemData.name?.singular || (typeof itemData.name === 'string' ? itemData.name : null) || itemData.text || itemData.name?.text || itemData.val || String(itemData))
-      : itemData;
+    // Robust extraction to prevent [object Object]
+    const displayName = typeof itemData === 'string' 
+      ? itemData 
+      : (itemData.singular || itemData.name || 'item');
 
-    if (String(selectedContextItem).includes('[object')) console.warn("⚠️ [Blueprint: Addition] Context item extraction failed for:", itemData);
-
-    // Dynamic visual item selection
-    const funIcons = ['⚽', '🏀', '⭐', '🚗', '🍎', '🥕', '🍪', '🍬', '🎈', '🧸', '🥟', '🍢', '🍡'];
-    const selectedIcon = itemData?.icon || '➕';
+    const selectedIcon = itemData?.icon || '⭐';
 
     const hideVisual = false; // Visuals are controlled by sub-modules based on isShortQ
 
     if (activeVariant.startsWith('foundation_')) {
-      return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual);
+      return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, displayName, getQText, selectedIcon, hideVisual);
     }
 
     if (activeVariant.startsWith('standard_')) {
-      return standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual);
+      return standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, displayName, getQText, selectedIcon, hideVisual);
     }
 
     if (activeVariant.startsWith('advanced_')) {
-      return advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual);
+      return advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, displayName, getQText, selectedIcon, hideVisual);
     }
 
     throw new Error(`Variant '${variant}' not valid for difficulty '${difficulty}'`);
