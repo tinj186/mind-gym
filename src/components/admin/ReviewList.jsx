@@ -241,7 +241,7 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
         const visualType = modelData?.type;
 
         // Define visual categories
-        const isQuestionVisual = ['COUNTING_OBJECTS', 'BASE_TEN_BLOCKS', 'EQUAL_GROUPS', 'SHAPE', 'PLACE_VALUE_CHART', 'NUMBER_PATTERN', 'NUMBER_CARDS', 'ORDINAL_LINE', 'COMPARE_OBJECTS', 'NUMBER_BOND', 'GROUPING_WORKSPACE', 'MULTIPLICATION_PICTORIAL'].includes(visualType);
+        const isQuestionVisual = ['COUNTING_OBJECTS', 'BASE_TEN_BLOCKS', 'EQUAL_GROUPS', 'SHAPE', 'PLACE_VALUE_CHART', 'NUMBER_PATTERN', 'NUMBER_CARDS', 'ORDINAL_LINE', 'COMPARE_OBJECTS', 'NUMBER_BOND', 'GROUPING_WORKSPACE', 'MULTIPLICATION_PICTORIAL', 'SINGAPORE_MONEY'].includes(visualType);
         const isSolutionVisual = ['PART_WHOLE', 'COMPARISON', 'REMAINDER_MODEL', 'NUMBER_PATTERN', 'COUNTING_OBJECTS', 'EQUAL_GROUPS'].includes(visualType);
         const isBusy = processingId === q.id || processingId === 'bulk';
 

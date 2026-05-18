@@ -1,118 +1,47 @@
 'use client';
 
 import React from 'react';
-import BarModelRenderer from './BarModelRenderer';
-import PlaceValueChart from './PlaceValueChart';
-import CountingObjects from './CountingObjects';
-import EqualGroups from './EqualGroups';
-import BaseTenBlocks from './BaseTenBlocks';
-import NumberPattern from './NumberPattern';
-import OrdinalLine from './OrdinalLine';
-import NumberCards from './NumberCards';
-import NumberBond from './NumberBond';
-import CompareObjects from './CompareObjects';
-import GroupingWorkspace from '@/components/tools/GroupingWorkspace';
+import VisualRenderer from '@/components/gym/VisualRenderer';
+import { normalizeQuestionData } from '@/lib/intelligence/workout-utils';
 
 export default function DiagramRenderer({ modelData: inputModelData, isQuestion, questionId, difficulty }) {
-  const [isOpen, setIsOpen] = React.useState(false);
-
   if (!inputModelData) return null;
 
-  // Safety parse if the field comes in as a string
-  const modelData = typeof inputModelData === 'string' ? JSON.parse(inputModelData) : inputModelData;
-
-  // Respect blueprint/AI decision to hide visuals for abstract logic questions
-  if (modelData?.hideVisual) return null;
-
-  const type = modelData?.type;
-
-  if (type === 'PART_WHOLE' || type === 'COMPARISON') {
-    return <BarModelRenderer data={modelData} />;
+  // 1. Safe Parse check if the incoming property payload arrives as a string container
+  let parsedModelData = inputModelData;
+  if (typeof inputModelData === 'string') {
+    try {
+      parsedModelData = JSON.parse(inputModelData);
+    } catch (e) {
+      console.error("DiagramRenderer Adapter: Failed to parse raw modelData text string:", e);
+      return null;
+    }
   }
 
-  if (type === 'PLACE_VALUE_CHART') {
-    return <PlaceValueChart data={modelData} />;
-  }
+  // 2. Respect blueprint directives to hide visual elements for abstract numeric channels
+  if (parsedModelData?.hideVisual) return null;
 
-  if (type === 'COUNTING_OBJECTS') {
-    const countingData = { ...modelData, items: modelData.items || [] };
-    return <CountingObjects data={countingData} isQuestion={isQuestion} questionId={questionId} difficulty={difficulty} />;
-  }
+  // 3. Leverage the central universal normalizer to handle legacy schemas and modern visual mappings cleanly
+  const normalized = normalizeQuestionData({ modelData: parsedModelData });
+  if (!normalized || !normalized.visualEngine) return null;
 
-  if (type === 'EQUAL_GROUPS') {
-    const groupsData = { ...modelData, items: modelData.items || modelData.elements || [] };
-    return <EqualGroups data={groupsData} isQuestion={isQuestion} />;
-  }
+  const type = normalized.visualEngine.componentToRender;
+  const data = normalized.visualEngine.componentData;
 
-  if (type === 'BASE_TEN_BLOCKS') {
-    return <BaseTenBlocks data={modelData} />;
-  }
-
-  if (type === 'NUMBER_PATTERN') {
-    // Safely map 'items' to 'sequence' for pedagogically correct component rendering
-    const patternData = { ...modelData, sequence: modelData.sequence || modelData.items || [] };
-    return <NumberPattern data={patternData} isQuestion={isQuestion} />;
-  }
-
-  if (type === 'GROUPING_WORKSPACE') {
-    const total = parseInt(modelData.totalItems || (Array.isArray(modelData.items) ? modelData.items.length : 0));
-    const icon = modelData.icon || (Array.isArray(modelData.items) ? modelData.items[0] : '❓');
-    const safeTotal = !isNaN(total) && total >= 0 ? Math.floor(total) : 0;
-
-    return (
-      <div className="mt-4 space-y-4">
-        {/* PICTORIAL PREVIEW: Flat icon list rendered directly for maximum robustness */}
-        <div className="bg-slate-50/50 rounded-3xl p-6 border-2 border-dashed border-slate-200 flex flex-wrap gap-4 justify-center items-center min-h-[100px]">
-          {Array.from({ length: safeTotal }).map((_, i) => (
-            <span key={i} className="text-4xl grayscale-0 select-none">
-              {icon}
-            </span>
-          ))}
-        </div>
-
-        <div className="flex justify-center">
-          <button 
-            onClick={() => setIsOpen(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-500 transition-all active:scale-95 shadow-lg"
-          >
-            <span>🖱️ Launch Interactive Tool</span>
-          </button>
-        </div>
-
-        {isOpen && (
-          <GroupingWorkspace 
-            modelData={modelData} 
-            onClose={() => setIsOpen(false)}
-            questionId={questionId} 
-            difficulty={difficulty}
-            mode={modelData.mode}
-            targetGroupSize={modelData.targetGroupSize}
-            expectedGroups={modelData.expectedGroups}
-          />
-        )}
-      </div>
-    );
-  }
-
-  if (type === 'NUMBER_CARDS') {
-    // Safely map 'items' to 'numbers' so the component renders correctly
-    const cardData = { ...modelData, numbers: modelData.numbers || modelData.items || [] };
-    return <NumberCards data={cardData} />;
-  }
-
-  if (type === 'COMPARE_OBJECTS') {
-    const compareData = { ...modelData, sets: modelData.sets || modelData.items || [] };
-    return <CompareObjects data={compareData} />;
-  }
-
-  if (type === 'ORDINAL_LINE') {
-    const ordinalData = { ...modelData, items: modelData.items || modelData.sequence || [] };
-    return <OrdinalLine data={ordinalData} isQuestion={isQuestion} difficulty={difficulty} />;
-  }
-
-  if (type === 'NUMBER_BOND') {
-    return <NumberBond data={modelData} isQuestion={isQuestion} />;
-  }
-
-  return null;
+  // 4. Route directly into the master renderer using standard environment fallbacks
+  return (
+    <div className="w-full unified-diagram-wrapper">
+      <VisualRenderer
+        type={type}
+        data={data}
+        visualProps={null}
+        setIsToolOpen={() => {}} // No-op fallback for admin preview layout frames
+        questionId={questionId}
+        difficulty={difficulty}
+        topic={parsedModelData?.meta?.topic || "Math"}
+        attempts={0} // Force full rendering on admin view frames
+        isExam={false}
+      />
+    </div>
+  );
 }

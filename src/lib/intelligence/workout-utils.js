@@ -1,12 +1,8 @@
 /**
- * Universal Normalizer with Diagnostic Telemetry Logs
+ * Universal Normalizer
  */
 export function normalizeQuestionData(raw) {
-  console.log("🔍 [TELEMETRY START] Ingesting raw question row:", raw);
-  if (!raw) {
-    console.warn("⚠️ [TELEMETRY] Ingested raw object is empty or null");
-    return null;
-  }
+  if (!raw) return null;
 
   // A. Parse modelData if it's a string (common Prisma/DB behavior)
   let modelData = raw.modelData;
@@ -17,9 +13,7 @@ export function normalizeQuestionData(raw) {
       const end = modelData.lastIndexOf('}');
       const jsonString = (start !== -1 && end !== -1) ? modelData.substring(start, end + 1) : modelData;
       modelData = JSON.parse(jsonString.replace(/```json|```/g, '').trim());
-      console.log("✅ [TELEMETRY] Successfully parsed modelData JSON object:", modelData);
     } catch (e) {
-      console.error("❌ [TELEMETRY] FATAL JSON PARSE ERROR. Response was:", modelData, e);
       modelData = {};
     }
   }
@@ -30,9 +24,7 @@ export function normalizeQuestionData(raw) {
                       { componentToRender: "NONE" };
 
   if (visualEngine.componentToRender) {
-    const originalType = visualEngine.componentToRender;
     visualEngine.componentToRender = visualEngine.componentToRender.toUpperCase().replace(/\s/g, '_');
-    console.log(`🔄 [TELEMETRY] Standardized component type from '${originalType}' to '${visualEngine.componentToRender}'`);
   }
 
   // C. Extract Question Text and Support Alternate Structure Fallbacks
@@ -41,25 +33,15 @@ export function normalizeQuestionData(raw) {
   const solutionText = modelData?.content?.solutionSteps || modelData?.content?.solution || modelData?.solutionSteps || modelData?.solution || "No solution provided";
   const hintText = modelData?.content?.hint || modelData?.hint || "No hint provided";
 
-  console.log("📊 [TELEMETRY MIDDLE] Text Extraction Mapping results:", { questionText, solutionText, hintText });
-
-  // Debug: Temporarily inject the raw componentData payload into the question text for troubleshooting
-  const debugSuffix = ` [DATA: ${moneyItemsToString(visualEngine?.componentData)}]`;
-
   return {
     ...raw,
     modelData,
     visualEngine,
-    questionText: questionText + debugSuffix,
-    question: questionText + debugSuffix,
+    questionText,
+    question: questionText,
     solution: solutionText,
     hint: hintText
   };
-}
-
-function moneyItemsToString(data) {
-  const items = data?.items || data?.numbers || [];
-  return items.length > 0 ? items.join(', ') : "EMPTY";
 }
 
 export function deriveVisualProps(normalized) {

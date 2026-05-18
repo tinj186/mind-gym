@@ -29,14 +29,14 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   const promptObject = {
     meta: commonMeta,
     content: {
-      questionText: "Ailing has some money in her purse. She buys a pencil for 80¢. How much money does she have left?", // Restored to questionText
-      hint: "[AI: Provide a multi-step hint breakdown without revealing the answer]",
-      options: isMCQ ? ["Placeholder1", "Placeholder2", "Placeholder3", "Placeholder4"] : null, 
-      finalAnswer: "[AI: Insert calculated response]",
-      solutionSteps: "[AI: Detail step by step calculation pathway]"
+      questionText: "How much money does Ailing have altogether?",
+      hint: "Count the notes first, then add the coins.",
+      options: isMCQ ? [displayTotal, ...wrongOptions].sort(() => Math.random() - 0.5) : null, 
+      finalAnswer: displayTotal,
+      solutionSteps: "Calculate sum of: " + generatedItems.join(', ') + " = " + displayTotal
     },
     visualEngine: {
-      componentToRender: "SINGAPORE_MONEY", // Directed to the isolated text-card troubleshooting block
+      componentToRender: "SINGAPORE_MONEY",
       componentData: { 
         items: generatedItems,
         total: displayTotal
@@ -50,11 +50,11 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
                        "MCQ (Word problem with 4 options)";
 
   const instructions = `
-    TASK: Generate an Advanced Primary 1 Money question. 
-    If the question type is STRUCTURED, rewrite the 'content.question' into a multi-step word problem (e.g. buying two items or calculating change) using the provided 'total' value.
+    TASK: Generate an Advanced Primary 1 Money question following the ${constitution}. 
+    If it is a STRUCTURED question, rewrite 'content.questionText' into a multi-step word problem using the provided total.
     
     TARGET VARIANT WORKFLOW: ${activeVariant}
-    CRITICAL: You must NEVER alter the numbers or tokens in 'finalAnswer' or 'visualEngine'. Keep them exactly as provided.
+    CRITICAL: Never alter the numbers or tokens in 'finalAnswer', 'options', or 'visualEngine'.
 
     OUTPUT MANDATE: Return ONLY a valid JSON object matching this structure:
     ${JSON.stringify(promptObject)}

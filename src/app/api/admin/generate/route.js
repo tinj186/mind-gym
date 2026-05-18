@@ -126,7 +126,6 @@ export async function POST(request) {
     const { level, topic, subtopic, type, difficulty, heuristic, strand } = metadata || {};
     const subject = metadata?.subject || 'Math';
     const gradeLevel = level === 'Primary 1' ? 'P1' : level;
-    console.log("API RECEIVED -> Level:", level, "Topic:", topic, "Subtopic:", subtopic, "Type:", type, "Difficulty:", difficulty, "Variant:", variant);
 
     const safeMapToSchema = (q) => {
       // Determine if we are processing raw AI output (Nested) or pre-flattened push object
@@ -177,7 +176,6 @@ export async function POST(request) {
     // Bulletproof case-insensitive matching to guarantee the blueprint is found
     const safeSubtopic = String(subtopic || "").trim().toLowerCase();
     const blueprintId = `${level}-${topic}-${subtopic}`;
-    console.log("BLUEPRINT SEARCH KEY:", blueprintId);
     const blueprintMeta = blueprintRegistry[blueprintId] || Object.values(blueprintRegistry).find(bp => String(bp.title).toLowerCase() === safeSubtopic);
 
     let blueprintResult = null;
@@ -206,8 +204,6 @@ export async function POST(request) {
                 loopVariant = matchingVariants[Math.floor(Math.random() * matchingVariants.length)];
             }
         }
-
-        console.log(`[Path 1] Generation ${i+1}/${count} | Selected Variant: ${loopVariant}`);
         
         // Call the blueprint directly with the chosen variant
         const stepResult = blueprintMeta.generate(safeDifficulty, loopVariant, type);
