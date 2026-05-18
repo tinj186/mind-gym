@@ -19,8 +19,20 @@ export const UniversalQuestionSchema = z.object({
 
   // 3. VISUAL ENGINE: The Polymorphic Payload
   visualEngine: z.object({
-    componentToRender: z.string(), // e.g., 'GROUPING_WORKSPACE', 'NUMBER_CARDS', 'NONE'
-    componentData: z.record(z.any()).nullable(), // Component-specific props
+    componentToRender: z.enum([
+      'COUNTING_OBJECTS',
+      'NUMBER_CARDS',
+      'SINGAPORE_MONEY',
+      'NUMBER_PATTERN',
+      'EQUAL_GROUPS',
+      'GROUPING_WORKSPACE',
+      'ORDINAL_LINE',
+      'BASE_TEN_BLOCKS',
+      'NUMBER_BOND',
+      'SHAPE',
+      'NONE'
+    ]), // Registered native visual engines
+    componentData: z.record(z.any()).nullable(),
   }),
 
   // 4. INPUT REQUIREMENT: How the student answers

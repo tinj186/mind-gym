@@ -30,12 +30,26 @@ function formatWorkoutQuestion(q) {
   };
 }
 
-export async function getDailyWorkout(studentId, level) {
+export async function getDailyWorkout(studentId, primaryLevel, options = { mode: 'daily', subtopicId: null }) {
   const totalQuestions = 10;
   
   const profile = await prisma.studentProfile.findUnique({
     where: { id: studentId }
   });
+
+  if (options?.mode === 'isolation' && options?.subtopicId) {
+    // STRICT TARGETING: Fetch 10 questions exclusively matching this subtopic ID
+    const questions = await prisma.questionBank.findMany({
+      where: {
+        level: primaryLevel,
+        isApproved: true,
+        subtopic: options.subtopicId // Correctly mapped to the 'subtopic' field in QuestionBank schema
+      },
+      take: 10
+    });
+    
+    return questions.map(formatWorkoutQuestion);
+  }
 
   if (profile?.activeWorkout) {
     const active = profile.activeWorkout;
@@ -72,7 +86,7 @@ export async function getDailyWorkout(studentId, level) {
     if (subtopicIds.length === 0) return [];
     
     const where = {
-      level,
+      level: primaryLevel,
       isApproved: true,
       difficulty: { in: ['Foundation', 'Standard', 'Advanced'] },
       id: { notIn: excludeIds },
@@ -103,7 +117,7 @@ export async function getDailyWorkout(studentId, level) {
   // Includes topics with low synapse OR topics the student hasn't tried yet
   const allSubtopics = await prisma.questionBank.findMany({
     where: { 
-      level, 
+      level: primaryLevel, 
       isApproved: true,
       difficulty: { in: ['Foundation', 'Standard', 'Advanced'] }
     },
@@ -124,12 +138,12 @@ export async function getDailyWorkout(studentId, level) {
   if (workout.length < totalQuestions) {
     const remaining = totalQuestions - workout.length;
     const fallbackCount = await prisma.questionBank.count({
-      where: { level, isApproved: true, id: { notIn: workout.map(q => q.id) } }
+      where: { level: primaryLevel, isApproved: true, id: { notIn: workout.map(q => q.id) } }
     });
     const fallbackSkip = Math.floor(Math.random() * Math.max(0, fallbackCount - remaining));
 
     const fillers = await prisma.questionBank.findMany({
-      where: { level, isApproved: true, id: { notIn: workout.map(q => q.id) } },
+      where: { level: primaryLevel, isApproved: true, id: { notIn: workout.map(q => q.id) } },
       skip: fallbackSkip,
       take: remaining
     });
@@ -151,7 +165,7 @@ export async function getDailyWorkout(studentId, level) {
       id: studentId,
       name: studentId === "default-student" ? "Default Student" : "New Student",
       externalId: studentId === "default-student" ? "default-external-id" : studentId,
-      primaryLevel: level,
+      primaryLevel: primaryLevel,
       activeWorkout: {
         questionIds: finalWorkout.map(q => q.id),
         currentIndex: 0,

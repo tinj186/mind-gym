@@ -9,37 +9,39 @@ import { revalidatePath } from "next/cache";
  * This ensures 'Total Reps' increases immediately without affecting 'Synapse Strength'.
  */
 export async function saveAttemptAction(studentId, result) {
-  // 1. Log the attempt detail
-  await prisma.attemptLog.create({
-    data: {
-      studentId,
-      questionId: result.questionId,
-      isCorrect: result.isCorrect,
-      attempts: result.attempts,
-      assistedCorrect: result.assistedCorrect || false,
-      timeSpentSecs: result.timeSpent || 0,
-      gradingTier: 1
-    }
-  });
-
-  // 2. Increment Total Reps for the subtopic
-  await prisma.studentMastery.upsert({
-    where: { 
-      studentId_topicId_subTopicId: { 
-        studentId, 
-        topicId: result.topicId, 
-        subTopicId: result.subTopicId || "" 
-      } 
-    },
-    update: { 
-      totalReps: { increment: 1 } 
-    },
-    create: { 
-      studentId, topicId: result.topicId, subTopicId: result.subTopicId || "",
-      topic: result.topicId, subtopic: result.subTopicId || "",
-      level: result.level, subject: result.subject, totalReps: 1, synapseStrength: 0
-    }
-  });
+  // Wrap in a transaction to ensure atomic updates to logs and mastery reps
+  return await prisma.$transaction([
+    // 1. Log the attempt detail
+    prisma.attemptLog.create({
+      data: {
+        studentId,
+        questionId: result.questionId,
+        isCorrect: result.isCorrect,
+        attempts: result.attempts,
+        assistedCorrect: result.assistedCorrect || false,
+        timeSpentSecs: result.timeSpent || 0,
+        gradingTier: 1
+      }
+    }),
+    // 2. Increment Total Reps for the subtopic
+    prisma.studentMastery.upsert({
+      where: { 
+        studentId_topicId_subTopicId: { 
+          studentId, 
+          topicId: result.topicId, 
+          subTopicId: result.subTopicId || "" 
+        } 
+      },
+      update: { 
+        totalReps: { increment: 1 } 
+      },
+      create: { 
+        studentId, topicId: result.topicId, subTopicId: result.subTopicId || "",
+        topic: result.topicId, subtopic: result.subTopicId || "",
+        level: result.level, subject: result.subject, totalReps: 1, synapseStrength: 0
+      }
+    })
+  ]);
 }
 
 /**

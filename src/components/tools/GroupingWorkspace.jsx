@@ -286,17 +286,13 @@ export default function GroupingWorkspace({ modelData, onClose, questionId, diff
                     ? (!lockedGroupSize 
                         ? "Drag a box to start. How many will be in each group?" 
                         : isSharingError 
-                          ? `Oh no! You have ${remainingCount} items left over. ${items.length} cannot be shared equally into groups of ${lockedGroupSize}. Click Reset to try a different size.`
+                          ? `Oh no! These items cannot be shared equally into groups of ${lockedGroupSize}. Click Reset to try a different size.`
                           : isSharingComplete
-                            ? (isSharingSuccess ? `Success! You shared ${items.length} into ${safeExpectedGroups} groups of ${lockedGroupSize}.` : `You made ${groups.length} equal groups, but we need ${safeExpectedGroups}. Click Reset to try a different size!`)
+                            ? (isSharingSuccess ? `Success! All items have been shared equally into ${safeExpectedGroups} groups.` : `You made ${groups.length} equal groups, but we need ${safeExpectedGroups}. Click Reset to try a different size!`)
                             : `You are making groups of ${lockedGroupSize}. Try to share all items equally.`)
                     : `${groups.length} groups of ${safeTargetGroupSize} formed`
                 )}
               </span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Left Over</span>
-              <span className="text-2xl font-black text-white">{remainingCount} left over</span>
             </div>
           </div>
           <div className="flex gap-4">

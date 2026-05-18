@@ -1,11 +1,19 @@
 "use client";
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import ZoneCard from './ZoneCard';
 import SynapseMap from './SynapseMap';
 
 export default function MathDashboardClient({ syllabus, masteryData }) {
+  const router = useRouter();
   const [showTopicGrid, setShowTopicGrid] = useState(false);
+
+  // Navigation handler for targeted Isolation sessions
+  const handleIsolationStart = (subtopic, tier) => {
+    const targetSubtopic = subtopic.id || subtopic.name || subtopic;
+    router.push(`/gym/workout?mode=isolation&subtopic=${encodeURIComponent(targetSubtopic)}&difficulty=${tier.toLowerCase()}`);
+  };
 
   return (
     <main className="p-8 max-w-7xl mx-auto space-y-16">
@@ -14,7 +22,7 @@ export default function MathDashboardClient({ syllabus, masteryData }) {
         <ZoneCard 
           title="The Daily Workout"
           description="Targeted 10-rep set using the 20/60/20 scaling algorithm."
-          href="/train/workout"
+          href="/gym/workout"
           icon="⚡"
           variant="blue"
         />
@@ -37,7 +45,11 @@ export default function MathDashboardClient({ syllabus, masteryData }) {
 
       {/* The Synapse Map (Topic Grid) */}
       {showTopicGrid && (
-        <SynapseMap syllabus={syllabus} masteryData={masteryData} />
+        <SynapseMap 
+          syllabus={syllabus} 
+          masteryData={masteryData} 
+          onStartTrack={handleIsolationStart}
+        />
       )}
     </main>
   );

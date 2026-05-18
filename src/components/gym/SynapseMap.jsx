@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function SynapseMap({ syllabus, masteryData }) {
+export default function SynapseMap({ syllabus, masteryData, onStartTrack }) {
   return (
     <div className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-700 pb-32">
       <div className="flex items-center gap-6">
@@ -63,9 +63,21 @@ export default function SynapseMap({ syllabus, masteryData }) {
 
                     {/* Gamified Lock System */}
                     <div className="grid grid-cols-3 gap-3">
-                      <DifficultyButton label="Found." active={true} strength={strength} />
-                      <DifficultyButton label="Std." active={strength >= 70} strength={strength} />
-                      <DifficultyButton label="Adv." active={strength >= 85} strength={strength} />
+                      <DifficultyButton 
+                        label="Found." 
+                        active={true} 
+                        onClick={() => onStartTrack(subtopic, 'foundation')}
+                      />
+                      <DifficultyButton 
+                        label="Std." 
+                        active={strength >= 70} 
+                        onClick={() => strength >= 70 && onStartTrack(subtopic, 'standard')}
+                      />
+                      <DifficultyButton 
+                        label="Adv." 
+                        active={strength >= 85} 
+                        onClick={() => strength >= 85 && onStartTrack(subtopic, 'advanced')}
+                      />
                     </div>
                   </div>
                 );
@@ -78,11 +90,12 @@ export default function SynapseMap({ syllabus, masteryData }) {
   );
 }
 
-function DifficultyButton({ label, active }) {
+function DifficultyButton({ label, active, onClick }) {
   // Rank Up Animation: Implement a trigger when synapseStrength crosses locking thresholds
   return (
     <motion.div 
       initial={false}
+      onClick={onClick}
       animate={active ? { scale: [1, 1.1, 1], backgroundColor: "#ffffff" } : {}}
       transition={{ duration: 0.5, ease: "easeOut" }}
       className={`

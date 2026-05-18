@@ -5,6 +5,7 @@ import { comparingOrderingBlueprint } from './math/primary-1/whole-numbers/compa
 import { numberPatternBlueprint } from './math/primary-1/whole-numbers/number_pattern';
 import { additionSubtractionBlueprint } from './math/primary-1/whole-numbers/addition_subtraction';
 import { multiplicationDivisionBlueprint } from './math/primary-1/whole-numbers/multiplication_division';
+import { moneyBlueprint } from './math/primary-1/money/money';
 
 /**
  * Registry mapping metadata to modular blueprints.
@@ -17,6 +18,7 @@ export const blueprintRegistry = {
   'Primary 1-Whole Numbers-Number Patterns': numberPatternBlueprint,
   'Primary 1-Whole Numbers-Addition and Subtraction': additionSubtractionBlueprint,
   'Primary 1-Whole Numbers-Multiplication and Division': multiplicationDivisionBlueprint,
+  'Primary 1-Money-Money': moneyBlueprint,
   // Slug format: "Level-Topic-Subtopic"
 };
 

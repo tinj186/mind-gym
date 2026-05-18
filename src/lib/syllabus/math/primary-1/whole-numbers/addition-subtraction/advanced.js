@@ -158,14 +158,22 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   if (activeVariant === 'advanced_cross_ordinal_queue') {
     const inFront = Math.floor(Math.random() * 10) + 10; // People in front
     const behind = Math.floor(Math.random() * 10) + 5; // People behind
-    const answer = String(inFront + behind + 1); // Total people = in front + person + behind
+    const totalPeople = inFront + behind + 1;
+    const answer = String(totalPeople);
+
+    // Generate an actual array of forest friends for the visual engine
+    const animals = ['🦊', '🐰', '🐻', '🐼', '🐨', '🐯', '🦁', '🐵', '🐸', '🐨'];
+    const queueItems = Array.from({ length: totalPeople }).map((_, i) => {
+      if (i === inFront) return selectedIcon; // The target Fox/Animal
+      return animals[i % animals.length];
+    });
     
     const options = isMCQ ? [answer, String(inFront + behind), String(inFront + behind - 1), String(inFront + 1)].sort(() => Math.random() - 0.5) : null;
 
     const promptObject = {
       meta: commonMeta,
       content: {
-        questionText: getQText(`[STORY] How many people are there in the queue altogether?`, `There are ${inFront} people in front of ${context.name} and ${behind} people behind. How many people are in the queue?`),
+        questionText: getQText(`[STORY] How many people are there in the queue altogether?`, `There are ${inFront} people in front of ${context.name} and ${behind} people behind. How many people are in the queue?`, zodType),
         hint: "[AI: INJECT HINT]",
         options: options,
         finalAnswer: answer,
@@ -173,7 +181,14 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       },
       visualEngine: {
         componentToRender: isShortQ ? "NONE" : "ORDINAL_LINE", // Ordinal line visual for word problems
-        componentData: { position: inFront, total: parseInt(answer), hideVisual: isShortQ } // Pass position and total for visual
+        componentData: { 
+          position: inFront, 
+          total: totalPeople, 
+          items: queueItems, 
+          icon: selectedIcon,
+          hideVisual: isShortQ,
+          label: "[AI: CONTEXT LABEL]"
+        } 
       },
       inputRequirement: { inputType }
     };
@@ -182,7 +197,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
       Task: 
       1. Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story.
-      2. In the "hint" field, provide a conceptual clue about counting positions in a queue.
+      2. In the "label" field within visualEngine.componentData, provide a context-relevant name for the formation (e.g., "Parade Marching Formation" or "Queue at Hawker Centre").
+      3. In the "hint" field, provide a conceptual clue about counting positions in a queue.
       ${isShortQ 
         ? `3. DO NOT add a story for Short Questions.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
         : `3. The story MUST be localized.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`

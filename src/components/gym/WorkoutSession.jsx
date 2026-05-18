@@ -3,118 +3,12 @@
 import { useState, useEffect, useTransition, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { finalizeWorkoutAction, updateWorkoutProgressAction, saveAttemptAction } from '@/lib/intelligence/workoutActions';
+import { normalizeQuestionData, deriveVisualProps } from '@/lib/intelligence/workout-utils';
+import VisualRenderer, { ESSENTIAL_VISUALS } from '@/components/gym/VisualRenderer';
 import GroupingWorkspace from '@/components/tools/GroupingWorkspace'; // Import the interactive tool
 import confetti from 'canvas-confetti';
 
-/**
- * Neural Scaffold Visual Renderer
- * Handles specific rendering logic for various tool types in the syllabus.
- */
-function VisualRenderer({ type, data, visualProps, setIsToolOpen, questionId, difficulty, topic }) {
-  if (!type || type === "NONE") return null;
-
-  switch (type) {
-    case 'COUNTING_OBJECTS':
-      return (
-        <div className="flex flex-col items-center gap-6">
-          <div className="flex flex-wrap justify-center gap-3">
-            {(data.items || data.groups?.flatMap(count => 
-              Array(count).fill(data.icons?.[0] || '⭐')
-            ))?.map((item, idx) => (
-              <span key={idx} className="text-5xl drop-shadow-sm">{item}</span>
-            ))}
-          </div>
-          <button 
-            onClick={() => setIsToolOpen(true)}
-            className="px-6 py-2 bg-indigo-600 text-white text-[10px] font-black uppercase rounded-full shadow-xl hover:bg-indigo-500 transition-all active:scale-95"
-          >
-            ✨ Open Grouping Tool to Help
-          </button>
-        </div>
-      );
-
-    case 'NUMBER_CARDS':
-      return (
-        <div className="flex flex-wrap justify-center gap-4 py-2">
-          {(data.items || data.numbers || [])?.map((val, idx) => (
-            <div key={idx} className="w-20 h-28 md:w-24 md:h-32 bg-white rounded-2xl border-4 border-slate-200 flex items-center justify-center shadow-lg transform rotate-[-1deg] odd:rotate-[1deg] hover:rotate-0 transition-transform">
-              <span className="text-3xl font-black text-slate-900">{val}</span>
-            </div>
-          ))}
-        </div>
-      );
-
-    case 'NUMBER_PATTERN':
-      return (
-        <div className="flex flex-wrap justify-center items-center gap-4 py-2">
-          {(data.items || [])?.map((val, idx) => (
-            <div key={idx} className={`w-24 h-24 md:w-28 md:h-28 bg-white rounded-2xl border-4 flex items-center justify-center shadow-lg transition-all ${
-              val === '?' ? 'border-blue-500 bg-blue-50 text-blue-700 animate-pulse' : 'border-slate-200 text-slate-900'
-            }`}>
-              <span className="text-3xl font-black">{val}</span>
-            </div>
-          ))}
-          {data.rule && <p className="text-sm text-slate-500 mt-4">Rule: {data.rule}</p>}
-        </div>
-      );
-
-    case 'EQUAL_GROUPS':
-      const numGroups = data.numGroups || data.groups || data.groupCount || 0;
-      const itemsPerGroup = data.itemsPerGroup || data.size || 1;
-      return (
-        <div className="flex flex-col items-center gap-6">
-          <div className="flex flex-wrap justify-center gap-8">
-            {Array.from({ length: numGroups }).map((_, gIdx) => (
-              <div key={gIdx} className="relative p-6 bg-white rounded-[2rem] border-4 border-dashed border-slate-200 flex gap-3 shadow-inner">
-                <span className="absolute -top-3 -left-2 bg-slate-900 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase">
-                  Grp {gIdx + 1}
-                </span>
-                {Array.from({ length: itemsPerGroup }).map((_, iIdx) => (
-                  <span key={iIdx} className="text-4xl animate-in zoom-in duration-300" style={{ animationDelay: `${(gIdx * 5 + iIdx) * 50}ms` }}>
-                    {data.emoji || data.icon || '🎈'}
-                  </span>
-                ))}
-              </div>
-            ))}
-          </div>
-          <button 
-            onClick={() => setIsToolOpen(true)}
-            className="px-6 py-2 bg-indigo-600 text-white text-[10px] font-black uppercase rounded-full shadow-xl hover:bg-indigo-500 transition-all active:scale-95"
-          >
-            ✨ Open Grouping Tool to Help
-          </button>
-        </div>
-      );
-
-    case 'GROUPING_WORKSPACE':
-      return (
-        <GroupingWorkspace
-          modelData={data}
-          onClose={() => {}}
-          questionId={questionId}
-          difficulty={difficulty}
-          mode={visualProps.mode}
-          totalItems={visualProps.totalItems}
-          expectedGroups={visualProps.expectedGroups}
-          targetGroupSize={visualProps.targetSize}
-          showTargetSize={topic !== 'Division'}
-          icon={visualProps.icon}
-        />
-      );
-
-    default:
-      return (
-        <div className="text-center space-y-2">
-          <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Unknown Visual Signature</p>
-          <code className="text-[10px] bg-white p-2 rounded-lg text-slate-400">
-            {JSON.stringify(data)}
-          </code>
-        </div>
-      );
-  }
-}
-
-export default function WorkoutSession({ studentId, level, initialQuestions = [], initialIndex = 0, initialLog = [] }) {
+export default function WorkoutSession({ studentId, level, initialQuestions = [], initialIndex = 0, initialLog = [], title = "Daily Training Sequence" }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [answersLog, setAnswersLog] = useState(initialLog);
   const [startTime] = useState(Date.now());
@@ -128,56 +22,55 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
   const [isPending, startTransition] = useTransition();
   const [summary, setSummary] = useState(null);
 
-  const currentQuestion = initialQuestions[currentIndex];
   const isP1 = level === "Primary 1";
+  
+  const normalizedQuestion = useMemo(() => 
+    normalizeQuestionData(initialQuestions[currentIndex]), 
+  [currentIndex, initialQuestions]);
 
-  // --- PHASE 4: MEMOIZED PROP DERIVATION ---
-  const visualProps = useMemo(() => {
-    const modelData = currentQuestion?.modelData || {};
+  const currentVisual = normalizedQuestion?.visualEngine?.componentToRender;
+  
+  const visualProps = useMemo(() => 
+    deriveVisualProps(normalizedQuestion), 
+  [normalizedQuestion]);
+
+  // Content Guard: Determine if the visual actually has data to show
+  const hasVisualContent = useMemo(() => {
+    if (!currentVisual || currentVisual === "NONE") return false;
+
+    const data = normalizedQuestion?.visualEngine?.componentData || {};
+
+    // Specialized Guards for complex components
+    if (currentVisual === "ORDINAL_LINE") {
+      const hasPosition = data.position !== undefined && data.position !== null && !isNaN(Number(data.position));
+      return visualProps.totalItems > 0 && hasPosition;
+    }
     
-    const total = 
-      modelData.totalItems || 
-      modelData.total || 
-      (Array.isArray(modelData.groups) ? modelData.groups.reduce((sum, c) => sum + (Number(c) || 0), 0) : null) ||
-      (Array.isArray(modelData.items) ? modelData.items.length : null) ||
-      (Array.isArray(modelData.numbers) ? modelData.numbers.length : null) ||
-      (modelData.numGroups && modelData.itemsPerGroup ? (modelData.numGroups * modelData.itemsPerGroup) : null) ||
-      (Number(currentQuestion?.finalAnswer) || 10);
+    if (["NUMBER_BOND", "SHAPE"].includes(currentVisual)) return true; 
+    return (visualProps.totalItems > 0); // Ordinal Lines, Counting, etc. must have a count > 0
+  }, [currentVisual, visualProps.totalItems]);
 
-    const icon = 
-      modelData.emoji || 
-      modelData.icon || 
-      (Array.isArray(modelData.icons) ? modelData.icons[0] : null) || 
-      (Array.isArray(modelData.items) ? modelData.items[0] : null) || 
-      '🎈';
-
-    const mode = (currentQuestion?.subtopic?.includes('Division') || currentQuestion?.topic?.includes('Division')) 
-      ? 'SHARING' : (modelData.mode || 'GROUPING');
-
-    return {
-      modelData,
-      totalItems: total,
-      icon,
-      mode,
-      expectedGroups: modelData.numGroups || modelData.groups || modelData.groupCount,
-      targetSize: modelData.targetGroupSize || modelData.itemsPerGroup || modelData.size || 10
-    };
-  }, [currentQuestion]);
+  const isEssential = ESSENTIAL_VISUALS.includes(currentVisual) && hasVisualContent;
 
   // Injecting Console Debugger
   useEffect(() => {
-    if (!currentQuestion) return;
+    if (!normalizedQuestion) return;
     console.group(`🔍 [WorkoutSession] Question ${currentIndex + 1} Logic Trace`);
-    console.log("Question ID:", currentQuestion?.id);
+    console.log("Question ID:", normalizedQuestion?.id);
+    console.log("Topic:", normalizedQuestion?.topic);
+    console.log("Subtopic:", normalizedQuestion?.subtopic);
+    console.log("Difficulty:", normalizedQuestion?.difficulty);
+    console.log("Type:", normalizedQuestion?.type);
     console.log("Visual Context:", visualProps);
     
     // Troubleshooting common failure points
     if (isNaN(visualProps.totalItems)) console.error("❌ ERROR: totalItems is NaN.");
-    if (visualProps.totalItems === 100) console.warn("⚠️ WARNING: totalItems is 100 (Fallback detected).");
-    if (!visualProps.modelData.type) console.error("❌ ERROR: modelData.type is missing!");
+    if (visualProps.totalItems === 10) console.warn("💡 INFO: totalItems is 10 (Standard or Fallback).");
+    
+    if (!currentVisual && isEssential) console.error("❌ ERROR: componentToRender is missing for an Essential Visual!");
     
     console.groupEnd();
-  }, [currentIndex, currentQuestion, visualProps]);
+  }, [currentIndex, normalizedQuestion, visualProps, currentVisual, isEssential]);
 
   // Part 2: Resume Logic (Mount check)
   useEffect(() => {
@@ -213,16 +106,6 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
     setIsToolOpen(false);
   }, [currentIndex]);
 
-  useEffect(() => {
-    const isWorkspace = currentQuestion?.visualEngine?.componentToRender === "GROUPING_WORKSPACE" || 
-                       currentQuestion?.modelData?.type === "GROUPING_WORKSPACE";
-    
-    // Only auto-open if it hasn't opened for this specific question yet
-    if (isWorkspace && !hasAutoOpened && attempts === 0) {
-      setIsToolOpen(true);
-      setHasAutoOpened(true); // Mark as triggered so it won't fight the Close button
-    }
-  }, [currentQuestion, hasAutoOpened, attempts]);
   // --------------------------------------------------
 
   const moveToNext = useCallback((result) => {
@@ -258,16 +141,16 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
   }, [currentIndex, answersLog, initialQuestions.length, studentId]);
 
   const handleAnswer = async (submittedAnswer) => {
-    const isCorrect = String(submittedAnswer).trim().toLowerCase() === String(currentQuestion.finalAnswer).trim().toLowerCase();
+    const isCorrect = String(submittedAnswer).trim().toLowerCase() === String(normalizedQuestion.finalAnswer).trim().toLowerCase();
 
     if (isCorrect) {
       setFeedback('correct');
       const result = {
-        questionId: currentQuestion.id,
-        subTopicId: currentQuestion.subtopic || "",
-        topicId: currentQuestion.topic,
-        level: currentQuestion.level,
-        subject: currentQuestion.subject,
+        questionId: normalizedQuestion.id,
+        subTopicId: normalizedQuestion.subtopic || "",
+        topicId: normalizedQuestion.topic,
+        level: normalizedQuestion.level,
+        subject: normalizedQuestion.subject,
         isCorrect: attempts === 0, // Mastery is only "Success" if gotten right on the 1st try
         assistedCorrect: attempts > 0,
         actualCorrect: true,
@@ -289,7 +172,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
         if (isP1) setShowBarModel(true);
         
         // Automatically open the grouping tool for relevant question types
-        if (!hasAutoOpened && ['COUNTING_OBJECTS', 'EQUAL_GROUPS'].includes(currentQuestion.modelData?.type)) {
+        if (!hasAutoOpened && ['COUNTING_OBJECTS', 'EQUAL_GROUPS', 'GROUPING_WORKSPACE'].includes(currentVisual)) {
           setIsToolOpen(true);
           setHasAutoOpened(true);
         }
@@ -339,7 +222,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
   }
 
   // Safety Catch for empty workouts or loading errors
-  if (!currentQuestion) {
+  if (!normalizedQuestion) {
     return (
       <div className="max-w-4xl mx-auto p-12 text-center space-y-8 bg-white border-4 border-slate-50 rounded-[3rem] shadow-xl">
         <div className="text-4xl mb-4">🏋️</div>
@@ -355,6 +238,14 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
 
   return (
     <div className="max-w-5xl mx-auto p-8 space-y-8">
+      {/* Session Title Header */}
+      <div className="flex flex-col mb-2">
+        <span className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] block">
+          Syllabus_Mode // {title.toUpperCase().replace(/\s/g, '_')}
+        </span>
+        <h1 className="text-2xl font-black text-slate-900 tracking-tighter">{title}</h1>
+      </div>
+
       <div className="flex justify-between items-center">
         <div className="flex gap-2">
           {initialQuestions.map((_, i) => (
@@ -379,29 +270,29 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
           exit={{ x: -20, opacity: 0 }}
           className="bg-white border-4 border-slate-50 rounded-[3rem] p-12 space-y-8 shadow-xl"
         >
-          <h3 className="text-3xl font-black text-slate-900">{currentQuestion.question}</h3>
+          <h3 className="text-3xl font-black text-slate-900">{normalizedQuestion.question}</h3>
 
           {/* 
             DEBUG LOG: Keep this active if issues persist. 
             Note: hideVisual: true in logs means the box is hidden by default. 
           */}
 
-          {/* Robust Visual Engine */}
-          {currentQuestion.visualEngine && 
-           currentQuestion.visualEngine.componentToRender !== "NONE" && (
-            <div className="mt-8 p-8 bg-slate-50 border-4 border-dashed border-slate-200 rounded-[2rem]">
+          {/* Robust Visual Engine - Guarded by Attempt count unless Essential */}
+          {(attempts > 0 || isEssential) && currentVisual && currentVisual !== "NONE" && hasVisualContent && (
+            <div className="mt-8 p-8 bg-white border-4 border-slate-900 rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] animate-in fade-in zoom-in-95 duration-500">
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">
-                NEURAL_SCAFFOLD // VISUAL AID
+                {isEssential ? "REQUIRED_CONTEXT // VISUAL_DATA" : "NEURAL_SCAFFOLD // HINT_ACTIVE"}
               </p>
               
               <VisualRenderer 
-                type={currentQuestion.visualEngine.componentToRender} 
-                data={currentQuestion.visualEngine.componentData}
+                type={currentVisual} 
+                data={normalizedQuestion?.visualEngine?.componentData || {}}
                 visualProps={visualProps}
                 setIsToolOpen={setIsToolOpen}
-                questionId={currentQuestion.id}
-                difficulty={currentQuestion.difficulty}
-                topic={currentQuestion.topic}
+                questionId={normalizedQuestion.id}
+                difficulty={normalizedQuestion.difficulty}
+                topic={normalizedQuestion.topic}
+                attempts={attempts}
               />
             </div>
           )}
@@ -425,11 +316,11 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
             <button
               onClick={() => {
                 const failedResult = {
-                  questionId: currentQuestion.id,
-                  subTopicId: currentQuestion.subtopic || "",
-                  topicId: currentQuestion.topic,
-                  level: currentQuestion.level,
-                  subject: currentQuestion.subject,
+                  questionId: normalizedQuestion.id,
+                  subTopicId: normalizedQuestion.subtopic || "",
+                  topicId: normalizedQuestion.topic,
+                  level: normalizedQuestion.level,
+                  subject: normalizedQuestion.subject,
                   isCorrect: false,
                   assistedCorrect: false,
                   actualCorrect: false,
@@ -446,14 +337,14 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
 
           {showHint && (
             <div className="p-6 bg-amber-50 rounded-2xl border-2 border-amber-200 animate-in fade-in slide-in-from-bottom-4">
-              <p className="text-amber-900 font-bold text-sm">💡 HINT: {currentQuestion.hint || "Try counting carefully!"}</p>
+              <p className="text-amber-900 font-bold text-sm">💡 HINT: {normalizedQuestion.hint || "Try counting carefully!"}</p>
             </div>
           )}
 
           {feedback === 'solution_revealed' && (
             <div className="p-6 bg-rose-50 rounded-2xl border-2 border-rose-200 animate-in zoom-in-95">
               <p className="text-rose-900 font-black text-xs uppercase tracking-widest mb-2">Form Check: Let's see the steps</p>
-              <p className="text-slate-700 text-sm italic leading-relaxed">{currentQuestion.solution}</p>
+              <p className="text-slate-700 text-sm italic leading-relaxed">{normalizedQuestion.solution}</p>
             </div>
           )}
         </motion.div>
@@ -482,16 +373,16 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
               </button>
               <div className="p-12 overflow-y-auto max-h-[85vh]">
                 <GroupingWorkspace
-                  modelData={currentQuestion.modelData}
+                  modelData={normalizedQuestion.modelData}
                   onClose={() => setIsToolOpen(false)}
-                  questionId={currentQuestion.id}
-                  difficulty={currentQuestion.difficulty}
+                  questionId={normalizedQuestion.id}
+                  difficulty={normalizedQuestion.difficulty}
                   mode={visualProps.mode}
                   totalItems={visualProps.totalItems}
                   icon={visualProps.icon}
                   expectedGroups={visualProps.expectedGroups}
                   targetGroupSize={visualProps.targetSize}
-                  showTargetSize={currentQuestion.topic !== 'Division'}
+                  showTargetSize={normalizedQuestion.topic !== 'Division'}
                 />
               </div>
             </motion.div>
