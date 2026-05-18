@@ -85,8 +85,8 @@ function parseAiResponse(text) {
 
     return JSON.parse(jsonText);
   } catch (e) {
-    console.error("Failed to parse AI JSON. Raw text:", text);
-    throw new Error("AI returned invalid JSON format.");
+    console.error("Failed to parse AI JSON. Error:", e.message, "Raw text:", text);
+    throw new Error(`AI returned invalid JSON format: ${e.message}`);
   }
 }
 

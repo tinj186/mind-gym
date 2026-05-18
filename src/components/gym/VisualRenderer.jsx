@@ -60,29 +60,50 @@ export default function VisualRenderer({ type, data, visualProps, setIsToolOpen,
       // Map currency tokens to physical assets located inside /public/assets/money/
       const assetMap = {
         '10¢':  { src: '/assets/money/sg-10c.png',  isCoin: true },
-        '10':   { src: '/assets/money/sg-10c.png',  isCoin: true },
         '0.1':  { src: '/assets/money/sg-10c.png',  isCoin: true },
         '0.10': { src: '/assets/money/sg-10c.png',  isCoin: true },
+        '$0.10':{ src: '/assets/money/sg-10c.png',  isCoin: true },
+
         '20¢':  { src: '/assets/money/sg-20c.png',  isCoin: true },
         '20':   { src: '/assets/money/sg-20c.png',  isCoin: true },
         '0.2':  { src: '/assets/money/sg-20c.png',  isCoin: true },
         '0.20': { src: '/assets/money/sg-20c.png',  isCoin: true },
+        '$0.20':{ src: '/assets/money/sg-20c.png',  isCoin: true },
+
         '50¢':  { src: '/assets/money/sg-50c.png',  isCoin: true },
-        '50':   { src: '/assets/money/sg-50c.png',  isCoin: true },
         '0.5':  { src: '/assets/money/sg-50c.png',  isCoin: true },
         '0.50': { src: '/assets/money/sg-50c.png',  isCoin: true },
+        '$0.50':{ src: '/assets/money/sg-50c.png',  isCoin: true },
+
         '$1':   { src: '/assets/money/sg-1d.png',   isCoin: true },
         '1':    { src: '/assets/money/sg-1d.png',   isCoin: true },
         '1.00': { src: '/assets/money/sg-1d.png',   isCoin: true },
+        '$1.00':{ src: '/assets/money/sg-1d.png',   isCoin: true },
+
         '$2':   { src: '/assets/money/sg-2d.png',   isCoin: false },
         '2':    { src: '/assets/money/sg-2d.png',   isCoin: false },
         '2.00': { src: '/assets/money/sg-2d.png',   isCoin: false },
+        '$2.00':{ src: '/assets/money/sg-2d.png',   isCoin: false },
+
         '$5':   { src: '/assets/money/sg-5d.png',   isCoin: false },
         '5':    { src: '/assets/money/sg-5d.png',   isCoin: false },
         '5.00': { src: '/assets/money/sg-5d.png',   isCoin: false },
+        '$5.00':{ src: '/assets/money/sg-5d.png',   isCoin: false },
+
         '$10':  { src: '/assets/money/sg-10d.png',  isCoin: false },
         '10':   { src: '/assets/money/sg-10d.png',  isCoin: false },
-        '10.00':{ src: '/assets/money/sg-10d.png',  isCoin: false }
+        '10.00':{ src: '/assets/money/sg-10d.png',  isCoin: false },
+        '$10.00':{ src: '/assets/money/sg-10d.png', isCoin: false },
+
+        '$50':  { src: '/assets/money/sg-50d.png',  isCoin: false },
+        '50':   { src: '/assets/money/sg-50d.png',  isCoin: false },
+        '50.00':{ src: '/assets/money/sg-50d.png',  isCoin: false },
+        '$50.00':{ src: '/assets/money/sg-50d.png', isCoin: false },
+
+        '$100': { src: '/assets/money/sg-100d.png', isCoin: false },
+        '100':  { src: '/assets/money/sg-100d.png', isCoin: false },
+        '100.00':{ src: '/assets/money/sg-100d.png', isCoin: false },
+        '$100.00':{ src: '/assets/money/sg-100d.png', isCoin: false }
       };
 
       return (
@@ -97,7 +118,15 @@ export default function VisualRenderer({ type, data, visualProps, setIsToolOpen,
             
             if (normalizedToken.startsWith('$$')) normalizedToken = normalizedToken.slice(1);
 
-            const asset = assetMap[normalizedToken];
+            // Try direct match, then try fallback without $ for notes
+            let asset = assetMap[normalizedToken];
+            if (!asset && normalizedToken.startsWith('$')) {
+              asset = assetMap[normalizedToken.slice(1)];
+            }
+            if (!asset && !isNaN(normalizedToken)) {
+              // For bare numbers, if not matched, try adding .00 (AI often truncates)
+              asset = assetMap[`${normalizedToken}.00`] || assetMap[`$${normalizedToken}.00`];
+            }
 
             return (
               <div key={idx} className="flex flex-col items-center gap-1 hover:scale-105 transition-transform">
