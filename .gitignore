@@ -20,3 +20,59 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+
+# ==========================================
+# 🚀 Dependencies & Caches
+# ==========================================
+node_modules/
+.pnp
+.pnp.js
+.yarn/cache/
+.npm/
+
+# ==========================================
+# 🏗️ Next.js Build Outputs & Local Deploys
+# ==========================================
+.next/
+out/
+build/
+dist/
+
+# ==========================================
+# 🔑 Secrets & Environment Passports
+# ==========================================
+# Never commit actual credentials to version control
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Allow committing sample files to guide setup
+!.env.example
+
+# ==========================================
+# 🐳 Docker & System Logs
+# ==========================================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.eslintcache
+*.log
+
+# ==========================================
+# 🇸🇬 Synology NAS & OS Metadata (Custom Rules)
+# ==========================================
+# Blocks hidden Synology indexing folders from crowding Git
+**/@eaDir/
+**/@eaDir/**/*
+.DS_Store
+Thumbs.db
+
+# ==========================================
+# 📦 Data Backups & Assets (Custom Rules)
+# ==========================================
+# Keeps expanding JSON snapshots isolated from code history
+*_backup.json
+questions_backup.json
+/public/backups/

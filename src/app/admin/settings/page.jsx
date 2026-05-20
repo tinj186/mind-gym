@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getBackupStatusAction, triggerJsonDumpAction, restoreJsonBackupAction } from '@/lib/admin/backupActions';
+import { getBackupStatusAction, triggerJsonDumpAction, restoreJsonBackupAction } from '@/app/actions/backupActions';
 
 export default function AdminSettingsPage() {
   const [results, setResults] = useState([]);

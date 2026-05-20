@@ -1,17 +1,14 @@
 "use server";
 
 import { prisma } from "@/lib/db";
-import { calculateSynapseStrength } from "./synapse";
+import { calculateSynapseStrength } from "@/lib/intelligence/synapse";
 import { revalidatePath } from "next/cache";
 
 /**
  * Real-Time Saving: Logs an individual attempt and increments the rep count.
- * This ensures 'Total Reps' increases immediately without affecting 'Synapse Strength'.
  */
 export async function saveAttemptAction(studentId, result) {
-  // Wrap in a transaction to ensure atomic updates to logs and mastery reps
   return await prisma.$transaction([
-    // 1. Log the attempt detail
     prisma.attemptLog.create({
       data: {
         studentId,
@@ -23,7 +20,6 @@ export async function saveAttemptAction(studentId, result) {
         gradingTier: 1
       }
     }),
-    // 2. Increment Total Reps for the subtopic
     prisma.studentMastery.upsert({
       where: { 
         studentId_topicId_subTopicId: { 
@@ -51,9 +47,7 @@ export async function finalizeWorkoutAction(studentId, results) {
   const rankUps = [];
   let totalGrowth = 0;
 
-  // Group results by subtopic
   const subTopicResults = results.reduce((acc, curr) => {
-    // Defensive: Normalize "undefined" string or missing IDs
     const sid = curr.subTopicId === "undefined" || !curr.subTopicId ? "" : curr.subTopicId;
     
     if (!acc[sid]) acc[sid] = { 
@@ -65,7 +59,6 @@ export async function finalizeWorkoutAction(studentId, results) {
     };
     acc[sid].total++;
     
-    // Mastery Weighting: 1.0 for 1st attempt, 0.5 for 2nd attempt success, 0.0 for fail
     if (curr.isCorrect) acc[sid].weightedScore += 1.0;
     else if (curr.actualCorrect) acc[sid].weightedScore += 0.5;
 
@@ -83,19 +76,18 @@ export async function finalizeWorkoutAction(studentId, results) {
     
     totalGrowth += (newStrength - oldStrength);
 
-    // Threshold detection for Rank Up animation
     if (oldStrength < 70 && newStrength >= 70) rankUps.push(subTopicId);
     if (oldStrength < 85 && newStrength >= 85) rankUps.push(subTopicId);
 
     await prisma.studentMastery.upsert({
       where: { studentId_topicId_subTopicId: { studentId, topicId: data.topicId, subTopicId } },
-      update: { synapseStrength: newStrength }, // Reps are already incremented via saveAttemptAction
+      update: { synapseStrength: newStrength },
       create: { 
         studentId, 
         topicId: data.topicId, 
         subTopicId, 
-        topic: data.topicId, // Fills the mandatory legacy 'topic' field
-        subtopic: subTopicId, // Fills the legacy 'subtopic' field
+        topic: data.topicId, 
+        subtopic: subTopicId, 
         level: data.level || "Primary 1",
         subject: data.subject || "Math",
         synapseStrength: newStrength, 
@@ -113,15 +105,8 @@ export async function finalizeWorkoutAction(studentId, results) {
 
 /**
  * Updates the persistent session state for a student.
- * Set payload to null to clear the session lock.
- *
- * @param {string} studentId - The ID of the student.
- * @param {Object | null} payload - The workout progress to save, or null to clear.
- * @param {number} payload.currentIndex - The current question index.
- * @param {Array} payload.answersLog - The log of answers for the current session.
  */
 export async function updateWorkoutProgressAction(studentId, payload) {
-  // If payload is provided, we merge it into the existing JSON field
   if (payload !== null) {
     const profile = await prisma.studentProfile.findUnique({ where: { id: studentId } });
     const current = profile?.activeWorkout || {};

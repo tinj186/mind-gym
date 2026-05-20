@@ -3099,6 +3099,47 @@
     "createdAt": "2026-05-15T04:48:47.422Z"
   },
   {
+    "id": "0f411cbd-29d7-4eab-9bf8-97af66d10fee",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "MCQ",
+    "difficulty": "Foundation",
+    "question": "Look at the money shown below. Which option shows the correct total amount?",
+    "options": [
+      "$5.00",
+      "$5.20",
+      "$4.20",
+      "$6.20"
+    ],
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$2",
+        "20¢",
+        "$2",
+        "$1"
+      ],
+      "total": "$5.20",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$2",
+      "20¢",
+      "$2",
+      "$1"
+    ],
+    "hint": "First, add up all the dollar notes. Then, add the cents to find the total.",
+    "solution": "[\"Identify the dollar notes: $2, $2, $1.\",\"Add the dollar notes: $2 + $2 + $1 = $5.\",\"Identify the coins: 20¢.\",\"Add the coins: 20¢.\",\"Combine the dollar notes and coins: $5 + 20¢ = $5.20.\",\"The total amount of money is $5.20.\"]",
+    "finalAnswer": "$5.20",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:10:53.594Z"
+  },
+  {
     "id": "b5544c82-cc1e-4a0c-b02c-bab2d9df0daf",
     "subject": "Math",
     "strand": "Number and Algebra",
@@ -3508,6 +3549,46 @@
     "finalAnswer": "4",
     "isApproved": true,
     "createdAt": "2026-05-15T04:48:48.193Z"
+  },
+  {
+    "id": "054c16c8-2671-4beb-9487-3c9e69fea7ce",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Foundation",
+    "question": "How much money is there in total?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$5",
+        "$2",
+        "50¢",
+        "20¢",
+        "20¢",
+        "10¢"
+      ],
+      "total": "$8.00",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$5",
+      "$2",
+      "50¢",
+      "20¢",
+      "20¢",
+      "10¢"
+    ],
+    "hint": "Count the notes first, then the coins. Add them all up carefully.",
+    "solution": "[\"Count the notes: $5 + $2 = $7\",\"Count the coins: 50¢ + 20¢ + 20¢ + 10¢ = 50¢ + 40¢ + 10¢ = 90¢ + 10¢ = $1.00\",\"Add notes and coins: $7 + $1.00 = $8.00\"]",
+    "finalAnswer": "$8.00",
+    "isApproved": true,
+    "createdAt": "2026-05-18T04:54:46.162Z"
   },
   {
     "id": "9f41e7f3-0d9c-4824-a287-f094b7b3d56b",
@@ -4933,6 +5014,81 @@
     "createdAt": "2026-05-14T08:30:25.277Z"
   },
   {
+    "id": "a7ae5318-bdfb-4084-841e-0ff119e8ce0b",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Foundation",
+    "question": "Count the total value of the money.",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$2",
+        "50¢",
+        "20¢"
+      ],
+      "total": "$2.70",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$2",
+      "50¢",
+      "20¢"
+    ],
+    "hint": "Add the value of each note and coin to find the total.",
+    "solution": "[\"1. Identify the value of each item: $2, 50¢, 20¢.\",\"2. Add the values together.\",\"3. Start with the note: $2.\",\"4. Add the 50¢ coin: $2 + 50¢ = $2.50.\",\"5. Add the 20¢ coin: $2.50 + 20¢ = $2.70.\",\"The total value is $2.70.\"]",
+    "finalAnswer": "$2.70",
+    "isApproved": true,
+    "createdAt": "2026-05-18T04:54:39.785Z"
+  },
+  {
+    "id": "98f5a0aa-cde1-44ff-b1f9-d992b1bcc61c",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "MCQ",
+    "difficulty": "Foundation",
+    "question": "Look at the money shown in the picture. Which option correctly states the total amount?",
+    "options": [
+      "$1.70",
+      "$1.80",
+      "$1.90",
+      "$1.60"
+    ],
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$1",
+        "50¢",
+        "20¢",
+        "10¢"
+      ],
+      "total": "$1.80",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$1",
+      "50¢",
+      "20¢",
+      "10¢"
+    ],
+    "hint": "Remember to add the value of each coin and note carefully. Start by adding the largest values first!",
+    "solution": "[\"Add the values of the notes and coins:\",\"$1.00 (one dollar note)\",\"+ $0.50 (fifty-cent coin)\",\"+ $0.20 (twenty-cent coin)\",\"+ $0.10 (ten-cent coin)\",\"Total = $1.00 + $0.50 + $0.20 + $0.10 = $1.80\"]",
+    "finalAnswer": "$1.80",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:11:09.938Z"
+  },
+  {
     "id": "5aead00f-d6cd-473e-886c-3b0cb2e4c8ac",
     "subject": "Math",
     "strand": "Number and Algebra",
@@ -5551,6 +5707,40 @@
     "finalAnswer": "3rd",
     "isApproved": true,
     "createdAt": "2026-05-14T08:51:31.382Z"
+  },
+  {
+    "id": "73fd8144-9d69-4d91-b5e9-9fe9ea0cc406",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Foundation",
+    "question": "Count the total amount.",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$2",
+        "50¢",
+        "20¢"
+      ],
+      "total": "$2.70",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$2",
+      "50¢",
+      "20¢"
+    ],
+    "hint": "Start by adding the dollar notes, then add the cents.",
+    "solution": "[\"Add the dollar notes: $2.\",\"Add the cents: 50¢ + 20¢ = 70¢.\",\"Combine the dollars and cents: $2 + 70¢ = $2.70.\"]",
+    "finalAnswer": "$2.70",
+    "isApproved": true,
+    "createdAt": "2026-05-18T04:54:19.507Z"
   },
   {
     "id": "03ecb9b9-a562-4ca7-b2e9-21da2d04a0c8",
@@ -6356,6 +6546,40 @@
     "createdAt": "2026-05-14T08:51:39.178Z"
   },
   {
+    "id": "726d2b5b-0858-454b-b06b-7907c07eb19f",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Foundation",
+    "question": "What is the total value of the money shown?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$2",
+        "50¢",
+        "20¢"
+      ],
+      "total": "$2.70",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$2",
+      "50¢",
+      "20¢"
+    ],
+    "hint": "Count the dollar notes first, then the coins. Add all the values together.",
+    "solution": "[\"Identify the notes and coins: One $2 note, one 50¢ coin, one 20¢ coin.\",\"Value of notes: $2\",\"Value of coins: 50¢ + 20¢ = 70¢\",\"Total value: $2 + 70¢ = $2.70\"]",
+    "finalAnswer": "$2.70",
+    "isApproved": true,
+    "createdAt": "2026-05-18T04:54:26.359Z"
+  },
+  {
     "id": "311863f7-452d-4cf8-bba6-24d31000c5e4",
     "subject": "Math",
     "strand": "Number and Algebra",
@@ -6767,6 +6991,77 @@
     "finalAnswer": "third",
     "isApproved": true,
     "createdAt": "2026-05-14T08:53:15.254Z"
+  },
+  {
+    "id": "54f2388c-851e-468d-b16d-da48a11a2ed7",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Foundation",
+    "question": "What is the total value of the money shown?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$2",
+        "50¢",
+        "20¢"
+      ],
+      "total": "$2.70",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$2",
+      "50¢",
+      "20¢"
+    ],
+    "hint": "Count the dollars first, then add the cents.",
+    "solution": "[\"1. Identify the note: $2.\",\"2. Identify the coins: 50¢ and 20¢.\",\"3. Add the value of the coins: 50¢ + 20¢ = 70¢.\",\"4. Add the note and the total value of the coins: $2 + 70¢ = $2.70.\"]",
+    "finalAnswer": "$2.70",
+    "isApproved": true,
+    "createdAt": "2026-05-18T04:54:33.763Z"
+  },
+  {
+    "id": "b14e0b7b-d459-4bf9-9dc6-823d9f0d6d7e",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "MCQ",
+    "difficulty": "Foundation",
+    "question": "Count the total amount of money shown below.",
+    "options": [
+      "$10.00",
+      "$12.00",
+      "$13.00",
+      "$2.00"
+    ],
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$10",
+        "$2"
+      ],
+      "total": "$12.00",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$10",
+      "$2"
+    ],
+    "hint": "Identify the value of each note and add them together to find the total sum.",
+    "solution": "Step 1: Identify the notes. There is one $10 note and one $2 note.\nStep 2: Add the values of the notes together.\n$10 + $2 = $12\nStep 3: The total amount of money is $12.00.",
+    "finalAnswer": "$12.00",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:11:16.473Z"
   },
   {
     "id": "fd7ded0c-946b-41e6-a81e-9718eaa9719e",
@@ -7796,6 +8091,101 @@
     "createdAt": "2026-05-15T04:52:31.896Z"
   },
   {
+    "id": "9e630da3-b035-4340-b147-19f3d1ba9636",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Foundation",
+    "question": "How much money is in the wallet?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$5",
+        "$5",
+        "$10"
+      ],
+      "total": "$20.00",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$5",
+      "$5",
+      "$10"
+    ],
+    "hint": "Count the dollars first, then count on the cents values.",
+    "solution": "Add the values: $5 + $5 + $10 = $20.00",
+    "finalAnswer": "$20.00",
+    "isApproved": true,
+    "createdAt": "2026-05-18T05:03:08.311Z"
+  },
+  {
+    "id": "61c85fd6-1040-49a8-a584-02cb3bcd9206",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Standard",
+    "question": "Count the total amount of money shown below.",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$10"
+      ],
+      "total": "$10.00",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$10"
+    ],
+    "hint": "Identify the value of the note shown.",
+    "solution": "1. Identify the value of the note shown.\n2. The note shown is a $10 note.\n3. Therefore, the total amount is $10.00.",
+    "finalAnswer": "$10.00",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:35:21.628Z"
+  },
+  {
+    "id": "f7e1ab66-ecb3-419a-85b0-3b4e31ca3c40",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Standard",
+    "question": "How much more money is needed to reach $51.00?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$50"
+      ],
+      "total": "$50.00",
+      "hideVisual": false,
+      "targetPrice": "$51.00"
+    },
+    "visualItems": [
+      "$50"
+    ],
+    "hint": "Subtract the total amount shown from the target amount of $51.00.",
+    "solution": "[\"Amount shown: $50.00\",\"Target amount: $51.00\",\"Money needed = Target amount - Amount shown\",\"Money needed = $51.00 - $50.00\",\"Money needed = $1.00\"]",
+    "finalAnswer": "$1.00",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:57:16.730Z"
+  },
+  {
     "id": "99758d26-1672-4e45-a202-0515a4c72470",
     "subject": "Math",
     "strand": "Number and Algebra",
@@ -8219,6 +8609,75 @@
     "finalAnswer": "3",
     "isApproved": true,
     "createdAt": "2026-05-15T05:02:51.964Z"
+  },
+  {
+    "id": "4ff7c151-b99d-4373-9b46-219664379845",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Foundation",
+    "question": "How much money is in the wallet?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$1",
+        "20¢",
+        "50¢"
+      ],
+      "total": "$1.70",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$1",
+      "20¢",
+      "50¢"
+    ],
+    "hint": "Count the dollars first, then count on the cents values.",
+    "solution": "Add the values: $1 + 20¢ + 50¢ = $1.70",
+    "finalAnswer": "$1.70",
+    "isApproved": true,
+    "createdAt": "2026-05-18T05:02:51.589Z"
+  },
+  {
+    "id": "64e704a9-012a-4ca0-a302-619f2d4efd5a",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Standard",
+    "question": "Calculate the change received if the total cost is $16.00 and $50.00 is paid.",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$1",
+        "$10",
+        "$5"
+      ],
+      "total": "$16.00",
+      "hideVisual": false,
+      "paidAmount": "$50.00"
+    },
+    "visualItems": [
+      "$1",
+      "$10",
+      "$5"
+    ],
+    "hint": "To find the change, subtract the total cost from the amount paid.",
+    "solution": "[\"Amount paid: $50.00\",\"Total cost: $16.00\",\"Change = Amount paid - Total cost\",\"Change = $50.00 - $16.00\",\"Change = $34.00\"]",
+    "finalAnswer": "$34.00",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:35:16.362Z"
   },
   {
     "id": "266cacd3-063a-4c5c-8989-0a6ad687c89b",
@@ -9051,6 +9510,78 @@
     "createdAt": "2026-05-15T05:02:41.052Z"
   },
   {
+    "id": "c4cf4bc8-c2a7-48f4-950d-f56a47452ed4",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Foundation",
+    "question": "How much money is in the wallet?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "50¢",
+        "20¢",
+        "$1"
+      ],
+      "total": "$1.70",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "50¢",
+      "20¢",
+      "$1"
+    ],
+    "hint": "Count the dollars first, then count on the cents values.",
+    "solution": "Add the values: 50¢ + 20¢ + $1 = $1.70",
+    "finalAnswer": "$1.70",
+    "isApproved": true,
+    "createdAt": "2026-05-18T05:02:57.642Z"
+  },
+  {
+    "id": "f30717d8-4a0b-42a4-b34e-ac31b7919d79",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Standard",
+    "question": "Count the total amount of money shown below.",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$5",
+        "$1",
+        "$1",
+        "$1",
+        "10¢"
+      ],
+      "total": "$8.10",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$5",
+      "$1",
+      "$1",
+      "$1",
+      "10¢"
+    ],
+    "hint": "First, add the total value of all the dollar notes. Then, add the value of the coin to find the grand total.",
+    "solution": "[\"$5 + $1 + $1 + $1 = $8\",\"10¢ = $0.10\",\"$8 + $0.10 = $8.10\"]",
+    "finalAnswer": "$8.10",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:35:08.405Z"
+  },
+  {
     "id": "fc7b62fa-9f08-4c0c-adbd-32e251264fc3",
     "subject": "Math",
     "strand": "Number and Algebra",
@@ -9550,6 +10081,38 @@
     "createdAt": "2026-05-15T04:38:39.551Z"
   },
   {
+    "id": "343f434e-c85d-422f-b4fe-3315262d71a8",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Foundation",
+    "question": "How much money is in the wallet?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "50¢",
+        "10¢"
+      ],
+      "total": "60¢",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "50¢",
+      "10¢"
+    ],
+    "hint": "Count the dollars first, then count on the cents values.",
+    "solution": "Add the values: 50¢ + 10¢ = 60¢",
+    "finalAnswer": "60¢",
+    "isApproved": true,
+    "createdAt": "2026-05-18T05:02:42.478Z"
+  },
+  {
     "id": "1b52dc75-885b-459b-8bca-2dd47f730235",
     "subject": "Math",
     "strand": "Number and Algebra",
@@ -9743,6 +10306,38 @@
     "finalAnswer": "8",
     "isApproved": true,
     "createdAt": "2026-05-15T05:02:25.578Z"
+  },
+  {
+    "id": "c5e193b1-861c-4bda-96ba-639b718dc517",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Foundation",
+    "question": "How much money is in the wallet?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$10",
+        "$10"
+      ],
+      "total": "$20.00",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$10",
+      "$10"
+    ],
+    "hint": "Count the dollars first, then count on the cents values.",
+    "solution": "Add the values: $10 + $10 = $20.00",
+    "finalAnswer": "$20.00",
+    "isApproved": true,
+    "createdAt": "2026-05-18T05:03:02.214Z"
   },
   {
     "id": "d81efacf-5355-456b-a051-692e773d456b",
@@ -11437,6 +12032,42 @@
     "createdAt": "2026-05-15T05:11:23.163Z"
   },
   {
+    "id": "c7bfb880-1163-41b0-961e-1408eb75c34c",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Foundation",
+    "question": "What is the total value of the money shown?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "10¢",
+        "10¢",
+        "$5",
+        "$10"
+      ],
+      "total": "$15.20",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "10¢",
+      "10¢",
+      "$5",
+      "$10"
+    ],
+    "hint": "First, count all the cents. Then, count all the dollars. Finally, add the total cents and total dollars together.",
+    "solution": "[\"Count the cents: 10¢ + 10¢ = 20¢\",\"Count the dollars: $5 + $10 = $15\",\"Add the total cents and total dollars: $15 + 20¢ = $15.20\"]",
+    "finalAnswer": "$15.20",
+    "isApproved": true,
+    "createdAt": "2026-05-18T05:25:54.895Z"
+  },
+  {
     "id": "9af8f5dc-e9d6-4451-95f3-b7b00f844828",
     "subject": "Math",
     "strand": "Number and Algebra",
@@ -11513,6 +12144,151 @@
     "finalAnswer": "73",
     "isApproved": true,
     "createdAt": "2026-05-15T02:02:52.606Z"
+  },
+  {
+    "id": "31377971-65c0-4b5a-9831-31a07af66ba0",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Foundation",
+    "question": "Count the total monetary sum of the items displayed.",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$1",
+        "10¢",
+        "$10",
+        "10¢"
+      ],
+      "total": "$11.20",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$1",
+      "10¢",
+      "$10",
+      "10¢"
+    ],
+    "hint": "Group the dollar notes together and the cents coins together before adding them up.",
+    "solution": "[\"Identify dollar notes: $1, $10\",\"Identify cents coins: 10¢, 10¢\",\"Sum dollar notes: $1 + $10 = $11\",\"Sum cents coins: 10¢ + 10¢ = 20¢\",\"Add the sums: $11 + 20¢ = $11.20\"]",
+    "finalAnswer": "$11.20",
+    "isApproved": true,
+    "createdAt": "2026-05-18T05:25:45.293Z"
+  },
+  {
+    "id": "60f3c7c9-c93b-4ac8-8026-89dba2fe8de3",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Standard",
+    "question": "The money shown is how much one person has. Another person has $2.80. What is the difference between their amounts?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "20¢",
+        "$2",
+        "$1",
+        "$1"
+      ],
+      "total": "$4.20",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "20¢",
+      "$2",
+      "$1",
+      "$1"
+    ],
+    "hint": "First, identify the total amount of money shown. Then, subtract the smaller amount from the larger amount to find the difference.",
+    "solution": "[\"Amount shown = $4.20\",\"Another person's amount = $2.80\",\"Difference = $4.20 - $2.80 = $1.40\"]",
+    "finalAnswer": "$1.40",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:21:20.980Z"
+  },
+  {
+    "id": "0ccd2e20-fa77-4c14-b218-48903366a79a",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "MCQ",
+    "difficulty": "Standard",
+    "question": "Lily has some money. She has two $10 notes, two 50¢ coins, and one 10¢ coin. How much money does Lily have in total?",
+    "options": [
+      "$21.10",
+      "$20.60",
+      "$21.00",
+      "$11.10"
+    ],
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$10",
+        "10¢",
+        "$10",
+        "50¢",
+        "50¢"
+      ],
+      "total": "$21.10",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$10",
+      "10¢",
+      "$10",
+      "50¢",
+      "50¢"
+    ],
+    "hint": "Count the dollar notes first, then count the 50-cent coins, and finally the 10-cent coin. Remember that 100 cents makes $1.",
+    "solution": "1. Add the dollar notes: $10 + $10 = $20.\n2. Add the 50-cent coins: 50¢ + 50¢ = 100¢ = $1.\n3. Add the 10-cent coin: 10¢.\n4. Add all the amounts together: $20 + $1 + 10¢ = $21.10.",
+    "finalAnswer": "$21.10",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:51:16.199Z"
+  },
+  {
+    "id": "1a82e996-bd9c-4618-8165-29a807f31afd",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Standard",
+    "question": "Count the total amount of money shown below.",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$50"
+      ],
+      "total": "$50.00",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$50"
+    ],
+    "hint": "Identify the value printed on the note.",
+    "solution": "1. Identify the value of the note shown: $50.00.\n2. The total amount is $50.00.",
+    "finalAnswer": "$50.00",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:57:35.844Z"
   },
   {
     "id": "21091786-f18e-431d-b2e2-6bd72672b82c",
@@ -11929,6 +12705,42 @@
     "finalAnswer": "57",
     "isApproved": true,
     "createdAt": "2026-05-15T00:55:56.832Z"
+  },
+  {
+    "id": "2390a39d-c484-449e-8156-902d276cd348",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Foundation",
+    "question": "Siti has these coins and notes. An item costs $6.50. Does she have enough money to buy the item?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "10¢",
+        "20¢",
+        "$1",
+        "$5"
+      ],
+      "total": "$6.30",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "10¢",
+      "20¢",
+      "$1",
+      "$5"
+    ],
+    "hint": "First, count the total value of all the coins and notes Siti has. Then, compare this total with the cost of the item.",
+    "solution": "[\"Step 1: Calculate the total value of the coins.\",\"10¢ + 20¢ = 30¢\",\"Step 2: Calculate the total value of the notes.\",\"$1 + $5 = $6\",\"Step 3: Add the total value of coins and notes to find Siti's total money.\",\"$6 + 30¢ = $6.30\",\"Step 4: Compare Siti's total money with the cost of the item.\",\"Siti has $6.30.\",\"The item costs $6.50.\",\"Since $6.30 is less than $6.50, Siti does not have enough money to buy the item.\",\"Therefore, the answer is No.\"]",
+    "finalAnswer": "No",
+    "isApproved": true,
+    "createdAt": "2026-05-18T05:25:40.879Z"
   },
   {
     "id": "07d432e2-2561-43cb-8a78-e19e5f139504",
@@ -12639,6 +13451,79 @@
     "createdAt": "2026-05-15T04:40:39.231Z"
   },
   {
+    "id": "cd16eb79-402c-4428-bced-3ff06cc9ad8c",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Foundation",
+    "question": "Count the total sum of money shown.",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "10¢",
+        "$2",
+        "10¢",
+        "$1"
+      ],
+      "total": "$3.20",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "10¢",
+      "$2",
+      "10¢",
+      "$1"
+    ],
+    "hint": "First, add all the cents together. Then, add all the dollar notes together. Finally, combine the total cents and total dollars.",
+    "solution": "[\"Add the cents: 10¢ + 10¢ = 20¢\",\"Add the dollar notes: $2 + $1 = $3\",\"Combine the totals: $3 + 20¢ = $3.20\"]",
+    "finalAnswer": "$3.20",
+    "isApproved": true,
+    "createdAt": "2026-05-18T05:25:26.137Z"
+  },
+  {
+    "id": "25941818-f675-46c7-aab0-d56727f54441",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Standard",
+    "question": "You have the money shown. Can you afford to buy an item that costs $11.20?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "20¢",
+        "$2",
+        "50¢",
+        "$10"
+      ],
+      "total": "$12.70",
+      "hideVisual": false,
+      "targetPrice": "$11.20"
+    },
+    "visualItems": [
+      "20¢",
+      "$2",
+      "50¢",
+      "$10"
+    ],
+    "hint": "First, identify the total amount of money you have. Then, compare this total with the price of the item to see if you have enough.",
+    "solution": "[\"Total money available = $12.70\",\"Cost of the item = $11.20\",\"Compare the total money with the item cost: $12.70 > $11.20\",\"Since $12.70 is greater than $11.20, you have enough money to buy the item.\",\"Therefore, the answer is Yes.\"]",
+    "finalAnswer": "Yes",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:20:57.670Z"
+  },
+  {
     "id": "04736e9b-92ad-4cc0-8a24-b1e40fe46c22",
     "subject": "Math",
     "strand": "Number and Algebra",
@@ -12966,6 +13851,44 @@
     "finalAnswer": "18",
     "isApproved": true,
     "createdAt": "2026-05-15T04:40:45.962Z"
+  },
+  {
+    "id": "03da896c-0e95-4a19-9288-9aa6c2596490",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Standard",
+    "question": "Count the total amount of money shown below.",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$5",
+        "20¢",
+        "20¢",
+        "50¢",
+        "$10"
+      ],
+      "total": "$15.90",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$5",
+      "20¢",
+      "20¢",
+      "50¢",
+      "$10"
+    ],
+    "hint": "First, add all the dollar notes. Then, add all the coins. Finally, combine the totals.",
+    "solution": "[\"Add the dollar notes: $5 + $10 = $15\",\"Add the coins: 20¢ + 20¢ + 50¢ = 90¢\",\"Combine the totals: $15 + 90¢ = $15.90\"]",
+    "finalAnswer": "$15.90",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:57:43.835Z"
   },
   {
     "id": "e3aab2ac-5ca2-431b-8311-685ad2924d38",
@@ -13457,6 +14380,46 @@
     "createdAt": "2026-05-15T04:41:30.586Z"
   },
   {
+    "id": "fadff842-e917-4658-99f6-fb24cd6700a3",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Foundation",
+    "question": "What is the total value of the money shown?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$10",
+        "$5",
+        "$2",
+        "10¢",
+        "10¢",
+        "20¢"
+      ],
+      "total": "$17.40",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$10",
+      "$5",
+      "$2",
+      "10¢",
+      "10¢",
+      "20¢"
+    ],
+    "hint": "First, sum up all the dollar notes. Then, sum up all the cent coins. Finally, combine the total dollars and total cents.",
+    "solution": "[\"Add the dollar notes: $10 + $5 + $2 = $17\",\"Add the cent coins: 10¢ + 10¢ + 20¢ = 40¢\",\"Combine the total dollars and cents: $17 + 40¢ = $17.40\"]",
+    "finalAnswer": "$17.40",
+    "isApproved": true,
+    "createdAt": "2026-05-18T05:25:50.146Z"
+  },
+  {
     "id": "1cb28432-53d2-4d86-8bb1-6ff89b1cb996",
     "subject": "Math",
     "strand": "Number and Algebra",
@@ -13807,6 +14770,38 @@
     "createdAt": "2026-05-15T02:10:48.535Z"
   },
   {
+    "id": "0832e2f2-ed82-4424-b936-04c7d436a3cf",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Structured",
+    "difficulty": "Foundation",
+    "question": "Look at the money shown below. How much money is there in total?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$2",
+        "$2"
+      ],
+      "total": "$4.00",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$2",
+      "$2"
+    ],
+    "hint": "Count the value of each note and add them together to find the total sum.",
+    "solution": "$2 + $2 = $4.00",
+    "finalAnswer": "$4.00",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:09:43.311Z"
+  },
+  {
     "id": "f4bce1cc-68e8-4d8b-9b0f-a27cd8bd6950",
     "subject": "Math",
     "strand": "Number and Algebra",
@@ -13850,6 +14845,46 @@
     "finalAnswer": "50",
     "isApproved": true,
     "createdAt": "2026-05-15T02:10:46.768Z"
+  },
+  {
+    "id": "7c9df158-f028-4b62-b69e-5ff238754508",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Structured",
+    "difficulty": "Foundation",
+    "question": "Siti has these coins and notes. She wants to buy a pencil case that costs $5.70. How much money does Siti have in total? Does she have enough money to buy the pencil case?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "20¢",
+        "20¢",
+        "$5",
+        "20¢",
+        "10¢",
+        "20¢"
+      ],
+      "total": "$5.90",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "20¢",
+      "20¢",
+      "$5",
+      "20¢",
+      "10¢",
+      "20¢"
+    ],
+    "hint": "First, count all the 10-cent coins. Then, count all the 20-cent coins. Add these cents together. Finally, add the dollar note to find the total amount.",
+    "solution": "1. Count the 10-cent coin: 10¢\n2. Count the 20-cent coins: 20¢ + 20¢ + 20¢ + 20¢ = 80¢\n3. Total cents: 10¢ + 80¢ = 90¢\n4. Add the $5 note: $5 + 90¢ = $5.90\n5. Siti has $5.90 in total.\n6. The pencil case costs $5.70.\n7. Since $5.90 is more than $5.70, Siti has enough money to buy the pencil case.",
+    "finalAnswer": "$5.90",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:10:04.117Z"
   },
   {
     "id": "4ffd47c4-5ba3-4d6b-92d4-cacd71ccc86d",
@@ -14581,6 +15616,40 @@
     "createdAt": "2026-05-15T05:01:20.252Z"
   },
   {
+    "id": "f0788bb6-8c64-49d0-a507-bfa2855eff82",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Structured",
+    "difficulty": "Foundation",
+    "question": "Look at the Singapore notes displayed. How much money is there in total?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$2",
+        "$5",
+        "$5"
+      ],
+      "total": "$12.00",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$2",
+      "$5",
+      "$5"
+    ],
+    "hint": "Identify the value of each note first. Then, add all the values together to find the total sum.",
+    "solution": "Step 1: Identify the notes: $2, $5, $5.\nStep 2: Add the values: $2 + $5 = $7.\nStep 3: Add the remaining value: $7 + $5 = $12.\nTotal amount = $12.00.",
+    "finalAnswer": "$12.00",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:09:52.001Z"
+  },
+  {
     "id": "0aaa6e94-9b91-4dd7-a0a3-0c7ab78e141e",
     "subject": "Math",
     "strand": "Number and Algebra",
@@ -15029,6 +16098,78 @@
     "createdAt": "2026-05-15T04:41:48.531Z"
   },
   {
+    "id": "c887e23a-3daa-4c64-b4fa-3c3b5f86ac88",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Structured",
+    "difficulty": "Foundation",
+    "question": "Look at the Singapore notes and coins shown below. How much money is there in total?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$1",
+        "$1",
+        "20¢",
+        "10¢",
+        "20¢"
+      ],
+      "total": "$2.50",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$1",
+      "$1",
+      "20¢",
+      "10¢",
+      "20¢"
+    ],
+    "hint": "First, count all the dollar notes. Then, count all the cents. Add them together to find the total amount!",
+    "solution": "1. Count the dollar notes: $1 + $1 = $2.\n2. Count the cents: 20¢ + 10¢ + 20¢ = 50¢.\n3. Add the dollars and cents together: $2 + 50¢ = $2.50.",
+    "finalAnswer": "$2.50",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:09:47.440Z"
+  },
+  {
+    "id": "d22b7ab7-106f-4110-82e3-ea994a2123ab",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Standard",
+    "question": "Which combination of Singapore coins and notes also makes a total of $3.20?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "20¢",
+        "$2",
+        "$1"
+      ],
+      "total": "$3.20",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "20¢",
+      "$2",
+      "$1"
+    ],
+    "hint": "Start by counting the total value of the given coins and notes. Then, think about different ways to make the same total using other Singapore currency.",
+    "solution": "[\"1. Calculate the total value of the given items: $2 + $1 + 20¢ = $3.20.\",\"2. Find an alternate combination of Singapore currency that sums to $3.20.\",\"3. One possible combination is: Six 50¢ coins = $0.50 x 6 = $3.00.\",\"4. Add one 20¢ coin = $0.20.\",\"5. Total of alternate combination: $3.00 + $0.20 = $3.20.\"]",
+    "finalAnswer": "Six 50¢ coins and one 20¢ coin",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:21:39.177Z"
+  },
+  {
     "id": "7f7ff08e-d521-407d-8e60-212295f1d668",
     "subject": "Math",
     "strand": "Number and Algebra",
@@ -15433,52 +16574,36 @@
     "createdAt": "2026-05-15T03:04:27.643Z"
   },
   {
-    "id": "c043766c-bdf6-4497-8933-852e2d54de92",
+    "id": "c15b2b82-4b51-4398-aa4b-d3a3ed121436",
     "subject": "Math",
-    "strand": "Number and Algebra",
+    "strand": "Measurement and Geometry",
     "level": "Primary 1",
     "gradeLevel": "P1",
-    "heuristic": "Whole Numbers",
-    "topic": "Whole Numbers",
-    "subtopic": "Addition and Subtraction",
-    "type": "MCQ",
-    "difficulty": "Advanced",
-    "question": "Two stars make ten. A star and a dot make seven. Find the value of the circle.",
-    "options": [
-      "7",
-      "12",
-      "7",
-      "5"
-    ],
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Structured",
+    "difficulty": "Foundation",
+    "question": "Look at the Singapore notes shown below. How much money is there in total?",
+    "options": null,
     "modelData": {
-      "type": "SHAPE",
-      "items": [],
-      "puzzle": [
-        {
-          "sum": 14,
-          "items": [
-            "triangle",
-            "triangle"
-          ]
-        },
-        {
-          "sum": 12,
-          "items": [
-            "triangle",
-            "circle"
-          ]
-        }
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$10",
+        "$2"
       ],
-      "hideVisual": false,
-      "finalAnswer": "5",
-      "inputRequirement": "MCQ_BUTTONS"
+      "total": "$12.00",
+      "hideVisual": false
     },
-    "visualItems": [],
-    "hint": "Find the value of one star first.",
-    "solution": "▲ + ▲ = 14, so ▲ is 7. Substitute into the second equation: 7 + ● = 12. Therefore, ● = 12 - 7 = 5.",
-    "finalAnswer": "5",
+    "visualItems": [
+      "$10",
+      "$2"
+    ],
+    "hint": "Count the value of each note carefully. Add the values of the notes together to find the total sum.",
+    "solution": "First, identify the notes: one $10 note and one $2 note. Add their values: $10 + $2 = $12. So, the total amount of money is $12.00.",
+    "finalAnswer": "$12.00",
     "isApproved": true,
-    "createdAt": "2026-05-15T04:41:44.512Z"
+    "createdAt": "2026-05-18T06:10:08.279Z"
   },
   {
     "id": "9301d5d8-901c-42bc-83c2-fd304dbf5d64",
@@ -16255,6 +17380,124 @@
     "createdAt": "2026-05-15T04:48:45.809Z"
   },
   {
+    "id": "f1fe7501-b23f-4ba9-a444-6342ba60ab07",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "MCQ",
+    "difficulty": "Foundation",
+    "question": "What is the total amount of money shown below?",
+    "options": [
+      "$12.30",
+      "$12.10",
+      "$11.30",
+      "$12.00"
+    ],
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$10",
+        "10¢",
+        "$1",
+        "$1",
+        "20¢"
+      ],
+      "total": "$12.30",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$10",
+      "10¢",
+      "$1",
+      "$1",
+      "20¢"
+    ],
+    "hint": "First, count all the dollar notes. Then, count all the cents. Finally, add the total dollars and total cents together.",
+    "solution": "[\"Add the dollar notes: $10 + $1 + $1 = $12.\",\"Add the cents: 10¢ + 20¢ = 30¢.\",\"Combine the dollars and cents: $12 + 30¢ = $12.30.\"]",
+    "finalAnswer": "$12.30",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:11:24.354Z"
+  },
+  {
+    "id": "2a2636cf-1dbf-4aef-8a62-0022c2ab238e",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Standard",
+    "question": "The notes and coins shown have a total value of $13.20. Can you find a different combination of Singapore notes and coins that also adds up to exactly $13.20?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$1",
+        "$10",
+        "20¢",
+        "$2"
+      ],
+      "total": "$13.20",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$1",
+      "$10",
+      "20¢",
+      "$2"
+    ],
+    "hint": "To find an alternate combination, try thinking about different ways to make $10, then $3, and finally 20 cents using Singapore currency notes and coins.",
+    "solution": "[\"First, calculate the total value of the given notes and coins: $1 + $10 + $2 + 20¢ = $13.20.\",\"Next, we need to find a different combination of Singapore currency notes and coins that also sums to $13.20.\",\"One possible alternate combination is to use two $5 notes, which makes $10.\",\"Then, add one $2 note and one $1 note, which makes $3.\",\"Finally, add one 20¢ coin.\",\"So, the new combination is: Two $5 notes + One $2 note + One $1 note + One 20¢ coin = $10 + $2 + $1 + 20¢ = $13.20. This matches the original total.\"]",
+    "finalAnswer": "Two $5 notes, one $2 note, one $1 note, one 20¢ coin.",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:21:12.880Z"
+  },
+  {
+    "id": "4e087d03-bf33-4c39-a8fb-e18585e3f68e",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Structured",
+    "difficulty": "Standard",
+    "question": "Mei Ling has these notes and coins in her purse. She wants to buy a storybook that costs $9.20. How much more money does Mei Ling need?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "20¢",
+        "$1",
+        "$1",
+        "$5",
+        "50¢"
+      ],
+      "total": "$7.70",
+      "hideVisual": false,
+      "targetPrice": "$9.20"
+    },
+    "visualItems": [
+      "20¢",
+      "$1",
+      "$1",
+      "$5",
+      "50¢"
+    ],
+    "hint": "First, count all the money Mei Ling has. Then, think about the difference between the book's price and the money she has.",
+    "solution": "[\"First, find the total amount of money Mei Ling has: 20¢ + $1 + $1 + $5 + 50¢ = $7.70.\",\"Next, subtract the amount Mei Ling has from the cost of the storybook to find out how much more money she needs: $9.20 - $7.70 = $1.50.\"]",
+    "finalAnswer": "$1.50",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:38:26.343Z"
+  },
+  {
     "id": "eeabf03a-4a9a-404c-8c29-fcf6e9670562",
     "subject": "Math",
     "strand": "Number and Algebra",
@@ -16473,6 +17716,51 @@
     "finalAnswer": "5",
     "isApproved": true,
     "createdAt": "2026-05-14T09:01:06.728Z"
+  },
+  {
+    "id": "0593313a-2317-40c6-8aa4-c2d89a6a4e61",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "MCQ",
+    "difficulty": "Foundation",
+    "question": "Look at the Singapore money shown below. What is the total value of all the money?",
+    "options": [
+      "$17.30",
+      "$17.40",
+      "$17.20",
+      "$17.00"
+    ],
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "10¢",
+        "$5",
+        "$2",
+        "10¢",
+        "$10",
+        "20¢"
+      ],
+      "total": "$17.40",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "10¢",
+      "$5",
+      "$2",
+      "10¢",
+      "$10",
+      "20¢"
+    ],
+    "hint": "Remember to add up the value of each note and coin carefully.",
+    "solution": "[\"First, add the value of the notes: $10 + $5 + $2 = $17.\",\"Next, add the value of the coins: 10¢ + 10¢ + 20¢ = 40¢.\",\"Finally, combine the total value of notes and coins: $17 + 40¢ = $17.40.\"]",
+    "finalAnswer": "$17.40",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:11:02.514Z"
   },
   {
     "id": "56a9f7b9-4152-4642-af3a-ef737e7fff0e",
@@ -16785,5 +18073,1269 @@
     "finalAnswer": "8",
     "isApproved": true,
     "createdAt": "2026-05-15T04:48:41.957Z"
+  },
+  {
+    "id": "4a65d3bf-95e7-41e6-943d-d028fcdfbac3",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Standard",
+    "question": "How many 50-cent coins are needed to make the same value as a $2 note?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$2"
+      ],
+      "total": "$2.00",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$2"
+    ],
+    "hint": "Think about how many 50-cent coins make $1. Then, consider how many $1s are in $2.",
+    "solution": "1. Convert $2 to cents: $2 = 200¢.\n2. Divide the total cents by the value of one 50-cent coin: 200¢ ÷ 50¢ = 4.",
+    "finalAnswer": "4",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:21:28.944Z"
+  },
+  {
+    "id": "2878b7b4-5a71-4255-8cef-8d781eb74db0",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Structured",
+    "difficulty": "Standard",
+    "question": "Mei Ling has these notes in her wallet. She wants to buy a storybook that costs $3.50. How much money will Mei Ling have left after buying the storybook?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$2",
+        "$2",
+        "$5"
+      ],
+      "total": "$9.00",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$2",
+      "$2",
+      "$5"
+    ],
+    "hint": "First, count the total amount of money Mei Ling has. Then, subtract the cost of the storybook from her total money to find out how much she has left.",
+    "solution": "1. Total money Mei Ling has = $2 + $2 + $5 = $9.00\n2. Cost of storybook = $3.50\n3. Money left = Total money - Cost of storybook\n4. Money left = $9.00 - $3.50 = $5.50",
+    "finalAnswer": "$5.50",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:38:58.615Z"
+  },
+  {
+    "id": "97c14599-d50f-46a9-843d-02e2196a8bca",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Structured",
+    "difficulty": "Standard",
+    "question": "Siti has these notes and coins in her purse. She wants to buy a storybook that costs $13.10. Does Siti have enough money to buy the storybook? If not, how much more money does she need?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$2",
+        "10¢",
+        "$10"
+      ],
+      "total": "$12.10",
+      "hideVisual": false,
+      "targetPrice": "$13.10"
+    },
+    "visualItems": [
+      "$2",
+      "10¢",
+      "$10"
+    ],
+    "hint": "First, count the total amount of money Siti has. Then, compare this total with the price of the storybook. If her money is less than the price, find the difference.",
+    "solution": "[\"First, calculate the total amount of money Siti has: $2 + $10 + 10¢ = $12.10.\",\"Next, compare the total money Siti has with the price of the storybook: $12.10 < $13.10. Siti does not have enough money.\",\"To find out how much more money Siti needs, subtract the money she has from the price of the storybook: $13.10 - $12.10 = $1.00.\"]",
+    "finalAnswer": "$1.00",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:38:44.449Z"
+  },
+  {
+    "id": "01e3e50b-e23c-42b9-b4ab-c95f59b05f93",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Structured",
+    "difficulty": "Standard",
+    "question": "Siti wants to buy a storybook that costs $3.10. She has these notes and coins in her purse: 10¢, 50¢, and $1. How much more money does Siti need to buy the storybook?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "10¢",
+        "50¢",
+        "$1"
+      ],
+      "total": "$1.60",
+      "hideVisual": false,
+      "targetPrice": "$3.10"
+    },
+    "visualItems": [
+      "10¢",
+      "50¢",
+      "$1"
+    ],
+    "hint": "First, count all the money Siti has. Then, subtract this amount from the cost of the storybook to find out how much more money is needed.",
+    "solution": "[\"1. Calculate the total amount of money Siti has:\",\"10¢ + 50¢ + $1 = $1.60\",\"2. Determine how much more money Siti needs by subtracting her current amount from the cost of the storybook:\",\"$3.10 - $1.60 = $1.50\",\"Siti needs $1.50 more.\"]",
+    "finalAnswer": "$1.50",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:38:50.955Z"
+  },
+  {
+    "id": "325f350f-aafd-41b3-94d1-6d7f3311d9d2",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Structured",
+    "difficulty": "Standard",
+    "question": "Siti has these notes and coins in her purse. She wants to buy a toy car that costs $4.20. Does Siti have enough money to buy the toy car?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$1",
+        "$2",
+        "20¢",
+        "$1",
+        "50¢"
+      ],
+      "total": "$4.70",
+      "hideVisual": false,
+      "targetPrice": "$4.20"
+    },
+    "visualItems": [
+      "$1",
+      "$2",
+      "20¢",
+      "$1",
+      "50¢"
+    ],
+    "hint": "First, count all the money Siti has. Then, compare the total amount with the cost of the toy car.",
+    "solution": "[\"Calculate the total amount of money Siti has: $1 + $2 + $0.20 + $1 + $0.50 = $4.70.\",\"Compare Siti's total money with the cost of the toy car: $4.70 (Siti's money) vs $4.20 (Toy car cost).\",\"Since $4.70 is greater than $4.20, Siti has enough money to buy the toy car.\"]",
+    "finalAnswer": "Yes",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:38:34.927Z"
+  },
+  {
+    "id": "771ab4d9-cd3d-4038-864e-81e1f3772352",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "MCQ",
+    "difficulty": "Standard",
+    "question": "Lily has the money shown. She wants to buy a toy robot that costs $7.00. How much more money does Lily need to buy the toy robot?",
+    "options": [
+      "$1.10",
+      "$1.00",
+      "$2.10",
+      "$0.90"
+    ],
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "10¢",
+        "50¢",
+        "10¢",
+        "20¢",
+        "$5"
+      ],
+      "total": "$5.90",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "10¢",
+      "50¢",
+      "10¢",
+      "20¢",
+      "$5"
+    ],
+    "hint": "First, count all the money Lily has. Then, compare it with the cost of the toy robot. Think about subtraction to find out how much more money is needed.",
+    "solution": "[\"Step 1: Calculate the total amount of money Lily has.\",\"Lily has 10¢ + 50¢ + 10¢ + 20¢ + $5 = $5.90.\",\"Step 2: Identify the cost of the toy robot.\",\"The toy robot costs $7.00.\",\"Step 3: Subtract the money Lily has from the cost of the toy robot to find out how much more money is needed.\",\"$7.00 - $5.90 = $1.10.\",\"Step 4: Conclude the amount of money Lily needs.\",\"Lily needs $1.10 more to buy the toy robot.\"]",
+    "finalAnswer": "$1.10",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:40:15.247Z"
+  },
+  {
+    "id": "b6b43533-4fd8-4fec-884b-afd7040a9af8",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "MCQ",
+    "difficulty": "Standard",
+    "question": "Lily has three $5 notes. She wants to buy a toy car that costs $14.50. Does she have enough money? If yes, how much change will she get?",
+    "options": [
+      "No, she needs $0.50 more.",
+      "Yes, $1.00 change.",
+      "Yes, $0.50 change.",
+      "Yes, $1.50 change."
+    ],
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$5",
+        "$5",
+        "$5"
+      ],
+      "total": "$15.00",
+      "hideVisual": false,
+      "targetPrice": "$14.50"
+    },
+    "visualItems": [
+      "$5",
+      "$5",
+      "$5"
+    ],
+    "hint": "First, count the total value of Lily's money. Then, compare her total money with the cost of the toy car. If her money is more than the cost, she has enough and will receive change.",
+    "solution": "1. Calculate the total money Lily has: $5 + $5 + $5 = $15.00.\n2. Compare Lily's total money with the cost of the toy car: $15.00 is greater than $14.50. So, Lily has enough money.\n3. Calculate the change Lily will receive: $15.00 - $14.50 = $0.50.",
+    "finalAnswer": "Yes, $0.50 change",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:40:32.255Z"
+  },
+  {
+    "id": "c39434f6-4a93-4d22-b651-9f98a516f55a",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "MCQ",
+    "difficulty": "Standard",
+    "question": "Lily has the money shown. She wants to buy a storybook that costs $4.60. Does Lily have enough money to buy the storybook?",
+    "options": [
+      "Yes, she has enough.",
+      "No, she needs $0.50 more.",
+      "Yes, she will have $0.50 change.",
+      "No, she needs $1.00 more."
+    ],
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "10¢",
+        "$2",
+        "$2"
+      ],
+      "total": "$4.10",
+      "hideVisual": false,
+      "targetPrice": "$4.60"
+    },
+    "visualItems": [
+      "10¢",
+      "$2",
+      "$2"
+    ],
+    "hint": "First, count the total amount of money Lily has. Then, compare this total amount with the price of the storybook to see if she has enough.",
+    "solution": "1. Count the total money Lily has: $0.10 + $2.00 + $2.00 = $4.10.\n2. The price of the storybook is $4.60.\n3. Compare Lily's total money with the price: $4.10 < $4.60.\n4. Since $4.10 is less than $4.60, Lily does not have enough money.\n5. Calculate how much more money Lily needs: $4.60 - $4.10 = $0.50.\n6. Therefore, Lily needs $0.50 more to buy the storybook.",
+    "finalAnswer": "No, she needs $0.50 more.",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:40:04.513Z"
+  },
+  {
+    "id": "1fa8e04e-4901-483a-9a60-01bf38b96a72",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "MCQ",
+    "difficulty": "Standard",
+    "question": "Lily has the money shown below. How much money does she have in total?",
+    "options": [
+      "$5.00",
+      "$5.20",
+      "$5.30",
+      "$5.40"
+    ],
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$5",
+        "20¢",
+        "10¢"
+      ],
+      "total": "$5.30",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$5",
+      "20¢",
+      "10¢"
+    ],
+    "hint": "First, count the dollar note. Then, count the value of the coins. Finally, add the total dollar amount and the total coin amount together.",
+    "solution": "1. Identify the dollar note: $5.\n2. Identify the coins: 20¢ and 10¢.\n3. Add the value of the coins: 20¢ + 10¢ = 30¢.\n4. Combine the dollar note and the total cents: $5 + 30¢ = $5.30.\nTherefore, Lily has $5.30 in total.",
+    "finalAnswer": "$5.30",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:39:55.969Z"
+  },
+  {
+    "id": "22f803ad-2371-4add-82ab-1fb9161b449e",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Structured",
+    "difficulty": "Standard",
+    "question": "Siti has these notes and coins in her purse. She buys a toy car for $3.20 and a packet of stickers for $1.50. How much change does Siti get back?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "10¢",
+        "$1",
+        "20¢",
+        "$5",
+        "20¢"
+      ],
+      "total": "$6.50",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "10¢",
+      "$1",
+      "20¢",
+      "$5",
+      "20¢"
+    ],
+    "hint": "First, count all the money Siti has. Then, add up the cost of the toy car and the stickers. Finally, subtract the total cost from the money Siti has to find the change.",
+    "solution": "[\"1. Calculate the total money Siti has: 10¢ + $1 + 20¢ + $5 + 20¢ = $6.50.\",\"2. Calculate the total cost of the items Siti buys: $3.20 (toy car) + $1.50 (stickers) = $4.70.\",\"3. Calculate the change Siti gets back: $6.50 - $4.70 = $1.80.\"]",
+    "finalAnswer": "$1.80",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:49:52.070Z"
+  },
+  {
+    "id": "19be39ed-5301-43b2-b43e-9439efbebf61",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Structured",
+    "difficulty": "Standard",
+    "question": "Siti has these notes and coins in her purse. She wants to buy a toy car that costs $4.00. Does she have enough money to buy the toy car?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "20¢",
+        "$2",
+        "10¢",
+        "20¢"
+      ],
+      "total": "$2.50",
+      "hideVisual": false,
+      "targetPrice": "$4.00"
+    },
+    "visualItems": [
+      "20¢",
+      "$2",
+      "10¢",
+      "20¢"
+    ],
+    "hint": "First, count the total amount of money Siti has. Then, compare this total with the price of the toy car. Is her money more or less than the price?",
+    "solution": "[\"1. Calculate the total amount of money Siti has: 20¢ + $2 + 10¢ + 20¢ = $2.50.\",\"2. Compare Siti's total money with the price of the toy car: $2.50 vs $4.00.\",\"3. Since $2.50 is less than $4.00, Siti does not have enough money to buy the toy car.\"]",
+    "finalAnswer": "No",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:49:38.513Z"
+  },
+  {
+    "id": "2e4fee6c-ccd0-4fdd-89a7-fda7db89a9e9",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Structured",
+    "difficulty": "Standard",
+    "question": "Mei Ling wants to buy a toy car that costs $12.00. She gives the cashier a $50 note. How much change will Mei Ling receive?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$5",
+        "$5",
+        "$2"
+      ],
+      "total": "$12.00",
+      "hideVisual": false,
+      "paidAmount": "$50.00"
+    },
+    "visualItems": [
+      "$5",
+      "$5",
+      "$2"
+    ],
+    "hint": "To find the change, subtract the total cost of the toy car from the amount Mei Ling paid.",
+    "solution": "[\"Amount paid by Mei Ling = $50.00\",\"Cost of the toy car = $12.00\",\"Change received = Amount paid - Cost of toy car\",\"Change received = $50.00 - $12.00\",\"Change received = $38.00\"]",
+    "finalAnswer": "$38.00",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:49:59.470Z"
+  },
+  {
+    "id": "810c1da8-e698-4d13-9b61-27e29b5bd1ff",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Structured",
+    "difficulty": "Standard",
+    "question": "Siti has the money shown in her purse. She wants to buy a toy robot that costs $7.20. How much more money does Siti need to buy the toy robot?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "20¢",
+        "$5",
+        "$2"
+      ],
+      "total": "$7.20",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "20¢",
+      "$5",
+      "$2"
+    ],
+    "hint": "First, count all the money Siti has by adding up the value of each note and coin. Then, compare this total amount with the cost of the toy robot to find out how much more she needs.",
+    "solution": "[\"First, calculate the total amount of money Siti has:\",\"$5 + $2 + 20¢ = $7.00 + $0.20 = $7.20\",\"Next, compare the amount Siti has with the cost of the toy robot:\",\"Cost of toy robot = $7.20\",\"Amount Siti has = $7.20\",\"To find out how much more money Siti needs, subtract the amount she has from the cost of the toy robot:\",\"$7.20 - $7.20 = $0.00\",\"Siti needs $0.00 more to buy the toy robot.\"]",
+    "finalAnswer": "$0.00",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:50:08.853Z"
+  },
+  {
+    "id": "db205b86-c29d-4074-ae63-638d2ef099b8",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "MCQ",
+    "difficulty": "Standard",
+    "question": "Lily has the money shown. She wants to buy a teddy bear that costs $20.50. How much change will she get?",
+    "options": [
+      "$0.70",
+      "$1.70",
+      "$0.50",
+      "$2.00"
+    ],
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "10¢",
+        "$10",
+        "$1",
+        "10¢",
+        "$10"
+      ],
+      "total": "$21.20",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "10¢",
+      "$10",
+      "$1",
+      "10¢",
+      "$10"
+    ],
+    "hint": "First, count all the money Lily has. Then, subtract the cost of the teddy bear from her total money to find out the change.",
+    "solution": "[\"Step 1: Calculate the total amount of money Lily has.\",\"10¢ + $10 + $1 + 10¢ + $10 = $21.20\",\"Step 2: Subtract the cost of the teddy bear from the total money Lily has.\",\"$21.20 - $20.50 = $0.70\",\"Step 3: The change Lily will get is $0.70.\"]",
+    "finalAnswer": "$0.70",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:51:25.741Z"
+  },
+  {
+    "id": "a9588ee6-cce2-4176-acba-fb3a88cc9779",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "MCQ",
+    "difficulty": "Standard",
+    "question": "Lily has the coin shown below. How much money does Lily have in total?",
+    "options": [
+      "$0.50",
+      "$1.00",
+      "$0.10",
+      "$2.00"
+    ],
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$1"
+      ],
+      "total": "$1.00",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$1"
+    ],
+    "hint": "Look carefully at the number and currency symbol printed on the coin to find its value.",
+    "solution": "Step 1: Observe the coin shown. It is a Singapore one-dollar coin. Step 2: The value printed on the one-dollar coin is $1.00. Step 3: Therefore, Lily has $1.00 in total.",
+    "finalAnswer": "$1.00",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:50:31.730Z"
+  },
+  {
+    "id": "9aa373ba-c967-40cc-834f-c34f19a92bdc",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Standard",
+    "question": "What is the difference between the total amount shown and $12.00?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "20¢",
+        "$10",
+        "20¢",
+        "20¢",
+        "$1"
+      ],
+      "total": "$11.60",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "20¢",
+      "$10",
+      "20¢",
+      "20¢",
+      "$1"
+    ],
+    "hint": "First, count the total value of all the money shown. Then, subtract this total from $12.00 to find the difference.",
+    "solution": "[\"Step 1: Calculate the total amount shown.\",\"20¢ + 20¢ + 20¢ = 60¢\",\"$10 + $1 = $11\",\"Total amount shown = $11 + 60¢ = $11.60\",\"Step 2: Calculate the difference.\",\"$12.00 - $11.60 = $0.40\",\"The difference is 40¢.\"]",
+    "finalAnswer": "40¢",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:57:29.187Z"
+  },
+  {
+    "id": "6c942bd5-6292-421b-9f2e-1ebee7ba25f1",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "MCQ",
+    "difficulty": "Standard",
+    "question": "Lily bought some items that cost $16.10. She paid the cashier $50.00. How much change did Lily receive?",
+    "options": [
+      "$33.90",
+      "$34.00",
+      "$33.10",
+      "$66.10"
+    ],
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$5",
+        "50¢",
+        "$10",
+        "10¢",
+        "50¢"
+      ],
+      "total": "$16.10",
+      "hideVisual": false,
+      "paidAmount": "$50.00"
+    },
+    "visualItems": [
+      "$5",
+      "50¢",
+      "$10",
+      "10¢",
+      "50¢"
+    ],
+    "hint": "To find the change, subtract the total cost of the items from the amount Lily paid. Remember to align the decimal points when subtracting money.",
+    "solution": "1. Identify the total cost of the items: $16.10.\n2. Identify the amount paid: $50.00.\n3. To find the change, subtract the total cost from the amount paid: $50.00 - $16.10.\n4. Perform the subtraction:\n   $50.00\n - $16.10\n ---------\n   $33.90\n5. The change Lily received is $33.90.",
+    "finalAnswer": "$33.90",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:50:42.423Z"
+  },
+  {
+    "id": "92ba3bdd-7dd9-4304-9de4-8d6a7395590d",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Standard",
+    "question": "How much more money is needed to reach $17.10?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "50¢",
+        "$5",
+        "10¢",
+        "$5",
+        "$5"
+      ],
+      "total": "$15.60",
+      "hideVisual": false,
+      "targetPrice": "$17.10"
+    },
+    "visualItems": [
+      "50¢",
+      "$5",
+      "10¢",
+      "$5",
+      "$5"
+    ],
+    "hint": "First, sum up all the money shown. Then, find the difference between this sum and $17.10.",
+    "solution": "[\"1. Calculate the total amount of money shown:\",\"   50¢ + 10¢ = 60¢\",\"   $5 + $5 + $5 = $15\",\"   Total amount = $15 + $0.60 = $15.60\",\"2. Calculate the amount of money needed:\",\"   Amount needed = Target Price - Total amount\",\"   Amount needed = $17.10 - $15.60\",\"   Amount needed = $1.50\"]",
+    "finalAnswer": "$1.50",
+    "isApproved": true,
+    "createdAt": "2026-05-18T06:57:10.342Z"
+  },
+  {
+    "id": "469caca9-e5be-43d0-b435-c98f7be969da",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Advanced",
+    "question": "Find the total amount of money when the money shown below is combined with $10 and $2.",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$2",
+        "20¢",
+        "$5",
+        "10¢",
+        "$2"
+      ],
+      "total": "$9.30",
+      "hideVisual": false,
+      "secondPersonItems": [
+        "$10",
+        "$2"
+      ]
+    },
+    "visualItems": [
+      "$2",
+      "20¢",
+      "$5",
+      "10¢",
+      "$2"
+    ],
+    "hint": "First, calculate the total value of the money shown in the image. Next, calculate the total value of the second person's money. Finally, add both totals together to find the combined amount.",
+    "solution": "[\"First person's money (from visual items) = $9.30\",\"Second person's money = $10 + $2 = $12.00\",\"Total combined money = $9.30 + $12.00\",\"Total combined money = $21.30\"]",
+    "finalAnswer": "$21.30",
+    "isApproved": true,
+    "createdAt": "2026-05-18T07:20:46.169Z"
+  },
+  {
+    "id": "745f1b48-c5c4-4430-9f97-9171376b8558",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Advanced",
+    "question": "Find the exact difference shortfall remaining to reach the target goal of $40.70 from the current savings shown below.",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$5",
+        "20¢",
+        "$5",
+        "50¢",
+        "50¢",
+        "50¢",
+        "$2",
+        "$2"
+      ],
+      "total": "$15.70",
+      "hideVisual": false,
+      "savingsTarget": "$40.70"
+    },
+    "visualItems": [
+      "$5",
+      "20¢",
+      "$5",
+      "50¢",
+      "50¢",
+      "50¢",
+      "$2",
+      "$2"
+    ],
+    "hint": "First, identify the target savings amount. Next, identify the current savings amount. Finally, determine the mathematical operation required to find the difference between these two values.",
+    "solution": "[\"Target savings goal = $40.70\",\"Current savings collection = $15.70\",\"Difference shortfall = Target savings goal - Current savings collection\",\"Difference shortfall = $40.70 - $15.70\",\"Difference shortfall = $25.00\"]",
+    "finalAnswer": "$25.00",
+    "isApproved": true,
+    "createdAt": "2026-05-18T07:20:39.359Z"
+  },
+  {
+    "id": "6ca4611d-7d19-4e5b-934d-b2a048591e42",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Advanced",
+    "question": "Calculate the total value of all items shown. Then, subtract this total from the money shown to find the exact change.",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "50¢",
+        "50¢",
+        "$50",
+        "10¢",
+        "50¢",
+        "$5",
+        "50¢",
+        "10¢"
+      ],
+      "total": "$57.20",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "50¢",
+      "50¢",
+      "$50",
+      "10¢",
+      "50¢",
+      "$5",
+      "50¢",
+      "10¢"
+    ],
+    "hint": "1. First, sum up the value of all the individual coins and notes displayed as items. 2. Next, compare this calculated sum to the total amount of money available. 3. Finally, determine the difference between the total money available and the sum of the items to find the change.",
+    "solution": "[\"Step 1: Calculate the total value of the items.\",\"4 x 50¢ = $2.00\",\"2 x 10¢ = $0.20\",\"$50 + $5 = $55.00\",\"Total item value = $2.00 + $0.20 + $55.00 = $57.20\",\"Step 2: Identify the total money shown.\",\"Total money shown = $57.20\",\"Step 3: Calculate the change.\",\"Change = Total money - Total item value\",\"Change = $57.20 - $57.20\",\"Change = $0.00\"]",
+    "finalAnswer": "$0.00",
+    "isApproved": true,
+    "createdAt": "2026-05-18T07:20:23.324Z"
+  },
+  {
+    "id": "90bd7bc2-b843-40ce-a6e9-227b4e377336",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Advanced",
+    "question": "Scenario 1: From $100.00, $25.50 is spent. Scenario 2: From $100.00, $15.00 is removed, then $12.30 is spent. Find the difference between the final remaining amounts of Scenario 1 and Scenario 2.",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$100"
+      ],
+      "total": "$100.00",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$100"
+    ],
+    "hint": "First, calculate the remaining amount for Scenario 1. Next, determine the starting amount for Scenario 2 after the initial reduction, then calculate its final remaining amount. Finally, find the difference between these two final amounts.",
+    "solution": "[\"Calculate the remaining amount for Scenario 1: $100.00 - $25.50 = $74.50.\",\"Calculate the initial amount for Scenario 2 after the first reduction: $100.00 - $15.00 = $85.00.\",\"Calculate the remaining amount for Scenario 2 after spending: $85.00 - $12.30 = $72.70.\",\"Calculate the difference between the two final remaining amounts: $74.50 - $72.70 = $1.80.\"]",
+    "finalAnswer": "$1.80",
+    "isApproved": true,
+    "createdAt": "2026-05-18T07:20:15.531Z"
+  },
+  {
+    "id": "ea0c2dee-aad6-4b5f-b976-8fdb8ec16f32",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Short Question",
+    "difficulty": "Advanced",
+    "question": "An amount of money was initially available. After spending $30.20, then receiving $15.00, and finally spending another $25.50, the remaining amount is shown below. What was the initial amount of money?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$100"
+      ],
+      "total": "$100.00",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$100"
+    ],
+    "hint": "To find the initial amount, you need to reverse each transaction starting from the final amount. If money was spent, you add it back. If money was received, you subtract it. Work backward through the steps.",
+    "solution": "[\"The final remaining amount is $100.00.\",\"To reverse the last transaction (spending $25.50), add $25.50 to the remaining amount: $100.00 + $25.50 = $125.50.\",\"To reverse the previous transaction (receiving $15.00), subtract $15.00 from the current amount: $125.50 - $15.00 = $110.50.\",\"To reverse the first transaction (spending $30.20), add $30.20 to the current amount: $110.50 + $30.20 = $140.70.\",\"Therefore, the initial amount of money was $140.70.\"]",
+    "finalAnswer": "$140.70",
+    "isApproved": true,
+    "createdAt": "2026-05-18T07:20:33.383Z"
+  },
+  {
+    "id": "1eb2e013-f0a9-4f28-b89e-2dcc0ead2d0a",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Structured",
+    "difficulty": "Advanced",
+    "question": "Mei Ling went to the local NTUC FairPrice supermarket to buy some groceries for her family. After picking out all the items, the cashier told her the total bill was $65.90. Mei Ling opened her wallet and paid with the following Singapore currency notes and coins: one $50 note, one $10 note, two $2 notes, one $1 note, one 50¢ coin, and two 20¢ coins. How much change did Mei Ling receive?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$2",
+        "$50",
+        "20¢",
+        "20¢",
+        "$1",
+        "50¢",
+        "$2",
+        "$10"
+      ],
+      "total": "$65.90",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$2",
+      "$50",
+      "20¢",
+      "20¢",
+      "$1",
+      "50¢",
+      "$2",
+      "$10"
+    ],
+    "hint": "First, calculate the total amount of money Mei Ling paid by summing up all the notes and coins she used. Next, identify the total cost of her groceries. Finally, subtract the total cost from the amount she paid to find the exact change.",
+    "solution": "[\"Step 1: Calculate the total amount of money Mei Ling paid.\",\"Amount paid = $50 + $10 + $2 + $2 + $1 + 50¢ + 20¢ + 20¢\",\"Amount paid = $50 + $10 + $2 + $2 + $1 + $0.50 + $0.20 + $0.20\",\"Amount paid = $65 + $0.90\",\"Amount paid = $65.90\",\"Step 2: Identify the total cost of the groceries.\",\"Total cost of groceries = $65.90\",\"Step 3: Calculate the change Mei Ling received.\",\"Change = Amount paid - Total cost of groceries\",\"Change = $65.90 - $65.90\",\"Change = $0.00\"]",
+    "finalAnswer": "$0.00",
+    "isApproved": true,
+    "createdAt": "2026-05-18T07:23:02.402Z"
+  },
+  {
+    "id": "44167236-7dbc-4f89-9329-82df6f25e1ee",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Structured",
+    "difficulty": "Advanced",
+    "question": "Mei Ling went to the bookstore with her mother. She had a total of $54.50 in her wallet, made up of different Singapore notes and coins. She decided to buy a new storybook and a toy car. After paying for both items, she received $1.50 in change. If the storybook cost $28.50, how much did the toy car cost?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$50",
+        "$2",
+        "50¢",
+        "$1",
+        "$1"
+      ],
+      "total": "$54.50",
+      "hideVisual": false,
+      "changeReceived": "$1.50"
+    },
+    "visualItems": [
+      "$50",
+      "$2",
+      "50¢",
+      "$1",
+      "$1"
+    ],
+    "hint": "First, calculate the total amount Mei Ling spent on both the storybook and the toy car. Then, use this total amount and the known cost of the storybook to find the cost of the toy car.",
+    "solution": "[\"Step 1: Calculate the total amount Mei Ling spent on both items.\",\"Total money Mei Ling had - Change received = Total amount spent\",\"$54.50 - $1.50 = $53.00\",\"Mei Ling spent a total of $53.00 on both the storybook and the toy car.\",\"Step 2: Calculate the cost of the toy car.\",\"Total amount spent - Cost of storybook = Cost of toy car\",\"$53.00 - $28.50 = $24.50\",\"The toy car cost $24.50.\"]",
+    "finalAnswer": "$24.50",
+    "isApproved": true,
+    "createdAt": "2026-05-18T07:23:12.106Z"
+  },
+  {
+    "id": "dad287ac-44ad-4a8d-ba80-c1842d6bb3c9",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Structured",
+    "difficulty": "Advanced",
+    "question": "Wei Ling went to the neighbourhood provision shop with her brother, Jian Ming. She had a total of $5.30 in her wallet, made up of various Singapore notes and coins. They bought a toy car and a storybook. After paying, Wei Ling received $1.50 in change. If the toy car cost $2.50, how much did the storybook cost?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$1",
+        "50¢",
+        "$1",
+        "$1",
+        "$1",
+        "20¢",
+        "50¢",
+        "10¢"
+      ],
+      "total": "$5.30",
+      "hideVisual": false,
+      "changeReceived": "$1.50"
+    },
+    "visualItems": [
+      "$1",
+      "50¢",
+      "$1",
+      "$1",
+      "$1",
+      "20¢",
+      "50¢",
+      "10¢"
+    ],
+    "hint": "Step 1: First, calculate the total amount of money Wei Ling spent on both items. Remember, she started with a certain amount and received some change back.\nStep 2: Next, use the total amount spent and the known cost of the toy car to find the cost of the storybook.",
+    "solution": "[\"Step 1: Calculate the total amount of money Wei Ling spent on both items.\",\"Total money Wei Ling had = $5.30\",\"Change received = $1.50\",\"Amount spent = Total money - Change received\",\"Amount spent = $5.30 - $1.50 = $3.80\",\"Step 2: Calculate the cost of the storybook.\",\"Cost of toy car = $2.50\",\"Cost of storybook = Amount spent - Cost of toy car\",\"Cost of storybook = $3.80 - $2.50 = $1.30\",\"Answer: The storybook cost $1.30.\"]",
+    "finalAnswer": "$1.30",
+    "isApproved": true,
+    "createdAt": "2026-05-18T07:23:22.341Z"
+  },
+  {
+    "id": "8cc7bee0-591f-4c45-a3da-b4bf05bdffb5",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Structured",
+    "difficulty": "Advanced",
+    "question": "Jia Le and Siti went to the stationery shop at Ang Mo Kio Hub. Jia Le had $51.80. Siti had $5.00 less than Jia Le. Jia Le bought a toy car for $12.50 and a storybook for $8.30. Siti bought a set of coloured pencils for $9.90 and a drawing block for $5.60. What is the difference in the amount of money they have left?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "20¢",
+        "10¢",
+        "$50",
+        "$1",
+        "50¢"
+      ],
+      "total": "$51.80",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "20¢",
+      "10¢",
+      "$50",
+      "$1",
+      "50¢"
+    ],
+    "hint": "First, calculate how much money Siti had to begin with. Next, calculate how much money Jia Le spent and how much she had left. Then, calculate how much money Siti spent and how much she had left. Finally, find the difference between their remaining amounts.",
+    "solution": "[\"1. Calculate Siti's initial amount:\",\"Siti's initial amount = Jia Le's initial amount - $5.00\",\"Siti's initial amount = $51.80 - $5.00 = $46.80\",\"2. Calculate Jia Le's total spending:\",\"Jia Le's spending = Cost of toy car + Cost of storybook\",\"Jia Le's spending = $12.50 + $8.30 = $20.80\",\"3. Calculate Jia Le's remaining money:\",\"Jia Le's remaining = Jia Le's initial amount - Jia Le's spending\",\"Jia Le's remaining = $51.80 - $20.80 = $31.00\",\"4. Calculate Siti's total spending:\",\"Siti's spending = Cost of coloured pencils + Cost of drawing block\",\"Siti's spending = $9.90 + $5.60 = $15.50\",\"5. Calculate Siti's remaining money:\",\"Siti's remaining = Siti's initial amount - Siti's spending\",\"Siti's remaining = $46.80 - $15.50 = $31.30\",\"6. Calculate the difference in their remaining amounts:\",\"Difference = Siti's remaining - Jia Le's remaining\",\"Difference = $31.30 - $31.00 = $0.30\"]",
+    "finalAnswer": "$0.30",
+    "isApproved": true,
+    "createdAt": "2026-05-18T07:23:35.487Z"
+  },
+  {
+    "id": "77a6ef65-b3a7-47c6-9232-1390e7085b06",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "Structured",
+    "difficulty": "Advanced",
+    "question": "Kai Kai was counting his money after a busy day. He had exactly $20.20 left in his wallet. He remembered that just before counting, he had bought a new pencil case from the school bookshop for $4.50. Earlier in the day, his Auntie Mei had given him $10.00 as a reward for helping her with some chores. Before receiving the reward, Kai Kai had spent $3.20 on a delicious curry puff and a packet of Milo from the school canteen during recess. How much money did Kai Kai have at the very beginning of the day?",
+    "options": null,
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$5",
+        "10¢",
+        "10¢",
+        "$5",
+        "$10"
+      ],
+      "total": "$20.20",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$5",
+      "10¢",
+      "10¢",
+      "$5",
+      "$10"
+    ],
+    "hint": "To solve this problem, you need to work backward from the amount Kai Kai has left.\n1. Think about the last thing Kai Kai spent money on. If he spent it, what operation should you use to find out how much he had *before* spending it?\n2. Next, consider the money he received. If he received money, what operation should you use to find out how much he had *before* receiving it?\n3. Finally, think about the first item he spent money on. What operation will help you find his starting amount?",
+    "solution": "[\"Kai Kai had $20.20 left.\",\"He bought a pencil case for $4.50. To find out how much he had before this purchase, we add the amount spent: $20.20 + $4.50 = $24.70.\",\"His Auntie Mei gave him $10.00. To find out how much he had before receiving this money, we subtract the amount received: $24.70 - $10.00 = $14.70.\",\"He spent $3.20 on a curry puff and Milo. To find out how much he had before this purchase, we add the amount spent: $14.70 + $3.20 = $17.90.\",\"Therefore, Kai Kai had $17.90 at the very beginning of the day.\"]",
+    "finalAnswer": "$17.90",
+    "isApproved": true,
+    "createdAt": "2026-05-18T07:22:45.389Z"
+  },
+  {
+    "id": "7a8d2278-b6d0-4462-aa26-51470c38eb79",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "MCQ",
+    "difficulty": "Advanced",
+    "question": "Ali has a $100 note. His friend, Ben, has a $5 note, a 50¢ coin, and a 20¢ coin. They decide to pool all their money together to buy a special remote-control car that costs $98.50. How much change will they receive after buying the car?",
+    "options": [
+      "$7.20",
+      "$7.00",
+      "$6.50",
+      "$1.50"
+    ],
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$100"
+      ],
+      "total": "$100.00",
+      "hideVisual": false,
+      "secondPersonItems": [
+        "$5",
+        "50¢",
+        "20¢"
+      ]
+    },
+    "visualItems": [
+      "$100"
+    ],
+    "hint": "First, calculate the total amount of money Ben has. Next, add Ali's money to Ben's total to find their combined savings. Finally, subtract the cost of the remote-control car from their combined savings to find the change.",
+    "solution": "[\"Calculate Ben's total money: $5.00 + $0.50 + $0.20 = $5.70\",\"Calculate Ali and Ben's combined money: $100.00 + $5.70 = $105.70\",\"Calculate the change received: $105.70 - $98.50 = $7.20\"]",
+    "finalAnswer": "$7.20",
+    "isApproved": true,
+    "createdAt": "2026-05-18T07:28:40.672Z"
+  },
+  {
+    "id": "cf0ee691-2aea-43ce-9b95-f69d1a7139db",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "MCQ",
+    "difficulty": "Advanced",
+    "question": "Mei has the money shown in the picture. Her friend, Siti, has a $5 note, a 50¢ coin, and a 20¢ coin. They decide to pool all their money together to buy a toy car that costs $72.30. How much change will they receive?",
+    "options": [
+      "$4.20",
+      "$3.50",
+      "$4.50",
+      "$5.20"
+    ],
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$50",
+        "$10",
+        "10¢",
+        "$10",
+        "10¢",
+        "50¢",
+        "10¢"
+      ],
+      "total": "$70.80",
+      "hideVisual": false,
+      "secondPersonItems": [
+        "$5",
+        "50¢",
+        "20¢"
+      ]
+    },
+    "visualItems": [
+      "$50",
+      "$10",
+      "10¢",
+      "$10",
+      "10¢",
+      "50¢",
+      "10¢"
+    ],
+    "hint": "First, calculate the total amount of money Mei has. Next, calculate the total amount of money Siti has. Then, add both amounts together to find their combined total. Finally, subtract the cost of the toy car from their combined total to find the change.",
+    "solution": "1. Calculate Mei's total money: $50 + $10 + $10 + 10¢ + 10¢ + 50¢ + 10¢ = $70.80.\n2. Calculate Siti's total money: $5 + 50¢ + 20¢ = $5.70.\n3. Calculate their combined total money: $70.80 + $5.70 = $76.50.\n4. Calculate the change received: $76.50 - $72.30 = $4.20.",
+    "finalAnswer": "$4.20",
+    "isApproved": true,
+    "createdAt": "2026-05-18T07:27:49.097Z"
+  },
+  {
+    "id": "9b15a13e-d498-48f8-9194-e9304b4154f3",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "MCQ",
+    "difficulty": "Advanced",
+    "question": "Ali started with $79.10. He bought a toy car for $15.30 and a storybook for $8.70. Bala started with $84.10. He bought a set of crayons for $12.50 and a drawing pad for $7.80. What is the difference between Ali's and Bala's remaining amount of money?",
+    "options": [
+      "$5.00",
+      "$3.70",
+      "$8.70",
+      "$7.70"
+    ],
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "$1",
+        "$50",
+        "10¢",
+        "$10",
+        "$1",
+        "$2",
+        "$10",
+        "$5"
+      ],
+      "total": "$79.10",
+      "hideVisual": false
+    },
+    "visualItems": [
+      "$1",
+      "$50",
+      "10¢",
+      "$10",
+      "$1",
+      "$2",
+      "$10",
+      "$5"
+    ],
+    "hint": "First, calculate the total amount of money Ali spent. Then, find out how much money Ali had left. Next, calculate the total amount of money Bala spent. After that, find out how much money Bala had left. Finally, compare their remaining amounts to find the difference.",
+    "solution": "[\"Calculate Ali's total spending: $15.30 + $8.70 = $24.00.\",\"Calculate Ali's remaining money: $79.10 - $24.00 = $55.10.\",\"Calculate Bala's total spending: $12.50 + $7.80 = $20.30.\",\"Calculate Bala's remaining money: $84.10 - $20.30 = $63.80.\",\"Calculate the difference between their remaining amounts: $63.80 - $55.10 = $8.70.\"]",
+    "finalAnswer": "$8.70",
+    "isApproved": true,
+    "createdAt": "2026-05-18T07:28:03.730Z"
+  },
+  {
+    "id": "f2b31745-98ef-4612-9761-bb1be2a77574",
+    "subject": "Math",
+    "strand": "Measurement and Geometry",
+    "level": "Primary 1",
+    "gradeLevel": "P1",
+    "heuristic": "Money",
+    "topic": "Money",
+    "subtopic": "Money",
+    "type": "MCQ",
+    "difficulty": "Advanced",
+    "question": "Mrs. Tan has the money shown in the picture. She bought a toy car (Item A) for $35.80 and a storybook (Item B). After paying for both items, she received $1.50 in change. How much did the storybook (Item B) cost?",
+    "options": [
+      "$33.40",
+      "$30.40",
+      "$31.90",
+      "$29.40"
+    ],
+    "modelData": {
+      "type": "SINGAPORE_MONEY",
+      "items": [
+        "20¢",
+        "$50",
+        "$2",
+        "$10",
+        "$2",
+        "$1",
+        "$2",
+        "50¢"
+      ],
+      "total": "$67.70",
+      "hideVisual": false,
+      "changeReceived": "$1.50"
+    },
+    "visualItems": [
+      "20¢",
+      "$50",
+      "$2",
+      "$10",
+      "$2",
+      "$1",
+      "$2",
+      "50¢"
+    ],
+    "hint": "First, determine the total amount of money Mrs. Tan spent on both items by subtracting the change received from the initial total. Next, use the known cost of Item A to calculate the cost of Item B.",
+    "solution": "[\"Step 1: Calculate the total amount of money Mrs. Tan spent on both items (Item A and Item B).\",\"Total money available = $67.70\",\"Change received = $1.50\",\"Total amount spent = Total money available - Change received\",\"Total amount spent = $67.70 - $1.50 = $66.20\",\"Step 2: Calculate the cost of the storybook (Item B).\",\"Cost of Item A (toy car) = $35.80\",\"Cost of Item B = Total amount spent - Cost of Item A\",\"Cost of Item B = $66.20 - $35.80 = $30.40\",\"Therefore, the storybook (Item B) cost $30.40.\"]",
+    "finalAnswer": "$30.40",
+    "isApproved": true,
+    "createdAt": "2026-05-18T07:27:33.337Z"
   }
 ]

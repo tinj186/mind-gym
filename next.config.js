@@ -1,19 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  webpack: (config) => {
-    // Force webpack to ignore Synology metadata folders without overwriting default ignores
-    config.watchOptions = {
-      ...config.watchOptions,
-      ignored: [
-        ...(Array.isArray(config.watchOptions?.ignored) ? config.watchOptions.ignored : []),
-        '**/@eaDir/**',
-      ],
-    };
-    return config;
-  },
-  // Explicitly treat these as server-side only to prevent client-side bundling issues
+  // 1. Database Safety Boundary (Isolate Prisma/Postgres on the server side)
   serverExternalPackages: ['pg', '@prisma/client'],
-  // In Next.js 15.4+, allowedDevOrigins is a top-level property
+
+  // 2. Local Network & Tailscale Security Passports
   allowedDevOrigins: [
     '100.109.201.120',
     '100.109.201.120:3001',
@@ -26,6 +16,25 @@ const nextConfig = {
     serverActions: {
       allowedOrigins: ['100.109.201.120:3001', 'izozash.ddns.net:3001']
     }
+  },
+
+  // 3. Synology NAS & Docker CPU Optimization Overrides
+  webpack: (config, { dev }) => {
+    config.watchOptions = {
+      ...config.watchOptions,
+      poll: dev ? 1000 : false, // Check changes every 1s on NAS during dev; disables overhead in production
+      ignored: [
+        ...(Array.isArray(config.watchOptions?.ignored) ? config.watchOptions.ignored : []),
+        '**/@eaDir/**',
+        '**/@eaDir/**/*'
+      ],
+    };
+    return config;
+  },
+
+  // 4. Reduce Background Noise/Telemetry for Network Storage
+  devIndicators: {
+    appIsrStatus: false,
   },
 };
 

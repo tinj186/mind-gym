@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { resetStudentProgressAction } from '@/lib/admin/studentActions';
+import { resetStudentProgressAction } from '@/app/actions/studentActions';
 import { useState } from 'react';
 
 export default function StudentActionsHeader({ studentId }) {

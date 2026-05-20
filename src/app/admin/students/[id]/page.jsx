@@ -1,4 +1,4 @@
-import { getStudentStatsAction } from '@/lib/admin/statsActions';
+import { getStudentStatsAction } from '@/app/actions/statsActions';
 import StudentActionsHeader from '@/components/admin/StudentActionsHeader';
 
 export default async function StudentNeuralDashboard({ params }) {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { createStudentAction, getStudentListAction } from '@/lib/admin/studentActions';
+import { createStudentAction, getStudentListAction } from '@/app/actions/studentActions';
 
 export default function StudentManagementPage() {
   const [students, setStudents] = useState([]);

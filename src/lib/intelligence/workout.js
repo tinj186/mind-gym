@@ -22,7 +22,7 @@ function formatWorkoutQuestion(q) {
         try {
           const legacyItems = typeof q.visualItems === 'string' ? JSON.parse(q.visualItems) : q.visualItems;
           data.items = Array.isArray(legacyItems) ? legacyItems : [];
-        } catch (e) { console.error(e); }
+        } catch (e) { console.error(`[Bridge Error] Question ${q.id}:`, e); }
       }
       return data;
     })(),
@@ -37,6 +37,27 @@ export async function getDailyWorkout(studentId, primaryLevel, options = { mode:
     where: { id: studentId }
   });
 
+  // 0. SESSION LOCK: Check if a workout is already in progress
+  if (profile?.activeWorkout) {
+    const active = profile.activeWorkout;
+    if (active.questionIds?.length > 0) {
+      // Safety: If current index is out of bounds, clear and start fresh
+      if (active.currentIndex >= active.questionIds.length) {
+        await prisma.studentProfile.update({ where: { id: studentId }, data: { activeWorkout: null } });
+      } else {
+        const existingQuestions = await prisma.questionBank.findMany({ where: { id: { in: active.questionIds } } });
+        const ordered = active.questionIds.map(id => existingQuestions.find(q => q.id === id)).filter(Boolean);
+        if (ordered.length === active.questionIds.length) {
+          console.log(`[Trainer] Resuming locked session for student ${studentId}`);
+          return ordered.map(formatWorkoutQuestion);
+        } else {
+          // If some questions are missing, clear the session to prevent partial workouts
+          await prisma.studentProfile.update({ where: { id: studentId }, data: { activeWorkout: null } });
+        }
+      }
+    }
+  }
+
   if (options?.mode === 'isolation' && options?.subtopicId) {
     // STRICT TARGETING: Fetch 10 questions exclusively matching this subtopic ID
     const questions = await prisma.questionBank.findMany({
@@ -49,22 +70,6 @@ export async function getDailyWorkout(studentId, primaryLevel, options = { mode:
     });
     
     return questions.map(formatWorkoutQuestion);
-  }
-
-  if (profile?.activeWorkout) {
-    const active = profile.activeWorkout;
-    if (active.questionIds?.length > 0) {
-      // Safety: If current index is out of bounds, clear and start fresh
-      if (active.currentIndex >= active.questionIds.length) {
-        await prisma.studentProfile.update({ where: { id: studentId }, data: { activeWorkout: null } });
-      } else {
-        const existing = await prisma.questionBank.findMany({ where: { id: { in: active.questionIds } } });
-        const ordered = active.questionIds.map(id => existing.find(q => q.id === id)).filter(Boolean);
-        if (ordered.length === active.questionIds.length) {
-          return ordered.map(formatWorkoutQuestion);
-        }
-      }
-    }
   }
 
   // 1. Fetch Student Mastery records
@@ -156,7 +161,8 @@ export async function getDailyWorkout(studentId, primaryLevel, options = { mode:
     where: { id: studentId },
     update: {
       activeWorkout: {
-        questionIds: finalWorkout.map(q => q.id),
+        // Ensure all fields are explicitly set to prevent partial updates
+        questionIds: finalWorkout.map(q => q.id), 
         currentIndex: 0,
         answersLog: []
       }
