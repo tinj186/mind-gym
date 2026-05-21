@@ -10,9 +10,10 @@ export async function GET(req) {
     let question;
 
     if (questionId) {
-      // If an ID is provided, fetch that specific question
+      // If an ID is provided, fetch that specific question regardless of approval status.
+      // This allows admins to preview pending questions via the Stage Inspector.
       question = await prisma.questionBank.findUnique({
-        where: { id: questionId, isApproved: true } // Ensure it's approved
+        where: { id: questionId }
       });
     } else {
       // Otherwise, fetch a random approved question

@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import DiagramRenderer from '@/components/math/DiagramRenderer';
+import VisualRenderer from '@/components/gym/VisualRenderer'; // Updated to use the modern VisualRenderer
+import GroupingWorkspace from '@/components/tools/GroupingWorkspace'; // Import the interactive tool
 import useSWR from 'swr';
+import { normalizeQuestionData, deriveVisualProps } from '@/lib/intelligence/workout-utils'; // Import for data normalization
 
 const fetcher = url => fetch(url).then(res => res.json());
 
@@ -33,6 +35,7 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
   const [processingId, setProcessingId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [activeTool, setActiveTool] = useState(null); // Track which question's tool is open
 
   // Function to fetch the latest unapproved questions
   const refreshQuestions = async () => {
@@ -236,12 +239,13 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
       </div>
 
       {visibleQuestions.map((q) => {
-        // Parse model data to determine where to render it
-        const modelData = typeof q.modelData === 'string' ? JSON.parse(q.modelData) : q.modelData;
-        const visualType = modelData?.type;
+        // Normalize question data once to get consistent visualEngine and modelData
+        const normalizedQuestion = normalizeQuestionData(q);
+        const visualProps = deriveVisualProps(normalizedQuestion);
+        const visualType = normalizedQuestion.visualEngine?.componentToRender;
 
         // Define visual categories
-        const isQuestionVisual = ['COUNTING_OBJECTS', 'BASE_TEN_BLOCKS', 'EQUAL_GROUPS', 'SHAPE', 'PLACE_VALUE_CHART', 'NUMBER_PATTERN', 'NUMBER_CARDS', 'ORDINAL_LINE', 'COMPARE_OBJECTS', 'NUMBER_BOND', 'GROUPING_WORKSPACE', 'MULTIPLICATION_PICTORIAL', 'SINGAPORE_MONEY'].includes(visualType);
+        const isQuestionVisual = ['COUNTING_OBJECTS', 'BASE_TEN_BLOCKS', 'EQUAL_GROUPS', 'SHAPE', 'PLACE_VALUE_CHART', 'NUMBER_PATTERN', 'NUMBER_CARDS', 'ORDINAL_LINE', 'COMPARE_OBJECTS', 'NUMBER_BOND', 'GROUPING_WORKSPACE', 'MULTIPLICATION_PICTORIAL', 'SINGAPORE_MONEY', 'MEASUREMENT_UNIT'].includes(visualType);
         const isSolutionVisual = ['PART_WHOLE', 'COMPARISON', 'REMAINDER_MODEL', 'NUMBER_PATTERN', 'COUNTING_OBJECTS', 'EQUAL_GROUPS'].includes(visualType);
         const isBusy = processingId === q.id || processingId === 'bulk';
 
@@ -266,15 +270,33 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
                 {/* Question-level Visuals (Concrete) */}
                 {isQuestionVisual && (
                   <div className="pt-4">
-                    <DiagramRenderer modelData={modelData} isQuestion={true} questionId={q.id} difficulty={q.difficulty} />
+                    <div className="p-6 bg-slate-50 border-2 border-slate-200 rounded-2xl flex justify-center items-center">
+                      <VisualRenderer
+                        type={normalizedQuestion.visualEngine?.componentToRender}
+                        data={normalizedQuestion.visualEngine?.componentData}
+                        modelData={normalizedQuestion.modelData} // Pass the full modelData
+                        visualProps={visualProps} // Pass calculated visual props for proper preview
+                        attempts={0}
+                        setIsToolOpen={() => setActiveTool({
+                          modelData: normalizedQuestion.modelData,
+                          id: normalizedQuestion.id,
+                          difficulty: normalizedQuestion.difficulty,
+                          topic: normalizedQuestion.topic,
+                          visualProps
+                        })}
+                        questionId={normalizedQuestion.id}
+                        difficulty={normalizedQuestion.difficulty}
+                        topic={normalizedQuestion.topic}
+                      />
+                    </div>
                   </div>
                 )}
 
                 {/* Metadata Grid (The redesigned section) */}
-                {modelData && (
+                {normalizedQuestion.modelData && (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4 border-t border-slate-50">
                     {/* Filter out complex visual arrays from the metadata grid to prevent "clutter dumping". Case-insensitive check. */}
-                    {Object.entries(modelData).filter(([k]) => !['type', 'items', 'groups', 'visualitems', 'hidevisual'].includes(k.toLowerCase())).map(([key, val]) => (
+                    {Object.entries(normalizedQuestion.modelData).filter(([k]) => !['type', 'items', 'groups', 'visualitems', 'hidevisual'].includes(k.toLowerCase())).map(([key, val]) => (
                       <div key={key} className="p-3 bg-slate-50/50 rounded-xl border border-slate-100">
                         <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">
                           {MAP_KEY(key)}
@@ -323,7 +345,17 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
               <div className="space-y-2">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Model Solution</span>
                   {/* Solution-level Visuals (Abstract Bar Models) */}
-                  {isSolutionVisual && <DiagramRenderer modelData={modelData} isQuestion={false} questionId={q.id} difficulty={q.difficulty} />}
+                  {isSolutionVisual && (
+                    <VisualRenderer
+                      type={normalizedQuestion.visualEngine?.componentToRender} // Assuming solution visuals also use the same visual engine data
+                      data={normalizedQuestion.visualEngine?.componentData}
+                      attempts={0}
+                      setIsToolOpen={() => {}}
+                      questionId={normalizedQuestion.id}
+                      difficulty={normalizedQuestion.difficulty}
+                      topic={normalizedQuestion.topic}
+                    />
+                  )}
                 <p className="text-sm text-slate-600 leading-relaxed italic whitespace-pre-line">{q.solution}</p>
                 
                 {/* NEW: Render the Pedagogical Hint if it exists */}
@@ -382,6 +414,14 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
               >
                 Delete
               </button>
+              <a 
+                href={`/gym?previewId=${q.id}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl text-[10px] font-black uppercase transition-all inline-flex items-center gap-1"
+              >
+                👁️ Test Visual Canvas
+              </a>
               <button 
                 onClick={() => handleRegenerate(q)}
                 className="px-4 py-2 text-[10px] font-black uppercase text-amber-600 hover:bg-amber-50 rounded-xl transition-colors"
@@ -415,6 +455,22 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
             </button>
           ))}
         </div>
+      )}
+
+      {/* Interactive Tool Modal Overlay for Admin Inspection */}
+      {activeTool && (
+        <GroupingWorkspace
+          modelData={activeTool.modelData}
+          onClose={() => setActiveTool(null)}
+          questionId={activeTool.id}
+          difficulty={activeTool.difficulty}
+          mode={activeTool.visualProps.mode}
+          totalItems={activeTool.visualProps.totalItems}
+          icon={activeTool.visualProps.icon}
+          expectedGroups={activeTool.visualProps.expectedGroups}
+          targetGroupSize={activeTool.visualProps.targetSize}
+          showTargetSize={activeTool.topic !== 'Division'}
+        />
       )}
     </div>
   );

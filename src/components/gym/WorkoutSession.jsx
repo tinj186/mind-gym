@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useTransition, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { finalizeWorkoutAction, updateWorkoutProgressAction, saveAttemptAction } from '@/lib/intelligence/workoutActions';
+import { finalizeWorkoutAction, updateWorkoutProgressAction, saveAttemptAction } from '@/app/actions/workoutActions';
 import { normalizeQuestionData, deriveVisualProps } from '@/lib/intelligence/workout-utils';
 import VisualRenderer, { ESSENTIAL_VISUALS } from '@/components/gym/VisualRenderer';
 import GroupingWorkspace from '@/components/tools/GroupingWorkspace'; // Import the interactive tool
@@ -280,13 +280,11 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
           {/* Robust Visual Engine - Guarded by Attempt count unless Essential */}
           {(attempts > 0 || isEssential) && currentVisual && currentVisual !== "NONE" && hasVisualContent && (
             <div className="mt-8 p-8 bg-white border-4 border-slate-900 rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] animate-in fade-in zoom-in-95 duration-500">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">
-                {isEssential ? "REQUIRED_CONTEXT // VISUAL_DATA" : "NEURAL_SCAFFOLD // HINT_ACTIVE"}
-              </p>
               
               <VisualRenderer 
                 type={currentVisual} 
                 data={normalizedQuestion?.visualEngine?.componentData || {}}
+                modelData={normalizedQuestion.modelData} // Pass the full modelData
                 visualProps={visualProps}
                 setIsToolOpen={setIsToolOpen}
                 questionId={normalizedQuestion.id}

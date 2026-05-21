@@ -6,6 +6,7 @@ import { numberPatternBlueprint } from './math/primary-1/whole-numbers/number_pa
 import { additionSubtractionBlueprint } from './math/primary-1/whole-numbers/addition_subtraction';
 import { multiplicationDivisionBlueprint } from './math/primary-1/whole-numbers/multiplication_division';
 import { moneyBlueprint } from './math/primary-1/money/money';
+import { lengthBlueprint } from './math/primary-1/measurement/length'; // Import the new length blueprint
 
 /**
  * Registry mapping metadata to modular blueprints.
@@ -19,6 +20,7 @@ export const blueprintRegistry = {
   'Primary 1-Whole Numbers-Addition and Subtraction': additionSubtractionBlueprint,
   'Primary 1-Whole Numbers-Multiplication and Division': multiplicationDivisionBlueprint,
   'Primary 1-Money-Money': moneyBlueprint,
+  'Primary 1-Measurement-Length': lengthBlueprint, // Add the new length blueprint
   // Slug format: "Level-Topic-Subtopic"
 };
 

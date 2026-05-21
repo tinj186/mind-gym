@@ -99,6 +99,3 @@ export async function resetStudentProgressAction(studentId) {
     return { success: false, message: "Failed to reset student progress." };
   }
 }
-```
-
-```diff

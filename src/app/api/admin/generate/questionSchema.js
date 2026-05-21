@@ -30,6 +30,7 @@ export const UniversalQuestionSchema = z.object({
       'BASE_TEN_BLOCKS',
       'NUMBER_BOND',
       'SHAPE',
+      'MEASUREMENT_UNIT',
       'NONE'
     ]), // Registered native visual engines
     componentData: z.record(z.any()).nullable(),

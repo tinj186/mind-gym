@@ -331,10 +331,6 @@ export async function POST(request) {
 
         const microPrompt = `Generate 1 Primary 1 Math question. Topic: ${topic}, Subtopic: ${subtopic}. 
         Rule to follow strictly: ${variantDescription}. ${formatInstruction}        
-        Context Restriction: Use item "${selectedContextItem}" and emoji "${selectedIcon}".
-        Requirement: You MUST return a visualItems array where every element is the emoji "${selectedIcon}". 
-        Consistency: Ensure the question text mentions "${selectedContextItem}".
-
         Output ONLY a valid JSON object: { question, options, solution, finalAnswer, visualItems, modelData, hint, context }. The "hint" field is MANDATORY and must contain conceptual scaffolding. Do not output an array or metadata.`;
         
         let result;
