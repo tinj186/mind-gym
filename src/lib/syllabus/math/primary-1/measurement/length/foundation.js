@@ -8,11 +8,10 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
   // MCQ is highly preferred for comparative foundation logic
   const inputType = (activeVariant !== 'foundation_unit_counting') ? 'MCQ_BUTTONS' : (isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT');
 
-  const itemsPool = ["Pencil", "Crayon", "Ruler", "Paintbrush", "Comb"];
-  const units = [
-    { name: "paperclips", icon: "📎" },
-    { name: "blocks", icon: "🧱" },
-    { name: "erasers", icon: "🧼" }
+  const itemsPool = ["Cutter", "Highlighter", "Pen", "Pencil", "Usbdrive"];
+const units = [
+  { name: "paperclips", icon: "paperclip.svg" },
+  { name: "paperpins", icon: "paperpin.svg" },
   ];
 
   const selectedUnit = units[Math.floor(Math.random() * units.length)];
@@ -20,7 +19,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
   let promptObject = { meta: commonMeta, content: {}, visualEngine: { componentToRender: "MEASUREMENT_UNIT" }, inputRequirement: { inputType } };
   let seedInstructions = "";
 
-  // 🔀 VARIANT ROUTING LOGIC
+  // 楳 VARIANT ROUTING LOGIC
   switch (activeVariant) {
     case 'foundation_compare_two': {
       commonMeta.heuristic = 'Comparative Vocabulary';

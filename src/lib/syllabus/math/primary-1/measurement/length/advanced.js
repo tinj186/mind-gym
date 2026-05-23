@@ -11,22 +11,29 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   const isShorter = Math.random() > 0.5;
   const lengthB = isShorter ? (lengthA - difference) : (lengthA + difference);
 
-  const items = ["🧶 String A", "🎀 Ribbon B", "📄 Paper C", "📼 Tape D"].sort(() => Math.random() - 0.5);
+  const itemsPool = ["Cutter", "Highlighter", "Pen", "Pencil", "Usbdrive"];
+  const items = [...itemsPool].sort(() => Math.random() - 0.5).map((name, i) => `${name} ${String.fromCharCode(65 + i)}`);
   const item1 = items[0];
   const item2 = items[1];
+
+  const units = [
+    { name: "paperclips", icon: "paperclip.svg" },
+    { name: "paperpins", icon: "paperpin.svg" },
+  ];
+  const selectedUnit = units[Math.floor(Math.random() * units.length)];
 
   const componentData = {
     items: [
       { label: item1, length: lengthA },
       { label: item2, length: lengthB }
     ],
-    unitIcon: "📎"
+    unitIcon: selectedUnit.icon
   };
 
   const promptObject = {
     meta: commonMeta,
     content: {
-      questionText: `[Insert structured word problem: ${item1} is ${lengthA} paperclips long. ${item2} is ${difference} paperclips ${isShorter ? 'shorter' : 'longer'} than ${item1}. How many paperclips long is ${item2}?]`,
+      questionText: `[Insert structured word problem: ${item1} is ${lengthA} ${selectedUnit.name} long. ${item2} is ${difference} ${selectedUnit.name} ${isShorter ? 'shorter' : 'longer'} than ${item1}. How many ${selectedUnit.name} long is ${item2}?]`,
       finalAnswer: String(lengthB),
       // ✅ FIXED: Enforces unique option items to prevent layout rendering breaks
       options: isMCQ ? [
@@ -35,7 +42,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         String(lengthA + difference), 
         String(Math.max(1, lengthB - 2))
       ].filter((v, i, a) => a.indexOf(v) === i).sort(() => Math.random() - 0.5) : null,
-      solutionSteps: `[Provide child-friendly breakdown: ${lengthA} ${isShorter ? '-' : '+'} ${difference} = ${lengthB} paperclips]`
+      solutionSteps: `[Provide child-friendly breakdown: ${lengthA} ${isShorter ? '-' : '+'} ${difference} = ${lengthB} ${selectedUnit.name}]`
     },
     visualEngine: {
       componentToRender: "MEASUREMENT_UNIT",

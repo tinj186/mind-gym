@@ -46,10 +46,10 @@ export const lengthBlueprint = {
 //    standard_ordering_ascending: "Ordering 3 items from shortest to longest.",
 //    standard_ordering_descending: "Ordering 3 items from longest to shortest.",
 //    standard_transitive_logic: "Deducing the longest or shortest item using transitive word logic (A > B, B > C).",
-//    standard_baseline_error_check: "Detecting errors in length comparison when objects do not share a common baseline.",
-//    standard_as_long_as: "Identifying objects with equal lengths among a set.",
+    standard_baseline_error_check: "Detecting errors in length comparison when objects do not share a common baseline.",
+    standard_as_long_as: "Identifying objects with equal lengths among a set.",
     standard_unit_difference_mcq: "Calculating the arithmetic difference in non-standard units between two items.",
-    standard_mid_grid_alignment: "Calculating length for an object not starting at the grid baseline.",
+//    standard_mid_grid_alignment: "Calculating length for an object not starting at the grid baseline.",
    
     advanced_indirect_difference: "Calculating missing length dimensions by adding or subtracting non-standard object units."
   }

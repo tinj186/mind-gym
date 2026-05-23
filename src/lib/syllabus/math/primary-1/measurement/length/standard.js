@@ -17,10 +17,15 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   // Standard-tier comparisons utilize multiple-choice button arrays for pristine input tracking
   const inputType = 'MCQ_BUTTONS'; 
 
-  const itemsPool = ["Pencil", "Crayon", "Paintbrush", "Fork", "Pen", "Ribbon", "Chopstick", "Straw"];
+  const itemsPool = ["Cutter", "Highlighter", "Pen", "Pencil", "Usbdrive"];
   const heightPool = ["Tree", "Giraffe", "Building", "Boy", "Ladder", "Lamp-post"];
   
-  let componentData = { items: [], unitIcon: "🧱" };
+  const units = [
+    { name: "paperclips", icon: "paperclip.svg" },
+    { name: "paperpins", icon: "paperpin.svg" },
+  ];
+  const selectedUnit = units[Math.floor(Math.random() * units.length)];
+  let componentData = { items: [], unitIcon: selectedUnit.icon };
   let promptObject = { meta: commonMeta, content: {}, visualEngine: { componentToRender: "MEASUREMENT_UNIT" }, inputRequirement: { inputType } };
   let seedInstructions = "";
 
@@ -78,8 +83,8 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       promptObject.content = {
         questionText: `Look at the pictures standing on the ground floor. Which one is the ${isAskingTallest ? 'tallest' : 'shortest'}?`,
         options: componentData.items.map(i => i.label),
-        finalAnswer: targetItem.label,
-        solutionSteps: `Since they are all standing on the same ground floor level, we look at their tops. The ${targetItem.label} reaches ${targetHeight} blocks high, making it the ${isAskingTallest ? 'tallest' : 'shortest'}.`
+        finalAnswer: targetItem.label, 
+        solutionSteps: `Since they are all standing on the same ground floor level, we look at their tops. The ${targetItem.label} reaches ${targetHeight} ${selectedUnit.name} high, making it the ${isAskingTallest ? 'tallest' : 'shortest'}.`
       };
       
       seedInstructions = `Target objective: Identify the height extreme. Find the ${isAskingTallest ? 'TALLEST' : 'SHORTEST'}. True answer: "${targetItem.label}".`;
@@ -136,18 +141,21 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     case 'standard_transitive_logic': {
       commonMeta.heuristic = 'Transitive Deduction';
-      const items = ["Ribbon A", "Ribbon B", "Ribbon C"];
+      const selection = [...itemsPool].sort(() => 0.5 - Math.random()).slice(0, 3);
+      const labels = selection.map((name, i) => `${name} ${String.fromCharCode(65 + i)}`);
+      const distractor = itemsPool.find(i => !selection.includes(i)) + " D";
+
       // Underlying secret values: A(8) > B(5) > C(3)
-      componentData.items = [{ label: "Ribbon A", length: 8 }, { label: "Ribbon B", length: 5 }, { label: "Ribbon C", length: 3 }];
+      componentData.items = [{ label: labels[0], length: 8 }, { label: labels[1], length: 5 }, { label: labels[2], length: 3 }];
       
       const askLongest = Math.random() > 0.5;
       promptObject.content = {
-        questionText: `Read carefully:\n- Ribbon A is longer than Ribbon B.\n- Ribbon B is longer than Ribbon C.\n\nWhich ribbon is the ${askLongest ? 'longest' : 'shortest'}?`,
-        options: items,
-        finalAnswer: askLongest ? "Ribbon A" : "Ribbon C",
-        solutionSteps: `If A is longer than B, and B is longer than C, then A is the biggest and C is the smallest. The ${askLongest ? 'longest' : 'shortest'} is ${askLongest ? 'Ribbon A' : 'Ribbon C'}.`
+        questionText: `Read carefully:\n- ${labels[0]} is longer than ${labels[1]}.\n- ${labels[1]} is longer than ${labels[2]}.\n\nWhich object is the ${askLongest ? 'longest' : 'shortest'}?`,
+        options: [...labels, distractor].sort(() => 0.5 - Math.random()),
+        finalAnswer: askLongest ? labels[0] : labels[2],
+        solutionSteps: `If ${labels[0]} is longer than ${labels[1]}, and ${labels[1]} is longer than ${labels[2]}, then ${labels[0]} is the biggest and ${labels[2]} is the smallest. The ${askLongest ? 'longest' : 'shortest'} is ${askLongest ? labels[0] : labels[2]}.`
       };
-      seedInstructions = `Target objective: Transitive deduction reasoning. Find the ${askLongest ? 'LONGEST (Ribbon A)' : 'SHORTEST (Ribbon C)'}.`;
+      seedInstructions = `Target objective: Transitive deduction reasoning. Find the ${askLongest ? 'LONGEST (' + labels[0] + ')' : 'SHORTEST (' + labels[2] + ')'}.`;
       break;
     }
 
@@ -238,13 +246,12 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         { label: selection[0], length: len1 },
         { label: selection[1], length: len2 }
       ];
-      componentData.unitIcon = "📎";
 
       promptObject.content = {
-        questionText: `How many paperclips longer is the ${selection[0]} than the ${selection[1]}?`,
+        questionText: `How many ${selectedUnit.name} longer is the ${selection[0]} than the ${selection[1]}?`,
         options: [String(diff), String(len1), String(len2), String(len1 + len2)],
         finalAnswer: String(diff),
-        solutionSteps: `The ${selection[0]} is ${len1} paperclips. The ${selection[1]} is ${len2} paperclips. Subtract to find the difference: ${len1} - ${len2} = ${diff} paperclips.`
+        solutionSteps: `The ${selection[0]} is ${len1} ${selectedUnit.name}. The ${selection[1]} is ${len2} ${selectedUnit.name}. Subtract to find the difference: ${len1} - ${len2} = ${diff} ${selectedUnit.name}.`
       };
       seedInstructions = `Target objective: Extract spatial difference subtraction value. True answer string: "${diff}".`;
       break;
@@ -270,7 +277,6 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           startOffset: startMarker 
         }
       ];
-      componentData.unitIcon = "🧱";
       
       // Generate logical dynamic distractors close to the real answer string value
       const optionsSet = new Set([
