@@ -12,6 +12,15 @@ const getHorizontalAsset = (label) => {
   return 'pen.svg'; 
 };
 
+// ASSET TUNING MATRIX - Adapts individual items for internal SVG canvas margins
+const ASSET_TUNING = {
+  'cutter.svg':       { scaleX: 1.00, translateX: 0 },
+  'highlighter.svg':  { scaleX: 1.00, translateX: 0 },
+  'pen.svg':          { scaleX: 1.00, translateX: 0 },
+  'pencil.svg':       { scaleX: 1.00, translateX: 0 },
+  'usbdrive.svg':     { scaleX: 1.00, translateX: 0 }
+};
+
 export default function MeasurementUnit({ data, topic, difficulty }) {
   // 🦒 1. VERTICAL RENDERING ENGINE (UNCHANGED)
   const isVerticalOrientation = data?.items?.some(item => 
@@ -32,12 +41,8 @@ export default function MeasurementUnit({ data, topic, difficulty }) {
                 </div>
                 <div className="flex flex-col-reverse gap-[1px] bg-slate-50 border-2 border-slate-900 p-[2px] rounded-lg shadow-[2px_2px_0px_rgba(15,23,42,1)] z-10">
                   {Array.from({ length: mItem.length }).map((_, uIdx) => (
-                    <div key={uIdx} className="w-6 h-[22px] bg-white border border-slate-200 rounded-sm flex items-center justify-center">
-                      <img 
-                        src={`/assets/measurement/${data.unitIcon || 'paperclip.svg'}`} 
-                        alt="unit" 
-                        className="w-4 h-4 object-contain" 
-                      />
+                    <div key={uIdx} className="w-6 h-[22px] bg-white border border-slate-200 rounded-sm flex items-center justify-center text-[11px]">
+                      <span className="select-none">{data.unitIcon || '🧱'}</span>
                     </div>
                   ))}
                 </div>
@@ -49,13 +54,26 @@ export default function MeasurementUnit({ data, topic, difficulty }) {
     );
   }
 
-  // 📐 2. HORIZONTAL ENGINE (SVG INTEGRATED)
+  // 📐 2. DYNAMIC HORIZONTAL ENGINE (RESPONSIVE RESIZING BASELINE)
+  // Determine the highest structural unit span present across the active data elements
+  const maxTotalUnits = Math.max(
+    10,
+    ...(data?.items || []).map(item => (item.startOffset || 0) + item.length)
+  );
+
+  // Set standard width limits inside the layout viewport container
+  // If required blocks exceed 10 units, grid steps smoothly scale down from 48px
+  const unitSize = Math.min(48, Math.floor(480 / maxTotalUnits));
+  const innerGraphicSize = Math.floor(unitSize * 0.83); // Keeps asset graphics uniformly isolated
+
   return (
     <div className="space-y-8 w-full max-w-2xl mx-auto p-6 bg-white rounded-[2rem] border-4 border-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)]">
       {data?.items?.map((mItem, idx) => {
-        const offsetLeftPadding = (mItem.startOffset || 0) * 48;
-        const targetWidth = mItem.length * 48;
+        const offsetLeftPadding = (mItem.startOffset || 0) * unitSize;
+        const targetWidth = mItem.length * unitSize;
         const assetFile = getHorizontalAsset(mItem.label);
+        const gridLengthCount = mItem.length;
+        const tuning = ASSET_TUNING[assetFile] || { scaleX: 1.0, translateX: 0 };
 
         return (
           <div key={idx} className="space-y-4 pb-4">
@@ -66,12 +84,12 @@ export default function MeasurementUnit({ data, topic, difficulty }) {
                 </span>
               </div>
               
-              {/* Crayon/Pen SVG Container */}
+              {/* Measurement Object Wrapper - shrink-0 locks rendering parameters */}
               <div 
-                className="relative flex items-center" 
+                className="relative flex items-center overflow-visible shrink-0" 
                 style={{ 
                   width: `${targetWidth}px`, 
-                  height: '48px',
+                  height: `${unitSize}px`,
                   marginLeft: `${offsetLeftPadding}px` 
                 }}
               >
@@ -79,24 +97,34 @@ export default function MeasurementUnit({ data, topic, difficulty }) {
                   src={`/assets/measurement/${assetFile}`} 
                   alt={mItem.label}
                   className="w-full h-full"
-                  style={{ objectFit: 'fill', display: 'block' }}
+                  style={{ 
+                    objectFit: 'fill', 
+                    display: 'block',
+                    transformOrigin: 'left center',
+                    transform: `translateX(${tuning.translateX}px) scaleX(${tuning.scaleX})`
+                  }}
                 />
               </div>
             </div>
 
-            {/* Grid Ruler - Completely Borderless Asset Unit Track */}
+            {/* Grid Ruler Track - Fluid responsive scaling engine alignment */}
             <div className="flex items-center gap-4">
               <div className="w-28 shrink-0" />
-              <div className="flex gap-1">
-                {Array.from({ length: mItem.length }).map((_, uIdx) => (
+              <div 
+                className="flex gap-0"
+                style={{ marginLeft: `${offsetLeftPadding}px` }}
+              >
+                {Array.from({ length: gridLengthCount }).map((_, uIdx) => (
                   <div 
                     key={uIdx} 
-                    className="w-[44px] h-10 flex items-center justify-center bg-transparent"
+                    style={{ width: `${unitSize}px`, height: `${unitSize}px` }}
+                    className="flex flex-col items-center justify-center bg-transparent relative shrink-0"
                   >
                     <img 
                       src={`/assets/measurement/${data.unitIcon || 'paperclip.svg'}`} 
                       alt="unit" 
-                      className="w-10 h-10 object-contain" 
+                      style={{ width: `${innerGraphicSize}px`, height: `${innerGraphicSize}px` }}
+                      className="object-contain" 
                     />
                   </div>
                 ))}

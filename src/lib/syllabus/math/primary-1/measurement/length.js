@@ -40,18 +40,27 @@ export const lengthBlueprint = {
     foundation_true_false: "Evaluating a True/False statement about the relative lengths of two objects.",
     
     // Standard & Advanced
-//    standard_baseline_comparison: "Comparing 3 distinct objects aligned horizontally to find the longest/shortest.",
-//    standard_find_shortest: "Identifying the shortest object among 3 items aligned horizontally.",
-//    standard_vertical_baseline: "Comparing height vectors of objects standing on a common ground baseline.",
-//    standard_ordering_ascending: "Ordering 3 items from shortest to longest.",
-//    standard_ordering_descending: "Ordering 3 items from longest to shortest.",
-//    standard_transitive_logic: "Deducing the longest or shortest item using transitive word logic (A > B, B > C).",
+    standard_baseline_comparison: "Comparing 3 distinct objects aligned horizontally to find the longest/shortest.",
+    standard_find_shortest: "Identifying the shortest object among 3 items aligned horizontally.",
+    standard_vertical_baseline: "Comparing height vectors of objects standing on a common ground baseline.",
+    standard_ordering_ascending: "Ordering 3 items from shortest to longest.",
+    standard_ordering_descending: "Ordering 3 items from longest to shortest.",
+    standard_transitive_logic: "Deducing the longest or shortest item using transitive word logic (A > B, B > C).",
     standard_baseline_error_check: "Detecting errors in length comparison when objects do not share a common baseline.",
     standard_as_long_as: "Identifying objects with equal lengths among a set.",
     standard_unit_difference_mcq: "Calculating the arithmetic difference in non-standard units between two items.",
-//    standard_mid_grid_alignment: "Calculating length for an object not starting at the grid baseline.",
+    standard_mid_grid_alignment: "Calculating length for an object not starting at the grid baseline.",
    
-    advanced_indirect_difference: "Calculating missing length dimensions by adding or subtracting non-standard object units."
+    advanced_indirect_difference: "Calculating missing length dimensions by adding or subtracting non-standard object units.",
+    advanced_indirect_comparison: "Using transitive logic to compare and order three or more objects based on text clues (e.g., Object A is longer than B, B is longer than C).",
+    advanced_misaligned_start: "Determining the true length of an object when it does not align with the zero baseline of the unit ruler track (handling custom start and end offsets).",
+    advanced_unit_size_inverse: "Deducing length relationships based on different unit sizes (e.g., understanding why measuring the same item requires more paperclips than erasers).",
+    advanced_combined_total: "Calculating the total combined length of two or more objects laid end-to-end using non-standard units.",
+    advanced_overlap_deduction: "Solving word problems where two objects overlap and calculating the net length or the hidden overlap dimension.",
+    advanced_multi_step_word_problems: "Solving two-step story problems involving cutting, extending, or comparing object lengths using addition and subtraction.",
+    advanced_part_whole_missing: "Finding the length of a missing segment when provided with the total structural length and one known constituent object.",
+    advanced_excess_comparison: "Calculating exactly how many more or fewer units an object requires to match a target reference length.",
+    advanced_perimeter_units: "Counting non-standard units around a multi-sided basic shape grid or open path framework."
   }
 };
 

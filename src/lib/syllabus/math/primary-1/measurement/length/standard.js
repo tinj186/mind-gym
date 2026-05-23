@@ -43,7 +43,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         questionText: "Look at the items. Which object is the shortest?",
         options: selection,
         finalAnswer: shortestItem,
-        solutionSteps: `All objects share the same left wall. Looking across at the lengths, the ${shortestItem} is only ${Math.min(...lengths)} units long, making it the shortest object.`
+        solutionSteps: `All objects share the same left wall. Looking across at the lengths, the ${shortestItem} is only ${Math.min(...lengths)} ${selectedUnit.name} long, making it the shortest object.`
       };
       seedInstructions = `Target objective: Find the SHORTEST item. True answer text: "${shortestItem}".`;
       break;
@@ -80,9 +80,11 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       const targetHeight = isAskingTallest ? Math.max(...lengths) : Math.min(...lengths);
       const targetItem = componentData.items.find(i => i.length === targetHeight);
 
+      const distractor = tallItems.find(t => !selection.find(s => s.name === t.name));
+
       promptObject.content = {
         questionText: `Look at the pictures standing on the ground floor. Which one is the ${isAskingTallest ? 'tallest' : 'shortest'}?`,
-        options: componentData.items.map(i => i.label),
+        options: [...componentData.items.map(i => i.label), `Tall ${distractor.name}`].sort(() => 0.5 - Math.random()),
         finalAnswer: targetItem.label, 
         solutionSteps: `Since they are all standing on the same ground floor level, we look at their tops. The ${targetItem.label} reaches ${targetHeight} ${selectedUnit.name} high, making it the ${isAskingTallest ? 'tallest' : 'shortest'}.`
       };
@@ -106,7 +108,8 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         options: [
           correctSequenceStr,
           [...ascendingOrder].reverse().join(" ➔ "),
-          `${ascendingOrder[1]} ➔ ${ascendingOrder[0]} ➔ ${ascendingOrder[2]}`
+          `${ascendingOrder[1]} ➔ ${ascendingOrder[0]} ➔ ${ascendingOrder[2]}`,
+          `${ascendingOrder[0]} ➔ ${ascendingOrder[2]} ➔ ${ascendingOrder[1]}`
         ].sort(() => 0.5 - Math.random()),
         finalAnswer: correctSequenceStr,
         solutionSteps: `Let's count each object's blocks: ${itemsArr.map(i => `${i.label} is ${i.length} units`).join(', ')}. Putting them in order from shortest to longest gives: ${correctSequenceStr}.`
@@ -130,7 +133,8 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         options: [
           correctSequenceStr,
           [...descendingOrder].reverse().join(" ➔ "),
-          `${descendingOrder[1]} ➔ ${descendingOrder[2]} ➔ ${descendingOrder[0]}`
+          `${descendingOrder[1]} ➔ ${descendingOrder[2]} ➔ ${descendingOrder[0]}`,
+          `${descendingOrder[2]} ➔ ${descendingOrder[1]} ➔ ${descendingOrder[0]}`
         ].sort(() => 0.5 - Math.random()),
         finalAnswer: correctSequenceStr,
         solutionSteps: `Counting their blocks: ${itemsArr.map(i => `${i.label} is ${i.length} units`).join(', ')}. Sorting them from longest to shortest gives: ${correctSequenceStr}.`
@@ -180,7 +184,6 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         { label: `${selection[0]} A`, length: lenA },
         { label: `${selection[1]} B`, length: lenB, startOffset: offsetB }
       ];
-      componentData.unitIcon = "🧱";
 
       promptObject.content = {
         questionText: `Look closely at the image alignment. Can we say ${selection[1]} B is longer than ${selection[0]} A simply because its right edge sticks out further?`,
@@ -191,7 +194,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           "Yes, because it is a different color." // Added distractor for 4 options
         ].sort(() => 0.5 - Math.random()), // Shuffle options
         finalAnswer: "No, because they do not start at the same baseline.",
-        solutionSteps: `To compare lengths directly, objects must start at the exact same baseline line. Since ${selection[1]} B was pushed forward by ${offsetB} blocks, a direct visual edge comparison is incorrect.`
+        solutionSteps: `To compare lengths directly, objects must start at the exact same baseline line. Since ${selection[1]} B was pushed forward by ${offsetB} ${selectedUnit.name}, a direct visual edge comparison is incorrect.`
       };
       seedInstructions = `Target objective: Baseline error handling. True choice string: "No, because they do not start at the same baseline."`;
       break;
@@ -228,7 +231,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         questionText: `Look at the ${referenceItem.label}. Which object is as long as the ${referenceItem.label}?`,
         options: Array.from(optionsSet).sort(() => 0.5 - Math.random()),
         finalAnswer: matchingTwin.label,
-        solutionSteps: `Objects that are 'as long as' each other must have the same number of units. Both the ${referenceItem.label} and the ${matchingTwin.label} are exactly ${baseLen} blocks long.`
+        solutionSteps: `Objects that are 'as long as' each other must have the same number of units. Both the ${referenceItem.label} and the ${matchingTwin.label} are exactly ${baseLen} ${selectedUnit.name} long.`
       };
       
       seedInstructions = `Target objective: Find equal partner matching item name. True answer: "${matchingTwin.label}".`;
@@ -274,7 +277,8 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         { 
           label: `Floating ${selectedItem}`, 
           length: actualLength,
-          startOffset: startMarker 
+          // ✅ FIX: Map 1-based markers to 0-based grid offsets (Marker 1 = 0 offset)
+          startOffset: startMarker - 1 
         }
       ];
       
@@ -288,10 +292,10 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       
       promptObject.content = {
         // ✅ DYNAMIC QUESTION STRING: Injects the calculated positions directly into the prompt narrative text
-        questionText: `Look at the ${selectedItem.toLowerCase()}. It starts at the ${startMarker} block marker and ends at the ${endMarker} block marker. How many units long is the ${selectedItem.toLowerCase()}?`,
+        questionText: `Look at the ${selectedItem.toLowerCase()}. It starts at the ${startMarker} unit marker and ends at the ${endMarker} unit marker. How many units long is the ${selectedItem.toLowerCase()}?`,
         options: Array.from(optionsSet).sort(() => 0.5 - Math.random()),
         finalAnswer: String(actualLength),
-        solutionSteps: `When an object does not start at zero, calculate its true length by subtracting the starting marker position from the ending marker position: ${endMarker} - ${startMarker} = ${actualLength} units.`
+        solutionSteps: `When an object does not start at zero, calculate its true length by subtracting the starting marker position from the ending marker position: ${endMarker} - ${startMarker} = ${actualLength} ${selectedUnit.name}.`
       };
       seedInstructions = `Target objective: Floating offset grid arithmetic deduction. True answer string: "${actualLength}".`;
       break;
