@@ -21,15 +21,19 @@ const ASSET_TUNING = {
   'usbdrive.svg':     { scaleX: 1.00, translateX: 0 }
 };
 
-export default function MeasurementUnit({ data, topic, difficulty }) {
+export default function MeasurementUnit({ data, topic, difficulty, hideCardStyles = false }) {
   // 🦒 1. VERTICAL RENDERING ENGINE (UNCHANGED)
   const isVerticalOrientation = data?.items?.some(item => 
     (item.label || '').toLowerCase().includes('tall') || (item.label || '').toLowerCase().includes('height')
   );
 
+  const containerStyle = hideCardStyles
+    ? "w-full bg-transparent p-0 border-0 shadow-none"
+    : "w-full max-w-2xl mx-auto p-6 bg-white rounded-[2rem] border-4 border-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)]";
+
   if (isVerticalOrientation) {
     return (
-      <div className="w-full max-w-2xl mx-auto p-6 bg-white rounded-[2rem] border-4 border-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] space-y-6">
+      <div className={`${containerStyle} space-y-6`}>
         <div className="flex items-end justify-center gap-16 pt-20 pb-2 border-b-4 border-slate-900 min-h-[340px] relative">
           {data.items?.map((mItem, idx) => {
             const emojiAsset = getVerticalEmoji(mItem.label);
@@ -42,7 +46,11 @@ export default function MeasurementUnit({ data, topic, difficulty }) {
                 <div className="flex flex-col-reverse gap-[1px] bg-slate-50 border-2 border-slate-900 p-[2px] rounded-lg shadow-[2px_2px_0px_rgba(15,23,42,1)] z-10">
                   {Array.from({ length: mItem.length }).map((_, uIdx) => (
                     <div key={uIdx} className="w-6 h-[22px] bg-white border border-slate-200 rounded-sm flex items-center justify-center text-[11px]">
-                      <span className="select-none">{data.unitIcon || '🧱'}</span>
+                      <img 
+                        src={`/assets/measurement/${data.unitIcon || 'paperclip.svg'}`} 
+                        alt="unit" 
+                        className="w-4 h-4 object-contain select-none" 
+                      />
                     </div>
                   ))}
                 </div>
@@ -67,16 +75,17 @@ export default function MeasurementUnit({ data, topic, difficulty }) {
   const innerGraphicSize = Math.floor(unitSize * 0.83); // Keeps asset graphics uniformly isolated
 
   return (
-    <div className="space-y-8 w-full max-w-2xl mx-auto p-6 bg-white rounded-[2rem] border-4 border-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)]">
+    <div className={`${containerStyle} space-y-8`}>
       {data?.items?.map((mItem, idx) => {
         const offsetLeftPadding = (mItem.startOffset || 0) * unitSize;
         const targetWidth = mItem.length * unitSize;
         const assetFile = getHorizontalAsset(mItem.label);
-        const gridLengthCount = mItem.length;
+        const gridLengthCount = data.showFullRuler ? maxTotalUnits : mItem.length;
+        const gridOffset = data.showFullRuler ? 0 : offsetLeftPadding;
         const tuning = ASSET_TUNING[assetFile] || { scaleX: 1.0, translateX: 0 };
 
         return (
-          <div key={idx} className="space-y-4 pb-4">
+          <div key={idx} className="space-y-4 pb-6">
             <div className="flex items-center gap-4">
               <div className="w-28 text-right pr-2 shrink-0">
                 <span className="text-xs font-black uppercase text-slate-500 tracking-wider">
@@ -112,7 +121,7 @@ export default function MeasurementUnit({ data, topic, difficulty }) {
               <div className="w-28 shrink-0" />
               <div 
                 className="flex gap-0"
-                style={{ marginLeft: `${offsetLeftPadding}px` }}
+                style={{ marginLeft: `${gridOffset}px` }}
               >
                 {Array.from({ length: gridLengthCount }).map((_, uIdx) => (
                   <div 
@@ -126,6 +135,14 @@ export default function MeasurementUnit({ data, topic, difficulty }) {
                       style={{ width: `${innerGraphicSize}px`, height: `${innerGraphicSize}px` }}
                       className="object-contain" 
                     />
+                    {data.showFullRuler && (
+                      <>
+                        {uIdx === 0 && (
+                          <span className="absolute -bottom-5 left-0 -translate-x-1/2 text-[10px] font-bold text-slate-400">0</span>
+                        )}
+                        <span className="absolute -bottom-5 right-0 translate-x-1/2 text-[10px] font-bold text-slate-400">{uIdx + 1}</span>
+                      </>
+                    )}
                   </div>
                 ))}
               </div>

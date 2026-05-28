@@ -52,9 +52,10 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         questionText: `[Narrate Transitive Comparison: Object ${item1} is longer than ${item2}. Object ${item2} is longer than ${item3}. Which object is the ${findShortest ? 'shortest' : 'longest'}?]`,
         finalAnswer,
         options: isMCQ ? getShuffledOptions(finalAnswer, [item1, item2, item3, ...distractors]) : null,
-        solutionSteps: `Comparing the sequence dimensions: ${item1} (${lenA} units) > ${item2} (${lenB} units) > ${item3} (${lenC} units). The target is ${finalAnswer}.`
+        solutionSteps: `Comparing the sequence dimensions: ${item1} (${lenA} units) > ${item2} (${lenB} units) > ${item3} (${lenC} units). The target is ${finalAnswer}.`,
+        hint: "Draw a simple line for each object using the clues to help you see the order!"
       };
-      seedInstructions = `Deduce sequence hierarchy. Target: ${findShortest ? 'SHORTEST' : 'LONGEST'}. Correct Answer: ${finalAnswer}.`;
+      seedInstructions = `Target objects to use: ${item1}, ${item2}, ${item3}. Deduce sequence hierarchy. Target: ${findShortest ? 'SHORTEST' : 'LONGEST'}. Correct Answer: ${finalAnswer}.`;
       break;
     }
 
@@ -66,14 +67,16 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       const endPoint = startOffset + trueLength;
 
       componentData.items = [{ label: targetObj, length: trueLength, startOffset }];
+      componentData.showFullRuler = true;
       
       promptObject.content = {
         questionText: `[Formulate Baseline Offset Question: The ${targetObj} starts at the ${startOffset} unit line and ends at the ${endPoint} unit line. What is its true length in ${selectedUnit.name}?]`,
         finalAnswer: String(trueLength),
         options: isMCQ ? getShuffledOptions(String(trueLength), [String(endPoint), String(startOffset), String(trueLength + 1)]) : null,
-        solutionSteps: `Subtract the starting line mark from the ending line mark: ${endPoint} - ${startOffset} = ${trueLength} ${selectedUnit.name}.`
+        solutionSteps: `Subtract the starting line mark from the ending line mark: ${endPoint} - ${startOffset} = ${trueLength} ${selectedUnit.name}.`,
+        hint: "Count the units between the start mark and the end mark carefully!"
       };
-      seedInstructions = `Object starts layout shifted at interval marker ${startOffset} and ends at marker ${endPoint}. True length is ${trueLength}.`;
+      seedInstructions = `Target object: ${targetObj}. Object starts layout shifted at interval marker ${startOffset} and ends at marker ${endPoint}. True length is ${trueLength}.`;
       break;
     }
 
@@ -88,9 +91,10 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         questionText: `[Formulate Inverse Unit Comparison: Measuring a ${targetObj} takes ${baseCount} small ${selectedUnit.name}. If we switch to a longer unit, will the total count needed be more, fewer, or the same?]`,
         finalAnswer: 'Fewer',
         options: ['More', 'Fewer', 'The same', 'Cannot tell'],
-        solutionSteps: `Larger units cover more space individually, meaning fewer of them are required to measure the exact same object length.`
+        solutionSteps: `Larger units cover more space individually, meaning fewer of them are required to measure the exact same object length.`,
+        hint: "Think! If a block is big, will you need many or just a few to measure the object?"
       };
-      seedInstructions = `Evaluate scaling sizes conceptually. Correct selection outcome option string is strictly 'Fewer'.`;
+      seedInstructions = `Target object: ${targetObj}. Evaluate scaling sizes conceptually. Correct selection outcome option string is strictly 'Fewer'.`;
       break;
     }
 
@@ -107,12 +111,13 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       ];
 
       promptObject.content = {
-        questionText: `[Formulate Composite Total Question: If the ${shuffledItems[0]} and ${shuffledItems[1]} are placed end-to-end, what is their combined total length?]`,
+        questionText: `[Formulate Composite Total Question: If the ${shuffledItems[0].toLowerCase()} and the ${shuffledItems[1].toLowerCase()} are placed end-to-end, what is their combined total length in ${selectedUnit.name}?]`,
         finalAnswer: String(combinedTotal),
         options: isMCQ ? getShuffledOptions(String(combinedTotal), [String(combinedTotal - 1), String(combinedTotal + 2), String(lenA)]) : null,
-        solutionSteps: `Add both component item metrics together: ${lenA} + ${lenB} = ${combinedTotal} ${selectedUnit.name}.`
+        solutionSteps: `Add both component item metrics together: ${lenA} + ${lenB} = ${combinedTotal} ${selectedUnit.name}.`,
+        hint: "Add the number of units for the first object to the number of units for the second object!"
       };
-      seedInstructions = `Find sum length of compound structural layout tracker elements: ${lenA} + ${lenB} = ${combinedTotal}.`;
+      seedInstructions = `Target objects: ${shuffledItems[0]}, ${shuffledItems[1]}. Find sum length of compound structural layout tracker elements: ${lenA} + ${lenB} = ${combinedTotal}.`;
       break;
     }
 
@@ -130,12 +135,13 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       ];
 
       promptObject.content = {
-        questionText: `[Formulate Overlap Deduction Narrative: Object ${shuffledItems[0]} (${lenA} units) and Object ${shuffledItems[1]} (${lenB} units) overlap when joined. If the total combined layout length is ${visibleTotal} units, how long is the overlapping section?]`,
+        questionText: `[Formulate Overlap Deduction Narrative: A ${shuffledItems[0].toLowerCase()} is ${lenA} ${selectedUnit.name} long and a ${shuffledItems[1].toLowerCase()} is ${lenB} ${selectedUnit.name} long. They overlap when joined. If the total combined length is ${visibleTotal} ${selectedUnit.name}, how long is the overlapping section?]`,
         finalAnswer: String(overlap),
         options: isMCQ ? getShuffledOptions(String(overlap), [String(overlap + 1), String(overlap - 1), '4']) : null,
-        solutionSteps: `Sum individual lengths (${lenA} + ${lenB} = ${lenA + lenB}) then subtract total visible covered length (${lenA + lenB} - ${visibleTotal} = ${overlap} units).`
+        solutionSteps: `Sum individual lengths (${lenA} + ${lenB} = ${lenA + lenB}) then subtract total visible covered length (${lenA + lenB} - ${visibleTotal} = ${overlap} units).`,
+        hint: "Try adding the two lengths together and see how much bigger that is than the total shown!"
       };
-      seedInstructions = `Calculate segment overlap boundary intersection dimensions. True answer value evaluated is ${overlap}.`;
+      seedInstructions = `Target objects: ${shuffledItems[0]}, ${shuffledItems[1]}. Calculate segment overlap boundary intersection dimensions. True answer value evaluated is ${overlap}.`;
       break;
     }
 
@@ -150,12 +156,13 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       componentData.items = [{ label: targetObj, length: currentNetLength }];
 
       promptObject.content = {
-        questionText: `[Formulate Multi-Step Story Problem: A craft string was originally ${baseLen} units long. ${subtractAmt} units were cut off, and then an extension piece of ${additionAmt} units was added. How long is it now?]`,
+        questionText: `[Formulate Multi-Step Story Problem: A ${targetObj.toLowerCase()} was originally ${baseLen} ${selectedUnit.name} long. ${subtractAmt} ${selectedUnit.name} were cut off, and then an extension piece of ${additionAmt} ${selectedUnit.name} was added. How long is the ${targetObj.toLowerCase()} now?]`,
         finalAnswer: String(currentNetLength),
         options: isMCQ ? getShuffledOptions(String(currentNetLength), [String(baseLen), String(baseLen - subtractAmt), String(currentNetLength - 2)]) : null,
-        solutionSteps: `Execute multi-part calculations: First subtract cut segment (${baseLen} - ${subtractAmt} = ${baseLen - subtractAmt}), then aggregate extension (${baseLen - subtractAmt} + ${additionAmt} = ${currentNetLength} units).`
+        solutionSteps: `Execute multi-part calculations: First subtract cut segment (${baseLen} - ${subtractAmt} = ${baseLen - subtractAmt}), then aggregate extension (${baseLen - subtractAmt} + ${additionAmt} = ${currentNetLength} ${selectedUnit.name}).`,
+        hint: "First find out the length after cutting, then add the new piece!"
       };
-      seedInstructions = `Process sequence conversions sequentially: ${baseLen} minus ${subtractAmt} plus ${additionAmt} = ${currentNetLength}.`;
+      seedInstructions = `Target object: ${targetObj}. Process sequence conversions sequentially: ${baseLen} minus ${subtractAmt} plus ${additionAmt} = ${currentNetLength}.`;
       break;
     }
 
@@ -172,12 +179,13 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       ];
 
       promptObject.content = {
-        questionText: `[Formulate Part-Whole Missing Segment Question: The total combined structure length is ${completeWhole} units. If Part A measures ${partA} units, what is the length of missing Part B?]`,
+        questionText: `[Formulate Part-Whole Missing Segment Question: The total combined length of two objects is ${completeWhole} ${selectedUnit.name}. If one object measures ${partA} ${selectedUnit.name}, what is the length of the other object?]`,
         finalAnswer: String(partB),
         options: isMCQ ? getShuffledOptions(String(partB), [String(partB + 2), String(partB - 1), String(partA)]) : null,
-        solutionSteps: `Isolate missing compound structural component: Total (${completeWhole}) - Given Part (${partA}) = ${partB} ${selectedUnit.name}.`
+        solutionSteps: `Isolate missing compound structural component: Total (${completeWhole}) - Given Part (${partA}) = ${partB} ${selectedUnit.name}.`,
+        hint: "Take away the units we know from the total length to find the missing part!"
       };
-      seedInstructions = `Subtract minor structural part matrix from master total: ${completeWhole} - ${partA} = ${partB}.`;
+      seedInstructions = `Target objects: ${shuffledItems[0]}, ${shuffledItems[1]}. Subtract minor structural part matrix from master total: ${completeWhole} - ${partA} = ${partB}.`;
       break;
     }
 
@@ -194,12 +202,13 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       ];
 
       promptObject.content = {
-        questionText: `[Formulate Capacity Deficit Question: The ${shuffledItems[0]} is currently ${currentLength} units long. How many more ${selectedUnit.name} must be added to make it exactly ${targetThreshold} units long?]`,
+        questionText: `[Formulate Capacity Deficit Question: The ${shuffledItems[0].toLowerCase()} is currently ${currentLength} ${selectedUnit.name} long. How many more ${selectedUnit.name} must be added to make it exactly ${targetThreshold} ${selectedUnit.name} long?]`,
         finalAnswer: String(missingDeficit),
         options: isMCQ ? getShuffledOptions(String(missingDeficit), [String(missingDeficit + 1), String(currentLength), String(targetThreshold)]) : null,
-        solutionSteps: `Calculate the space gap delta to hit the benchmark: ${targetThreshold} - ${currentLength} = ${missingDeficit} units required.`
+        solutionSteps: `Calculate the space gap delta to hit the benchmark: ${targetThreshold} - ${currentLength} = ${missingDeficit} ${selectedUnit.name} required.`,
+        hint: "Count how many more blocks you need to reach the target line!"
       };
-      seedInstructions = `Evaluate dimensional capacity requirements needed to match target limits: ${targetThreshold} - ${currentLength} = ${missingDeficit}.`;
+      seedInstructions = `Target object: ${shuffledItems[0]}. Evaluate dimensional capacity requirements needed to match target limits: ${targetThreshold} - ${currentLength} = ${missingDeficit}.`;
       break;
     }
 
@@ -214,12 +223,13 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       componentData.items = [{ label: targetShape, length: cumulativePerimeter }];
 
       promptObject.content = {
-        questionText: `[Formulate Open Border Perimeter Question: Find the cumulative length around this 3-sided track frame map if the segments measure ${side1}, ${side2}, and ${side3} units respectively.]`,
+        questionText: `[Formulate Open Border Perimeter Question: Find the cumulative length around this 3-sided track frame map if the segments measure ${side1}, ${side2}, and ${side3} ${selectedUnit.name} respectively.]`,
         finalAnswer: String(cumulativePerimeter),
         options: isMCQ ? getShuffledOptions(String(cumulativePerimeter), [String(cumulativePerimeter - 1), String(side1 + side2), '12']) : null,
-        solutionSteps: `Accumulate the composite vector sides around boundary paths: ${side1} + ${side2} + ${side3} = ${cumulativePerimeter} units.`
+        solutionSteps: `Accumulate the composite vector sides around boundary paths: ${side1} + ${side2} + ${side3} = ${cumulativePerimeter} units.`,
+        hint: "Trace your finger around the outside edges and count every unit!"
       };
-      seedInstructions = `Total perimeter accumulation along multi-sided open grids equal to: ${cumulativePerimeter}.`;
+      seedInstructions = `Target context: A shape or path. Total perimeter accumulation along multi-sided open grids equal to: ${cumulativePerimeter}.`;
       break;
     }
 
@@ -243,9 +253,10 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         questionText: `[Insert structured word problem: ${item1} is ${lengthA} ${selectedUnit.name} long. ${item2} is ${difference} ${selectedUnit.name} ${isShorter ? 'shorter' : 'longer'} than ${item1}. How many ${selectedUnit.name} long is ${item2}?]`,
         finalAnswer: String(lengthB),
         options: isMCQ ? getShuffledOptions(String(lengthB), [String(lengthA), String(lengthA + difference), String(Math.max(1, lengthB - 2))]) : null,
-        solutionSteps: `[Provide child-friendly breakdown: ${lengthA} ${isShorter ? '-' : '+'} ${difference} = ${lengthB} ${selectedUnit.name}]`
+        solutionSteps: `[Provide child-friendly breakdown: ${lengthA} ${isShorter ? '-' : '+'} ${difference} = ${lengthB} ${selectedUnit.name}]`,
+        hint: "Start with the units for the first object and then add or subtract based on the clue!"
       };
-      seedInstructions = `Target objective: Calculate missing relative distance dimensions. True answer: ${lengthB}.`;
+      seedInstructions = `Target objects: ${item1}, ${item2}. Calculate missing relative distance dimensions. True answer: ${lengthB}.`;
       break;
   }
 
@@ -254,13 +265,14 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
   const constitution = isShort 
     ? "SHORT QUESTION MANDATE: Pure mathematical logic only. Keep questionText extremely direct (e.g., 'Item A is 6 units. Item B is 2 units longer. How long is Item B?'). NO character names or fluff." 
-    : "STANDARD MANDATE: Use localized story elements for a 6-year-old (e.g., 'Siti has a ribbon...'). Keep sentences short.";
+    : "STANDARD MANDATE: Use localized story elements for a 6-year-old. Keep sentences short. Use ONLY the specific objects and non-standard units provided in the seed instructions. Do NOT use legacy objects like ribbons, strings, toy trains, or any other items not mentioned in seeds.";
 
   const instructions = `
     TASK: Generate an advanced Primary 1 structured word problem tracking compound positional lengths using non-standard units.
     VARIANT: ${activeVariant}
     
-    STRICT GENERATOR CONSTRAINTS:
+    CRITICAL PROMPT SEED CONSTRAINTS:
+    - Your output JSON object MUST include the 'content.hint' parameter string. It cannot be null or empty.
     - ${seedInstructions}
     - The structural data inside visualEngine items array must remain exactly as seeded.
     - Ensure your question narrative text and finalAnswer perfectly synchronize with these calculation numbers.

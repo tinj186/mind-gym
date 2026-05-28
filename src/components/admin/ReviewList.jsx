@@ -245,8 +245,8 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
         const visualType = normalizedQuestion.visualEngine?.componentToRender;
 
         // Define visual categories
-        const isQuestionVisual = ['COUNTING_OBJECTS', 'BASE_TEN_BLOCKS', 'EQUAL_GROUPS', 'SHAPE', 'PLACE_VALUE_CHART', 'NUMBER_PATTERN', 'NUMBER_CARDS', 'ORDINAL_LINE', 'COMPARE_OBJECTS', 'NUMBER_BOND', 'GROUPING_WORKSPACE', 'MULTIPLICATION_PICTORIAL', 'SINGAPORE_MONEY', 'MEASUREMENT_UNIT'].includes(visualType);
-        const isSolutionVisual = ['PART_WHOLE', 'COMPARISON', 'REMAINDER_MODEL', 'NUMBER_PATTERN', 'COUNTING_OBJECTS', 'EQUAL_GROUPS'].includes(visualType);
+        const isQuestionVisual = !!visualType && visualType !== 'NONE';
+        const isSolutionVisual = isQuestionVisual && !['MEASUREMENT_UNIT', 'CLOCK_DISPLAY'].includes(visualType);
         const isBusy = processingId === q.id || processingId === 'bulk';
 
         return (
@@ -287,6 +287,7 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
                         questionId={normalizedQuestion.id}
                         difficulty={normalizedQuestion.difficulty}
                         topic={normalizedQuestion.topic}
+                        hideCardStyles={true}
                       />
                     </div>
                   </div>
@@ -354,6 +355,7 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
                       questionId={normalizedQuestion.id}
                       difficulty={normalizedQuestion.difficulty}
                       topic={normalizedQuestion.topic}
+                      hideCardStyles={true}
                     />
                   )}
                 <p className="text-sm text-slate-600 leading-relaxed italic whitespace-pre-line">{q.solution}</p>

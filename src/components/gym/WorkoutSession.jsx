@@ -34,6 +34,10 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
     deriveVisualProps(normalizedQuestion), 
   [normalizedQuestion]);
 
+  const activeHint = useMemo(() => {
+    return normalizedQuestion?.hint || "Look at the question carefully!";
+  }, [normalizedQuestion]);
+
   // Content Guard: Determine if the visual actually has data to show
   const hasVisualContent = useMemo(() => {
     if (!currentVisual || currentVisual === "NONE") return false;
@@ -46,7 +50,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
       return visualProps.totalItems > 0 && hasPosition;
     }
     
-    if (["NUMBER_BOND", "SHAPE"].includes(currentVisual)) return true; 
+    if (["NUMBER_BOND", "SHAPE", "CLOCK_DISPLAY"].includes(currentVisual)) return true; 
     return (visualProps.totalItems > 0); // Ordinal Lines, Counting, etc. must have a count > 0
   }, [currentVisual, visualProps.totalItems]);
 
@@ -291,6 +295,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
                 difficulty={normalizedQuestion.difficulty}
                 topic={normalizedQuestion.topic}
                 attempts={attempts}
+                hideCardStyles={true}
               />
             </div>
           )}
@@ -334,15 +339,19 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
           )}
 
           {showHint && (
-            <div className="p-6 bg-amber-50 rounded-2xl border-2 border-amber-200 animate-in fade-in slide-in-from-bottom-4">
-              <p className="text-amber-900 font-bold text-sm">💡 HINT: {normalizedQuestion.hint || "Try counting carefully!"}</p>
+            <div className="p-4 bg-amber-50 border-2 border-amber-400 rounded-2xl text-amber-900 text-sm font-medium animate-in fade-in slide-in-from-bottom-4">
+              💡 {activeHint}
             </div>
           )}
 
-          {feedback === 'solution_revealed' && (
-            <div className="p-6 bg-rose-50 rounded-2xl border-2 border-rose-200 animate-in zoom-in-95">
-              <p className="text-rose-900 font-black text-xs uppercase tracking-widest mb-2">Form Check: Let's see the steps</p>
-              <p className="text-slate-700 text-sm italic leading-relaxed">{normalizedQuestion.solution}</p>
+          {showSolution && (
+            <div className="mt-6 p-6 bg-emerald-50 border-4 border-emerald-950 rounded-[2rem] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] space-y-4 animate-in zoom-in-95">
+              <h4 className="font-black text-emerald-950 uppercase tracking-wider text-sm">
+                Model Answer Explanation
+              </h4>
+              <p className="text-slate-700 text-base font-medium leading-relaxed">
+                {normalizedQuestion.content?.solutionSteps || normalizedQuestion.solution}
+              </p>
             </div>
           )}
         </motion.div>

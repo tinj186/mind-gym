@@ -31,6 +31,7 @@ export const UniversalQuestionSchema = z.object({
       'NUMBER_BOND',
       'SHAPE',
       'MEASUREMENT_UNIT',
+      'CLOCK_DISPLAY',
       'NONE'
     ]), // Registered native visual engines
     componentData: z.record(z.any()).nullable(),

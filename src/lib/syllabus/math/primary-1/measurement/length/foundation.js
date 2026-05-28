@@ -42,7 +42,8 @@ const units = [
         questionText: `Which object is ${isAskingLonger ? 'longer' : 'shorter'}?`,
         options: [...shuffled.map(i => i.label), ...distractors].sort(() => 0.5 - Math.random()),
         finalAnswer: targetItem.label,
-        solutionSteps: `The ${targetItem.label} is ${targetItem.length} units long. It is the ${isAskingLonger ? 'longer' : 'shorter'} object.`
+        solutionSteps: `The ${targetItem.label} is ${targetItem.length} units long. It is the ${isAskingLonger ? 'longer' : 'shorter'} object.`,
+        hint: "Look at both objects! See which one reaches further to the right."
       };
       seedInstructions = `Target objective: Identify the ${isAskingLonger ? 'LONGER' : 'SHORTER'} item. True answer: ${targetItem.label}.`;
       break;
@@ -72,7 +73,8 @@ const units = [
           "None of them"
         ],
         finalAnswer: `${correctPair[0]} and ${correctPair[1]}`,
-        solutionSteps: `Both the ${correctPair[0]} and the ${correctPair[1]} are exactly ${targetLen} units long.`
+        solutionSteps: `Both the ${correctPair[0]} and the ${correctPair[1]} are exactly ${targetLen} units long.`,
+        hint: "Try counting the blocks for each object. Do any have the same count?"
       };
       seedInstructions = `Target objective: Identify the two items of EQUAL length (${targetLen} units). True answer: "${correctPair[0]} and ${correctPair[1]}".`;
       break;
@@ -91,7 +93,8 @@ const units = [
         questionText: `Which object is exactly ${targetItem.length} ${selectedUnit.name} long?`,
         options: itemsArr.map(i => i.label),
         finalAnswer: targetItem.label,
-        solutionSteps: `Counting the ${selectedUnit.name}, the ${targetItem.label} matches exactly ${targetItem.length} units.`
+        solutionSteps: `Counting the ${selectedUnit.name}, the ${targetItem.label} matches exactly ${targetItem.length} units.`,
+        hint: `Count the ${selectedUnit.name} under each object carefully to find the match!`
       };
       seedInstructions = `Target objective: Find the item that is exactly ${targetItem.length} units long. True answer: ${targetItem.label}.`;
       break;
@@ -121,7 +124,8 @@ const units = [
         questionText: `Look at the objects. Is this statement True or False?\n\n"${statement}"`,
         options: ['True', 'False', 'They are the same length', 'Cannot tell'],
         finalAnswer: correctAnswer,
-        solutionSteps: `The ${itemA.label} is ${itemA.length} units. The ${itemB.label} is ${itemB.length} units. Therefore, the statement is ${correctAnswer}.`
+        solutionSteps: `The ${itemA.label} is ${itemA.length} units. The ${itemB.label} is ${itemB.length} units. Therefore, the statement is ${correctAnswer}.`,
+        hint: "Count the units for both objects and check if the sentence is right!"
       };
       seedInstructions = `Target objective: True/False Evaluation. The generated statement is "${statement}". The mathematically correct answer is "${correctAnswer}".`;
       break;
@@ -137,7 +141,8 @@ const units = [
         questionText: `How many ${selectedUnit.name} long is the ${selectedTarget}?`,
         options: isMCQ ? [String(lengthCount), String(lengthCount + 2), String(Math.max(1, lengthCount - 1)), String(lengthCount + 1)].sort() : null,
         finalAnswer: String(lengthCount),
-        solutionSteps: `Counting the units from start to finish, the ${selectedTarget} is ${lengthCount} ${selectedUnit.name} long.`
+        solutionSteps: `Counting the units from start to finish, the ${selectedTarget} is ${lengthCount} ${selectedUnit.name} long.`,
+        hint: `Count the ${selectedUnit.name} one by one from the start line to the end tip!`
       };
       seedInstructions = `Target objective: Count the units. True answer string: "${lengthCount}".`;
       break;
@@ -152,6 +157,8 @@ const units = [
     PEDAGOGY: Use non-standard measuring units. NO metric mentions (cm, m). Keep sentences simple for 6-year-olds.
     
     CRITICAL PROMPT SEED CONSTRAINTS:
+    - Your output JSON object MUST include the 'content.hint' parameter string. It cannot be null or empty.
+    - The 'content.solutionSteps' MUST be a text-only explanation. Do not repeat visual rendering instructions.
     - ${seedInstructions}
     - You MUST NEVER alter the 'items' lengths inside the visualEngine data.
     - Your content.finalAnswer MUST strictly match the true mathematical reality established by the seeds.

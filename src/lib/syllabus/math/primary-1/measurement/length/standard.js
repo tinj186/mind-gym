@@ -43,7 +43,8 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         questionText: "Look at the items. Which object is the shortest?",
         options: selection,
         finalAnswer: shortestItem,
-        solutionSteps: `All objects share the same left wall. Looking across at the lengths, the ${shortestItem} is only ${Math.min(...lengths)} ${selectedUnit.name} long, making it the shortest object.`
+        solutionSteps: `All objects share the same left wall. Looking across at the lengths, the ${shortestItem} is only ${Math.min(...lengths)} ${selectedUnit.name} long, making it the shortest object.`,
+        hint: "Look at where each object ends. Which one is the smallest?"
       };
       seedInstructions = `Target objective: Find the SHORTEST item. True answer text: "${shortestItem}".`;
       break;
@@ -86,7 +87,8 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         questionText: `Look at the pictures standing on the ground floor. Which one is the ${isAskingTallest ? 'tallest' : 'shortest'}?`,
         options: [...componentData.items.map(i => i.label), `Tall ${distractor.name}`].sort(() => 0.5 - Math.random()),
         finalAnswer: targetItem.label, 
-        solutionSteps: `Since they are all standing on the same ground floor level, we look at their tops. The ${targetItem.label} reaches ${targetHeight} ${selectedUnit.name} high, making it the ${isAskingTallest ? 'tallest' : 'shortest'}.`
+        solutionSteps: `Since they are all standing on the same ground floor level, we look at their tops. The ${targetItem.label} reaches ${targetHeight} ${selectedUnit.name} high, making it the ${isAskingTallest ? 'tallest' : 'shortest'}.`,
+        hint: "Look at the tops of the objects. Which one is higher or lower?"
       };
       
       seedInstructions = `Target objective: Identify the height extreme. Find the ${isAskingTallest ? 'TALLEST' : 'SHORTEST'}. True answer: "${targetItem.label}".`;
@@ -112,7 +114,8 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           `${ascendingOrder[0]} ➔ ${ascendingOrder[2]} ➔ ${ascendingOrder[1]}`
         ].sort(() => 0.5 - Math.random()),
         finalAnswer: correctSequenceStr,
-        solutionSteps: `Let's count each object's blocks: ${itemsArr.map(i => `${i.label} is ${i.length} units`).join(', ')}. Putting them in order from shortest to longest gives: ${correctSequenceStr}.`
+        solutionSteps: `Let's count each object's blocks: ${itemsArr.map(i => `${i.label} is ${i.length} units`).join(', ')}. Putting them in order from shortest to longest gives: ${correctSequenceStr}.`,
+        hint: "Count the blocks for each one first, then put them in order from smallest to biggest!"
       };
       seedInstructions = `Target objective: Sequence items from SHORTEST to LONGEST. True answer combo option string: "${correctSequenceStr}".`;
       break;
@@ -137,7 +140,8 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           `${descendingOrder[2]} ➔ ${descendingOrder[1]} ➔ ${descendingOrder[0]}`
         ].sort(() => 0.5 - Math.random()),
         finalAnswer: correctSequenceStr,
-        solutionSteps: `Counting their blocks: ${itemsArr.map(i => `${i.label} is ${i.length} units`).join(', ')}. Sorting them from longest to shortest gives: ${correctSequenceStr}.`
+        solutionSteps: `Counting their blocks: ${itemsArr.map(i => `${i.label} is ${i.length} units`).join(', ')}. Sorting them from longest to shortest gives: ${correctSequenceStr}.`,
+        hint: "Count the blocks for each one first, then put them in order from biggest to smallest!"
       };
       seedInstructions = `Target objective: Sequence items from LONGEST to SHORTEST. True answer combo option string: "${correctSequenceStr}".`;
       break;
@@ -157,7 +161,8 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         questionText: `Read carefully:\n- ${labels[0]} is longer than ${labels[1]}.\n- ${labels[1]} is longer than ${labels[2]}.\n\nWhich object is the ${askLongest ? 'longest' : 'shortest'}?`,
         options: [...labels, distractor].sort(() => 0.5 - Math.random()),
         finalAnswer: askLongest ? labels[0] : labels[2],
-        solutionSteps: `If ${labels[0]} is longer than ${labels[1]}, and ${labels[1]} is longer than ${labels[2]}, then ${labels[0]} is the biggest and ${labels[2]} is the smallest. The ${askLongest ? 'longest' : 'shortest'} is ${askLongest ? labels[0] : labels[2]}.`
+        solutionSteps: `If ${labels[0]} is longer than ${labels[1]}, and ${labels[1]} is longer than ${labels[2]}, then ${labels[0]} is the biggest and ${labels[2]} is the smallest. The ${askLongest ? 'longest' : 'shortest'} is ${askLongest ? labels[0] : labels[2]}.`,
+        hint: "Read the clues carefully! If A is longer than B, and B is longer than C, where does C fit?"
       };
       seedInstructions = `Target objective: Transitive deduction reasoning. Find the ${askLongest ? 'LONGEST (' + labels[0] + ')' : 'SHORTEST (' + labels[2] + ')'}.`;
       break;
@@ -194,8 +199,10 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           "Yes, because it is a different color." // Added distractor for 4 options
         ].sort(() => 0.5 - Math.random()), // Shuffle options
         finalAnswer: "No, because they do not start at the same baseline.",
-        solutionSteps: `To compare lengths directly, objects must start at the exact same baseline line. Since ${selection[1]} B was pushed forward by ${offsetB} ${selectedUnit.name}, a direct visual edge comparison is incorrect.`
+        solutionSteps: `To compare lengths directly, objects must start at the exact same baseline line. Since ${selection[1]} B was pushed forward by ${offsetB} ${selectedUnit.name}, a direct visual edge comparison is incorrect.`,
+        hint: "Look at the starting wall! Do both objects begin at the same spot?"
       };
+      componentData.showFullRuler = true;
       seedInstructions = `Target objective: Baseline error handling. True choice string: "No, because they do not start at the same baseline."`;
       break;
     }
@@ -231,7 +238,8 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         questionText: `Look at the ${referenceItem.label}. Which object is as long as the ${referenceItem.label}?`,
         options: Array.from(optionsSet).sort(() => 0.5 - Math.random()),
         finalAnswer: matchingTwin.label,
-        solutionSteps: `Objects that are 'as long as' each other must have the same number of units. Both the ${referenceItem.label} and the ${matchingTwin.label} are exactly ${baseLen} ${selectedUnit.name} long.`
+        solutionSteps: `Objects that are 'as long as' each other must have the same number of units. Both the ${referenceItem.label} and the ${matchingTwin.label} are exactly ${baseLen} ${selectedUnit.name} long.`,
+        hint: `Count the blocks for the ${referenceItem.label} and see which other object has the same number.`
       };
       
       seedInstructions = `Target objective: Find equal partner matching item name. True answer: "${matchingTwin.label}".`;
@@ -254,7 +262,8 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         questionText: `How many ${selectedUnit.name} longer is the ${selection[0]} than the ${selection[1]}?`,
         options: [String(diff), String(len1), String(len2), String(len1 + len2)],
         finalAnswer: String(diff),
-        solutionSteps: `The ${selection[0]} is ${len1} ${selectedUnit.name}. The ${selection[1]} is ${len2} ${selectedUnit.name}. Subtract to find the difference: ${len1} - ${len2} = ${diff} ${selectedUnit.name}.`
+        solutionSteps: `The ${selection[0]} is ${len1} ${selectedUnit.name}. The ${selection[1]} is ${len2} ${selectedUnit.name}. Subtract to find the difference: ${len1} - ${len2} = ${diff} ${selectedUnit.name}.`,
+        hint: `Count how many extra ${selectedUnit.name} the longer object has!`
       };
       seedInstructions = `Target objective: Extract spatial difference subtraction value. True answer string: "${diff}".`;
       break;
@@ -266,8 +275,8 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       const selectedItem = itemsPool[Math.floor(Math.random() * itemsPool.length)];
       
       // ✅ RANDOMIZATION LOGIC:
-      // Randomize the starting block marker (position 1 to 4)
-      const startMarker = Math.floor(Math.random() * 4) + 1;
+      // Randomize the starting block marker (position 1 to 3)
+      const startMarker = Math.floor(Math.random() * 3) + 1;
       // Randomize the actual unit length of the floating item (3 to 5 units long)
       const actualLength = Math.floor(Math.random() * 3) + 3;
       // Calculate the absolute ending marker on the ruler scale
@@ -277,10 +286,10 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         { 
           label: `Floating ${selectedItem}`, 
           length: actualLength,
-          // ✅ FIX: Map 1-based markers to 0-based grid offsets (Marker 1 = 0 offset)
-          startOffset: startMarker - 1 
+          startOffset: startMarker 
         }
-      ];
+      ],
+      componentData.showFullRuler = true;
       
       // Generate logical dynamic distractors close to the real answer string value
       const optionsSet = new Set([
@@ -295,7 +304,8 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         questionText: `Look at the ${selectedItem.toLowerCase()}. It starts at the ${startMarker} unit marker and ends at the ${endMarker} unit marker. How many units long is the ${selectedItem.toLowerCase()}?`,
         options: Array.from(optionsSet).sort(() => 0.5 - Math.random()),
         finalAnswer: String(actualLength),
-        solutionSteps: `When an object does not start at zero, calculate its true length by subtracting the starting marker position from the ending marker position: ${endMarker} - ${startMarker} = ${actualLength} ${selectedUnit.name}.`
+        solutionSteps: `When an object does not start at zero, calculate its true length by subtracting the starting marker position from the ending marker position: ${endMarker} - ${startMarker} = ${actualLength} ${selectedUnit.name}.`,
+        hint: "Count only the blocks that are actually under the object!"
       };
       seedInstructions = `Target objective: Floating offset grid arithmetic deduction. True answer string: "${actualLength}".`;
       break;
@@ -314,7 +324,8 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         questionText: "Look at the items aligned to the wall line. Which object is the longest?",
         options: selection,
         finalAnswer: longestObject,
-        solutionSteps: `All objects share the exact same starting line on the left. Looking across to the right edge, the ${longestObject} measures ${lengths[maxIdx]} blocks long, making it the longest.`
+        solutionSteps: `All objects share the exact same starting line on the left. Looking across to the right edge, the ${longestObject} measures ${lengths[maxIdx]} blocks long, making it the longest.`,
+        hint: "Look at the right side of the items. Which one reaches the furthest?"
       };
       seedInstructions = `Target objective: Identify the longest object. True answer string choice: "${longestObject}".`;
       break;
@@ -330,6 +341,8 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     PEDAGOGY: Strictly follow non-standard metrics rules. Absolutely NO centimeters (cm) or meters (m). Keep descriptions accessible for a 6-year-old child.
     
     CRITICAL PROMPT SEED CONSTRAINTS:
+    - Your output JSON object MUST include the 'content.hint' parameter string. It cannot be null or empty.
+    - The 'content.solutionSteps' MUST be a text-only explanation. Do not repeat visual rendering instructions.
     - ${seedInstructions}
     - You MUST NEVER change the names, lengths, or order arrays inside visualEngine.componentData items.
     - Your generated options elements array and finalAnswer string property must strictly match the calculation values seeded above.

@@ -6,7 +6,7 @@ import React, { lazy, Suspense } from 'react';
 export const ESSENTIAL_VISUALS = [
   "ORDINAL_LINE", "GROUPING_WORKSPACE", "NUMBER_CARDS", 
   "NUMBER_BOND", "NUMBER_PATTERN", "BASE_TEN_BLOCKS", 
-  "SINGAPORE_MONEY", "MEASUREMENT_UNIT"
+  "SINGAPORE_MONEY", "MEASUREMENT_UNIT", "CLOCK_DISPLAY"
 ];
 
 // 🚀 Lazy-loaded modules (Only downloaded by the browser if the question requires it)
@@ -21,6 +21,7 @@ const OrdinalLine = lazy(() => import('./modules/OrdinalLine'));
 const BaseTenBlocks = lazy(() => import('./modules/BaseTenBlocks'));
 const NumberBond = lazy(() => import('./modules/NumberBond'));
 const Shape = lazy(() => import('./modules/Shape'));
+const ClockDisplay = lazy(() => import('./modules/ClockDisplay'));
 
 export default function VisualRenderer({ type, ...props }) {
   if (!type || type === "NONE" || type === "") return null;
@@ -34,6 +35,7 @@ export default function VisualRenderer({ type, ...props }) {
       {(() => {
         switch (type) {
           case 'MEASUREMENT_UNIT': return <MeasurementUnit {...props} />;
+          case 'CLOCK_DISPLAY': return <ClockDisplay {...props} />;
           case 'SINGAPORE_MONEY': return <SingaporeMoney {...props} />;
           case 'COUNTING_OBJECTS': return <CountingObjects {...props} />;
           case 'NUMBER_CARDS': return <NumberCards {...props} />;
