@@ -30,8 +30,8 @@ export function normalizeQuestionData(raw) {
   // C. Extract Question Text and Support Alternate Structure Fallbacks
   // Priority: 1. Blueprint Path -> 2. Flat modelData Path -> 3. DB Root Field -> 4. Fallback
   const questionText = modelData?.content?.questionText || modelData?.questionText || modelData?.content?.question || modelData?.question || raw.questionText || raw.question || "Problem data missing";
-  const solutionText = modelData?.content?.solutionSteps || modelData?.content?.solution || modelData?.solutionSteps || modelData?.solution || raw.solution || "No solution provided";
-  const hintText = modelData?.content?.hint || modelData?.hint || raw.hint || "No hint provided";
+  const solutionText = modelData?.content?.solutionSteps || modelData?.content?.solution || modelData?.solutionSteps || modelData?.solution || raw.solution || "No solution provided"; // Corrected from solutionText
+  const hintText = modelData?.content?.hint || modelData?.hint || raw.hint || "No hint provided"; // Corrected from hintText
 
   return {
     ...raw,

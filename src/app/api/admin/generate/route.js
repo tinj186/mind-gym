@@ -262,7 +262,7 @@ export async function POST(request) {
                 },
                 question: validatedData.content.questionText,
                 solution: validatedData.content.solutionSteps,
-                hint: q.content?.hint || q.hint || q.conceptualHint || q.content?.conceptualHint || null
+                hint: validatedData.content.hint || null // Corrected to use validatedData.content.hint
               });
             } catch (zodError) {
               // Pull out AI-specific keys to prevent Prisma Unknown Argument errors
@@ -387,7 +387,7 @@ export async function POST(request) {
               },
               question: validatedData.content.questionText,
                 solution: validatedData.content.solutionSteps,
-                hint: q.content?.hint || q.hint || q.conceptualHint || q.content?.conceptualHint || null
+              hint: validatedData.content.hint || null // Corrected to use validatedData.content.hint
             });
           } catch (zodError) {
             // Pull out AI-specific keys to prevent Prisma Unknown Argument errors
@@ -480,7 +480,7 @@ export async function POST(request) {
                 },
                 question: validatedData.content.questionText,
                 solution: validatedData.content.solutionSteps,
-                hint: q.content?.hint || q.hint || q.conceptualHint || q.content?.conceptualHint || null
+                hint: validatedData.content.hint || null // Corrected to use validatedData.content.hint
               });
             } catch (zodError) {
               // Pull out AI-specific keys to prevent Prisma Unknown Argument errors

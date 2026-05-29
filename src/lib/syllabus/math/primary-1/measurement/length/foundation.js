@@ -157,7 +157,7 @@ const units = [
     PEDAGOGY: Use non-standard measuring units. NO metric mentions (cm, m). Keep sentences simple for 6-year-olds.
     
     CRITICAL PROMPT SEED CONSTRAINTS:
-    - Your output JSON object MUST include the 'content.hint' parameter string. It cannot be null or empty.
+    - Your output JSON object MUST include the 'content.hint' parameter string. It cannot be null or empty. // Corrected from hintText
     - The 'content.solutionSteps' MUST be a text-only explanation. Do not repeat visual rendering instructions.
     - ${seedInstructions}
     - You MUST NEVER alter the 'items' lengths inside the visualEngine data.

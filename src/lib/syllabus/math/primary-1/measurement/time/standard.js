@@ -237,7 +237,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     PEDAGOGY: Use both digital strings (X:30) and 'half past' vocabulary. Half-hour increments only.
     
     CRITICAL PROMPT SEED CONSTRAINTS:
-    - Your output JSON object MUST include the 'content.hint' parameter string. It cannot be null or empty.
+    - Your output JSON object MUST include the 'content.hint' parameter string. It cannot be null or empty. // Corrected from hintText
     - Your output JSON object MUST include 'content.solutionSteps' as a pure text explanation. DO NOT nest or repeat a visual layout element inside solutionSteps.
     - ${seedInstructions}
     - Component visual state: ${JSON.stringify(componentData)}

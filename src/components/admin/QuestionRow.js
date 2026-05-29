@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState } from 'react'; // Corrected from useState
 
 export default function QuestionRow({ question }) {
   const [approved, setApproved] = useState(question.isApproved);

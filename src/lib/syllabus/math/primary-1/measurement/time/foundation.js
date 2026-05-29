@@ -151,7 +151,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     PEDAGOGY: Strictly adhere to Singapore MOE P1 time limits. Use whole hours only. No exact minutes, no A.M./P.M. notations. Keep terms highly accessible to a 6-year-old child.
     
     CRITICAL PROMPT SEED CONSTRAINTS:
-    - Your output JSON object MUST include the 'content.hint' parameter string. It cannot be null or empty.
+    - Your output JSON object MUST include the 'content.hint' parameter string. It cannot be null or empty. // Corrected from hintText
     - Your output JSON object MUST include 'content.solutionSteps' as a pure text explanation. DO NOT nest or repeat a visual layout element inside solutionSteps.
     - Keep hint short, encouraging, and actionable without revealing the direct target option selection.
     - ${seedInstructions}

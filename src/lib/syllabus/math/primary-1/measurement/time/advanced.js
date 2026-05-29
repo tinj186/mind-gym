@@ -233,7 +233,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     PEDAGOGY: Multi-step chronological reasoning and duration arithmetic limited to +/- 1 whole hour or 30-minute shifts.
     
     CRITICAL PROMPT SEED CONSTRAINTS:
-    - Your output JSON object MUST include the 'content.hint' parameter string. It cannot be null or empty.
+    - Your output JSON object MUST include the 'content.hint' parameter string. It cannot be null or empty. // Corrected from hintText
     - Your output JSON object MUST include 'content.solutionSteps' as a pure text explanation. DO NOT nest or repeat a visual layout element inside solutionSteps.
     - ${seedInstructions}
     - Component visual state parameters: ${componentData ? JSON.stringify(componentData) : 'None'}

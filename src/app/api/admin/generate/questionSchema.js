@@ -32,6 +32,7 @@ export const UniversalQuestionSchema = z.object({
       'NUMBER_BOND',
       'SHAPE',
       'SHAPE_DISPLAY',
+      'PICTURE_GRAPH_DISPLAY',
       'MEASUREMENT_UNIT',
       'CLOCK_DISPLAY',
       'NONE'

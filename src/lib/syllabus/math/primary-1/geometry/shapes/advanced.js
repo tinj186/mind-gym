@@ -145,7 +145,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         x: 50,
         y: 50,
         scale: 2.5 - (i * 0.5),
-        opacity: 0.7,
+        fillOpacity: 0.7,
         zIndex: 10 + (count - i)
       }));
 
@@ -164,43 +164,32 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     case 'advanced_composite_deconstruct_inventory': {
       commonMeta.heuristic = 'Total Part Inventory';
-      const subjects = [
-        "steam train", "space rocket", "friendly robot", "sailboat on water", 
-        "tall castle", "butterfly", "racecar", "snowman", "house with a tree", 
-        "dog", "cat", "fish in a bowl", "submarine", "hot air balloon", "bulldozer"
+      const subjects = ["rocket", "robot", "truck"];
+      const sub = subjects[Math.floor(Math.random() * subjects.length)];
+      
+      // Procedural Robot/Rocket parts
+      const parts = [
+        { shapeType: "rectangle", x: 50, y: 60, scale: 1.5, color: "#3b82f6" }, // Body
+        { shapeType: "circle", x: 50, y: 30, scale: 0.8, color: "#eab308" },    // Head/Top
+        { shapeType: "triangle", x: 30, y: 70, scale: 0.6, color: "#ef4444", rotation: -45 }, // Leg/Fin
+        { shapeType: "triangle", x: 70, y: 70, scale: 0.6, color: "#ef4444", rotation: 45 }   // Leg/Fin
       ];
-      const selectedSubject = subjects[Math.floor(Math.random() * subjects.length)];
 
-      componentData = { 
-        layout: "COMPOSITE_GENERATIVE", 
-        parts: [], 
-        name: selectedSubject 
-      };
+      componentData = { layout: "COMPOSITE_GENERATIVE", parts, name: sub };
 
+      const inventory = "1 Rectangle, 1 Circle, 2 Triangles";
       promptObject.content = {
-        questionText: `Which list shows all the shapes used to build this ${selectedSubject}?`,
-        finalAnswer: "{inventory}", // AI will calculate and fill this
-        options: [], 
+        questionText: `Which list shows all the shapes used to build this ${sub}?`,
+        finalAnswer: inventory,
+        options: getShuffledOptions(inventory, [
+          "2 Rectangles, 1 Circle, 1 Triangle",
+          "1 Square, 2 Circles, 2 Triangles",
+          "1 Rectangle, 2 Circles, 1 Triangle"
+        ]),
         hint: "Break the drawing down into pieces and count how many of each shape you see.",
-        solutionSteps: `By looking closely at the ${selectedSubject}, we can see it is built from {inventory}.`
+        solutionSteps: `The ${sub} is made of 1 large blue rectangle, 1 yellow circle, and 2 red triangles.`
       };
-
-      seedInstructions = `
-        CRITICAL TASK: Build a 2D drawing of a "${selectedSubject.toUpperCase()}" built ENTIRELY out of basic shapes.
-        
-        1. Generate an array of 5 to 10 shapes inside visualEngine.componentData.parts to create the ${selectedSubject}. Every part MUST have:
-           - shapeType: "circle" | "square" | "triangle" | "rectangle"
-           - color: a vibrant, child-friendly hex code (e.g., "#ef4444", "#3b82f6", "#eab308")
-           - x: number (20 to 80) representing horizontal percentage (50 is center)
-           - y: number (20 to 80) representing vertical percentage (50 is center)
-           - scale: number (0.5 to 2.5) for size
-           - rotation: number (0 to 360) for angle
-           - opacity: 0.7
-        2. Calculate the EXACT inventory list of shapes used (e.g., "1 Rectangle, 1 Circle, 2 Triangles").
-        3. Replace "{inventory}" in the promptObject.content strings with your generated summary.
-        4. Generate the options array containing the true inventory and 3 incorrect but similar inventories.
-        5. Ensure the solutionSteps explains the breakdown clearly.
-      `;
+      seedInstructions = `Inventory breakdown of a composite generative drawing.`;
       break;
     }
 
@@ -282,7 +271,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     CRITICAL ARCHITECTURAL RUNTIME CONSTRAINTS:
     - Visual layouts MUST use componentToRender: "SHAPE_DISPLAY".
     - All 'x' and 'y' coordinates in parts must be strictly between 20 and 80.
-    - Every part in COMPOSITE_GENERATIVE must have an explicit opacity value (e.g., opacity: 0.7).
+    - Every part in COMPOSITE_GENERATIVE must have an explicit opacity value (e.g., opacity: 0.8).
     - The output JSON object MUST contain 'content.hint' with a child-friendly clue.
     - 'content.solutionSteps' must be a descriptive string explanation (no nested JSON).
     - ${seedInstructions}

@@ -8,6 +8,7 @@ export const ESSENTIAL_VISUALS = [
   "NUMBER_BOND", "NUMBER_PATTERN", "BASE_TEN_BLOCKS", 
   "SINGAPORE_MONEY", "MEASUREMENT_UNIT", "CLOCK_DISPLAY",
   "SHAPE_DISPLAY"
+  // "PICTURE_GRAPH_DISPLAY" // Not essential, lazy-loaded
 ];
 
 // 🚀 Lazy-loaded modules (Only downloaded by the browser if the question requires it)
@@ -24,6 +25,7 @@ const NumberBond = lazy(() => import('./modules/NumberBond'));
 const Shape = lazy(() => import('./modules/Shape'));
 const ClockDisplay = lazy(() => import('./modules/ClockDisplay'));
 const ShapeDisplay = lazy(() => import('./modules/ShapeDisplay'));
+const PictureGraphDisplay = lazy(() => import('./modules/PictureGraphDisplay'));
 
 export default function VisualRenderer({ type, ...props }) {
   const activeType = (
@@ -55,6 +57,7 @@ export default function VisualRenderer({ type, ...props }) {
           case 'NUMBER_BOND': return <NumberBond {...props} />;
           case 'SHAPE': return <Shape {...props} />;
           case 'SHAPE_DISPLAY': return <ShapeDisplay data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
+          case 'PICTURE_GRAPH_DISPLAY': return <PictureGraphDisplay data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
           
           default:
             return (

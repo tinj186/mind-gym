@@ -247,7 +247,7 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
 
         // Define visual categories
         const isQuestionVisual = !!visualType && visualType !== 'NONE';
-        const isSolutionVisual = isQuestionVisual && !['MEASUREMENT_UNIT', 'CLOCK_DISPLAY', 'SHAPE_DISPLAY'].includes(activeVisualType); // Use the normalized type here
+        const isSolutionVisual = isQuestionVisual && !['MEASUREMENT_UNIT', 'CLOCK_DISPLAY', 'SHAPE_DISPLAY', 'PICTURE_GRAPH_DISPLAY'].includes(activeVisualType); // Use the normalized type here
         const isBusy = processingId === q.id || processingId === 'bulk';
 
         return (

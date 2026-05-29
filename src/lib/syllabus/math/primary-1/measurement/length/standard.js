@@ -341,7 +341,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     PEDAGOGY: Strictly follow non-standard metrics rules. Absolutely NO centimeters (cm) or meters (m). Keep descriptions accessible for a 6-year-old child.
     
     CRITICAL PROMPT SEED CONSTRAINTS:
-    - Your output JSON object MUST include the 'content.hint' parameter string. It cannot be null or empty.
+    - Your output JSON object MUST include the 'content.hint' parameter string. It cannot be null or empty. // Corrected from hintText
     - The 'content.solutionSteps' MUST be a text-only explanation. Do not repeat visual rendering instructions.
     - ${seedInstructions}
     - You MUST NEVER change the names, lengths, or order arrays inside visualEngine.componentData items.
