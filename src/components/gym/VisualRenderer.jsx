@@ -6,7 +6,8 @@ import React, { lazy, Suspense } from 'react';
 export const ESSENTIAL_VISUALS = [
   "ORDINAL_LINE", "GROUPING_WORKSPACE", "NUMBER_CARDS", 
   "NUMBER_BOND", "NUMBER_PATTERN", "BASE_TEN_BLOCKS", 
-  "SINGAPORE_MONEY", "MEASUREMENT_UNIT", "CLOCK_DISPLAY"
+  "SINGAPORE_MONEY", "MEASUREMENT_UNIT", "CLOCK_DISPLAY",
+  "SHAPE_DISPLAY"
 ];
 
 // 🚀 Lazy-loaded modules (Only downloaded by the browser if the question requires it)
@@ -22,9 +23,16 @@ const BaseTenBlocks = lazy(() => import('./modules/BaseTenBlocks'));
 const NumberBond = lazy(() => import('./modules/NumberBond'));
 const Shape = lazy(() => import('./modules/Shape'));
 const ClockDisplay = lazy(() => import('./modules/ClockDisplay'));
+const ShapeDisplay = lazy(() => import('./modules/ShapeDisplay'));
 
 export default function VisualRenderer({ type, ...props }) {
-  if (!type || type === "NONE" || type === "") return null;
+  const activeType = (
+    type || 
+    props.visualEngine?.componentToRender || 
+    props.data?.type || 
+    "").toString().toUpperCase().trim().replace(/[\s-]/g, '_');
+
+  if (!activeType || activeType === "NONE" || activeType === "") return null;
 
   return (
     <Suspense fallback={
@@ -33,7 +41,7 @@ export default function VisualRenderer({ type, ...props }) {
       </div>
     }>
       {(() => {
-        switch (type) {
+        switch (activeType) {
           case 'MEASUREMENT_UNIT': return <MeasurementUnit {...props} />;
           case 'CLOCK_DISPLAY': return <ClockDisplay {...props} />;
           case 'SINGAPORE_MONEY': return <SingaporeMoney {...props} />;
@@ -46,6 +54,7 @@ export default function VisualRenderer({ type, ...props }) {
           case 'BASE_TEN_BLOCKS': return <BaseTenBlocks {...props} />;
           case 'NUMBER_BOND': return <NumberBond {...props} />;
           case 'SHAPE': return <Shape {...props} />;
+          case 'SHAPE_DISPLAY': return <ShapeDisplay data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
           
           default:
             return (

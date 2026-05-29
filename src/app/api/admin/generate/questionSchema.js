@@ -15,6 +15,7 @@ export const UniversalQuestionSchema = z.object({
     options: z.array(z.string()).nullable().optional(),
     finalAnswer: z.string(),
     solutionSteps: z.string(),
+    hint: z.string().optional(),
   }),
 
   // 3. VISUAL ENGINE: The Polymorphic Payload
@@ -30,6 +31,7 @@ export const UniversalQuestionSchema = z.object({
       'BASE_TEN_BLOCKS',
       'NUMBER_BOND',
       'SHAPE',
+      'SHAPE_DISPLAY',
       'MEASUREMENT_UNIT',
       'CLOCK_DISPLAY',
       'NONE'

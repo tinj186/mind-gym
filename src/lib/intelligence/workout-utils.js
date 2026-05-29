@@ -24,7 +24,7 @@ export function normalizeQuestionData(raw) {
                       { componentToRender: "NONE" };
 
   if (visualEngine.componentToRender) {
-    visualEngine.componentToRender = visualEngine.componentToRender.toUpperCase().replace(/\s/g, '_');
+    visualEngine.componentToRender = visualEngine.componentToRender.trim().toUpperCase().replace(/\s/g, '_');
   }
 
   // C. Extract Question Text and Support Alternate Structure Fallbacks

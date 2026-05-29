@@ -242,11 +242,12 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
         // Normalize question data once to get consistent visualEngine and modelData
         const normalizedQuestion = normalizeQuestionData(q);
         const visualProps = deriveVisualProps(normalizedQuestion);
-        const visualType = normalizedQuestion.visualEngine?.componentToRender;
+        const visualType = normalizedQuestion.visualEngine?.componentToRender; // Raw type from normalized question
+        const activeVisualType = (visualType || "").toString().toUpperCase().trim().replace(/[\s-]/g, '_'); // Normalized for consistent checking
 
         // Define visual categories
         const isQuestionVisual = !!visualType && visualType !== 'NONE';
-        const isSolutionVisual = isQuestionVisual && !['MEASUREMENT_UNIT', 'CLOCK_DISPLAY'].includes(visualType);
+        const isSolutionVisual = isQuestionVisual && !['MEASUREMENT_UNIT', 'CLOCK_DISPLAY', 'SHAPE_DISPLAY'].includes(activeVisualType); // Use the normalized type here
         const isBusy = processingId === q.id || processingId === 'bulk';
 
         return (
