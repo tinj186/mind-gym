@@ -47,10 +47,16 @@ export const pictureGraphsBlueprint = {
     standard_equal_value_groups: "Identifying which two categories share an identical, equal quantity of item tokens.",
     standard_add_item_prediction: "Predicting a category's new total value after an incremental data point item is introduced into the graph dataset.",
 
-//   advanced_multi_step_problem: "Solving multi-step problems involving picture graph data.",
-//    advanced_predict_next_category: "Predicting the next category based on a pattern in a picture graph.",
+   advanced_multi_step_problem: "Solving multi-step problems involving picture graph data.",
+    advanced_predict_next_category: "Predicting the next category based on a pattern in a picture graph.",
     advanced_create_graph_from_data: "Choosing the correct picture graph representation for given data.",
-    advanced_missing_data_point: "Finding a missing data point in a picture graph given the total."
+    advanced_missing_data_point: "Finding a missing data point in a picture graph given the total.",
+    advanced_clue_deduction_riddle: "Deducing categories and counts from intersecting logical text riddles using 1-to-1 graph constraints.",
+    advanced_total_graph_redistribution: "Calculating item transfers needed between rows to make data sets completely equal.",
+    advanced_comparative_sum_groups: "Evaluating multi-step additive relationships comparing combinations of multiple visual categories.",
+    advanced_data_entry_mistake: "Spotting a structural counting error by checking a visual chart row against a short story text descriptor.",
+    advanced_backwards_tracking_total: "Calculating a hidden row value by subtracting all known visible item points from an explicit total.",
+    advanced_hypothetical_sharing: "Tracking secondary graph values after items are removed or given away through an active scenario.",
   }
 };
 
