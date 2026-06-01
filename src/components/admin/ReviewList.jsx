@@ -84,13 +84,23 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
     
     setProcessingId('bulk');
     try {
-      await Promise.all(ids.map(id => 
+      const responses = await Promise.all(ids.map(id => 
         fetch(`/api/admin/questions/${id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ isApproved: true }),
-        })
+        }).then(async r => ({
+          ok: r.ok,
+          data: !r.ok ? await r.json().catch(() => ({})) : null
+        }))
       ));
+
+      const failed = responses.filter(r => !r.ok);
+      if (failed.length > 0) {
+        const message = failed[0].data?.error || "Some questions could not be approved.";
+        alert(`⚠️ Notice: ${failed.length} approval(s) failed. ${message}`);
+      }
+
       mutate(); // Revalidate SWR cache immediately
       router.refresh();
     } catch (err) {
@@ -106,9 +116,19 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
     
     setProcessingId('bulk');
     try {
-      await Promise.all(ids.map(id => 
-        fetch(`/api/admin/questions/${id}`, { method: 'DELETE' })
+      const responses = await Promise.all(ids.map(id => 
+        fetch(`/api/admin/questions/${id}`, { method: 'DELETE' }).then(async r => ({
+          ok: r.ok,
+          data: !r.ok ? await r.json().catch(() => ({})) : null
+        }))
       ));
+
+      const failed = responses.filter(r => !r.ok);
+      if (failed.length > 0) {
+        const message = failed[0].data?.error || "Some questions are locked and could not be deleted.";
+        alert(`⚠️ Notice: ${failed.length} deletion(s) failed. ${message}`);
+      }
+
       mutate(); // Revalidate SWR cache immediately
       router.refresh();
     } catch (err) {
@@ -129,6 +149,9 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
       if (res.ok) {
         mutate(); // Revalidate SWR cache immediately
         router.refresh();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(`⚠️ Cannot approve: ${data.error || "A server error occurred."}`);
       }
     } catch (err) {
       alert("Failed to approve question.");
@@ -145,6 +168,9 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
       if (res.ok) {
         mutate(); // Revalidate SWR cache immediately
         router.refresh();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(`⚠️ Cannot delete: ${data.error || "Question is locked or a server error occurred."}`);
       }
     } catch (err) {
       alert("Failed to delete question.");
@@ -174,7 +200,11 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
         }),
       });
       // Delete the current "bad" generation after triggering new one
-      await fetch(`/api/admin/questions/${q.id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/admin/questions/${q.id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        console.warn("Could not delete legacy question during regeneration:", data.error);
+      }
       mutate(); // Revalidate SWR cache immediately
       router.refresh();
       alert("Regeneration triggered. New question will appear in inventory shortly.");
@@ -243,11 +273,9 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
         const normalizedQuestion = normalizeQuestionData(q);
         const visualProps = deriveVisualProps(normalizedQuestion);
         const visualType = normalizedQuestion.visualEngine?.componentToRender; // Raw type from normalized question
-        const activeVisualType = (visualType || "").toString().toUpperCase().trim().replace(/[\s-]/g, '_'); // Normalized for consistent checking
 
         // Define visual categories
         const isQuestionVisual = !!visualType && visualType !== 'NONE';
-        const isSolutionVisual = isQuestionVisual && !['MEASUREMENT_UNIT', 'CLOCK_DISPLAY', 'SHAPE_DISPLAY', 'PICTURE_GRAPH_DISPLAY'].includes(activeVisualType); // Use the normalized type here
         const isBusy = processingId === q.id || processingId === 'bulk';
 
         return (
@@ -297,8 +325,8 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
                 {/* Metadata Grid (The redesigned section) */}
                 {normalizedQuestion.modelData && (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4 border-t border-slate-50">
-                    {/* Filter out complex visual arrays from the metadata grid to prevent "clutter dumping". Case-insensitive check. */}
-                    {Object.entries(normalizedQuestion.modelData).filter(([k]) => !['type', 'items', 'groups', 'visualitems', 'hidevisual'].includes(k.toLowerCase())).map(([key, val]) => (
+                    {/* Filter out legacy visual keys and internal flags from the metadata grid */}
+                    {Object.entries(normalizedQuestion.modelData).filter(([k]) => !['type', 'items', 'groups', 'visualitems', 'hidevisual', 'modelvisualizer', 'modeldrawing'].includes(k.toLowerCase())).map(([key, val]) => (
                       <div key={key} className="p-3 bg-slate-50/50 rounded-xl border border-slate-100">
                         <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">
                           {MAP_KEY(key)}
@@ -346,19 +374,6 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-slate-50">
               <div className="space-y-2">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Model Solution</span>
-                  {/* Solution-level Visuals (Abstract Bar Models) */}
-                  {isSolutionVisual && (
-                    <VisualRenderer
-                      type={normalizedQuestion.visualEngine?.componentToRender} // Assuming solution visuals also use the same visual engine data
-                      data={normalizedQuestion.visualEngine?.componentData}
-                      attempts={0}
-                      setIsToolOpen={() => {}}
-                      questionId={normalizedQuestion.id}
-                      difficulty={normalizedQuestion.difficulty}
-                      topic={normalizedQuestion.topic}
-                      hideCardStyles={true}
-                    />
-                  )}
                 <p className="text-sm text-slate-600 leading-relaxed italic whitespace-pre-line">{q.solution}</p>
                 
                 {/* NEW: Render the Pedagogical Hint if it exists */}

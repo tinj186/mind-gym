@@ -16,7 +16,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
   const [showBarModel, setShowBarModel] = useState(false);
-  const [isToolOpen, setIsToolOpen] = useState(false); // Corrected from isToolOpen
+  const [isToolOpen, setIsToolOpen] = useState(false);
   const [hasAutoOpened, setHasAutoOpened] = useState(false);
   const [feedback, setFeedback] = useState(null); // 'correct' | 'wrong'
   const [isPending, startTransition] = useTransition();
@@ -34,27 +34,31 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
     deriveVisualProps(normalizedQuestion), 
   [normalizedQuestion]);
 
-  const activeHint = useMemo(() => {
-    return normalizedQuestion?.hint || "Look at the question carefully!";
-  }, [normalizedQuestion]);
-
-  // Content Guard: Determine if the visual actually has data to show
+  // 🛡️ Universal Content Guard: Validates based on the presence of DATA, not component names.
   const hasVisualContent = useMemo(() => {
     if (!currentVisual || currentVisual === "NONE") return false;
 
-    const data = normalizedQuestion?.visualEngine?.componentData || {};
+    // 1. MODERN VISUALS (Picture Graphs, Ordinal Lines, etc.)
+    const componentData = normalizedQuestion?.visualEngine?.componentData;
+    if (componentData && Object.keys(componentData).length > 0) return true;
 
-    // Specialized Guards for complex components
-    if (currentVisual === "ORDINAL_LINE") {
-      const hasPosition = data.position !== undefined && data.position !== null && !isNaN(Number(data.position));
-      return visualProps.totalItems > 0 && hasPosition;
-    }
-    
-    if (["NUMBER_BOND", "SHAPE", "CLOCK_DISPLAY"].includes(currentVisual)) return true; 
-    return (visualProps.totalItems > 0); // Ordinal Lines, Counting, etc. must have a count > 0
-  }, [currentVisual, visualProps.totalItems]);
+    // 2. STATIC VISUALS (Clocks, Shapes, Number Bonds)
+    const modelData = normalizedQuestion?.modelData;
+    if (modelData && Object.keys(modelData).length > 0) return true;
 
-  const isEssential = ESSENTIAL_VISUALS.includes(currentVisual) && hasVisualContent;
+    // 3. LEGACY VISUALS (Counting Objects)
+    if (visualProps && visualProps.totalItems > 0) return true;
+
+    // If no data payloads exist, the AI hallucinated an empty visual.
+    return false; 
+  }, [currentVisual, visualProps, normalizedQuestion]);
+
+  // 🛡️ Universal Essential Guard: Data-driven display timing.
+  // Assumes visuals are essential parts of the question unless the database explicitly flags them as a scaffold/hint.
+  const isEssential = (
+    normalizedQuestion?.visualEngine?.isEssential !== false &&
+    normalizedQuestion?.metadata?.isScaffold !== true
+  ) && hasVisualContent;
 
   // Injecting Console Debugger
   useEffect(() => {
@@ -295,7 +299,6 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
                 difficulty={normalizedQuestion.difficulty}
                 topic={normalizedQuestion.topic}
                 attempts={attempts}
-                hideCardStyles={true}
               />
             </div>
           )}
@@ -339,19 +342,15 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
           )}
 
           {showHint && (
-            <div className="p-4 bg-amber-50 border-2 border-amber-400 rounded-2xl text-amber-900 text-sm font-medium animate-in fade-in slide-in-from-bottom-4">
-              💡 {activeHint}
+            <div className="p-6 bg-amber-50 rounded-2xl border-2 border-amber-200 animate-in fade-in slide-in-from-bottom-4">
+              <p className="text-amber-900 font-bold text-sm">💡 HINT: {normalizedQuestion.hint || "Try counting carefully!"}</p>
             </div>
           )}
 
-          {showSolution && (
-            <div className="mt-6 p-6 bg-emerald-50 border-4 border-emerald-950 rounded-[2rem] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] space-y-4 animate-in zoom-in-95">
-              <h4 className="font-black text-emerald-950 uppercase tracking-wider text-sm">
-                Model Answer Explanation
-              </h4>
-              <p className="text-slate-700 text-base font-medium leading-relaxed">
-                {normalizedQuestion.content?.solutionSteps || normalizedQuestion.solution}
-              </p>
+          {feedback === 'solution_revealed' && (
+            <div className="p-6 bg-rose-50 rounded-2xl border-2 border-rose-200 animate-in zoom-in-95">
+              <p className="text-rose-900 font-black text-xs uppercase tracking-widest mb-2">Form Check: Let's see the steps</p>
+              <p className="text-slate-700 text-sm italic leading-relaxed">{normalizedQuestion.solution}</p>
             </div>
           )}
         </motion.div>

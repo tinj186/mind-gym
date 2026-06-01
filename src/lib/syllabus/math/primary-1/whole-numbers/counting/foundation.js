@@ -32,6 +32,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         "content": {
           "questionText": ${JSON.stringify(getQText('[Insert full localized Singaporean word problem here]', `Count the ${selectedContextItem}s. Write the total amount ${askForWord ? 'in words' : 'in numerals'}.`))},
           "options": ${isMCQ ? JSON.stringify(formattedOptions) : 'null'},
+          "hint": "[Insert conceptual hint here]",
           "finalAnswer": "${expectedAnswer}",
           "solutionSteps": ${JSON.stringify(`There are ${tens} groups of ten (${tens * 10}) and ${ones} ones. Total is ${total}.`)}
         },
@@ -71,6 +72,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         "content": {
           "questionText": ${JSON.stringify(getQText('Look at the numbers: ' + sequence.join(", ") + '. What number comes next?', sequence.slice(0, 3).join(", ") + ", ?"))},
           "options": ${isMCQ ? JSON.stringify([parseInt(answer) - 2, parseInt(answer) - 1, parseInt(answer), parseInt(answer) + 1].map(String)) : 'null'},
+          "hint": "[Insert conceptual hint here]",
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(`The numbers are counting ${isForward ? 'on' : 'back'} by 1. After ${sequence[2]}, the next number is ${answer}.`)}
         },
@@ -84,6 +86,112 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
       }`,
       metadata: { difficulty, steps: 1, logic: "simple_sequence", hideVisual: false }
+    };
+  }
+
+  // 3. Number Words (Numeral <-> Word)
+  if (activeVariant === 'foundation_number_words') {
+    const number = Math.floor(Math.random() * 20) + 1;
+    const numberWords = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty"];
+    const chosenWord = numberWords[number];
+    
+    // Alternates between numeral-to-word and word-to-numeral
+    const isToWord = Math.random() > 0.5;
+    const questionPrompt = isToWord 
+      ? `Write the number ${number} in words.` 
+      : `Write the number word "${chosenWord}" as a numeral.`;
+    const finalAnswer = isToWord ? chosenWord : String(number);
+
+    return {
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a foundation_number_words question.
+        MATH CONSTRAINTS:
+        - Target Number: ${number}
+        - Target Word: "${chosenWord}"
+        - Expected Final Answer Format: "${finalAnswer}"
+        
+        OUTPUT FORMAT (Return ONLY valid JSON matching this schema):
+        {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": ${JSON.stringify(getQText(questionPrompt, isToWord ? `${number} = ? (words)` : `"${chosenWord}" = ? (numeral)`))},
+            "hint": ${JSON.stringify(getQText(isToWord ? "Spell out the number carefully." : "Write down the digits for this number word.", "Check the spelling or digits."))},
+            "options": null,
+            "finalAnswer": "${finalAnswer}",
+            "solutionSteps": ${JSON.stringify(getQText(isToWord ? `The number ${number} is written as "${chosenWord}".` : `The number word "${chosenWord}" is written as the numeral ${number}.`, "Match complete."))}
+          },
+          "visualEngine": { "componentToRender": "NONE", "componentData": {} },
+          "inputRequirement": { "inputType": "STANDARD_TEXT" }
+        }`,
+      metadata: { difficulty, steps: 1, logic: "number_words", hideVisual: true }
+    };
+  }
+
+  // 4. One More or One Less
+  if (activeVariant === 'foundation_one_more_less') {
+    const baseNumber = Math.floor(Math.random() * 18) + 2; // Range 2 to 19
+    const isMore = Math.random() > 0.5;
+    const answer = isMore ? baseNumber + 1 : baseNumber - 1;
+    const dynamicOperator = isMore ? "1 more than" : "1 less than";
+
+    return {
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a foundation_one_more_less question.
+        MATH CONSTRAINTS:
+        - Base Number: ${baseNumber}
+        - Operation: ${dynamicOperator}
+        - Final Answer MUST be: "${answer}"
+        
+        OUTPUT FORMAT (Return ONLY valid JSON matching this schema):
+        {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": ${JSON.stringify(getQText(`What is ${dynamicOperator} ${baseNumber}?`, `${dynamicOperator} ${baseNumber} = ?`))},
+            "hint": ${JSON.stringify(getQText(isMore ? "Count forward by 1 step." : "Count backward by 1 step.", "Count 1 step."))},
+            "options": null,
+            "finalAnswer": "${answer}",
+            "solutionSteps": ${JSON.stringify(getQText(`Counting ${isMore ? 'forward' : 'backward'} 1 step from ${baseNumber} gives us ${answer}.`, `Result = ${answer}`))}
+          },
+          "visualEngine": { "componentToRender": "NONE", "componentData": {} },
+          "inputRequirement": { "inputType": "STANDARD_TEXT" }
+        }`,
+      metadata: { difficulty, steps: 1, logic: "one_more_less", hideVisual: true }
+    };
+  }
+
+  // 5. Order and Compare (Greatest/Smallest)
+  if (activeVariant === 'foundation_order_compare') {
+    // Generates 3 unique numbers within 20
+    const nums = [];
+    while(nums.length < 3) {
+      const n = Math.floor(Math.random() * 20) + 1;
+      if(!nums.includes(n)) nums.push(n);
+    }
+    
+    const isGreatest = Math.random() > 0.5;
+    const sorted = [...nums].sort((a, b) => a - b);
+    const answer = isGreatest ? sorted[2] : sorted[0];
+    const targetLabel = isGreatest ? "greatest" : "smallest";
+
+    return {
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a foundation_order_compare question.
+        MATH CONSTRAINTS:
+        - Numbers given: ${nums.join(', ')}
+        - Find the: ${targetLabel} number
+        - Final Answer MUST be: "${answer}"
+        
+        OUTPUT FORMAT (Return ONLY valid JSON matching this schema):
+        {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": ${JSON.stringify(getQText(`Look at these numbers: ${nums.join(', ')}. Which number is the ${targetLabel}?`, `Find ${targetLabel}: ${nums.join(', ')}`))},
+            "hint": ${JSON.stringify(getQText(`Compare the value of the numbers. Which one is the ${isGreatest ? 'biggest' : 'least'}?`, "Compare the numbers."))},
+            "options": null,
+            "finalAnswer": "${answer}",
+            "solutionSteps": ${JSON.stringify(getQText(`Comparing ${nums.join(', ')}, the ${targetLabel} number is ${answer}.`, `${targetLabel} = ${answer}`))}
+          },
+          "visualEngine": { "componentToRender": "NONE", "componentData": {} },
+          "inputRequirement": { "inputType": "STANDARD_TEXT" }
+        }`,
+      metadata: { difficulty, steps: 1, logic: "order_compare", hideVisual: true }
     };
   }
 

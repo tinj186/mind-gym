@@ -13,7 +13,7 @@ export const ordinalsBlueprint = {
   id: 'p1-ordinals',
   title: 'Ordinal Numbers',
   strand: 'Number and Algebra',
-  visualType: 'ORDINAL_LINE',
+  visualType: 'DYNAMIC',
 
   // 1. OVERARCHING CONDITIONS (Logical Constraints)
   difficultyLevels: {
@@ -62,13 +62,13 @@ export const ordinalsBlueprint = {
     standard_find_total: "Calculating the total items based on an item's position from the front and back.",
     standard_swap_positions: "State change: identifying a position after two items swap places.",
 
-    advanced_container: "Targeted container addition (e.g., apples in bags).",
-    advanced_comparison: "Mental comparison between two positions (no visual).",
-    advanced_bidirectional_total: "Finding total items when given an item's position from both the left and the right.",
-    advanced_multiple_leaves: "State change: Finding a new position after multiple people ahead leave the queue.",
-    advanced_shift_position: "State change: Finding a new position after moving a specific number of places forward.",
-    advanced_gap_calculation: "Logic puzzle: Calculating how many items are between two given ordinal positions.",
-    advanced_overtake_race: "Dynamic scenario: Finding a new position after overtaking runners in a race.",
+//    advanced_container: "Targeted container addition (e.g., apples in bags).",
+//    advanced_comparison: "Mental comparison between two positions (no visual).",
+//    advanced_bidirectional_total: "Finding total items when given an item's position from both the left and the right.",
+//    advanced_multiple_leaves: "State change: Finding a new position after multiple people ahead leave the queue.",
+//    advanced_shift_position: "State change: Finding a new position after moving a specific number of places forward.",
+//    advanced_gap_calculation: "Logic puzzle: Calculating how many items are between two given ordinal positions.",
+//    advanced_overtake_race: "Dynamic scenario: Finding a new position after overtaking runners in a race.",
     advanced_ordinal_clues: "Logic puzzle: Deducing a position from a chain of 'just behind' or 'just ahead' clues.",
     advanced_net_queue_change: "Complex state change: People join AND leave the front of the queue.",
     advanced_relative_target: "Finding how many positions an item needs to move up to reach a target ordinal position."
@@ -77,24 +77,35 @@ export const ordinalsBlueprint = {
   // 3. GENERATION ENGINE
   generate: (difficulty = 'foundation', variant = 'foundation_direct', type = 'MCQ') => {
     
+    // --- 🛡️ SELF-HEALING PARAMETER POSITION ADAPTER ---
     const safeType = String(type).toLowerCase();
     const isShort = safeType.includes('short');
     const isStructure = safeType.includes('structure') || safeType.includes('structured');
     const isMCQ = safeType.includes('mcq');
 
-    let activeVariant = variant;
-    
-    if (!ordinalsBlueprint.variants[variant]) {
-      const validVariants = Object.keys(ordinalsBlueprint.variants).filter(k => k.startsWith(difficulty));
-      
-      activeVariant = validVariants.length > 0 
-        ? validVariants[Math.floor(Math.random() * validVariants.length)] 
-        : 'foundation_direct';
+    let finalDifficulty = difficulty;
+    let finalVariant = variant;
+
+    // Auto-detect and swap if variant string was passed into the first parameter position
+    if (typeof difficulty === 'string' && difficulty.includes('_')) {
+      finalVariant = difficulty;
+      finalDifficulty = variant || 'standard';
     }
 
-    const config = ordinalsBlueprint.difficultyLevels[difficulty] || ordinalsBlueprint.difficultyLevels.foundation;
+    let activeVariant = finalVariant;
+    if (!ordinalsBlueprint.variants[finalVariant]) {
+      const validVariants = Object.keys(ordinalsBlueprint.variants).filter(k => k.startsWith(finalDifficulty));
+      if (validVariants.length > 0) {
+        activeVariant = validVariants[Math.floor(Math.random() * validVariants.length)];
+      } else {
+        activeVariant = 'foundation_direct'; 
+      }
+    }
+    // --------------------------------------------------
+
+    const config = ordinalsBlueprint.difficultyLevels[finalDifficulty] || ordinalsBlueprint.difficultyLevels.foundation;
     const zodType = isMCQ ? 'MCQ' : isShort ? 'SHORT_QUESTION' : 'STRUCTURED';
-    const zodDiff = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+    const zodDiff = finalDifficulty.charAt(0).toUpperCase() + finalDifficulty.slice(1);
     const level = 'Primary 1';
     const topic = 'Whole Numbers';
 
@@ -106,9 +117,13 @@ export const ordinalsBlueprint = {
     const hintProtocol = `\nCRITICAL HINT PROTOCOL: You MUST provide a conceptual "hint" field in your JSON.
     Focus on counting from the correct direction (left or right) without giving the answer.`;
 
+    const visualProtocol = activeVariant === 'advanced_container'
+      ? `\nSTRICT VISUAL PROTOCOL: This variant REQUIRES a visual. You MUST provide the "visualEngine" block with "componentToRender": "ORDINAL_LINE".`
+      : '';
+
     let formatInstructions = isMCQ 
-      ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}` 
-      : `Format as Short Answer. The "options" field in your JSON should be null.${hintProtocol}`;
+      ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}${visualProtocol}` 
+      : `Format as Short Answer. The "options" field in your JSON should be null.${hintProtocol}${visualProtocol}`;
 
     if (activeVariant.startsWith('foundation_')) {
       return foundationLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
@@ -122,6 +137,6 @@ export const ordinalsBlueprint = {
       return advancedLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
     }
 
-    throw new Error(`Variant '${variant}' not valid.`);
+    throw new Error(`Variant '${finalVariant}' not valid.`);
   }
 };

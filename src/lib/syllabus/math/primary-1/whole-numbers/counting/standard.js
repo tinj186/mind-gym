@@ -1,6 +1,6 @@
 import { numberToWords } from '@/lib/utils/math-helpers';
 
-export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon) {
+export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText) {
   // ==========================================
   // STANDARD LEVEL
   // ==========================================
@@ -16,12 +16,13 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           "content": {
             "questionText": ${JSON.stringify(getQText('[Insert full localized Singaporean word problem here]', 'Count on ' + countOnAmount + ' from ' + startNum + '.'))},
             "options": ${isMCQ ? JSON.stringify([answer - 2, answer - 1, answer, answer + 1].map(String)) : 'null'},
+            "hint": "[Insert conceptual hint here]",
             "finalAnswer": "${answer}",
             "solutionSteps": ${JSON.stringify(`Count on ${countOnAmount} from ${startNum}: ${startNum + 1}, ${startNum + 2}... The answer is ${answer}.`)}
           },
           "visualEngine": {
             "componentToRender": "NONE",
-            "componentData": null
+            "componentData": {}
           },
           "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
@@ -45,12 +46,13 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           "content": {
             "questionText": ${JSON.stringify(getQText('How many ' + targetWord + ' are in the number ' + total + '?', total + ': ' + targetWord + ' = ?'))},
             "options": ${isMCQ ? JSON.stringify([tens, ones, total - 10, total].map(String)) : 'null'},
+            "hint": "[Insert conceptual hint here]",
             "finalAnswer": "${answer}",
             "solutionSteps": ${JSON.stringify(`In the number ${total}, the first digit represents the tens and the second represents the ones. There are ${answer} ${targetWord}.`)}
           },
           "visualEngine": {
             "componentToRender": "NONE",
-            "componentData": null
+            "componentData": {}
           },
           "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
@@ -69,10 +71,11 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           "content": {
             "questionText": ${JSON.stringify(getQText('Count back ' + countBackAmount + ' steps from ' + startNum + '. What number do you get?', 'Count back ' + countBackAmount + ' from ' + startNum + '.'))},
             "options": ${isMCQ ? JSON.stringify([answer - 2, answer - 1, answer, answer + 1].map(String)) : 'null'},
+            "hint": "[Insert conceptual hint here]",
             "finalAnswer": "${answer}",
             "solutionSteps": ${JSON.stringify(`Counting back from ${startNum}: ${startNum - 1}, ${startNum - 2}... you get ${answer}.`)}
           },
-          "visualEngine": { "componentToRender": "NONE", "componentData": null },
+          "visualEngine": { "componentToRender": "NONE", "componentData": {} },
           "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
       metadata: { difficulty, steps: 2, logic: "counting_back", hideVisual: true }
@@ -90,10 +93,11 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           "content": {
             "questionText": ${JSON.stringify(getQText('What is ' + amount + ' more than ' + startNum + '?', startNum + ' + ' + amount + ' = ?'))},
             "options": ${isMCQ ? JSON.stringify([parseInt(answer) - 2, parseInt(answer) - 1, parseInt(answer), parseInt(answer) + 1].map(String)) : 'null'},
+            "hint": "[Insert conceptual hint here]",
             "finalAnswer": "${answer}",
             "solutionSteps": ${JSON.stringify(`${startNum} + ${amount} = ${answer}.`)}
           },
-          "visualEngine": { "componentToRender": "NONE", "componentData": null },
+          "visualEngine": { "componentToRender": "NONE", "componentData": {} },
           "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
       metadata: { difficulty, steps: 1, logic: "more_than", hideVisual: true }
@@ -111,10 +115,11 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           "content": {
             "questionText": ${JSON.stringify(getQText('What is ' + amount + ' less than ' + startNum + '?', startNum + ' - ' + amount + ' = ?'))},
             "options": ${isMCQ ? JSON.stringify([parseInt(answer) - 1, parseInt(answer) + 1, parseInt(answer) + 2, parseInt(answer)].map(String)) : 'null'},
+            "hint": "[Insert conceptual hint here]",
             "finalAnswer": "${answer}",
             "solutionSteps": ${JSON.stringify(`${startNum} - ${amount} = ${answer}.`)}
           },
-          "visualEngine": { "componentToRender": "NONE", "componentData": null },
+          "visualEngine": { "componentToRender": "NONE", "componentData": {} },
           "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
       metadata: { difficulty, steps: 1, logic: "less_than", hideVisual: true }
@@ -132,10 +137,11 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           "content": {
             "questionText": ${JSON.stringify(getQText(tens + ' tens and ' + ones + ' ones make what number?', tens + ' tens ' + ones + ' ones = ?'))},
             "options": ${isMCQ ? JSON.stringify([(ones * 10) + tens, tens + ones, answer, answer + 10].map(String)) : 'null'},
+            "hint": "[Insert conceptual hint here]",
             "finalAnswer": "${answer}",
             "solutionSteps": ${JSON.stringify(`${tens} tens is ${tens * 10}. ${tens * 10} + ${ones} = ${answer}.`)}
           },
-          "visualEngine": { "componentToRender": "NONE", "componentData": null },
+          "visualEngine": { "componentToRender": "NONE", "componentData": {} },
           "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
       metadata: { difficulty, steps: 1, logic: "compose_base_10", hideVisual: true }
@@ -154,10 +160,11 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           "content": {
             "questionText": ${JSON.stringify(getQText(total + ' = ___ tens and ' + ones + ' ones. What is the missing number?', total + ' = ? tens + ' + ones + ' ones'))},
             "options": ${isMCQ ? JSON.stringify([ones, tens, tens * 10, total].map(String)) : 'null'},
+            "hint": "[Insert conceptual hint here]",
             "finalAnswer": "${answer}",
             "solutionSteps": ${JSON.stringify(`The number ${total} has ${tens} tens.`)}
           },
-          "visualEngine": { "componentToRender": "NONE", "componentData": null },
+          "visualEngine": { "componentToRender": "NONE", "componentData": {} },
           "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
       metadata: { difficulty, steps: 1, logic: "decompose_tens", hideVisual: true }
@@ -176,10 +183,11 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           "content": {
             "questionText": ${JSON.stringify(getQText(total + ' = ' + tens + ' tens and ___ ones. What is the missing number?', total + ' = ' + tens + ' tens + ? ones'))},
             "options": ${isMCQ ? JSON.stringify([ones, tens, tens * 10, total].map(String)) : 'null'},
+            "hint": "[Insert conceptual hint here]",
             "finalAnswer": "${answer}",
             "solutionSteps": ${JSON.stringify(`The number ${total} has ${ones} ones.`)}
           },
-          "visualEngine": { "componentToRender": "NONE", "componentData": null },
+          "visualEngine": { "componentToRender": "NONE", "componentData": {} },
           "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
       metadata: { difficulty, steps: 1, logic: "decompose_ones", hideVisual: true }
@@ -198,10 +206,11 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           "content": {
             "questionText": ${JSON.stringify(getQText("Write the number '" + word + "' in numerals.", word + ' = ?'))},
             "options": ${isMCQ ? JSON.stringify([total - 10, reversedTotal, total, total + 1].map(String)) : 'null'},
+            "hint": "[Insert conceptual hint here]",
             "finalAnswer": "${answer}",
             "solutionSteps": ${JSON.stringify(`The word '${word}' is written as ${answer}.`)}
           },
-          "visualEngine": { "componentToRender": "NONE", "componentData": null },
+          "visualEngine": { "componentToRender": "NONE", "componentData": {} },
           "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
       metadata: { difficulty, steps: 1, logic: "word_to_numeral", hideVisual: true }
@@ -219,10 +228,11 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           "content": {
             "questionText": ${JSON.stringify(getQText('How do you write ' + total + ' in words?', total + ' = ? (words)'))},
             "options": ${isMCQ ? JSON.stringify([numberToWords(total - 10), numberToWords(reversedTotal), answer, numberToWords(total + 1)]) : 'null'},
+            "hint": "[Insert conceptual hint here]",
             "finalAnswer": "${answer}",
             "solutionSteps": ${JSON.stringify(`${total} is written as ${answer}.`)}
           },
-          "visualEngine": { "componentToRender": "NONE", "componentData": null },
+          "visualEngine": { "componentToRender": "NONE", "componentData": {} },
           "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
       metadata: { difficulty, steps: 1, logic: "numeral_to_word", hideVisual: true }

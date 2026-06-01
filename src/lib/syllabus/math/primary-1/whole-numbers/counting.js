@@ -15,7 +15,7 @@ export const countingBlueprint = {
   id: 'p1-counting',
   title: 'Counting to 100',
   strand: 'Number and Algebra', // Retain strand as it's a core curriculum identifier
-  visualType: 'COUNTING_OBJECTS',
+  visualType: 'DYNAMIC',
   
   // 1. OVERARCHING CONDITIONS (Logical Constraints)
   difficultyLevels: {
@@ -43,6 +43,9 @@ export const countingBlueprint = {
   variants: {
     foundation_grouping: "Visual counting using groups of 10s and 1s.",
     foundation_sequence: "Simple forward or backward number sequence.",
+    foundation_number_words: "Match numerals to written number words within 20.",
+    foundation_one_more_less: "Find 1 more or 1 less than a given number up to 20.",
+    foundation_order_compare: "Compare and order a small set of random numbers up to 20.",
 
     standard_count_on: "Counting on from a specific number to find a total.",
     standard_tens_ones: "Identifying the number of tens and ones in a 2-digit number.",
@@ -70,25 +73,35 @@ export const countingBlueprint = {
   // 3. GENERATION ENGINE
   generate: (difficulty = 'foundation', variant = 'foundation_grouping', type = 'MCQ') => {
     
-    // --- LEGACY ADAPTER & AUTO-RANDOMIZER ---
+    // --- 🛡️ SELF-HEALING PARAMETER POSITION ADAPTER ---
     const safeType = String(type).toLowerCase();
     const isShort = safeType.includes('short');
     const isStructure = safeType.includes('structure') || safeType.includes('structured');
     const isMCQ = safeType.includes('mcq');
-    let activeVariant = variant;
-    if (!countingBlueprint.variants[variant]) {
-      const validVariants = Object.keys(countingBlueprint.variants).filter(k => k.startsWith(difficulty));
+
+    let finalDifficulty = difficulty;
+    let finalVariant = variant;
+
+    // Auto-detect and swap if variant string was passed into the first parameter position
+    if (typeof difficulty === 'string' && difficulty.includes('_')) {
+      finalVariant = difficulty;
+      finalDifficulty = variant || 'standard';
+    }
+
+    let activeVariant = finalVariant;
+    if (!countingBlueprint.variants[finalVariant]) {
+      const validVariants = Object.keys(countingBlueprint.variants).filter(k => k.startsWith(finalDifficulty));
       if (validVariants.length > 0) {
         activeVariant = validVariants[Math.floor(Math.random() * validVariants.length)];
       } else {
         activeVariant = 'foundation_grouping'; 
       }
     }
-    // ----------------------------------------
+    // --------------------------------------------------
 
     // Prepare Zod Schema Meta
     const zodType = isMCQ ? 'MCQ' : isShort ? 'SHORT_QUESTION' : 'STRUCTURED';
-    const zodDiff = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+    const zodDiff = finalDifficulty.charAt(0).toUpperCase() + finalDifficulty.slice(1);
     const level = 'Primary 1';
     const topic = 'Whole Numbers';
 
@@ -119,7 +132,10 @@ Forbidden: "The answer is 8," "Try 4+4."
 Required: Ask a guiding question or point to a visual cue.
 Example: "Try counting on from the bigger number. What comes after 7?" or "How many are in just one of the groups?"`;
 
-    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: For the "visualItems" array and any "modelData" icons, you MUST use the emoji: "${selectedIcon}". Do not pick any other emoji.`;
+    // Only pass visual protocol to Foundation; Standard/Advanced are text-only conceptual questions
+    const visualProtocol = finalDifficulty === 'foundation'
+      ? `\nSTRICT VISUAL PROTOCOL: For any layout rendering "componentData" icons, elements, or emojis, you MUST use the emoji: "${selectedIcon}". Do not select or substitute any other emoji.`
+      : '';
 
     if (isMCQ) {
       formatInstructions = `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}${visualProtocol}`;
@@ -134,15 +150,15 @@ Example: "Try counting on from the bigger number. What comes after 7?" or "How m
     // ==========================================
 
     if (activeVariant.startsWith('foundation_')) {
-      return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon);
+      return foundationLogic(activeVariant, finalDifficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon);
     }
 
     if (activeVariant.startsWith('standard_')) {
-      return standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon);
+      return standardLogic(activeVariant, finalDifficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText);
     }
 
     if (activeVariant.startsWith('advanced_')) {
-      return advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon);
+      return advancedLogic(activeVariant, finalDifficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon);
     }
 
     throw new Error(`Variant '${variant}' (mapped to '${activeVariant}') not valid for difficulty '${difficulty}'`);

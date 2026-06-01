@@ -1,13 +1,15 @@
 import React from 'react';
 
 export default function BaseTenBlocks({ data }) {
-  const hundreds = data?.hundreds || 0;
-  const tens = data?.tens || 0;
-  const ones = data?.ones || 0;
+  if (!data) return null;
+  const modelData = typeof data === 'string' ? JSON.parse(data) : data;
+  const hundreds = parseInt(modelData.hundreds) || 0;
+  const tens = parseInt(modelData.tens) || 0;
+  const ones = parseInt(modelData.ones) || 0;
 
   return (
-    <div className="flex flex-wrap justify-center gap-12 p-8 bg-sky-50 rounded-[2rem] border-2 border-sky-100">
-      
+    <div className="my-8 w-full p-4 md:p-8 bg-white rounded-[2rem] border-2 border-slate-100 flex flex-col items-center justify-center select-none min-h-[160px]">
+      <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12 w-full">
       {/* HUNDREDS (Flats) */}
       {hundreds > 0 && (
         <div className="flex flex-col items-center gap-2">
@@ -24,21 +26,29 @@ export default function BaseTenBlocks({ data }) {
         </div>
       )}
 
+      {hundreds > 0 && (tens > 0 || ones > 0) && <div className="hidden md:block h-24 w-px bg-slate-100 mx-2" />}
+
       {/* TENS (Rods) */}
-      {tens > 0 && (
+      {(tens > 0 || (ones > 0 && hundreds === 0)) && (
         <div className="flex flex-col items-center gap-2">
           <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Tens</span>
-          <div className="flex gap-2">
-            {Array.from({ length: tens }).map((_, i) => (
-              <div key={i} className="w-4 h-32 bg-emerald-400 border-2 border-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] flex flex-col">
-                {Array.from({ length: 10 }).map((_, j) => (
-                  <div key={j} className="flex-1 border-b border-emerald-500/50 last:border-0" />
-                ))}
-              </div>
-            ))}
-          </div>
+          {tens > 0 ? (
+            <div className="flex gap-2">
+              {Array.from({ length: tens }).map((_, i) => (
+                <div key={i} className="w-4 h-32 bg-emerald-400 border-2 border-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] flex flex-col">
+                  {Array.from({ length: 10 }).map((_, j) => (
+                    <div key={j} className="flex-1 border-b border-emerald-500/50 last:border-0" />
+                  ))}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="h-32 flex items-center italic text-[10px] text-slate-300 font-bold uppercase tracking-widest">No Tens</div>
+          )}
         </div>
       )}
+
+      {tens >= 0 && ones > 0 && <div className="hidden md:block h-24 w-px bg-slate-100 mx-2" />}
 
       {/* ONES (Units) */}
       {ones > 0 && (
@@ -51,7 +61,11 @@ export default function BaseTenBlocks({ data }) {
           </div>
         </div>
       )}
+      </div>
 
+      <p className="mt-8 text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] text-center">
+        Count the blocks to find the total value
+      </p>
     </div>
   );
 }

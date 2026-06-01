@@ -14,13 +14,12 @@ const extract = (val) => {
 };
 
 export const standardVariants = {
-  standard_reverse: (config, type, getQText, isShort) => {
+  standard_reverse: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const totalItems = Math.floor(Math.random() * 4) + 5; // 5 to 8
     const targetFromFront = Math.floor(Math.random() * (totalItems - 2)) + 2;
     const targetFromBack = totalItems - targetFromFront + 1;
     const frontOrdinal = ORDINAL_SYMBOLS[targetFromFront - 1];
     const backOrdinal = ORDINAL_SYMBOLS[targetFromBack - 1];
-    const context = getRandomContext('GENERAL');
     const sName = extract(context.name);
     const sItem = extract(context.items[0]);
     const sSetting = extract(context.setting);
@@ -55,8 +54,7 @@ export const standardVariants = {
     };
   },
 
-  standard_change: (config, type, getQText, isShort) => {
-    const context = getRandomContext('GENERAL');
+  standard_change: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const sName = extract(context.name);
     const sSetting = extract(context.setting);
     const answer = "3rd";
@@ -92,7 +90,7 @@ export const standardVariants = {
     };
   },
 
-  standard_from_the_right: (config, type, getQText, isShort) => {
+  standard_from_the_right: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const totalItems = Math.floor(Math.random() * 4) + 5; 
     const targetIndex = Math.floor(Math.random() * totalItems);
     const rightPositionIndex = totalItems - 1 - targetIndex;
@@ -128,13 +126,12 @@ export const standardVariants = {
     };
   },
 
-  standard_join_front: (config, type, getQText, isShort) => {
+  standard_join_front: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const startPos = Math.floor(Math.random() * 5) + 2; // 2nd to 6th
     const joinPos = Math.floor(Math.random() * startPos) + 1; // 1 to startPos
     const joinOrdinal = ORDINAL_WORDS[joinPos - 1];
     const newPos = startPos + 1;
     const answer = ORDINAL_WORDS[newPos - 1];
-    const context = getRandomContext('GENERAL');
     const sName = extract(context.name);
     const eventDesc = joinPos === 1 ? "joins the front of the queue" : `joins the queue at the ${joinOrdinal} position`;
     const visualProtocol = `\nSTRICT VISUAL PROTOCOL: You MUST generate an array of ${startPos + 2} UNIQUE emojis for the "visualItems" field. Match these emojis to the theme of your story.`;
@@ -164,13 +161,12 @@ export const standardVariants = {
     };
   },
 
-  standard_leave_front: (config, type, getQText, isShort) => {
+  standard_leave_front: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const startPos = Math.floor(Math.random() * 5) + 3; // 3rd to 7th
     const leavePos = Math.floor(Math.random() * (startPos - 1)) + 1; // 1 to startPos-1
     const leaveOrdinal = ORDINAL_WORDS[leavePos - 1];
     const newPos = startPos - 1; 
     const answer = ORDINAL_WORDS[newPos - 1];
-    const context = getRandomContext('GENERAL');
     const sName = extract(context.name);
     const eventDesc = leavePos === 1 ? "at the very front leaves" : `at the ${leaveOrdinal} position leaves`;
     const visualProtocol = `\nSTRICT VISUAL PROTOCOL: You MUST generate an array of ${startPos + 1} UNIQUE emojis for the "visualItems" field. Match these emojis to the theme of your story.`;
@@ -200,12 +196,11 @@ export const standardVariants = {
     };
   },
 
-  standard_relative_ahead: (config, type, getQText, isShort) => {
+  standard_relative_ahead: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const basePos = Math.floor(Math.random() * 4) + 5; 
     const stepsAhead = Math.floor(Math.random() * 3) + 2; 
     const targetPos = basePos - stepsAhead;
     const answer = ORDINAL_WORDS[targetPos - 1];
-    const context = getRandomContext('GENERAL');
     const sName = extract(context.name);
 
     return {
@@ -231,12 +226,11 @@ export const standardVariants = {
     };
   },
 
-  standard_relative_behind: (config, type, getQText, isShort) => {
+  standard_relative_behind: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const basePos = Math.floor(Math.random() * 4) + 2; 
     const stepsBehind = Math.floor(Math.random() * 3) + 2; 
     const targetPos = basePos + stepsBehind;
     const answer = ORDINAL_WORDS[targetPos - 1];
-    const context = getRandomContext('GENERAL');
     const sName = extract(context.name);
 
     return {
@@ -262,7 +256,7 @@ export const standardVariants = {
     };
   },
 
-  standard_between_positions: (config, type, getQText, isShort) => {
+  standard_between_positions: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const startPos = Math.floor(Math.random() * 5) + 1; 
     const endPos = startPos + 2; 
     const targetPos = startPos + 1;
@@ -291,12 +285,11 @@ export const standardVariants = {
     };
   },
 
-  standard_find_total: (config, type, getQText, isShort) => {
+  standard_find_total: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const frontPos = Math.floor(Math.random() * 4) + 2; 
     const backPos = Math.floor(Math.random() * 4) + 2; 
     const total = frontPos + backPos - 1; 
     const answer = String(total);
-    const context = getRandomContext('GENERAL');
     const sName = extract(context.name);
 
     return {
@@ -322,11 +315,10 @@ export const standardVariants = {
     };
   },
 
-  standard_swap_positions: (config, type, getQText, isShort) => {
+  standard_swap_positions: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const posA = Math.floor(Math.random() * 3) + 1; 
     const posB = posA + Math.floor(Math.random() * 4) + 2; 
     const answer = ORDINAL_WORDS[posA - 1];
-    const context = getRandomContext('GENERAL');
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_swap_positions question.
@@ -354,5 +346,7 @@ export const standardVariants = {
 };
 
 export const standardLogic = (activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-  return standardVariants[activeVariant](config, type, getQText, isShort);
+  if (standardVariants[activeVariant]) {
+    return standardVariants[activeVariant](config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
+  }
 };

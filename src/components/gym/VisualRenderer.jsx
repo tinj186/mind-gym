@@ -1,6 +1,7 @@
 "use client";
 
 import React, { lazy, Suspense } from 'react';
+import IconGrid from '@/components/gym/modules/IconGrid';
 
 // Core context blocks
 export const ESSENTIAL_VISUALS = [
@@ -47,7 +48,10 @@ export default function VisualRenderer({ type, ...props }) {
           case 'MEASUREMENT_UNIT': return <MeasurementUnit {...props} />;
           case 'CLOCK_DISPLAY': return <ClockDisplay {...props} />;
           case 'SINGAPORE_MONEY': return <SingaporeMoney {...props} />;
-          case 'COUNTING_OBJECTS': return <CountingObjects {...props} />;
+          case 'COUNTING_OBJECTS':
+          case 'RENDER_ICON_GRID':
+          case 'ICON_GRID':
+            return <IconGrid data={props.data} modelData={props.modelData} visualProps={props.visualProps} />;
           case 'NUMBER_CARDS': return <NumberCards {...props} />;
           case 'NUMBER_PATTERN': return <NumberPattern {...props} />;
           case 'EQUAL_GROUPS': return <EqualGroups {...props} />;
