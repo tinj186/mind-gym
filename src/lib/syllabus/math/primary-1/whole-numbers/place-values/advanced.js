@@ -12,7 +12,6 @@ export const advancedVariants = {
     const ones = Math.floor(Math.random() * 10) + 11; // 11 to 20 ones
     const num = (tens * 10) + ones;
     const answer = String(num);
-    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: For the "visualItems" array, you MUST use the symbols provided (▮ and ▪).`;
 
     // Ensure options are distinct and include the correct answer
     const options = [num, num - 10, num + 10, (tens + 1) * 10 + (ones % 10)].filter(
@@ -22,7 +21,7 @@ export const advancedVariants = {
     while (options.length < 4) options.push(Math.floor(Math.random() * 89) + 10); // Fill with random if needed
 
     return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating an advanced_extreme_regrouping question. DO NOT modify the mathematical structure or the final answer. NO addition or subtraction stories.${visualProtocol}
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating an advanced_extreme_regrouping question. DO NOT modify the mathematical structure or the final answer. NO addition or subtraction stories.
         MATH CONSTRAINTS:
         - Input: ${tens} tens and ${ones} ones.
         - Final Answer MUST strictly be: "${answer}"
@@ -35,10 +34,13 @@ export const advancedVariants = {
           "options": ${type === 'MCQ' ? JSON.stringify(options) : 'null'},
           "hint": ${JSON.stringify(getQText(`Remember that ${ones} ones can make another ten. ${tens} tens is ${tens * 10}. Add ${ones} to it.`, `What is ${tens * 10} + ${ones}?`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`${tens} tens is ${tens * 10}. ${tens * 10} + ${ones} = ${num}.`, `${tens * 10} + ${ones} = ${num}`))},
-          "visualItems": ${JSON.stringify([...Array(tens).fill('▮'), ...Array(ones).fill('▪')])}
+          "solutionSteps": ${JSON.stringify(getQText(`${tens} tens is ${tens * 10}. ${tens * 10} + ${ones} = ${num}.`, `${tens * 10} + ${ones} = ${num}`))},          
+          "visualEngine": { 
+            "componentToRender": "BASE_TEN_BLOCKS", 
+            "componentData": { "tens": ${tens}, "ones": ${ones} } 
+          }
         }`,
-      metadata: { difficulty: 'advanced', steps: 3, logic: "extreme_regroup", hideVisual: true }
+      metadata: { difficulty: 'advanced', steps: 3, logic: "extreme_regroup", hideVisual: false }
     };
   },
   advanced_digit_clues: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {

@@ -12,7 +12,6 @@ export const standardVariants = {
     const tensVal = Math.floor(num / 10) * 10;
     const onesVal = num % 10;
     const answer = String(onesVal);
-    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: For the "visualItems" array, you MUST use the exact array of symbols (▮ and ▪) provided in the JSON template below.`;
 
     let options = [...new Set([answer, String(tensVal), String(num), String(Math.floor(num / 10))])];
     while (options.length < 4) {
@@ -22,7 +21,7 @@ export const standardVariants = {
     const mcqOptions = JSON.stringify(options.sort(() => Math.random() - 0.5));
 
     return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_partition question. DO NOT modify the mathematical structure or the final answer.${visualProtocol}
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_partition question. DO NOT modify the mathematical structure or the final answer.
         MATH CONSTRAINTS:
         - Number: ${num}
         - Partition: ${num} = ${tensVal} + ?
@@ -34,10 +33,13 @@ export const standardVariants = {
           "options": ${isMCQ ? mcqOptions : 'null'},
           "hint": ${JSON.stringify(getQText(`Think of the number ${num}. It is made up of ${tensVal} and another part. Subtract ${tensVal} from ${num} to find it.`, `What is ${num} minus ${tensVal}?`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`${num} is made of ${tensVal} and ${onesVal}.`, `${num} - ${tensVal} = ${answer}`))},
-          "visualItems": ${JSON.stringify([...Array(Math.floor(num/10)).fill('▮'), ...Array(onesVal).fill('▪')])}
+          "solutionSteps": ${JSON.stringify(getQText(`${num} is made of ${tensVal} and ${onesVal}.`, `${num} - ${tensVal} = ${answer}`))},          
+          "visualEngine": { 
+            "componentToRender": "BASE_TEN_BLOCKS", 
+            "componentData": { "tens": ${Math.floor(num/10)}, "ones": ${onesVal} } 
+          }
         }`,
-      metadata: { difficulty: 'standard', steps: 2, logic: "partition", hideVisual: true }
+      metadata: { difficulty: 'standard', steps: 2, logic: "partition", hideVisual: false }
     };
   },
   standard_basic_regrouping: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
@@ -45,7 +47,6 @@ export const standardVariants = {
     const ones = Math.floor(Math.random() * 9) + 11;
     const num = (tens * 10) + ones;
     const answer = String(num);
-    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: For the "visualItems" array, you MUST use the exact array of symbols (▮ and ▪) provided in the JSON template below.`;
 
     let options = [...new Set([answer, String(tens + ones), String((tens * 10) + (ones % 10)), String(num + 10)])];
     while (options.length < 4) {
@@ -55,7 +56,7 @@ export const standardVariants = {
     const mcqOptions = JSON.stringify(options.sort(() => Math.random() - 0.5));
 
     return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_basic_regrouping question. DO NOT modify the mathematical structure or the final answer.${visualProtocol}
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_basic_regrouping question. DO NOT modify the mathematical structure or the final answer.
         MATH CONSTRAINTS:
         - Input: ${tens} tens ${ones} ones.
         - Final Answer MUST strictly be: "${answer}"
@@ -66,10 +67,13 @@ export const standardVariants = {
           "options": ${isMCQ ? mcqOptions : 'null'},
           "hint": ${JSON.stringify(getQText(`Change the ${tens} tens into a number first. Then add the ${ones} ones to it.`, `${tens * 10} + ${ones} = ?`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`${tens} tens is ${tens * 10}. ${tens * 10} + ${ones} = ${num}.`, `${tens * 10} + ${ones} = ${num}`))},
-          "visualItems": ${JSON.stringify([...Array(tens).fill('▮'), ...Array(ones).fill('▪')])}
+          "solutionSteps": ${JSON.stringify(getQText(`${tens} tens is ${tens * 10}. ${tens * 10} + ${ones} = ${num}.`, `${tens * 10} + ${ones} = ${num}`))},          
+          "visualEngine": { 
+            "componentToRender": "BASE_TEN_BLOCKS", 
+            "componentData": { "tens": ${tens}, "ones": ${ones} } 
+          }
         }`,
-      metadata: { difficulty: 'standard', steps: 2, logic: "regrouping", hideVisual: true }
+      metadata: { difficulty: 'standard', steps: 2, logic: "regrouping", hideVisual: false }
     };
   },
   standard_partition_tens: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
@@ -77,7 +81,6 @@ export const standardVariants = {
     const tensVal = Math.floor(num / 10) * 10;
     const onesVal = num % 10;
     const answer = String(tensVal);
-    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: For the "visualItems" array, you MUST use the exact array of symbols (▮ and ▪) provided in the JSON template below.`;
 
     let options = [...new Set([answer, String(onesVal), String(num), String(num - 10)])];
     while (options.length < 4) {
@@ -87,7 +90,7 @@ export const standardVariants = {
     const mcqOptions = JSON.stringify(options.sort(() => Math.random() - 0.5));
 
     return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_partition_tens question. DO NOT modify the mathematical structure or the final answer.${visualProtocol}
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_partition_tens question. DO NOT modify the mathematical structure or the final answer.
         MATH CONSTRAINTS:
         - Number: ${num}
         - Partition: ${num} = ? + ${onesVal}
@@ -99,10 +102,13 @@ export const standardVariants = {
           "options": ${isMCQ ? mcqOptions : 'null'},
           "hint": ${JSON.stringify(getQText(`If you take away the ${onesVal} ones from ${num}, how many tens value are you left with?`, `${num} - ${onesVal} = ?`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`${num} is ${tensVal} and ${onesVal}. The missing part is ${tensVal}.`, `${num} - ${onesVal} = ${answer}`))},
-          "visualItems": ${JSON.stringify([...Array(Math.floor(num/10)).fill('▮'), ...Array(onesVal).fill('▪')])}
+          "solutionSteps": ${JSON.stringify(getQText(`${num} is ${tensVal} and ${onesVal}. The missing part is ${tensVal}.`, `${num} - ${onesVal} = ${answer}`))},          
+          "visualEngine": { 
+            "componentToRender": "BASE_TEN_BLOCKS", 
+            "componentData": { "tens": ${Math.floor(num/10)}, "ones": ${onesVal} } 
+          }
         }`,
-      metadata: { difficulty: 'standard', steps: 2, logic: "partition_tens", hideVisual: true }
+      metadata: { difficulty: 'standard', steps: 2, logic: "partition_tens", hideVisual: false }
     };
   },
   standard_word_problem_groups: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
@@ -113,8 +119,6 @@ export const standardVariants = {
     const sName = extract(context?.name || 'Bala');
     const answer = String(tens);
 
-    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: For the "visualItems" array, you MUST use the exact array of symbols provided in the JSON template below.`;
-
     let options = [...new Set([answer, String(tens + ones), String(ones), String(num)])];
     while (options.length < 4) {
       options.push(String(Math.floor(Math.random() * 9) + 1));
@@ -123,7 +127,7 @@ export const standardVariants = {
     const mcqOptions = JSON.stringify(options.sort(() => Math.random() - 0.5));
 
     return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_word_problem_groups question. DO NOT modify the mathematical structure or the final answer. Use the name ${sName}.${visualProtocol}
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_word_problem_groups question. DO NOT modify the mathematical structure or the final answer. Use the name ${sName}.
         MATH CONSTRAINTS:
         - Total ${sItem}: ${num}
         - Question: How many bundles of 10 can be made?
@@ -135,10 +139,13 @@ export const standardVariants = {
           "options": ${isMCQ ? mcqOptions : 'null'},
           "hint": ${JSON.stringify(getQText(`Try circling groups of 10 items. How many groups can you circle?`, `Count how many tens are in ${num}.`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`${num} has ${tens} tens, so he can make ${tens} groups of 10.`, `${num} ÷ 10 = ${tens} remainder ${ones}`))},
-          "visualItems": ${JSON.stringify(Array(num).fill('▪'))}
+          "solutionSteps": ${JSON.stringify(getQText(`${num} has ${tens} tens, so he can make ${tens} groups of 10.`, `${num} ÷ 10 = ${tens} remainder ${ones}`))},          
+          "visualEngine": { 
+            "componentToRender": "BASE_TEN_BLOCKS", 
+            "componentData": { "tens": 0, "ones": ${num} } 
+          }
         }`,
-      metadata: { difficulty: 'standard', steps: 2, logic: "grouping_word_problem", hideVisual: (isShort || isMCQ) }
+      metadata: { difficulty: 'standard', steps: 2, logic: "grouping_word_problem", hideVisual: false }
     };
   },
   standard_compare_place_value: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
@@ -192,7 +199,6 @@ export const standardVariants = {
     const start = Math.floor(Math.random() * 50) + 10;
     const addTens = Math.floor(Math.random() * 3) + 1;
     const answer = String(start + (addTens * 10));
-    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: For the "visualItems" array, you MUST use the exact symbols provided.`;
 
     let options = [...new Set([answer, String(start + addTens), String(Number(answer) - 10), String(start)])];
     while (options.length < 4) {
@@ -202,7 +208,7 @@ export const standardVariants = {
     const mcqOptions = JSON.stringify(options.sort(() => Math.random() - 0.5));
 
     return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_add_tens_concept question. DO NOT modify the mathematical structure or the final answer.${visualProtocol}
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_add_tens_concept question. DO NOT modify the mathematical structure or the final answer.
         MATH CONSTRAINTS:
         - Starting number: ${start}
         - Add: ${addTens} tens
@@ -214,17 +220,19 @@ export const standardVariants = {
           "options": ${isMCQ ? mcqOptions : 'null'},
           "hint": ${JSON.stringify(getQText(`Look at the tens digit. If you add ${addTens} tens, only the tens digit will change.`, `Only the tens digit increases by ${addTens}.`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`${addTens} tens is ${addTens * 10}. ${start} + ${addTens * 10} = ${answer}.`, `${start} + ${addTens * 10} = ${answer}`))},
-          "visualItems": ${JSON.stringify([...Array(Math.floor(start/10)).fill('▮'), ...Array(start%10).fill('▪')])}
+          "solutionSteps": ${JSON.stringify(getQText(`${addTens} tens is ${addTens * 10}. ${start} + ${addTens * 10} = ${answer}.`, `${start} + ${addTens * 10} = ${answer}`))},          
+          "visualEngine": { 
+            "componentToRender": "BASE_TEN_BLOCKS", 
+            "componentData": { "tens": ${Math.floor(start/10)}, "ones": ${start%10} } 
+          }
         }`,
-      metadata: { difficulty: 'standard', steps: 2, logic: "add_tens", hideVisual: (isShort || isMCQ) }
+      metadata: { difficulty: 'standard', steps: 2, logic: "add_tens", hideVisual: false }
     };
   },
   standard_subtract_tens_concept: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const start = Math.floor(Math.random() * 40) + 50;
     const subTens = Math.floor(Math.random() * 3) + 1;
     const answer = String(start - (subTens * 10));
-    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: For the "visualItems" array, you MUST use the exact symbols provided.`;
 
     let options = [...new Set([answer, String(start - subTens), String(Number(answer) + 10), String(start)])];
     while (options.length < 4) {
@@ -234,7 +242,7 @@ export const standardVariants = {
     const mcqOptions = JSON.stringify(options.sort(() => Math.random() - 0.5));
 
     return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_subtract_tens_concept question. DO NOT modify the mathematical structure or the final answer.${visualProtocol}
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_subtract_tens_concept question. DO NOT modify the mathematical structure or the final answer.
         MATH CONSTRAINTS:
         - Starting number: ${start}
         - Subtract: ${subTens} tens
@@ -246,10 +254,13 @@ export const standardVariants = {
           "options": ${isMCQ ? mcqOptions : 'null'},
           "hint": ${JSON.stringify(getQText(`Look at the tens digit. If you subtract ${subTens} tens, only the tens digit will decrease.`, `Only the tens digit decreases by ${subTens}.`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`${subTens} tens is ${subTens * 10}. ${start} - ${subTens * 10} = ${answer}.`, `${start} - ${subTens * 10} = ${answer}`))},
-          "visualItems": ${JSON.stringify([...Array(Math.floor(start/10)).fill('▮'), ...Array(start%10).fill('▪')])}
+          "solutionSteps": ${JSON.stringify(getQText(`${subTens} tens is ${subTens * 10}. ${start} - ${subTens * 10} = ${answer}.`, `${start} - ${subTens * 10} = ${answer}`))},          
+          "visualEngine": { 
+            "componentToRender": "BASE_TEN_BLOCKS", 
+            "componentData": { "tens": ${Math.floor(start/10)}, "ones": ${start%10} } 
+          }
         }`,
-      metadata: { difficulty: 'standard', steps: 2, logic: "sub_tens", hideVisual: (isShort || isMCQ) }
+      metadata: { difficulty: 'standard', steps: 2, logic: "sub_tens", hideVisual: false }
     };
   },
   standard_digit_clue: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
@@ -317,7 +328,6 @@ export const standardVariants = {
   standard_equivalent_ones: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const tens = Math.floor(Math.random() * 9) + 1;
     const answer = String(tens * 10);
-    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: For the "visualItems" array, you MUST use the symbols provided.`;
 
     let options = [...new Set([answer, String(tens), String(tens + 10), String(tens * 100)])];
     while (options.length < 4) {
@@ -327,7 +337,7 @@ export const standardVariants = {
     const mcqOptions = JSON.stringify(options.sort(() => Math.random() - 0.5));
 
     return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_equivalent_ones question. DO NOT modify the mathematical structure or the final answer.${visualProtocol}
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_equivalent_ones question. DO NOT modify the mathematical structure or the final answer.
         MATH CONSTRAINTS:
         - Input: ${tens} tens
         - Final Answer MUST strictly be: "${answer}"
@@ -338,10 +348,13 @@ export const standardVariants = {
           "options": ${isMCQ ? mcqOptions : 'null'},
           "hint": ${JSON.stringify(getQText(`Each ten is equal to 10 ones. Count by tens for each bar you see.`, `1 ten = 10 ones.`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`1 ten is 10 ones, so ${tens} tens is ${answer} ones.`, `${tens} * 10 = ${answer}`))},
-          "visualItems": ${JSON.stringify(Array(tens).fill('▮'))}
+          "solutionSteps": ${JSON.stringify(getQText(`1 ten is 10 ones, so ${tens} tens is ${answer} ones.`, `${tens} * 10 = ${answer}`))},          
+          "visualEngine": { 
+            "componentToRender": "BASE_TEN_BLOCKS", 
+            "componentData": { "tens": ${tens}, "ones": 0 } 
+          }
         }`,
-      metadata: { difficulty: 'standard', steps: 2, logic: "equivalence", hideVisual: true }
+      metadata: { difficulty: 'standard', steps: 2, logic: "equivalence", hideVisual: false }
     };
   }
 };

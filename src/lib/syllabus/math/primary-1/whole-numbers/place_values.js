@@ -44,16 +44,16 @@ export const placeValuesBlueprint = {
     foundation_decompose_tens: "Identify the number of tens in a multiple of 10.",
     foundation_digit_position: "Identify which digit is in the tens or ones place.",
 
-    standard_partition: "Find the missing part in a base-10 equation (e.g., 34 = 30 + ?).",
-   standard_basic_regrouping: "Regroup excess ones into tens (e.g., 2 tens 14 ones).",
-    standard_partition_tens: "Find the missing tens part in a base-10 equation (e.g., 45 = ? + 5).",
-    standard_word_problem_groups: "Solve a word problem involving items grouped in tens and loose ones.",
-    standard_compare_place_value: "Compare two numbers described in tens and ones to find the greater/smaller.",
-    standard_add_tens_concept: "Add a specific number of tens to a 2-digit number.",
-    standard_subtract_tens_concept: "Subtract a specific number of tens from a 2-digit number.",
-    standard_digit_clue: "Identify a number based on simple relative clues for its digits.",
-    standard_expanded_form: "Identify the correct expanded form of a 2-digit number.",
-    standard_equivalent_ones: "Convert a multiple of ten entirely into ones (e.g., 5 tens = 50 ones).",
+//    standard_partition: "Find the missing part in a base-10 equation (e.g., 34 = 30 + ?).",
+    standard_basic_regrouping: "Regroup excess ones into tens (e.g., 2 tens 14 ones).",
+//    standard_partition_tens: "Find the missing tens part in a base-10 equation (e.g., 45 = ? + 5).",
+//    standard_word_problem_groups: "Solve a word problem involving items grouped in tens and loose ones.",
+//    standard_compare_place_value: "Compare two numbers described in tens and ones to find the greater/smaller.",
+//    standard_add_tens_concept: "Add a specific number of tens to a 2-digit number.",
+//    standard_subtract_tens_concept: "Subtract a specific number of tens from a 2-digit number.",
+//    standard_digit_clue: "Identify a number based on simple relative clues for its digits.",
+//    standard_expanded_form: "Identify the correct expanded form of a 2-digit number.",
+//    standard_equivalent_ones: "Convert a multiple of ten entirely into ones (e.g., 5 tens = 50 ones).",
 
     advanced_extreme_regrouping: "Find missing tens when given an extreme amount of ones.",
     advanced_digit_clues: "Logic puzzle based on the sum and difference of the digits.",
@@ -70,24 +70,35 @@ export const placeValuesBlueprint = {
   // 3. GENERATION ENGINE
   generate: (difficulty = 'foundation', variant = 'foundation_identify', type = 'MCQ') => {
     
+    // --- 🛡️ SELF-HEALING PARAMETER POSITION ADAPTER ---
     const safeType = String(type).toLowerCase();
     const isShort = safeType.includes('short');
     const isStructure = safeType.includes('structure') || safeType.includes('structured');
     const isMCQ = safeType.includes('mcq');
 
-    let activeVariant = variant;
-    if (!placeValuesBlueprint.variants[variant]) {
-      const validVariants = Object.keys(placeValuesBlueprint.variants).filter(k => k.startsWith(difficulty));
+    let finalDifficulty = difficulty;
+    let finalVariant = variant;
+
+    // Auto-detect and swap if variant string was passed into the first parameter position
+    if (typeof difficulty === 'string' && difficulty.includes('_')) {
+      finalVariant = difficulty;
+      finalDifficulty = variant || 'standard';
+    }
+
+    let activeVariant = finalVariant;
+    if (!placeValuesBlueprint.variants[finalVariant]) {
+      const validVariants = Object.keys(placeValuesBlueprint.variants).filter(k => k.startsWith(finalDifficulty));
       if (validVariants.length > 0) {
         activeVariant = validVariants[Math.floor(Math.random() * validVariants.length)];
       } else {
         activeVariant = 'foundation_identify'; 
       }
     }
+    // --------------------------------------------------
 
-    const config = placeValuesBlueprint.difficultyLevels[difficulty] || placeValuesBlueprint.difficultyLevels.foundation;
+    const config = placeValuesBlueprint.difficultyLevels[finalDifficulty] || placeValuesBlueprint.difficultyLevels.foundation;
     const zodType = isMCQ ? 'MCQ' : isStructure ? 'STRUCTURED' : 'SHORT_QUESTION';
-    const zodDiff = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+    const zodDiff = finalDifficulty.charAt(0).toUpperCase() + finalDifficulty.slice(1);
     const level = 'Primary 1';
     const topic = 'Whole Numbers';
 
@@ -103,11 +114,16 @@ export const placeValuesBlueprint = {
     Forbidden: Giving the answer or numbers directly.
     Required: Point to place value concepts (e.g., "Look at the digit on the left...").`;
 
+    // Add a visual protocol for place value blocks
+    const visualProtocol = (activeVariant.startsWith('foundation_') && !activeVariant.includes('digit_position')) || activeVariant.includes('regrouping') || activeVariant.includes('word_problem_groups') || activeVariant.includes('partition') || activeVariant.includes('tens_concept') || activeVariant.includes('equivalent_ones')
+      ? `\nSTRICT VISUAL PROTOCOL: This variant REQUIRES a visual. You MUST include the "visualEngine" block with "componentToRender": "BASE_TEN_BLOCKS" and "componentData" containing "tens", "ones", and "hundreds" (if applicable).`
+      : '';
+
     let formatInstructions = isMCQ 
-      ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}` 
+      ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}${visualProtocol}` 
       : isStructure
-        ? `Format as Structured Question. The "options" field in your JSON should be null. CRITICAL: For the "questionText" string, write a clear localized word problem.${hintProtocol}`
-        : `Format as Short Answer. The "options" field in your JSON should be null.${hintProtocol}`;
+        ? `Format as Structured Question. The "options" field in your JSON should be null. CRITICAL: For the "questionText" string, write a clear localized word problem.${hintProtocol}${visualProtocol}`
+        : `Format as Short Answer. The "options" field in your JSON should be null.${hintProtocol}${visualProtocol}`;
 
     if (activeVariant.startsWith('foundation_')) {
       return foundationLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
