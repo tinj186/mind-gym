@@ -1,8 +1,15 @@
 import React from 'react';
 
 export default function NumberBond({ data }) {
-  const whole = data?.whole !== undefined ? data.whole : '?';
-  const parts = data?.parts || ['?', '?'];
+  if (!data) return null;
+  
+  const whole = data.whole !== undefined ? data.whole : '?';
+  
+  // Support both new 'parts' array and legacy 'part1'/'part2' schemas
+  const parts = data.parts || [
+    data.part1 !== undefined ? data.part1 : '?',
+    data.part2 !== undefined ? data.part2 : '?'
+  ];
 
   return (
     <div className="relative w-full max-w-sm mx-auto p-12 flex flex-col items-center">

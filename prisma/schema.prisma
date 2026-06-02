@@ -56,6 +56,7 @@ model QuestionBank {
   solution    String   @db.Text
   finalAnswer String
   isApproved  Boolean  @default(false)
+  isArchived  Boolean  @default(false)
   createdAt   DateTime @default(now())
 
   // Relation: One question can have many attempts

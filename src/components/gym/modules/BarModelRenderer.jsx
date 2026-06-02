@@ -2,9 +2,6 @@
 
 import React from 'react';
 
-/**
- * Renders the internal subdivision of a bar if the value is small enough to count.
- */
 function UnitSegments({ value }) {
   const num = parseInt(value);
   if (isNaN(num) || num <= 0 || num > 20) return null;
@@ -20,8 +17,6 @@ function UnitSegments({ value }) {
 
 export default function BarModelRenderer({ data }) {
   if (!data) return null;
-
-  // Handle potential stringified JSON from AI
   const model = typeof data === 'string' ? JSON.parse(data) : data;
 
   if (model.type === 'PART_WHOLE') {
@@ -29,7 +24,6 @@ export default function BarModelRenderer({ data }) {
     return (
       <div className="my-6 p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-4">
         <div className="relative">
-          {/* Parts Bar */}
           <div className="flex h-10 w-full rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-white">
             {model.parts.map((part, idx) => {
               const partVal = parseFloat(part) || (wholeVal / model.parts.length);
@@ -48,7 +42,6 @@ export default function BarModelRenderer({ data }) {
               );
             })}
           </div>
-          {/* Whole Indicator */}
           <div className="mt-2 flex flex-col items-center">
             <div className="w-full h-2 border-x border-b border-slate-300 rounded-b-lg"></div>
             <span className="text-[9px] font-black text-slate-400 uppercase mt-1 tracking-widest">
@@ -85,14 +78,8 @@ export default function BarModelRenderer({ data }) {
             </div>
           </div>
         ))}
-        <div className="flex justify-end pr-2 pt-1">
-          <span className="text-[9px] font-black text-amber-600 uppercase tracking-widest border-t-2 border-dotted border-amber-200 pt-1">
-            Difference: {model.difference}
-          </span>
-        </div>
       </div>
     );
   }
-
   return null;
 }

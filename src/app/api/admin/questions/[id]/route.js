@@ -19,12 +19,27 @@ export async function PATCH(req, { params }) {
 export async function DELETE(req, { params }) {
   const { id } = await params;
   try {
-    await prisma.questionBank.delete({
-      where: { id },
+    // 🔍 1. Check for operational student logs referencing this question
+    const attemptCount = await prisma.attemptLog.count({
+      where: { questionId: id }
     });
-    return NextResponse.json({ success: true });
+
+    if (attemptCount > 0) {
+      // 📦 Case A: Attempt lock active. Soft-delete to shield relational integrity.
+      const archivedQuestion = await prisma.questionBank.update({
+        where: { id },
+        data: { isArchived: true },
+      });
+      return NextResponse.json({ success: true, action: 'archived', count: attemptCount });
+    } else {
+      // 🧼 Case B: Pristine record. Hard-delete to maintain inventory hygiene.
+      await prisma.questionBank.delete({
+        where: { id },
+      });
+      return NextResponse.json({ success: true, action: 'purged' });
+    }
   } catch (error) {
-    console.error("❌ Failed to delete question:", error);
-    return NextResponse.json({ error: "Failed to delete question" }, { status: 500 });
+    console.error("❌ Failed to safely process conditional delete:", error);
+    return NextResponse.json({ error: "Failed to delete question safely" }, { status: 500 });
   }
 }

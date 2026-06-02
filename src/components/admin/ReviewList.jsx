@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import VisualRenderer from '@/components/gym/VisualRenderer'; // Updated to use the modern VisualRenderer
 import GroupingWorkspace from '@/components/tools/GroupingWorkspace'; // Import the interactive tool
 import useSWR from 'swr';
+import { toggleArchiveQuestionAction } from '@/app/actions/workoutActions';
 import { normalizeQuestionData, deriveVisualProps } from '@/lib/intelligence/workout-utils'; // Import for data normalization
 
 const fetcher = url => fetch(url).then(res => res.json());
@@ -278,8 +279,14 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
         const isQuestionVisual = !!visualType && visualType !== 'NONE';
         const isBusy = processingId === q.id || processingId === 'bulk';
 
+        const isArchived = q.isArchived === true;
+
         return (
-          <div key={q.id} className={`bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden transition-opacity ${isBusy ? 'opacity-50 pointer-events-none' : ''}`}>
+          <div key={q.id} className={`p-6 rounded-3xl border-2 transition-all duration-300 relative ${
+            isArchived
+              ? 'bg-slate-100/70 border-slate-200/80 text-slate-400 opacity-60 shadow-none filter grayscale'
+              : 'bg-white border-slate-100 shadow-sm hover:shadow-md'
+          } ${isBusy ? 'opacity-50 pointer-events-none' : ''}`}>
             <div className="p-8 space-y-6">
               <div className="space-y-4">
                 <div className="flex justify-between items-start gap-4">
@@ -426,6 +433,26 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
           <div className="bg-slate-50 px-8 py-4 flex justify-between items-center border-t border-slate-100">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">ID: {q.id}</span>
             <div className="flex gap-3">
+              <button 
+                onClick={async () => {
+                  const actionLabel = isArchived ? 'unarchive' : 'archive';
+                  if (confirm(`Are you sure you want to ${actionLabel} this question?`)) {
+                    const res = await toggleArchiveQuestionAction(q.id, q.isArchived);
+                    if (res.success) {
+                      mutate(); 
+                    } else {
+                      alert("Failed to update question status: " + res.error);
+                    }
+                  }
+                }}
+                className={`px-3 py-1.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all border-2 ${
+                  isArchived
+                    ? 'bg-slate-200 text-slate-600 border-slate-300 hover:bg-slate-300'
+                    : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                }`}
+              >
+                {isArchived ? '📁 Unarchive' : '📦 Archive'}
+              </button>
               <button 
                 onClick={() => handleDelete(q.id)}
                 className="px-4 py-2 text-[10px] font-black uppercase text-red-500 hover:bg-red-50 rounded-xl transition-colors"

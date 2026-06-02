@@ -1,7 +1,13 @@
 import React from 'react';
 
 export default function NumberCards({ data }) {
-  const items = data?.items || [];
+  // Support both new 'items' object array and legacy 'numbers' value array
+  const rawItems = data?.items || data?.numbers || [];
+  const items = rawItems.map(item => {
+    if (typeof item === 'object' && item !== null) return item;
+    return { value: item };
+  });
+
   const layout = data?.layout || 'horizontal';
 
   return (

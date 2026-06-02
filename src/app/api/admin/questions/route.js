@@ -47,7 +47,10 @@ export async function DELETE(req) {
   const difficulty = searchParams.get('difficulty');
   const approved = searchParams.get('approved') === 'true';
 
-  const where = { isApproved: approved };
+  const where = { 
+    isApproved: approved,
+    isArchived: false 
+  };
   if (level) where.level = level;
   if (topic) where.topic = topic;
   if (subtopic) where.subtopic = subtopic;

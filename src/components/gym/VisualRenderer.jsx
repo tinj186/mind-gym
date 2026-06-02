@@ -8,7 +8,7 @@ export const ESSENTIAL_VISUALS = [
   "ORDINAL_LINE", "GROUPING_WORKSPACE", "NUMBER_CARDS", 
   "NUMBER_BOND", "NUMBER_PATTERN", "BASE_TEN_BLOCKS", 
   "SINGAPORE_MONEY", "MEASUREMENT_UNIT", "CLOCK_DISPLAY",
-  "SHAPE_DISPLAY"
+  "SHAPE_DISPLAY", "PLACE_VALUE_CHART"
   // "PICTURE_GRAPH_DISPLAY" // Not essential, lazy-loaded
 ];
 
@@ -24,6 +24,7 @@ const OrdinalLine = lazy(() => import('./modules/OrdinalLine'));
 const BaseTenBlocks = lazy(() => import('./modules/BaseTenBlocks'));
 const NumberBond = lazy(() => import('./modules/NumberBond'));
 const Shape = lazy(() => import('./modules/Shape'));
+const PlaceValueChart = lazy(() => import('./modules/PlaceValueChart'));
 const ClockDisplay = lazy(() => import('./modules/ClockDisplay'));
 const ShapeDisplay = lazy(() => import('./modules/ShapeDisplay'));
 const PictureGraphDisplay = lazy(() => import('./modules/PictureGraphDisplay'));
@@ -48,7 +49,8 @@ export default function VisualRenderer({ type, ...props }) {
           case 'MEASUREMENT_UNIT': return <MeasurementUnit {...props} />;
           case 'CLOCK_DISPLAY': return <ClockDisplay {...props} />;
           case 'SINGAPORE_MONEY': return <SingaporeMoney {...props} />;
-          case 'COUNTING_OBJECTS':
+          case 'COUNTING_OBJECTS': 
+            return <CountingObjects {...props} isQuestion={props.attempts === 0} />;
           case 'RENDER_ICON_GRID':
           case 'ICON_GRID':
             return <IconGrid data={props.data} modelData={props.modelData} visualProps={props.visualProps} />;
@@ -59,6 +61,7 @@ export default function VisualRenderer({ type, ...props }) {
           case 'ORDINAL_LINE': return <OrdinalLine {...props} />;
           case 'BASE_TEN_BLOCKS': return <BaseTenBlocks {...props} />;
           case 'NUMBER_BOND': return <NumberBond {...props} />;
+          case 'PLACE_VALUE_CHART': return <PlaceValueChart data={props.visualEngine?.componentData || props.data} />;
           case 'SHAPE': return <Shape {...props} />;
           case 'SHAPE_DISPLAY': return <ShapeDisplay data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
           case 'PICTURE_GRAPH_DISPLAY': return <PictureGraphDisplay data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;

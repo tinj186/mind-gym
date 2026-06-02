@@ -10,6 +10,7 @@ export default async function QuestionReviewPage({ searchParams }) {
   const { level, strand, topic, subtopic, type, difficulty, approved } = resolvedSearchParams;
   const isApprovedFilter = approved === 'true';
 
+  // Keep the query mapping focus cleanly on approval status, allowing archived questions through for admin tracking
   const whereClause = { isApproved: isApprovedFilter };
 
   // Only apply metadata filters if they are provided in the URL (non-empty)

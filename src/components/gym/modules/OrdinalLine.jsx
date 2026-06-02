@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 
 export default function OrdinalLine({ data }) {
@@ -8,15 +10,16 @@ export default function OrdinalLine({ data }) {
     return null;
   }
 
+  const { direction = 'left' } = data;
   const totalItems = rawElements.length;
   
-  // Calculate content density to auto-resize emojis
+  // Calculate content density to auto-resize emojis based on container items
   const totalIconsLength = rawElements.reduce((acc, el) => {
     const icon = typeof el === 'object' ? (el.icon || '') : String(el || '');
     return acc + [...icon].length;
   }, 0);
 
-  // Responsive scaling: Shrink icons if there are many items to keep them on screen
+  // Responsive scaling: Shrink icons if there are many items or long containers
   let itemSizeClass = 'text-6xl';
   if (totalIconsLength > 15 || totalItems > 8) itemSizeClass = 'text-3xl';
   else if (totalIconsLength > 10 || totalItems > 6) itemSizeClass = 'text-4xl';
@@ -25,39 +28,46 @@ export default function OrdinalLine({ data }) {
   const gapClass = totalItems > 8 ? 'gap-2' : 'gap-6';
 
   return (
-    <div className="w-full max-w-3xl mx-auto overflow-x-auto p-8">
-      <div className={`flex items-end min-w-max ${gapClass} border-b-8 border-slate-900 pb-8 relative px-12`}>
-        {/* Left Indicator */}
-        <div className="absolute left-0 bottom-4 w-2 h-16 bg-red-500 border-2 border-slate-900" />
-        <span className="absolute left-0 bottom-24 -translate-x-1/2 text-[10px] font-black uppercase tracking-widest text-red-500 bg-red-50 px-3 py-1 rounded border border-red-100">LEFT</span>
+    <div className="my-8 w-full p-4 md:p-8 bg-white rounded-[2rem] border-2 border-slate-100 flex flex-col items-center justify-center select-none min-h-[140px]">
+      <div className="w-full py-4">
+        <div className={`flex flex-row flex-wrap items-center justify-center ${gapClass} px-2 md:px-8`}>
+          {/* Left Indicator */}
+          <div className="flex flex-col items-center gap-2 self-stretch py-2">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Left</span>
+            <div className="w-1 flex-1 bg-slate-200 rounded-full min-h-[60px]" />
+          </div>
 
-        {/* Right Indicator */}
-        <div className="absolute right-0 bottom-4 w-2 h-16 bg-slate-400 border-2 border-slate-900" />
-        <span className="absolute right-0 bottom-24 translate-x-1/2 text-[10px] font-black uppercase tracking-widest text-slate-500 bg-slate-50 px-3 py-1 rounded border border-slate-100">RIGHT</span>
+          {rawElements.map((el, idx) => {
+            if (!el) return null;
+            
+            const isEmoji = typeof el === 'string' && [...el].length <= 2;
+            const icon = typeof el === 'object' ? (el.icon || '🏃') : (isEmoji ? el : '🏃');
+            const label = typeof el === 'object' ? el.label : null;
 
-        {rawElements.map((el, idx) => {
-          if (!el) return null;
-          
-          // If the item is a string, check if it's likely an emoji (short) or a label (long).
-          // If it's a label like "Friend 1", we fallback to a human emoji.
-          const isEmoji = typeof el === 'string' && [...el].length <= 2;
-          const icon = typeof el === 'object' ? (el.icon || '🏃') : (isEmoji ? el : '🏃');
-          const label = typeof el === 'object' ? el.label : null;
-
-          return (
-            <div key={idx} className="flex flex-col items-center min-w-max px-4 mb-1">
-              <span className={`${itemSizeClass} drop-shadow-lg hover:-translate-y-2 transition-transform cursor-default`}>
-                {icon}
-              </span>
-              {label && (
-                <span className="mt-2 text-[10px] font-black uppercase text-slate-500 tracking-wider text-center break-words w-full select-none">
-                  {label}
+            return (
+              <div key={idx} className="flex flex-col items-center px-1">
+                <span className={`${itemSizeClass} transition-all duration-300 hover:scale-110 drop-shadow-sm`}>
+                  {icon}
                 </span>
-              )}
-            </div>
-          );
-        })}
+                {label && (
+                  <span className="mt-2 text-[10px] font-black uppercase text-slate-500 tracking-wider text-center break-words w-full select-none">
+                    {label}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Right Indicator */}
+          <div className="flex flex-col items-center gap-2 self-stretch py-2">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Right</span>
+            <div className="w-1 flex-1 bg-slate-200 rounded-full min-h-[60px]" />
+          </div>
+        </div>
       </div>
+      <p className="mt-6 text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] text-center">
+        {direction === 'right' ? '← Count from the Right Side' : 'Count from the Left Side →'}
+      </p>
     </div>
   );
 }

@@ -45,9 +45,9 @@ export const placeValuesBlueprint = {
     foundation_digit_position: "Identify which digit is in the tens or ones place.",
 
 //    standard_partition: "Find the missing part in a base-10 equation (e.g., 34 = 30 + ?).",
-    standard_basic_regrouping: "Regroup excess ones into tens (e.g., 2 tens 14 ones).",
-//    standard_partition_tens: "Find the missing tens part in a base-10 equation (e.g., 45 = ? + 5).",
-//    standard_word_problem_groups: "Solve a word problem involving items grouped in tens and loose ones.",
+//    standard_basic_regrouping: "Regroup excess ones into tens (e.g., 2 tens 14 ones).",
+    standard_partition_tens: "Find the missing tens part in a base-10 equation (e.g., 45 = ? + 5).",
+    standard_word_problem_groups: "Solve a word problem involving items grouped in tens and loose ones.",
 //    standard_compare_place_value: "Compare two numbers described in tens and ones to find the greater/smaller.",
 //    standard_add_tens_concept: "Add a specific number of tens to a 2-digit number.",
 //    standard_subtract_tens_concept: "Subtract a specific number of tens from a 2-digit number.",

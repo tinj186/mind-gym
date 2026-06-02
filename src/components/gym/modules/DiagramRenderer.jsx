@@ -1,13 +1,18 @@
 'use client';
 
 import React from 'react';
-import VisualRenderer from '@/components/gym/VisualRenderer';
+import VisualRenderer from '../VisualRenderer';
 import { normalizeQuestionData } from '@/lib/intelligence/workout-utils';
 
+/**
+ * DiagramRenderer: A structural bridge component.
+ * It normalizes incoming raw modelData and handles directive-based visibility
+ * before dispatching to the central VisualRenderer.
+ */
 export default function DiagramRenderer({ modelData: inputModelData, isQuestion, questionId, difficulty }) {
   if (!inputModelData) return null;
 
-  // 1. Safe Parse check if the incoming property payload arrives as a string container
+  // 1. Serialization Safety: Handle stringified payloads from AI or legacy DB rows
   let parsedModelData = inputModelData;
   if (typeof inputModelData === 'string') {
     try {
@@ -18,29 +23,26 @@ export default function DiagramRenderer({ modelData: inputModelData, isQuestion,
     }
   }
 
-  // 2. Respect blueprint directives to hide visual elements for abstract numeric channels
+  // 2. Directive Check: Respect blueprint flags to collapse the visual container
   if (parsedModelData?.hideVisual) return null;
 
-  // 3. Leverage the central universal normalizer to handle legacy schemas and modern visual mappings cleanly
+  // 3. Heuristic Mapping: Convert legacy schemas to modern visualEngine objects
   const normalized = normalizeQuestionData({ modelData: parsedModelData });
   if (!normalized || !normalized.visualEngine) return null;
 
   const type = normalized.visualEngine.componentToRender;
   const data = normalized.visualEngine.componentData;
 
-  // 4. Route directly into the master renderer using standard environment fallbacks
   return (
-    <div className="w-full unified-diagram-wrapper">
+    <div className="w-full diagram-bridge-wrapper">
       <VisualRenderer
         type={type}
         data={data}
-        visualProps={null}
-        setIsToolOpen={() => {}} // No-op fallback for admin preview layout frames
+        setIsToolOpen={() => {}} // No-op fallback for static diagram frames
         questionId={questionId}
         difficulty={difficulty}
         topic={parsedModelData?.meta?.topic || "Math"}
-        attempts={0} // Force full rendering on admin view frames
-        isExam={false}
+        attempts={0} // Force full-fidelity rendering for diagram previews
       />
     </div>
   );

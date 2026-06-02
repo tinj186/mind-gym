@@ -127,3 +127,22 @@ export async function updateWorkoutProgressAction(studentId, payload) {
     });
   }
 }
+
+/**
+ * Toggles the isArchived status of a question in the QuestionBank.
+ */
+export async function toggleArchiveQuestionAction(questionId, currentStatus) {
+  try {
+    await prisma.questionBank.update({
+      where: { id: questionId },
+      data: { isArchived: !currentStatus }
+    });
+    
+    revalidatePath('/admin/questions');
+    revalidatePath('/admin/questions/review');
+    return { success: true };
+  } catch (error) {
+    console.error('❌ Failed to toggle archive state in QuestionBank:', error);
+    return { success: false, error: error.message };
+  }
+}
