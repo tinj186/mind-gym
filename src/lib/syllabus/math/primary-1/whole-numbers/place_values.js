@@ -12,7 +12,7 @@ export const placeValuesBlueprint = {
   id: 'p1-place-values',
   title: 'Place Value (Tens/Ones)',
   strand: 'Number and Algebra',
-  visualType: 'BASE_TEN_BLOCKS', 
+  visualType: 'DYNAMIC', 
 
   // 1. OVERARCHING CONDITIONS
   difficultyLevels: {
@@ -44,27 +44,27 @@ export const placeValuesBlueprint = {
     foundation_decompose_tens: "Identify the number of tens in a multiple of 10.",
     foundation_digit_position: "Identify which digit is in the tens or ones place.",
 
-//    standard_partition: "Find the missing part in a base-10 equation (e.g., 34 = 30 + ?).",
-//    standard_basic_regrouping: "Regroup excess ones into tens (e.g., 2 tens 14 ones).",
+    standard_partition: "Find the missing part in a base-10 equation (e.g., 34 = 30 + ?).",
+    standard_basic_regrouping: "Regroup excess ones into tens (e.g., 2 tens 14 ones).",
     standard_partition_tens: "Find the missing tens part in a base-10 equation (e.g., 45 = ? + 5).",
     standard_word_problem_groups: "Solve a word problem involving items grouped in tens and loose ones.",
-//    standard_compare_place_value: "Compare two numbers described in tens and ones to find the greater/smaller.",
-//    standard_add_tens_concept: "Add a specific number of tens to a 2-digit number.",
-//    standard_subtract_tens_concept: "Subtract a specific number of tens from a 2-digit number.",
-//    standard_digit_clue: "Identify a number based on simple relative clues for its digits.",
-//    standard_expanded_form: "Identify the correct expanded form of a 2-digit number.",
-//    standard_equivalent_ones: "Convert a multiple of ten entirely into ones (e.g., 5 tens = 50 ones).",
+    standard_compare_place_value: "Compare two numbers described in tens and ones to find the greater/smaller.",
+    standard_add_tens_concept: "Add a specific number of tens to a 2-digit number.",
+    standard_subtract_tens_concept: "Subtract a specific number of tens from a 2-digit number.",
+    standard_digit_clue: "Identify a number based on simple relative clues for its digits.",
+    standard_expanded_form: "Identify the correct expanded form of a 2-digit number.",
+    standard_equivalent_ones: "Convert a multiple of ten entirely into ones (e.g., 5 tens = 50 ones).",
 
-    advanced_extreme_regrouping: "Find missing tens when given an extreme amount of ones.",
-    advanced_digit_clues: "Logic puzzle based on the sum and difference of the digits.",
+//    advanced_extreme_regrouping: "Find missing tens when given an extreme amount of ones.",
+//    advanced_digit_clues: "Logic puzzle based on the sum and difference of the digits.",
     advanced_mystery_number_bounds: "Find a mystery number given a range and a relationship between its digits.",
     advanced_digit_swap: "Find the original number if swapping its tens and ones gives a specific result.",
-    advanced_balance_equation: "Find the missing ones/tens to balance a place value equation.",
-    advanced_consecutive_digits: "Identify a number based on consecutive digits and their sum.",
-    advanced_same_digits: "Identify a number where both digits are the same, given a specific range limit.",
-    advanced_value_deduction: "Find a number given the actual value of its tens digit and the sum of its digits.",
-    advanced_missing_regrouped_tens: "Determine how many tens are needed to reach a target after regrouping ones.",
-    advanced_extreme_ones_comparison: "Compare a standard 2-digit number with a number expressed entirely in ones."
+//    advanced_balance_equation: "Find the missing ones/tens to balance a place value equation.",
+//    advanced_consecutive_digits: "Identify a number based on consecutive digits and their sum.",
+//    advanced_same_digits: "Identify a number where both digits are the same, given a specific range limit.",
+//    advanced_value_deduction: "Find a number given the actual value of its tens digit and the sum of its digits.",
+//    advanced_missing_regrouped_tens: "Determine how many tens are needed to reach a target after regrouping ones.",
+//    advanced_extreme_ones_comparison: "Compare a standard 2-digit number with a number expressed entirely in ones."
   },
 
   // 3. GENERATION ENGINE

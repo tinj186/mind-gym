@@ -176,23 +176,25 @@ export const standardVariants = {
     const mcqOptions = JSON.stringify(options.sort(() => Math.random() - 0.5));
 
     return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_compare_place_value question. DO NOT modify the mathematical structure or the final answer.
-        MATH CONSTRAINTS:
-        - Option A: ${n1_tens} tens ${n1_ones} ones (${num1})
-        - Option B: ${n2_tens} tens ${n2_ones} ones (${num2})
-        - Question asks for the: ${targetWord} number.
-        - Final Answer MUST strictly be: "${answer}"
-        CRITICAL: If the question type is MCQ, the "options" array MUST be exactly: ${mcqOptions}. DO NOT modify its content or format.
-        OUTPUT FORMAT (Return ONLY valid JSON):
-        {
+      aiPrompt: `You are an expert Primary 1 math generator.
+      ${formatInstructions}
+
+      CRITICAL: This is a text-only conceptual comparison. Do NOT include a "visualEngine" block with blocks or icons. No icon rendering is allowed.
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
           "questionText": ${JSON.stringify(getQText(`Which is ${targetWord}: ${n1_tens} tens ${n1_ones} ones or ${n2_tens} tens ${n2_ones} ones?`, `Which is ${targetWord}: ${n1_tens} tens ${n1_ones} ones or ${n2_tens} tens ${n2_ones} ones?`))},
           "options": ${isMCQ ? mcqOptions : 'null'},
-          "hint": ${JSON.stringify(getQText(`Change both sets of tens and ones into normal numbers first, then compare them.`, `Convert both to numbers and compare.`))},
+          "hint": "Convert both sets into numbers first. For example, ${n1_tens} tens and ${n1_ones} ones is ${num1}.",
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`${n1_tens} tens ${n1_ones} ones is ${num1}. ${n2_tens} tens ${n2_ones} ones is ${num2}. ${answer} is ${targetWord}.`, `${num1} vs ${num2}`))},
-          "visualItems": []
-        }`,
-      metadata: { difficulty: 'standard', steps: 2, logic: "compare", hideVisual: true }
+          "solutionSteps": "${n1_tens} tens ${n1_ones} ones is ${num1}. ${n2_tens} tens ${n2_ones} ones is ${num2}. Since ${num1 > num2 ? num1 : num2} is bigger than ${num1 < num2 ? num1 : num2}, the ${targetWord} value is ${answer}."
+        },
+        "visualEngine": { "componentToRender": "NONE", "componentData": {} },
+        "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'standard', steps: 2, logic: "compare_place_value", hideVisual: true }
     };
   },
   standard_add_tens_concept: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
@@ -276,22 +278,25 @@ export const standardVariants = {
     const mcqOptions = JSON.stringify(options.sort(() => Math.random() - 0.5));
 
     return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_digit_clue question. DO NOT modify the mathematical structure or the final answer.
-        MATH CONSTRAINTS:
-        - Clue 1: Tens digit is ${t}
-        - Clue 2: Ones digit is ${o}
-        - Final Answer MUST strictly be: "${answer}"
-        CRITICAL: If the question type is MCQ, the "options" array MUST be exactly: ${mcqOptions}. DO NOT modify its content or format.
-        OUTPUT FORMAT (Return ONLY valid JSON):
-        {
+      aiPrompt: `You are an expert Primary 1 math generator.
+      ${formatInstructions}
+
+      CRITICAL: This is a text-only conceptual puzzle. Do NOT include a "visualEngine" block with blocks or icons. No icon rendering is allowed.
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
           "questionText": ${JSON.stringify(getQText(`I am a 2-digit number. My tens digit is ${t} and my ones digit is ${o}. What number am I?`, `2-digit number: Tens digit is ${t}, ones digit is ${o}?`))},
           "options": ${isMCQ ? mcqOptions : 'null'},
-          "hint": ${JSON.stringify(getQText(`The tens digit goes in the first place on the left, and the ones digit goes on the right.`, `Tens: ${t}, Ones: ${o}` ))},
+          "hint": "The digit on the left is tens and the digit on the right is ones.",
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`Combining ${t} tens and ${o} ones gives ${answer}.`, `${t} tens + ${o} ones = ${answer}`))},
-          "visualItems": []
-        }`,
-      metadata: { difficulty: 'standard', steps: 2, logic: "clue", hideVisual: true }
+          "solutionSteps": "Combining ${t} tens and ${o} ones gives ${answer}."
+        },
+        "visualEngine": { "componentToRender": "NONE", "componentData": {} },
+        "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'standard', steps: 2, logic: "digit_clue", hideVisual: true }
     };
   },
   standard_expanded_form: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
@@ -308,21 +313,25 @@ export const standardVariants = {
     const mcqOptions = JSON.stringify(options.sort(() => Math.random() - 0.5));
 
     return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_expanded_form question. DO NOT modify the mathematical structure or the final answer.
-        MATH CONSTRAINTS:
-        - Number: ${num}
-        - Final Answer MUST strictly be: "${answer}"
-        CRITICAL: If the question type is MCQ, the "options" array MUST be exactly: ${mcqOptions}. DO NOT modify its content or format.
-        OUTPUT FORMAT (Return ONLY valid JSON):
-        {
+      aiPrompt: `You are an expert Primary 1 math generator.
+      ${formatInstructions}
+
+      CRITICAL: This is a text-only conceptual puzzle. Do NOT include a "visualEngine" block with blocks or icons. No icon rendering is allowed.
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
           "questionText": ${JSON.stringify(getQText(`Write ${num} in expanded form.`, `Expanded form of ${num} = ?`))},
           "options": ${isMCQ ? mcqOptions : 'null'},
-          "hint": ${JSON.stringify(getQText(`How many tens are in ${num}? What is their value? Then add the ones.`, `${t} + ? = ${num}`))},
+          "hint": "How many tens are in ${num}? What is their value?",
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`${num} is ${t} plus ${o}.`, `${num} = ${t} + ${o}`))},
-          "visualItems": []
-        }`,
-      metadata: { difficulty: 'standard', steps: 2, logic: "expanded", hideVisual: true }
+          "solutionSteps": "${num} is ${t} plus ${o}."
+        },
+        "visualEngine": { "componentToRender": "NONE", "componentData": {} },
+        "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'standard', steps: 2, logic: "expanded_form", hideVisual: true }
     };
   },
   standard_equivalent_ones: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {

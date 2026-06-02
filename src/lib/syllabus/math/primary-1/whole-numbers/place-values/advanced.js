@@ -50,7 +50,6 @@ export const advancedVariants = {
     const num = (tensDigit * 10) + onesDigit;
     const sum = tensDigit + onesDigit;
     const diff = onesDigit - tensDigit;
-    const sName = extract(context?.name || 'Wei Ling');
 
     // Ensure options are distinct and include the correct answer
     const options = [num, num - 1, num + 1, (onesDigit * 10) + tensDigit].filter(
@@ -58,26 +57,28 @@ export const advancedVariants = {
     ).sort(() => Math.random() - 0.5).slice(0, 3);
     if (!options.includes(num)) options.push(num);
     while (options.length < 4) options.push(Math.floor(Math.random() * 89) + 10);
+    const mcqOptions = JSON.stringify(options.map(String).sort(() => Math.random() - 0.5));
 
     return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating an advanced_digit_clues question. DO NOT modify the mathematical structure or the final answer. Use the name ${sName}. NO addition or subtraction stories.
-        MATH CONSTRAINTS:
-        - Target Number: ${num}
-        - Clue: Sum of digits is ${sum}, tens digit is ${diff} less than ones.
-        - Final Answer MUST strictly be: "${num}"
-        ${formatInstructions}
-        CRITICAL: If the question type is MCQ, the "options" array MUST be exactly: ${JSON.stringify(options)}. DO NOT modify its content or format.
+      aiPrompt: `You are an expert Primary 1 math generator.
+      ${formatInstructions}
 
-        OUTPUT FORMAT (Return ONLY a single valid JSON object):
-        {
+      CRITICAL: This is a text-only conceptual logic puzzle. You MUST NOT generate any visual components. The "visualEngine" block in your JSON output MUST have "componentToRender": "NONE" and an empty "componentData" object. No icon rendering is allowed.
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
           "questionText": ${JSON.stringify(getQText(`I am a 2-digit number. The sum of my digits is ${sum}. My tens digit is ${diff} less than my ones digit. What number am I?`, `2-digit number: Sum of digits is ${sum}, tens digit is ${diff} less than ones?`))},
-          "options": ${type === 'MCQ' ? JSON.stringify(options) : 'null'},
-          "hint": ${JSON.stringify(getQText(`Find two numbers that add up to ${sum}, where one number is ${diff} smaller than the other.`, `Try splitting ${sum} into two digits.`))},
+          "options": ${isMCQ ? mcqOptions : 'null'},
+          "hint": "Find two digits that add up to ${sum}, where one digit is ${diff} smaller than the other.",
           "finalAnswer": "${num}",
-          "solutionSteps": ${JSON.stringify(getQText(`Ones digit is ${onesDigit}, tens digit is ${tensDigit}. ${tensDigit} + ${onesDigit} = ${sum}. The number is ${num}.`, `${tensDigit}+${onesDigit}=${sum}, ${tensDigit}=${onesDigit}-${diff}`))},
-          "visualItems": []
-        }`,
-      metadata: { difficulty: 'advanced', steps: 3, logic: "logic_puzzle", hideVisual: true }
+          "solutionSteps": "Ones digit is ${onesDigit}, tens digit is ${tensDigit}. ${tensDigit} + ${onesDigit} = ${sum}. The number is ${num}."
+        },
+        "visualEngine": { "componentToRender": "NONE", "componentData": {} },
+        "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'advanced', steps: 3, logic: "advanced_digit_clues", hideVisual: true }
     };
   },
   advanced_mystery_number_bounds: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {

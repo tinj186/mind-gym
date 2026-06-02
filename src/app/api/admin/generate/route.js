@@ -13,6 +13,35 @@ const AI_TIMEOUT_MS = 25000;
  * Builds a specialized prompt for the AI based on Singapore MOE Syllabus constraints.
  */
 function getSyllabusPrompt(quantity, level, strand, topic, subtopic, heuristic, difficulty, type, blueprintData) {
+  const p1Constraints = level === 'Primary 1' ? `
+    - Sentences must be extremely short (maximum 10-12 words per sentence).
+    - Use simple, active-voice sentence structures (e.g., "Siti has 5 apples. She gives 2 apples to Bala. How many apples are left?"). 
+    - Avoid complex multi-clause sentences or advanced conjunctions.
+    - Frame hints around concrete, visual items or actions (e.g., "Try counting the items in a group!", "Think about what happens when some items are given away!").
+    - Avoid abstract math vocabulary for lower grades (avoid technical terms like "subtract", "variable", "equation", "operation").
+    - Solutions must use straightforward step structures centered around visual models like "Number Bonds" or simple groups (e.g., "Step 1: Count the total blocks. Step 2: Take away 3 blocks.").` : '';
+
+  const systemPrompt = `
+You are an expert primary school math content generator specializing in the Singapore Math curriculum.
+You are generating content strictly for a student at the following educational level: ${level}.
+
+CRITICAL READABILITY CONSTRAINTS:
+- You MUST adapt your entire tone, vocabulary, and sentence length to match a student at the ${level} tier.${p1Constraints}
+- If the level is 'Primary 1', use short, punchy sentences. Do not use advanced words. Stick closely to the provided vocabulary terms.
+- The question must read like a friendly, clear, level-appropriate word problem.
+
+HINT GENERATION RULES:
+- Never give away the answer.
+- Provide a guiding hint using scaffolded, simple phrasing appropriate for a ${level} child.
+- Avoid abstract math vocabulary for lower grades. Use concrete object imagery (e.g., apples, blocks, toys).
+
+SOLUTION STEP RULES:
+- Break down the solution step-by-step.
+- Use primary school methodologies (like parts-and-whole or number bonds for Primary 1) to explain the math logically and clearly.
+- Keep calculation breakdowns clean, minimal, and fully explained with elementary phrasing.
+- Each step MUST start on a new line.
+`;
+
   const instructions = [];
   instructions.push(`DIFFICULTY TIERS (Singapore MOE Style):
     - Foundation: Basic mastery. Direct computation, single-step logic.
@@ -25,7 +54,9 @@ function getSyllabusPrompt(quantity, level, strand, topic, subtopic, heuristic, 
     instructions.push(`VISUAL STRATEGY: Ensure modelData uses ${blueprintData.visualType} logic.`);
   }
 
-  return `Output ONLY raw, valid JSON array. Do NOT include conversational text.
+  return `
+    ${systemPrompt}
+    Output ONLY raw, valid JSON array. Do NOT include conversational text.
     Generate ${quantity} new math questions for ${level} based on:
     - Topic: ${topic}
     - Sub-topic: ${subtopic}
@@ -127,6 +158,29 @@ export async function POST(request) {
     const subject = metadata?.subject || 'Math';
     const gradeLevel = level === 'Primary 1' ? 'P1' : level;
 
+    // Prepare age-appropriate system instructions
+    const p1Constraints = level === 'Primary 1' ? `
+    - Sentences must be extremely short (maximum 10-12 words per sentence).
+    - Use simple, active-voice sentence structures.
+    - Avoid technical math terms in hints (avoid "subtract", "variable", "equation").
+    - Solutions must use straightforward step structures centered around visual models like "Number Bonds".` : '';
+
+    const baseSystemInstructions = `
+You are an expert primary school math content generator specializing in the Singapore Math curriculum.
+You are generating content strictly for a student at the following educational level: ${level}.
+
+CRITICAL READABILITY CONSTRAINTS:
+- You MUST adapt your entire tone, vocabulary, and sentence length to match a student at the ${level} tier.${p1Constraints}
+- If the level is 'Primary 1', use short, punchy sentences. Do not use advanced words.
+- The question must read like a friendly, clear, level-appropriate word problem.
+
+HINT GENERATION RULES:
+- Never give away the answer.
+- Provide a guiding hint using scaffolded, simple phrasing appropriate for a ${level} child.
+- Avoid abstract math vocabulary for lower grades. Use concrete object imagery.
+- Each step MUST start on a new line.
+`;
+
     const safeMapToSchema = (q) => {
       // Determine if we are processing raw AI output (Nested) or pre-flattened push object
       const isRawAI = !!(q.meta || q.content || q.visualEngine);
@@ -218,7 +272,7 @@ export async function POST(request) {
             generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: 4096 } 
           }, { apiVersion: 'v1beta' });
           try {
-            result = await model.generateContent(stepResult.aiPrompt);
+            result = await model.generateContent(baseSystemInstructions + "\n" + stepResult.aiPrompt);
             break; 
           } catch (error) {
             // Handle 503 (Busy) or 429 (Rate Limit) by rotating models
@@ -346,7 +400,7 @@ export async function POST(request) {
           }, { apiVersion: 'v1beta' });
 
           try {
-            result = await model.generateContent(microPrompt);
+            result = await model.generateContent(baseSystemInstructions + "\n" + microPrompt);
             break; 
           } catch (error) {
             // Handle 503 (Busy) or 429 (Rate Limit) by rotating models
