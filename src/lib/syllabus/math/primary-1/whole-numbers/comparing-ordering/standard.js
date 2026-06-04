@@ -110,12 +110,12 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           solutionSteps: solutionSteps
         },
         visualEngine: {
-          componentToRender: "COMPARE_OBJECTS",
-          componentData: { sets: [ { label: "A", count: amounts[0], icon: selectedIcon }, { label: "B", count: amounts[1], icon: selectedIcon }, { label: "C", count: amounts[2], icon: selectedIcon } ] , hideVisual: hideVisual}
+          componentToRender: "NONE",
+          componentData: {}
         },
         inputRequirement: { inputType: inputType }
       })}`,
-      metadata: { difficulty, steps: 2, logic: "compare_word", hideVisual: hideVisual }
+      metadata: { difficulty, steps: 2, logic: "compare_word", hideVisual: true }
     };
   }
 
@@ -254,70 +254,78 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   }
 
   if (activeVariant === 'standard_ten_more_compare') {
+    const amount = Math.floor(Math.random() * 10) + 1; // Variable < 11 (1 to 10)
     const base = Math.floor(Math.random() * 50) + 10;
-    const compareVal = base + (Math.random() > 0.5 ? 12 : 8);
-    const tenMore = base + 10;
-    const askGreater = Math.random() > 0.5;
-    const answer = askGreater ? String(Math.max(tenMore, compareVal)) : String(Math.min(tenMore, compareVal));
-    const targetWord = askGreater ? "greater" : "smaller";
-    
-    const options = isMCQ ? [String(tenMore), String(compareVal), String(base), String(tenMore + 5)] : null;
-    const hint = getQText(`First find what is 10 more than ${base}. Then compare it with ${compareVal}.`, `Calculate 10 more first.`);
+    const changedVal = base + amount;
+    const compareVal = changedVal + (Math.random() > 0.5 ? 2 : -2);
 
-    const questionText = getQText(`Which is ${targetWord}: 10 more than ${base} or ${compareVal}?`, `Which is ${targetWord}: 10 more than ${base} or ${compareVal}?`);
-    const solutionSteps = getQText(`10 more than ${base} is ${tenMore}. Comparing ${tenMore} and ${compareVal}, the ${targetWord} is ${answer}.`, `${base} + 10 = ${tenMore}, compare ${tenMore} & ${compareVal}`);
+    const askGreater = Math.random() > 0.5;
+    const targetWord = askGreater ? "greater" : "smaller";
+    const answer = askGreater ? String(Math.max(changedVal, compareVal)) : String(Math.min(changedVal, compareVal));
+
+    const mcqOptions = isMCQ ? JSON.stringify([String(changedVal), String(compareVal), String(base), String(changedVal + 5)].sort(() => Math.random() - 0.5)) : 'null';
+    const questionTextTemplate = getQText(`Which is ${targetWord}: ${amount} more than ${base} or ${compareVal}?`, `Which is ${targetWord}: ${amount} more than ${base} or ${compareVal}?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: 10 More Comparison\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({
-        meta: commonMeta,
-        content: {
-          questionText: questionText,
-          options: options,
-          hint: hint,
-          finalAnswer: answer,
-          solutionSteps: solutionSteps
+      aiPrompt: `You are an expert Primary 1 math generator.
+      ${formatInstructions}
+      ${storyInstruction}
+
+      CRITICAL: This is a text-only conceptual comparison. Do NOT include a "visualEngine" block with blocks or icons. No icon rendering is allowed.
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "hint": "Find what ${amount} more than ${base} is first.",
+          "finalAnswer": "${answer}",
+          "solutionSteps": "1. Find ${amount} more than ${base}: ${base} + ${amount} = ${changedVal}.\\n2. Compare ${changedVal} and ${compareVal}.\\n3. The ${targetWord} number is ${answer}."
         },
-        visualEngine: {
-          componentToRender: hideVisual ? "NONE" : "NUMBER_CARDS",
-          componentData: { items: [`10 more than ${base}`, `${compareVal}`], hideVisual: hideVisual }
-        },
-        inputRequirement: { inputType: inputType }
-      })}`,
-      metadata: { difficulty, steps: 2, logic: "ten_more_compare", hideVisual: hideVisual }
+        "visualEngine": { "componentToRender": "NONE", "componentData": {} },
+        "inputRequirement": { "inputType": "${inputType}" }
+      }`,
+      metadata: { difficulty, steps: 2, logic: "amount_more_compare", hideVisual: true }
     };
   }
 
   if (activeVariant === 'standard_ten_less_compare') {
+    const amount = Math.floor(Math.random() * 10) + 1; // Variable < 11 (1 to 10)
     const base = Math.floor(Math.random() * 50) + 20;
-    const compareVal = base - (Math.random() > 0.5 ? 12 : 8);
-    const tenLess = base - 10;
-    const askGreater = Math.random() > 0.5;
-    const answer = askGreater ? String(Math.max(tenLess, compareVal)) : String(Math.min(tenLess, compareVal));
-    const targetWord = askGreater ? "greater" : "smaller";
-    
-    const options = isMCQ ? [String(tenLess), String(compareVal), String(base), String(tenLess - 5)] : null;
-    const hint = getQText(`First find what is 10 less than ${base}. Then compare it with ${compareVal}.`, `Calculate 10 less first.`);
+    const changedVal = base - amount;
+    const compareVal = changedVal + (Math.random() > 0.5 ? 2 : -2);
 
-    const questionText = getQText(`Which is ${targetWord}: 10 less than ${base} or ${compareVal}?`, `Which is ${targetWord}: 10 less than ${base} or ${compareVal}?`);
-    const solutionSteps = getQText(`10 less than ${base} is ${tenLess}. Comparing ${tenLess} and ${compareVal}, the ${targetWord} is ${answer}.`, `${base} - 10 = ${tenLess}, compare ${tenLess} & ${compareVal}`);
+    const askGreater = Math.random() > 0.5;
+    const targetWord = askGreater ? "greater" : "smaller";
+    const answer = askGreater ? String(Math.max(changedVal, compareVal)) : String(Math.min(changedVal, compareVal));
+
+    const mcqOptions = isMCQ ? JSON.stringify([String(changedVal), String(compareVal), String(base), String(changedVal - 5)].sort(() => Math.random() - 0.5)) : 'null';
+    const questionTextTemplate = getQText(`Which is ${targetWord}: ${amount} less than ${base} or ${compareVal}?`, `Which is ${targetWord}: ${amount} less than ${base} or ${compareVal}?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: 10 Less Comparison\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({
-        meta: commonMeta,
-        content: {
-          questionText: questionText,
-          options: options,
-          hint: hint,
-          finalAnswer: answer,
-          solutionSteps: solutionSteps
+      aiPrompt: `You are an expert Primary 1 math generator.
+      ${formatInstructions}
+      ${storyInstruction}
+
+      CRITICAL: This is a text-only conceptual comparison. Do NOT include a "visualEngine" block with blocks or icons. No icon rendering is allowed.
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "hint": "Find what ${amount} less than ${base} is first.",
+          "finalAnswer": "${answer}",
+          "solutionSteps": "1. Find ${amount} less than ${base}: ${base} - ${amount} = ${changedVal}.\\n2. Compare ${changedVal} and ${compareVal}.\\n3. The ${targetWord} number is ${answer}."
         },
-        visualEngine: {
-          componentToRender: hideVisual ? "NONE" : "NUMBER_CARDS",
-          componentData: { items: [`10 less than ${base}`, `${compareVal}`], hideVisual: hideVisual }
-        },
-        inputRequirement: { inputType: inputType }
-      })}`,
-      metadata: { difficulty, steps: 2, logic: "ten_less_compare", hideVisual: hideVisual }
+        "visualEngine": { "componentToRender": "NONE", "componentData": {} },
+        "inputRequirement": { "inputType": "${inputType}" }
+      }`,
+      metadata: { difficulty, steps: 2, logic: "amount_less_compare", hideVisual: true }
     };
   }
 }

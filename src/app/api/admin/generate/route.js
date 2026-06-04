@@ -39,7 +39,7 @@ SOLUTION STEP RULES:
 - Break down the solution step-by-step.
 - Use primary school methodologies (like parts-and-whole or number bonds for Primary 1) to explain the math logically and clearly.
 - Keep calculation breakdowns clean, minimal, and fully explained with elementary phrasing.
-- Each step MUST start on a new line.
+- Format each step strictly as a numbered list: "1. [Step description]", "2. [Step description]", etc. Each step MUST start on a new line (use the \n character).
 `;
 
   const instructions = [];
@@ -74,7 +74,7 @@ SOLUTION STEP RULES:
       "options": ${type === 'MCQ' ? '["A: ...", "B: ...", "C: ...", "D: ..."]' : 'null'},
       "visualItems": "array of 5-8 emojis",
       "modelData": object,
-      "solution": "step-by-step mathematical explanation with each step on a new line",
+      "solution": "step-by-step mathematical explanation formatted strictly as a numbered list (1. ..., 2. ..., 3. ...) with explicit \\n characters between steps",
       "finalAnswer": "string or JSON object",
       "hint": "MANDATORY: Provide a conceptual scaffolding hint (do NOT include the answer or specific numbers)",
       "context": {
@@ -178,7 +178,7 @@ HINT GENERATION RULES:
 - Never give away the answer.
 - Provide a guiding hint using scaffolded, simple phrasing appropriate for a ${level} child.
 - Avoid abstract math vocabulary for lower grades. Use concrete object imagery.
-- Each step MUST start on a new line.
+- Format solution steps strictly as a numbered list: "1. ..., 2. ..., 3. ...". Each step MUST start on a new line (use the \\n character).
 `;
 
     const safeMapToSchema = (q) => {
@@ -197,7 +197,11 @@ HINT GENERATION RULES:
         };
       }
 
-      const getStr = (val) => typeof val === 'object' ? JSON.stringify(val) : String(val || "");
+      const formatValue = (val) => {
+        if (Array.isArray(val)) return val.join('\n');
+        if (typeof val === 'object' && val !== null) return JSON.stringify(val);
+        return String(val || "");
+      };
 
       return {
         subject: q.subject || q.meta?.subject || subject || 'Math',
@@ -209,13 +213,34 @@ HINT GENERATION RULES:
         subtopic: q.subtopic || q.meta?.subtopic || subtopic || '',
         type: q.type || q.meta?.type || type || 'Short Question',
         difficulty: q.difficulty || q.meta?.difficulty || difficulty || 'Foundation',
-        question: getStr(q.content?.questionText || q.questionText || q.question || 'Missing question text'),
-        options: q.content?.options || q.options || null,
+        question: formatValue(q.content?.questionText || q.questionText || q.question || 'Missing question text'),
+        options: (() => {
+          let opts = q.content?.options || q.options || null;
+          if (opts === null) return null;
+          
+          let processedOpts = [];
+          if (Array.isArray(opts)) {
+            processedOpts = opts.map(opt => {
+              if (opt === null || opt === undefined) return "";
+              if (typeof opt === 'object' && opt !== null) {
+                return opt.text || opt.value || opt.label || JSON.stringify(opt);
+              }
+              return String(opt);
+            });
+          } else if (typeof opts === 'string') {
+            const parsed = parseAiOptions(opts); // parseAiOptions already handles stringification
+            if (parsed && Array.isArray(parsed)) {
+              processedOpts = parsed;
+            }
+          }
+          // Deduplicate the options
+          return processedOpts.length > 0 ? [...new Set(processedOpts)] : null;
+        })(),
         modelData: prismaModelData ? JSON.parse(JSON.stringify(prismaModelData)) : null,
         // AUDIT FIX: Ensure visualItems (emojis) are mapped even if nested inside modelData
         visualItems: q.visualItems || prismaModelData?.items || null,
         hint: q.content?.hint || q.hint || q.conceptualHint || q.content?.conceptualHint || null,
-        solution: getStr(q.content?.solutionSteps || q.solutionSteps || q.solution || 'Missing solution steps'),
+        solution: formatValue(q.content?.solutionSteps || q.solutionSteps || q.solution || 'Missing solution steps'),
         finalAnswer: String(q.content?.finalAnswer ?? q.finalAnswer ?? ''),
         isApproved: false
       };
@@ -348,8 +373,8 @@ HINT GENERATION RULES:
                 finalAnswer: typeof q.finalAnswer === 'object' ? JSON.stringify(q.finalAnswer) : String(q.finalAnswer || ""),
                 options: parseAiOptions(q.options),
                 modelData: prismaModelData,
-                question: typeof (cleanQ.question || questionText || q.question) === 'object' ? JSON.stringify(cleanQ.question || questionText || q.question) : String(cleanQ.question || questionText || q.question || "Problem data missing"),
-                solution: typeof (cleanQ.solution || solutionSteps || q.solution) === 'object' ? JSON.stringify(cleanQ.solution || solutionSteps || q.solution) : String(cleanQ.solution || solutionSteps || q.solution || "No solution provided"),
+                question: cleanQ.question || questionText || q.question || "Problem data missing",
+                solution: cleanQ.solution || solutionSteps || q.solution || "No solution provided",
                 hint: q.content?.hint || q.hint || q.conceptualHint || q.content?.conceptualHint || null
               });
             }
@@ -471,8 +496,8 @@ HINT GENERATION RULES:
               finalAnswer: typeof q.finalAnswer === 'object' ? JSON.stringify(q.finalAnswer) : String(q.finalAnswer || ""),
               options: parseAiOptions(q.options),
               modelData: prismaModelData,
-              question: typeof (cleanQ.question || questionText || q.question) === 'object' ? JSON.stringify(cleanQ.question || questionText || q.question) : String(cleanQ.question || questionText || q.question || "Problem data missing"),
-              solution: typeof (cleanQ.solution || solutionSteps || q.solution) === 'object' ? JSON.stringify(cleanQ.solution || solutionSteps || q.solution) : String(cleanQ.solution || solutionSteps || q.solution || "No solution provided"),
+              question: cleanQ.question || questionText || q.question || "Problem data missing",
+              solution: cleanQ.solution || solutionSteps || q.solution || "No solution provided",
               hint: q.content?.hint || q.hint || q.conceptualHint || q.content?.conceptualHint || null
             });
           }
@@ -561,8 +586,8 @@ HINT GENERATION RULES:
                 finalAnswer: typeof q.finalAnswer === 'object' ? JSON.stringify(q.finalAnswer) : String(q.finalAnswer),
                 options: parseAiOptions(q.options),
                 modelData: prismaModelData,
-                question: typeof (cleanQ.question || questionText || q.question) === 'object' ? JSON.stringify(cleanQ.question || questionText || q.question) : String(cleanQ.question || questionText || q.question || "Problem data missing"),
-                solution: typeof (cleanQ.solution || solutionSteps || q.solution) === 'object' ? JSON.stringify(cleanQ.solution || solutionSteps || q.solution) : String(cleanQ.solution || solutionSteps || q.solution || "No solution provided"),
+                question: cleanQ.question || questionText || q.question || "Problem data missing",
+                solution: cleanQ.solution || solutionSteps || q.solution || "No solution provided",
                 hint: q.content?.hint || q.hint || q.conceptualHint || q.content?.conceptualHint || null
               });
             }
