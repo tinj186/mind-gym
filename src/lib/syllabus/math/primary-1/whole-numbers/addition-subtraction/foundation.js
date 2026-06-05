@@ -1,6 +1,12 @@
 import { numberToWords } from '@/lib/utils/math-helpers';
 import { getRandomContext } from '@/lib/utils/localization';
 
+// Robust extraction helper for localized context objects
+const extract = (val) => {
+  if (typeof val !== 'object' || val === null) return String(val);
+  return val.item || val.singular || val.name?.singular || val.text || val.val || String(val);
+};
+
 export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, displayName, getQText, selectedIcon, hideVisual) {
   const commonMeta = { level, topic, type: zodType, difficulty: zodDiff };
   const inputType = isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT';
@@ -27,38 +33,36 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const options = isMCQ ? [answer, String(parseInt(answer) + 1), String(parseInt(answer) - 1), String(parseInt(answer) + 2)].sort(() => Math.random() - 0.5) : null;
 
     const promptObject = {
-      meta: commonMeta,
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
-        questionText: getQText(`[STORY] How many ${isAdd ? 'altogether' : 'are left'}?`, `${num1} ${operator} ${num2} = ?`), // Use getQText
-        hint: "[AI: INJECT HINT]",
+        questionText: getQText(`[STORY] How many ${isAdd ? 'altogether' : 'are left'}?`, `${num1} ${operator} ${num2} = ?`),
         options: options,
+        hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
-        solutionSteps: `${num1} ${operator} ${num2} = ${answer}.`
+        solutionSteps: `1. ${num1} ${operator} ${num2} = ${answer}.`
       },
       visualEngine: {
-        componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE", // Short questions (equations) get cards, word problems (stories) do not
-        componentData: { items: [String(num1), operator, String(num2)], hideVisual: isShortQ } // hideVisual should be true if componentToRender is NONE
+        componentToRender: isStructure ? "NONE" : "NUMBER_CARDS",
+        componentData: isStructure ? {} : { items: [String(num1), operator, String(num2)] }
       },
       inputRequirement: { inputType }
     };
 
     return {
-      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
-      Task: 
-      1. Replace the "[STORY]" tag in the questionText with a 1-sentence Singaporean math story about ${context.name} having ${num1} ${itemLabel} and ${isAdd ? 'getting' : 'giving away'} ${num2} more.
-      2. In the "hint" field, provide a conceptual clue. 
-         - WRONG: "${isAdd ? 'Add' : 'Subtract'} ${num1} and ${num2}."
-         - RIGHT: "Try counting ${isAdd ? 'all' : 'what is left of'} the ${itemLabel} ${isAdd ? 'together starting from the bigger group' : 'after taking some away'}."
-      
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
       ${isShortQ 
-        ? `3. DO NOT add a story for Short Questions.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-        : `3. The story MUST be localized (e.g., using names like Siti and settings like a hawker centre) and include the numbers ${num1} and ${num2}.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-      }`,
+        ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a 1-sentence Singaporean math story about ${extract(context.name)} having ${num1} ${itemLabel} and ${isAdd ? 'getting' : 'giving away'} ${num2} more.`
+      }
+      
+      CRITICAL VISUAL RULE: "componentData" MUST be an object (e.g. {}). NEVER return it as a string (like "NONE").
+      
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
       metadata: { 
         difficulty: 'foundation', 
         steps: 1, 
         logic: isAdd ? "add_20" : "sub_20", 
-        hideVisual: isShortQ 
+        hideVisual: isStructure 
       }
     };
   }
@@ -69,40 +73,40 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const part = Math.floor(Math.random() * (sum - 4)) + 2; 
     const answer = String(sum - part);
     const isFirstMissing = Math.random() > 0.5;
-    
+
+    const options = isMCQ ? [answer, String(sum), String(part), String(sum + 1)].sort(() => Math.random() - 0.5) : null;
+
     const promptObject = {
-      meta: commonMeta,
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
-        questionText: getQText(`[STORY] How many more does ${context.name} need?`, isFirstMissing ? `? + ${part} = ${sum}` : `${part} + ? = ${sum}`), // Use getQText
+        questionText: getQText(`[STORY] How many more does ${extract(context.name)} need?`, isFirstMissing ? `? + ${part} = ${sum}` : `${part} + ? = ${sum}`),
+        options: options,
         hint: "[AI: INJECT HINT]",
-        options: isMCQ ? [answer, String(sum), String(part), String(sum + 1)].sort(() => Math.random() - 0.5) : null,
         finalAnswer: answer,
-        solutionSteps: `To find the missing part, subtract the known part from the whole: ${sum} - ${part} = ${answer}.`
+        solutionSteps: `1. ${sum} - ${part} = ${answer}.`
       },
       visualEngine: {
-        componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
-        componentData: { items: isFirstMissing ? ["?", "+", String(part), "=", String(sum)] : [String(part), "+", "?", "=", String(sum)], hideVisual: isShortQ }
+        componentToRender: isStructure ? "NONE" : "NUMBER_CARDS",
+        componentData: isStructure ? {} : { items: isFirstMissing ? ["?", "+", String(part), "=", String(sum)] : [String(part), "+", "?", "=", String(sum)] }
       },
       inputRequirement: { inputType }
     };
 
     return {
-      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
-      Task: 
-      1. Replace the "[STORY]" tag in the questionText with a 1-sentence Singaporean story where ${context.name} has ${part} ${itemLabel} but needs ${sum} in total.
-      2. In the "hint" field, provide a conceptual clue. 
-         - WRONG: "Subtract ${part} from ${sum}."
-         - RIGHT: "Think about how many more you need to add to ${part} to reach ${sum}."
-      
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
       ${isShortQ 
-        ? `3. DO NOT add a story for Short Questions.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-        : `3. The story MUST be localized (e.g., using names like Ahmad and settings like a playground) and include the numbers ${part} and ${sum}.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-      }`,
+        ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a 1-sentence localized Singaporean story where ${extract(context.name)} has ${part} ${itemLabel} but needs ${sum} in total.`
+      }
+
+      CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
       metadata: { 
         difficulty: 'foundation', 
         steps: 1, 
         logic: "missing_addend", 
-        hideVisual: isShortQ 
+        hideVisual: isStructure 
       }
     };
   }
@@ -135,13 +139,13 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     }
     
     const promptObject = {
-      meta: commonMeta,
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] ${qTextSuffix}`, "Find the missing number in the number bond."),
         hint: "[AI: INJECT HINT]",
         options: isMCQ ? [answer, String(whole), String(part1), String(parseInt(answer) + 1)].sort(() => Math.random() - 0.5) : null,
         finalAnswer: answer,
-        solutionSteps: solutionSteps
+        solutionSteps: `1. ${solutionSteps}`
       },
       visualEngine: {
         componentToRender: "NUMBER_BOND", // Always show number bonds for this variant
@@ -151,18 +155,15 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     };
 
     return {
-      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
-      Task: 
-      1. Replace the "[STORY]" tag in the questionText with a 1-sentence Singaporean story.
-      2. In the "hint" field, provide a conceptual clue about finding the missing part or whole.
-      ${missingPos === 0
-        ? `The story should be about ${context.name} having ${part1} ${itemLabel} and ${part2} ${itemLabel} and combining them.`
-        : `The story should be about ${context.name} splitting ${whole} ${itemLabel} into two groups, where one has ${missingPos === 1 ? part2 : part1}.`
-      }
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
       ${isShortQ 
-        ? `3. DO NOT add a story for Short Questions.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-        : `3. The story MUST be localized (e.g., using names like Wei Ling and settings like a library) and include the relevant numbers.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-      }`,
+        ? 'STRICT: Provide a direct question about the provided number bond. NO story context or names.' 
+        : `STRICT: Replace the "[STORY]" tag in the questionText with a 1-sentence localized Singaporean story about ${missingPos === 0 ? `combining ${part1} and ${part2} ${itemLabel}.` : `splitting ${whole} ${itemLabel} into two groups.`}`
+      }
+
+      CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
       metadata: { 
         difficulty: 'foundation', 
         steps: 1, 
@@ -172,3 +173,8 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     };
   }
 }
+
+export const foundationLogicWrapper = (activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  // Note: This logic for mapping variants can be maintained here if needed for consistency across blueprints.
+  return null;
+};

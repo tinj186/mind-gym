@@ -19,26 +19,29 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     ];
     const answer = String(sequence[4]);
 
-    const hideVisual = false; // Visual is essential for story-based questionText
-    const lockedData = {
-      meta: commonMeta,
-      content: {
-        questionText: "[STORY] Find the missing number at the end.",
-        options: [answer, String(sequence[4] + growth), String(sequence[4] - initialJump), String(sequence[4] + 1)].sort(() => Math.random() - 0.5),
-        hint: null,
-        finalAnswer: answer,
-        solutionSteps: `The jumps are getting larger. We add ${initialJump}, then ${initialJump + growth}, then ${initialJump + 2 * growth}. The next jump should be ${initialJump + 3 * growth}. So, ${sequence[3]} + ${initialJump + 3 * growth} = ${answer}.`
-      },
-      visualEngine: {
-        componentToRender: "NUMBER_PATTERN",
-        componentData: { rule: `Growing (+${initialJump}, +${initialJump + growth}, +${initialJump + 2 * growth}...)`, items: [String(sequence[0]), String(sequence[1]), String(sequence[2]), String(sequence[3]), "?"], hideVisual: hideVisual }
-      },
-      inputRequirement: { inputType: inputType }
-    };
+    const options = [answer, String(sequence[4] + growth), String(sequence[4] - initialJump), String(sequence[4] + 1)].sort(() => Math.random() - 0.5);
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions} STRICT: Replace [STORY] with a 1-sentence localized Singaporean context about saving or collecting items (e.g., Siti is saving money). DO NOT mention the numbers, jump sizes, or the increasing logic in the story. \n${JSON.stringify(lockedData)}`,
-      metadata: { difficulty: 'advanced', logic: "growing_step", hideVisual: hideVisual }
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions} 
+      STRICT: Generate a short (2-sentence maximum), varied Singaporean math story context for the "questionText". Use themes of things getting larger, spreading further apart, or jumping higher (e.g., hopping on numbered lily pads, arranging queue tickets, stacking numbered blocks, or reading pages). End the story by asking the student to figure out the missing number. Do NOT mention the numbers or jump logic.
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": "[Generate the full 1-2 sentence story problem here asking for the missing number]",
+          "options": ${JSON.stringify(options)},
+          "hint": "The jumps between numbers are getting larger each time.",
+          "finalAnswer": "${answer}",
+          "solutionSteps": "1. The first jump is +${initialJump}.\\n2. The next jump is +${initialJump + growth}.\\n3. The next jump is +${initialJump + 2 * growth}.\\n4. The last jump should be +${initialJump + 3 * growth}. So, ${sequence[3]} + ${initialJump + 3 * growth} = ${answer}."
+        },
+        "visualEngine": {
+          "componentToRender": "NUMBER_PATTERN",
+          "componentData": { "rule": "Growing Pattern", "sequence": ${JSON.stringify([String(sequence[0]), String(sequence[1]), String(sequence[2]), String(sequence[3]), "?"])} }
+        },
+        "inputRequirement": { "inputType": "${inputType}" }
+      }`,
+      metadata: { difficulty, steps: 3, logic: "growing_step", hideVisual: false }
     };
   }
 
@@ -55,26 +58,30 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const items = [String(sequence[0]), String(sequence[1]), String(sequence[2]), String(sequence[3]), String(sequence[4]), String(sequence[5])];
     items[missingIdx] = "?";
 
-    const hideVisual = false; // Visual is essential for story-based questionText
-    const lockedData = {
-      meta: commonMeta,
-      content: {
-        questionText: "[STORY] Look closely at the pattern. What is the missing number?",
-        options: [answer, String(parseInt(answer) + 1), String(parseInt(answer) - 2), String(startA + startB)].sort(() => Math.random() - 0.5),
-        hint: null,
-        finalAnswer: answer,
-        solutionSteps: `This sequence has two patterns mixed together. Pattern 1 (1st, 3rd, 5th) counts by ${stepA}. Pattern 2 (2nd, 4th, 6th) counts by ${stepB}. The missing number follows ${missingIdx === 4 ? `Pattern 1: ${sequence[2]} + ${stepA} = ${answer}` : `Pattern 2: ${sequence[3]} + ${stepB} = ${answer}`}.`
-      },
-      visualEngine: {
-        componentToRender: "NUMBER_PATTERN",
-        componentData: { rule: "Interleaved Patterns", items: items, hideVisual: hideVisual }
-      },
-      inputRequirement: { inputType: inputType }
-    };
+    const options = [answer, String(parseInt(answer) + 1), String(parseInt(answer) - 2), String(startA + startB)].sort(() => Math.random() - 0.5);
+    const solutionSteps = `1. This sequence has two patterns mixed together.\\n2. Pattern 1 (1st, 3rd, 5th numbers) counts by ${stepA}.\\n3. Pattern 2 (2nd, 4th, 6th numbers) counts by ${stepB}.\\n4. The missing number follows ${missingIdx === 4 ? `Pattern 1: ${sequence[2]} + ${stepA} = ${answer}` : `Pattern 2: ${sequence[3]} + ${stepB} = ${answer}`}.`;
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions} STRICT: Replace [STORY] with a 1-sentence localized Singaporean context involving two people (e.g., Ali and Raju comparing their stickers). DO NOT mention that there are two alternating patterns. \n${JSON.stringify(lockedData)}`,
-      metadata: { difficulty: 'advanced', logic: "interleaved", hideVisual: hideVisual }
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      STRICT: Generate a short (2-sentence maximum), varied Singaporean math story context for the "questionText". Use themes of two different things taking turns (e.g., alternating red and blue cards, or two friends taking turns). End the story by asking the student to figure out the missing number. Do NOT mention the dual patterns.
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": "[Generate the full 1-2 sentence story problem here asking for the missing number]",
+          "options": ${JSON.stringify(options)},
+          "hint": "Try looking at every second number to see if you can find two patterns.",
+          "finalAnswer": "${answer}",
+          "solutionSteps": "${solutionSteps}"
+        },
+        "visualEngine": {
+          "componentToRender": "NUMBER_PATTERN",
+          "componentData": { "rule": "Mixed Patterns", "sequence": ${JSON.stringify(items)} }
+        },
+        "inputRequirement": { "inputType": "${inputType}" }
+      }`,
+      metadata: { difficulty, steps: 3, logic: "interleaved", hideVisual: false }
     };
   }
 
@@ -93,26 +100,29 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     ];
     const answer = String(sequence[4]);
 
-    const hideVisual = false; // Visual is essential for story-based questionText
-    const lockedData = {
-      meta: commonMeta,
-      content: {
-        questionText: "[STORY] Find the missing number at the end.",
-        options: [answer, String(sequence[4] - growth), String(sequence[4] + initialJump), String(sequence[4] - 1)].sort(() => Math.random() - 0.5),
-        hint: null,
-        finalAnswer: answer,
-        solutionSteps: `The jumps are getting larger. We subtract ${initialJump}, then ${initialJump + growth}, then ${initialJump + 2 * growth}. The next jump should be ${initialJump + 3 * growth}. So, ${sequence[3]} - ${initialJump + 3 * growth} = ${answer}.`
-      },
-      visualEngine: {
-        componentToRender: "NUMBER_PATTERN",
-        componentData: { rule: `Shrinking (-${initialJump}, -${initialJump + growth}, -${initialJump + 2 * growth}...)`, items: [String(sequence[0]), String(sequence[1]), String(sequence[2]), String(sequence[3]), "?"], hideVisual: hideVisual }
-      },
-      inputRequirement: { inputType: inputType }
-    };
+    const options = [answer, String(sequence[4] - growth), String(sequence[4] + initialJump), String(sequence[4] - 1)].sort(() => Math.random() - 0.5);
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions} STRICT: Replace [STORY] with a 1-sentence localized Singaporean context about eating snacks or using items (e.g., Muthu is eating his crackers). DO NOT mention the numbers or the shrinking jump sizes in the story. \n${JSON.stringify(lockedData)}`,
-      metadata: { difficulty: 'advanced', logic: "shrinking_step", hideVisual: hideVisual }
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      STRICT: Generate a short (2-sentence maximum), varied Singaporean math story context for the "questionText". Use themes of things getting smaller, dropping down, or running out. End the story by asking the student to figure out the missing number. Do NOT mention the numbers or jump logic.
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": "[Generate the full 1-2 sentence story problem here asking for the missing number]",
+          "options": ${JSON.stringify(options)},
+          "hint": "The jumps between numbers are getting larger, but the numbers are getting smaller.",
+          "finalAnswer": "${answer}",
+          "solutionSteps": "1. The first jump is -${initialJump}.\\n2. The next jump is -${initialJump + growth}.\\n3. The next jump is -${initialJump + 2 * growth}.\\n4. The last jump should be -${initialJump + 3 * growth}. So, ${sequence[3]} - ${initialJump + 3 * growth} = ${answer}."
+        },
+        "visualEngine": {
+          "componentToRender": "NUMBER_PATTERN",
+          "componentData": { "rule": "Shrinking Pattern", "sequence": ${JSON.stringify([String(sequence[0]), String(sequence[1]), String(sequence[2]), String(sequence[3]), "?"])} }
+        },
+        "inputRequirement": { "inputType": "${inputType}" }
+      }`,
+      metadata: { difficulty, steps: 3, logic: "shrinking_step", hideVisual: false }
     };
   }
 
@@ -123,26 +133,29 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const sequence = [start, start + step, start + 2 * step, start + 3 * step, start + 4 * step];
     const answer = String(sequence[2]); // Missing middle
 
-    const hideVisual = false; // Visual is essential for story-based questionText
-    const lockedData = {
-      meta: commonMeta,
-      content: {
-        questionText: "[STORY] What number is missing in this pattern?",
-        options: [answer, String(sequence[2] + 1), String(sequence[2] - 1), String(sequence[1] + 10)].sort(() => Math.random() - 0.5),
-        hint: null,
-        finalAnswer: answer,
-        solutionSteps: `The numbers increase by ${step} every time. ${sequence[1]} + ${step} = ${answer}.`
-      },
-      visualEngine: {
-        componentToRender: "NUMBER_PATTERN",
-        componentData: { rule: `+${step}`, items: [String(sequence[0]), String(sequence[1]), "?", String(sequence[3]), String(sequence[4])], hideVisual: hideVisual }
-      },
-      inputRequirement: { inputType: inputType }
-    };
+    const options = [answer, String(sequence[2] + 1), String(sequence[2] - 1), String(sequence[1] + 10)].sort(() => Math.random() - 0.5);
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions} STRICT: Replace [STORY] with a 1-sentence localized Singaporean context about buying items in groups or boxes (e.g., Siti is buying boxes of chicken wings). DO NOT reveal the specific number ${step}. \n${JSON.stringify(lockedData)}`,
-      metadata: { difficulty: 'advanced', logic: "double_digit_step", hideVisual: hideVisual }
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. DO NOT reveal the specific number ${step} in the story.
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": "[STORY] What number is missing in this pattern?",
+          "options": ${JSON.stringify(options)},
+          "hint": "Check the difference between the first two numbers.",
+          "finalAnswer": "${answer}",
+          "solutionSteps": "1. The numbers increase by ${step} every time.\\n2. To find the missing number, add ${step} to ${sequence[1]}.\\n3. ${sequence[1]} + ${step} = ${answer}."
+        },
+        "visualEngine": {
+          "componentToRender": "NUMBER_PATTERN",
+          "componentData": { "rule": "+${step}", "sequence": [String(sequence[0]), String(sequence[1]), "?", String(sequence[3]), String(sequence[4])] }
+        },
+        "inputRequirement": { "inputType": "${inputType}" }
+      }`,
+      metadata: { difficulty, steps: 3, logic: "double_digit_step", hideVisual: false }
     };
   }
 
@@ -156,56 +169,64 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const start = Math.floor(Math.random() * (100 - maxJump + 1));
     const sequence = [start, start + j1, start + j1 + j2, start + 2*j1 + j2, start + 2*j1 + 2*j2];
     const answer = String(sequence[3]); // Missing 4th
+    const displaySeq = [String(sequence[0]), String(sequence[1]), String(sequence[2]), "?", String(sequence[4])];
 
-    const hideVisual = false; // Visual is essential for story-based questionText
-    const lockedData = {
-      meta: commonMeta,
-      content: {
-        questionText: "[STORY] Find the missing number.",
-        options: [answer, String(sequence[3] + Math.abs(j2)), String(sequence[3] - Math.abs(j2)), String(sequence[3] + 1)].sort(() => Math.random() - 0.5),
-        hint: null,
-        finalAnswer: answer,
-        solutionSteps: `The rule is to add ${j1}, then subtract ${Math.abs(j2)}. After ${sequence[2]}, we add ${j1} to get ${answer}.`
-      },
-      visualEngine: {
-        componentToRender: "NUMBER_PATTERN",
-        componentData: { rule: `+${j1}, ${j2}`, items: [String(sequence[0]), String(sequence[1]), String(sequence[2]), "?", String(sequence[4])], hideVisual: hideVisual }
-      },
-      inputRequirement: { inputType: inputType }
-    };
+    const options = [answer, String(sequence[3] + Math.abs(j2)), String(sequence[3] - Math.abs(j2)), String(sequence[3] + 1)].sort(() => Math.random() - 0.5);
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions} STRICT: Replace [STORY] with a 1-sentence localized Singaporean context about receiving an allowance and spending some of it. DO NOT reveal the numbers ${j1} or ${Math.abs(j2)} in the story. \n${JSON.stringify(lockedData)}`,
-      metadata: { difficulty: 'advanced', logic: "big_alternating", hideVisual: hideVisual }
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      STRICT: This is a text-only question. Provide a direct mathematical question that includes the number sequence. Do NOT use names, items, or stories. Focus on the alternating jump logic.
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": "Find the missing number in the pattern: ${displaySeq.join(', ')}",
+          "options": ${JSON.stringify(options)},
+          "hint": "The pattern adds a number, then subtracts a number.",
+          "finalAnswer": "${answer}",
+          "solutionSteps": "1. The rule is to add ${j1}, then subtract ${Math.abs(j2)}.\\n2. We just subtracted ${Math.abs(j2)} to get ${sequence[2]}.\\n3. Now we must add ${j1} to get the next number.\\n4. ${sequence[2]} + ${j1} = ${answer}."
+        },
+        "visualEngine": {
+          "componentToRender": "NONE",
+          "componentData": {}
+        },
+        "inputRequirement": { "inputType": "${inputType}" }
+      }`,
+      metadata: { difficulty, steps: 3, logic: "big_alternating", hideVisual: true }
     };
   }
 
   // Alternating Patterns
   if (activeVariant === 'advanced_alt_plus_minus' || activeVariant === 'advanced_alt_plus_plus' || activeVariant === 'advanced_alt_missing_start' || activeVariant === 'advanced_alternating_rule') {
-    let s0, j1, j2, missingIdx, sequence;
+    let s0, j1, j2, missingIdx;
     
     if (activeVariant === 'advanced_alt_plus_minus') {
       s0 = Math.floor(Math.random() * 40) + 10;
-      j1 = 3; j2 = -1; missingIdx = 3;
-      sequence = [s0, s0 + j1, s0 + j1 + j2, s0 + j1 + j2 + j1, s0 + 2*j1 + j2]; // s0, s0+3, s0+2, s0+5, s0+4
+      j1 = Math.floor(Math.random() * 4) + 3; // Random jump between +3 and +6
+      j2 = -(Math.floor(Math.random() * 3) + 1); // Random drop between -1 and -3
+      missingIdx = 3;
     } else if (activeVariant === 'advanced_alt_plus_plus') {
       s0 = Math.floor(Math.random() * 40) + 10;
-      j1 = 10; j2 = 2; missingIdx = 2;
-      sequence = [s0, s0 + j1, s0 + j1 + j2, s0 + 2*j1 + j2, s0 + 2*j1 + 2*j2];
+      j1 = (Math.floor(Math.random() * 2) + 1) * 5; // Jumps of 5 or 10
+      j2 = Math.floor(Math.random() * 4) + 1; // Small boost between +1 and +4
+      missingIdx = 2;
     } else if (activeVariant === 'advanced_alternating_rule') {
       s0 = Math.floor(Math.random() * 40) + 20;
-      j1 = 5; j2 = -2; missingIdx = 2; // Hides 3rd number as requested
-      sequence = [s0, s0 + j1, s0 + j1 + j2, s0 + 2*j1 + j2, s0 + 2*j1 + 2*j2];
+      j1 = Math.floor(Math.random() * 4) + 4; // 4 to 7
+      j2 = -(Math.floor(Math.random() * 3) + 1); // -1 to -3
+      missingIdx = 2; // Hides 3rd number
     } else {
       s0 = Math.floor(Math.random() * 40) + 20;
-      j1 = 5; j2 = -2; missingIdx = 0;
-      sequence = [s0, s0 + j1, s0 + j1 + j2, s0 + 2*j1 + j2, s0 + 2*j1 + 2*j2];
+      j1 = Math.floor(Math.random() * 5) + 3; // 3 to 7
+      j2 = -(Math.floor(Math.random() * 2) + 1); // -1 to -2
+      missingIdx = 0;
     }
 
+    const sequence = [s0, s0 + j1, s0 + j1 + j2, s0 + 2 * j1 + j2, s0 + 2 * j1 + 2 * j2];
     const answer = String(sequence[missingIdx]);
     const items = sequence.map((val, idx) => (idx === missingIdx) ? "?" : String(val));
 
-    const hideVisual = isShort; // Visual is redundant if questionText contains the sequence
     // Generate distractors that are not directly part of the sequence or simple +/- step
     let distractors = [];
     while (distractors.length < 3) {
@@ -219,38 +240,35 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     // Generate dynamic explanation based on missing position
     let solutionExplanation;
     if (missingIdx === 0) {
-      solutionExplanation = `The first rule is ${j1 > 0 ? '+' : ''}${j1} and the second rule is ${j2 > 0 ? '+' : ''}${j2}. To find the first number, we count back from ${sequence[1]} using the opposite of the first rule. ${sequence[1]} - (${j1 > 0 ? '+' : ''}${j1}) = ${answer}.`;
+      solutionExplanation = `1. The pattern has two rules: first ${j1 > 0 ? '+' : ''}${j1} then ${j2 > 0 ? '+' : ''}${j2}.\\n2. To find the start, we work backwards from ${sequence[1]}.\\n3. ${sequence[1]} - (${j1}) = ${answer}.`;
     } else {
       const ruleName = (missingIdx % 2 === 0) ? "second" : "first";
       const ruleValue = (missingIdx % 2 === 0) ? j2 : j1;
       const prevNum = sequence[missingIdx - 1];
-      solutionExplanation = `The first rule is ${j1 > 0 ? '+' : ''}${j1} and the second rule is ${j2 > 0 ? '+' : ''}${j2}. Following the ${ruleName} rule from ${prevNum}, ${prevNum} ${ruleValue > 0 ? '+' : ''}${ruleValue} = ${answer}.`;
+      solutionExplanation = `1. The pattern rules are: ${j1 > 0 ? '+' : ''}${j1} then ${j2 > 0 ? '+' : ''}${j2}.\\n2. The number before the missing one is ${prevNum}.\\n3. Applying the ${ruleName} rule: ${prevNum} ${ruleValue > 0 ? '+' : ''}${ruleValue} = ${answer}.`;
     }
-
-    const promptObject = {
-      meta: commonMeta,
-      content: {
-        questionText: getQText(`What is the missing number in this alternating number pattern?`, `What is the missing number? ${items.join(', ')}`),
-        options: options,
-        hint: null,
-        finalAnswer: answer,
-        solutionSteps: getQText(solutionExplanation, `Rules: ${j1 > 0 ? '+' : ''}${j1}, ${j2 > 0 ? '+' : ''}${j2}. Missing: ${answer}.`)
-      },
-      visualEngine: {
-        componentToRender: "NUMBER_PATTERN",
-        componentData: { rule: `${j1},${j2}`, items: items, hideVisual: hideVisual }
-      },
-      inputRequirement: { inputType: inputType }
-    };
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
-    STRICT: Use the [STORY] placeholder below to create a 1-sentence Singaporean math story (e.g., using names like Siti, items like curry puffs, and settings like an MRT station).
-    The story MUST provide a simple context for the sequence (e.g., Siti is collecting items). DO NOT reveal the jump sizes, the rules, or any numbers in your story.
-    
-    RETURN ONLY VALID JSON. DO NOT OMIT THE visualEngine DATA:
-    ${JSON.stringify(promptObject).replace('What is', '[STORY] What is')}`,
-      metadata: { difficulty, steps: 3, logic: activeVariant, hideVisual: hideVisual }
+      STRICT: This is a visual number pattern question. Provide a direct, varied, and professional mathematical question to identify the missing number '?' in the sequence: ${items.join(', ')}. Do NOT use names (e.g., Ali), items (e.g., stickers), or story contexts. Focus strictly on logic and pattern identification. Do NOT convert the numerical rules into story actions (e.g., "gets more", "gives away").
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": "[Generate a clear and varied mathematical question text based on the instructions above]",
+          "options": ${isMCQ ? JSON.stringify(options) : 'null'},
+          "hint": "This pattern has two different jumps that take turns.",
+          "finalAnswer": "${answer}",
+          "solutionSteps": "${solutionExplanation}"
+        },
+        "visualEngine": {
+          "componentToRender": "NUMBER_PATTERN",
+          "componentData": { "rule": "Alternating", "sequence": ${JSON.stringify(items)} }
+        },
+        "inputRequirement": { "inputType": "${inputType}" }
+      }`,
+      metadata: { difficulty, steps: 3, logic: activeVariant, hideVisual: false }
     };
   }
 }

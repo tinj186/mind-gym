@@ -3,9 +3,13 @@
 import React from 'react';
 
 export default function NumberPattern({ data, attempts }) {
-  const sequence = data?.sequence || [];
+  // Hyper-resilient schema check: support both 'sequence' and 'items' keys
+  const sequence = data?.sequence || data?.items || [];
   const rule = data?.rule || '';
+  const hideVisual = data?.hideVisual === true;
   const isQuestion = attempts === 0;
+
+  if (hideVisual || sequence.length === 0) return null;
 
   return (
     <div className="my-8 flex flex-wrap items-center justify-center gap-4 p-8 bg-slate-50 rounded-[2.5rem] border-2 border-slate-200 select-none">

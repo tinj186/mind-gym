@@ -15,33 +15,31 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       : [String(start - 5), String(start - 3), String(start - 14)];
       
     const options = isMCQ ? [answer, ...distractors].sort(() => Math.random() - 0.5) : null;
-    const items = [...sequence.map(String), "?"];
-
-    const hideVisual = isShort; // Visual is redundant if questionText contains the sequence
-    const promptObject = {
-      meta: commonMeta,
-      content: {
-        questionText: getQText(`What is the next number in this pattern?`, `What is the next number: ${sequence.join(', ')}, ?`),
-        options: options,
-        hint: null,
-        finalAnswer: answer,
-        solutionSteps: getQText(`The pattern is counting ${isForward ? 'on' : 'back'} by 1. So, ${sequence[3]} ${isForward ? '+' : '-'} 1 = ${answer}.`, `${sequence[3]} ${isForward ? '+' : '-'} 1 = ${answer}.`)
-      },
-      visualEngine: {
-        componentToRender: "NUMBER_PATTERN",
-        componentData: { rule: isForward ? "+1" : "-1", items: items, hideVisual: hideVisual }
-      },
-      inputRequirement: { inputType: inputType }
-    };
+    const sequenceItems = [...sequence.map(String), "?"];
+    const hideVisual = false;
+    const questionTextTemplate = getQText(`What is the next number in this pattern?`, `What is the next number: ${sequence.join(', ')}, ?`);
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
-    STRICT: Use the [STORY] placeholder below to create a 1-sentence Singaporean math story (e.g., using names like Siti, items like curry puffs, and settings like an MRT station).
-    The story MUST provide context for the sequence (e.g., Siti is counting her stickers). DO NOT mention the number 1 in your story.
-    
-    RETURN ONLY VALID JSON. DO NOT OMIT THE visualEngine DATA:
-    ${JSON.stringify(promptObject).replace('What is', '[STORY] What is')}`,
-      metadata: { difficulty, steps: 1, logic: isForward ? "forward_1" : "backward_1", hideVisual: hideVisual }
+      STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. DO NOT mention the number 1 in your story.
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify("[STORY] " + questionTextTemplate)},
+          "options": ${isMCQ ? JSON.stringify(options) : 'null'},
+          "hint": "Check if the numbers are getting bigger or smaller by 1 each time.",
+          "finalAnswer": "${answer}",
+          "solutionSteps": "1. The pattern is counting ${isForward ? 'on' : 'back'} by 1.\\n2. ${sequence[3]} ${isForward ? '+' : '-'} 1 = ${answer}."
+        },
+        "visualEngine": {
+          "componentToRender": "${hideVisual ? 'NONE' : 'NUMBER_PATTERN'}",
+          "componentData": { "rule": "${isForward ? '+1' : '-1'}", "sequence": ${JSON.stringify(sequenceItems)} }
+        },
+        "inputRequirement": { "inputType": "${inputType}" }
+      }`,
+      metadata: { difficulty, steps: 1, logic: isForward ? "forward_1" : "backward_1", hideVisual: false }
     };
   }
 
@@ -53,33 +51,31 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const answer = String(sequence[2]);
     
     const options = isMCQ ? [answer, String(sequence[2] - 2), String(sequence[2] + 1), String(sequence[2] + 2)].sort(() => Math.random() - 0.5) : null;
-    const items = [String(sequence[0]), String(sequence[1]), "?", String(sequence[3]), String(sequence[4])];
-
-    const hideVisual = isShort; // Visual is redundant if questionText contains the sequence
-    const promptObject = {
-      meta: commonMeta,
-      content: {
-        questionText: getQText(`What is the missing number in the middle?`, `What is the missing number? ${items.join(', ')}`),
-        options: options,
-        hint: null,
-        finalAnswer: answer,
-        solutionSteps: getQText(`The pattern is counting ${isForward ? 'on' : 'back'} by 1. So, ${sequence[1]} ${isForward ? '+' : '-'} 1 = ${answer}.`, `${sequence[1]} ${isForward ? '+' : '-'} 1 = ${answer}.`)
-      },
-      visualEngine: {
-        componentToRender: "NUMBER_PATTERN",
-        componentData: { rule: isForward ? "+1" : "-1", items: items, hideVisual: hideVisual }
-      },
-      inputRequirement: { inputType: inputType }
-    };
+    const sequenceItems = [String(sequence[0]), String(sequence[1]), "?", String(sequence[3]), String(sequence[4])];
+    const hideVisual = false;
+    const questionTextTemplate = getQText(`What is the missing number in the middle?`, `What is the missing number? ${sequenceItems.join(', ')}`);
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
-    STRICT: Use the [STORY] placeholder below to create a 1-sentence Singaporean math story (e.g., using names like Siti, items like curry puffs, and settings like an MRT station).
-    The story MUST provide context for the sequence (e.g., Ahmad is arranging his toy cars). DO NOT mention the number 1 in your story.
-    
-    RETURN ONLY VALID JSON. DO NOT OMIT THE visualEngine DATA:
-    ${JSON.stringify(promptObject).replace('What is', '[STORY] What is')}`,
-      metadata: { difficulty, steps: 1, logic: isForward ? "missing_middle_1" : "missing_middle_back_1", hideVisual: hideVisual }
+      STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. DO NOT mention the number 1 in your story.
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify("[STORY] " + questionTextTemplate)},
+          "options": ${isMCQ ? JSON.stringify(options) : 'null'},
+          "hint": "What number comes exactly after ${sequence[1]}?",
+          "finalAnswer": "${answer}",
+          "solutionSteps": "1. The pattern is counting ${isForward ? 'on' : 'back'} by 1.\\n2. ${sequence[1]} ${isForward ? '+' : '-'} 1 = ${answer}."
+        },
+        "visualEngine": {
+          "componentToRender": "${hideVisual ? 'NONE' : 'NUMBER_PATTERN'}",
+          "componentData": { "rule": "${isForward ? '+1' : '-1'}", "sequence": ${JSON.stringify(sequenceItems)} }
+        },
+        "inputRequirement": { "inputType": "${inputType}" }
+      }`,
+      metadata: { difficulty, steps: 1, logic: isForward ? "missing_middle_1" : "missing_middle_back_1", hideVisual: false }
     };
   }
 
@@ -89,33 +85,31 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const answer = String(start);
     
     const options = isMCQ ? [answer, String(start - 1), String(start + 4), String(start + 2)].sort(() => Math.random() - 0.5) : null;
-    const items = ["?", String(sequence[1]), String(sequence[2]), String(sequence[3])];
-
-    const hideVisual = isShort; // Visual is redundant if questionText contains the sequence
-    const promptObject = {
-      meta: commonMeta,
-      content: {
-        questionText: getQText(`What is the first number in the pattern?`, `What is the missing number? ${items.join(', ')}`),
-        options: options,
-        hint: null,
-        finalAnswer: answer,
-        solutionSteps: getQText(`The pattern is counting on by 1. To find the first number, we count back by 1 from ${sequence[1]}. So, ${sequence[1]} - 1 = ${answer}.`, `${sequence[1]} - 1 = ${answer}.`)
-      },
-      visualEngine: {
-        componentToRender: "NUMBER_PATTERN",
-        componentData: { rule: "+1", items: items, hideVisual: hideVisual }
-      },
-      inputRequirement: { inputType: inputType }
-    };
+    const sequenceItems = ["?", String(sequence[1]), String(sequence[2]), String(sequence[3])];
+    const hideVisual = false;
+    const questionTextTemplate = getQText(`What is the first number in the pattern?`, `What is the missing number? ${sequenceItems.join(', ')}`);
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
-    STRICT: Use the [STORY] placeholder below to create a 1-sentence Singaporean math story (e.g., using names like Siti, items like curry puffs, and settings like an MRT station).
-    The story MUST provide context for the sequence (e.g., Wei Ling is collecting seashells). DO NOT mention the number 1 in your story.
-    
-    RETURN ONLY VALID JSON. DO NOT OMIT THE visualEngine DATA:
-    ${JSON.stringify(promptObject).replace('What is', '[STORY] What is')}`,
-      metadata: { difficulty, steps: 1, logic: "missing_start_1", hideVisual: hideVisual }
+      STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. DO NOT mention the number 1 in your story.
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify("[STORY] " + questionTextTemplate)},
+          "options": ${isMCQ ? JSON.stringify(options) : 'null'},
+          "hint": "Try counting backward by 1 from ${sequence[1]} to find the start.",
+          "finalAnswer": "${answer}",
+          "solutionSteps": "1. The pattern is counting on by 1.\\n2. To find the first number, we count back by 1 from ${sequence[1]}.\\n3. ${sequence[1]} - 1 = ${answer}."
+        },
+        "visualEngine": {
+          "componentToRender": "${hideVisual ? 'NONE' : 'NUMBER_PATTERN'}",
+          "componentData": { "rule": "+1", "sequence": ${JSON.stringify(sequenceItems)} }
+        },
+        "inputRequirement": { "inputType": "${inputType}" }
+      }`,
+      metadata: { difficulty, steps: 1, logic: "missing_start_1", hideVisual: false }
     };
   }
 }
