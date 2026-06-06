@@ -332,8 +332,11 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
                 {/* Metadata Grid (The redesigned section) */}
                 {normalizedQuestion.modelData && (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4 border-t border-slate-50">
-                    {/* Filter out legacy visual keys and internal flags from the metadata grid */}
-                    {Object.entries(normalizedQuestion.modelData).filter(([k]) => !['type', 'items', 'groups', 'visualitems', 'hidevisual', 'modelvisualizer', 'modeldrawing'].includes(k.toLowerCase())).map(([key, val]) => (
+                    {/* Filter out legacy visual keys, internal flags, and numeric indices from the metadata grid */}
+                    {Object.entries(normalizedQuestion.modelData).filter(([k]) => {
+                      const isNumericIndex = !isNaN(k) && !isNaN(parseFloat(k));
+                      return !isNumericIndex && !['type', 'items', 'groups', 'visualitems', 'hidevisual', 'modelvisualizer', 'modeldrawing'].includes(k.toLowerCase());
+                    }).map(([key, val]) => (
                       <div key={key} className="p-3 bg-slate-50/50 rounded-xl border border-slate-100">
                         <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">
                           {MAP_KEY(key)}

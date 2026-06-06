@@ -1,3 +1,11 @@
+import { numberToWords } from '@/lib/utils/math-helpers';
+
+// Robust extraction helper for localized context objects
+const extract = (val) => {
+  if (typeof val !== 'object' || val === null) return String(val);
+  return val.item || val.singular || val.name?.singular || val.text || val.val || String(val);
+};
+
 export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual, supportsStructured) {
   const commonMeta = { 
     level, 
@@ -20,11 +28,9 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         ? "ADVANCED READING LEVEL: You may use complex sentences and technical Singaporean context (e.g., GST, interest rates, or logistics). Use a professional, descriptive tone."
         : "");
 
-  // Safety check for localization context
-  const itemLabel = selectedContextItem?.item || 'items';
-
   // 1. Multi-step Multiplication/Addition
   if (activeVariant === 'advanced_multi_step_mult_add') {
+    const itemLabel = extract(selectedContextItem);
     const groups = Math.floor(Math.random() * 3) + 2; // 2 to 4
     const size = Math.floor(Math.random() * 3) + 3; // 3 to 5
     const extra = Math.floor(Math.random() * 4) + 2; // 2 to 5
@@ -41,39 +47,38 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     ].sort(() => Math.random() - 0.5) : null;
 
     const promptObject = {
-      meta: commonMeta,
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many items are there altogether?`, equationStr, zodType),
-        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         options: options,
+        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
-        solutionSteps: getQText(`Step 1 (Groups): ${groups} x ${size} = ${groupsTotal}. Step 2 (Add extra): ${groupsTotal} + ${extra} = ${answer}.`, `(${groups} x ${size}) + ${extra} = ${answer}`)
+        solutionSteps: `1. Step 1 (Groups): ${groups} x ${size} = ${groupsTotal}.\n2. Step 2 (Add extra): ${groupsTotal} + ${extra} = ${answer}.`
       },
       visualEngine: {
-        componentToRender: (isShortQ && supportsStructured) ? "NONE" : "NUMBER_CARDS",
-        componentData: { 
-          items: ["(", String(groups), "x", String(size), ")", "+", String(extra)], 
-          hideVisual: hideVisual || (isShortQ && supportsStructured)
-        }
+        componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
+        componentData: isShortQ ? { items: ["(", String(groups), "x", String(size), ")", "+", String(extra)] } : {}
       },
       inputRequirement: { inputType }
     };
 
     return {
-      aiPrompt: `${readingMandate}
-      STRICT: Return ONLY valid JSON.
-      HINT PROTOCOL:
-      - 1 short sentence focusing on the "Equal Groups" followed by addition concept.
-      - NEVER reveal the final answer: ${answer}.
-      ARCHITECTURE MODE: ${supportsStructured ? '3-TYPE (Pure Math for Short Q)' : '2-TYPE (Brief Story allowed for Short Q)'}
-      
-      TEMPLATE: ${JSON.stringify(promptObject)}`,
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      ${isShortQ 
+        ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean math story involving ${groups} groups of ${size} ${itemLabel} (represented by the emoji "${selectedIcon}") and ${extra} more.`
+      }
+
+      CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
       metadata: { difficulty: 'advanced', logic: activeVariant, hideVisual: hideVisual }
     };
   }
 
   // 2. Multi-step Multiplication/Subtraction
   if (activeVariant === 'advanced_multi_step_mult_sub') {
+    const itemLabel = extract(selectedContextItem);
     const groups = Math.floor(Math.random() * 3) + 3; // 3 to 5
     const size = Math.floor(Math.random() * 3) + 4; // 4 to 6
     const remove = Math.floor(Math.random() * 5) + 2; // 2 to 6
@@ -90,33 +95,31 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     ].sort(() => Math.random() - 0.5) : null;
 
     const promptObject = {
-      meta: commonMeta,
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many items are left?`, equationStr, zodType),
-        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         options: options,
+        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
-        solutionSteps: getQText(`Step 1 (Groups): ${groups} x ${size} = ${groupsTotal}. Step 2 (Subtract): ${groupsTotal} - ${remove} = ${answer}.`, `(${groups} x ${size}) - ${remove} = ${answer}`)
+        solutionSteps: `1. Step 1 (Groups): ${groups} x ${size} = ${groupsTotal}.\n2. Step 2 (Subtract): ${groupsTotal} - ${remove} = ${answer}.`
       },
       visualEngine: {
-        componentToRender: (isShortQ && supportsStructured) ? "NONE" : "NUMBER_CARDS",
-        componentData: { 
-          items: ["(", String(groups), "x", String(size), ")", "-", String(remove)], 
-          hideVisual: hideVisual || (isShortQ && supportsStructured)
-        }
+        componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
+        componentData: isShortQ ? { items: ["(", String(groups), "x", String(size), ")", "-", String(remove)] } : {}
       },
       inputRequirement: { inputType }
     };
 
     return {
-      aiPrompt: `${readingMandate}
-      STRICT: Return ONLY valid JSON.
-      HINT PROTOCOL:
-      - 1 short sentence focusing on the "Equal Groups" followed by subtraction concept.
-      - NEVER reveal the final answer: ${answer}.
-      ARCHITECTURE MODE: ${supportsStructured ? '3-TYPE (Pure Math for Short Q)' : '2-TYPE (Brief Story allowed for Short Q)'}
-      
-      TEMPLATE: ${JSON.stringify(promptObject)}`,
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      ${isShortQ 
+        ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean math story involving ${groups} groups of ${size} ${itemLabel} (represented by the emoji "${selectedIcon}") where ${remove} are removed.`
+      }
+
+      CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
       metadata: { difficulty: 'advanced', logic: activeVariant, hideVisual: hideVisual }
     };
   }
@@ -129,36 +132,29 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const answer = String(count * legsPer);
 
     const promptObject = {
-      meta: commonMeta,
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many wheels are there altogether?`, `${count} x ${legsPer} = ?`, zodType),
-        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         options: isMCQ ? [answer, String((count-1)*legsPer), String(count*(legsPer+1)), String(count+legsPer)].sort(() => Math.random() - 0.5) : null,
+        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
-        solutionSteps: getQText(`1 ${typeLabel.slice(0,-1)} has ${legsPer} wheels. ${count} ${typeLabel} have ${count} x ${legsPer} = ${answer} wheels.`, `${count} x ${legsPer} = ${answer}`)
+        solutionSteps: `1. 1 ${typeLabel.slice(0,-1)} has ${legsPer} wheels.\n2. ${count} ${typeLabel} have ${count} x ${legsPer} = ${answer} wheels.`
       },
-      visualEngine: { // Change to EQUAL_GROUPS to show the objects
-        componentToRender: (isShortQ && supportsStructured) ? "NONE" : (hideVisual ? "NONE" : "EQUAL_GROUPS"),
-        componentData: { 
-          numGroups: count, 
-          itemsPerGroup: legsPer, 
-          emoji: selectedIcon, // Use the selectedIcon for the visual items
-          items: Array(count * legsPer).fill(selectedIcon),
-          hideVisual: (isShortQ && supportsStructured)
-        }
+      visualEngine: {
+        componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
+        componentData: isShortQ ? { items: [String(count), "x", String(legsPer), "=", "?"] } : {}
       },
       inputRequirement: { inputType }
     };
 
     return {
-      aiPrompt: `${readingMandate}
-      STRICT: Return ONLY valid JSON.
-      HINT PROTOCOL:
-      - 1 short sentence focusing on the "Equal Groups" concept in a logic context.
-      - NEVER reveal the final answer: ${answer}.
-      ARCHITECTURE MODE: ${supportsStructured ? '3-TYPE (Pure Math for Short Q)' : '2-TYPE (Brief Story allowed for Short Q)'}
-      
-      TEMPLATE: ${JSON.stringify(promptObject)}`,
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      ${isShortQ 
+        ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean story involving ${count} ${typeLabel} (visually represented by the emoji "${selectedIcon}").`
+      }
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
       metadata: { difficulty: 'advanced', logic: "wheels_legs", hideVisual: hideVisual }
     };
   }

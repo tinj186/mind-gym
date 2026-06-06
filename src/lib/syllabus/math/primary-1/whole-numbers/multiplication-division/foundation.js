@@ -1,5 +1,11 @@
 import { numberToWords } from '@/lib/utils/math-helpers';
 
+// Robust extraction helper for localized context objects
+const extract = (val) => {
+  if (typeof val !== 'object' || val === null) return String(val);
+  return val.item || val.singular || val.name?.singular || val.text || val.val || String(val);
+};
+
 export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual, supportsStructured) {
   const commonMeta = { 
     level, 
@@ -22,12 +28,10 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         ? "ADVANCED READING LEVEL: You may use complex sentences and technical Singaporean context (e.g., GST, interest rates, or logistics). Use a professional, descriptive tone."
         : "");
 
-  // Safety check for localization context
-  const itemLabel = selectedContextItem?.item || 'items';
-
   // 1. Basic Multiplication & Division
   if (activeVariant === 'foundation_multiplication' || activeVariant === 'foundation_division') {
     const isMult = activeVariant.includes('multiplication');
+    const itemLabel = extract(selectedContextItem);
     const groups = Math.floor(Math.random() * 4) + 2; // 2 to 5 groups
     const itemsPerGroup = Math.floor(Math.random() * 5) + 2; // 2 to 6 items per group
     const total = groups * itemsPerGroup;
@@ -42,32 +46,34 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       meta: commonMeta,
       content: {
         questionText: getQText(`[STORY] How many are there ${isMult ? 'altogether' : 'in each group'}?`, equationStr, zodType),
-        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         options: options,
+        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
-        solutionSteps: isMult ? `${groups} groups of ${itemsPerGroup} makes ${total}.` : `${total} shared into ${groups} groups gives ${itemsPerGroup} in each group.`,
+        solutionSteps: isMult ? `1. ${groups} groups of ${itemsPerGroup} makes ${total}.` : `1. ${total} shared into ${groups} groups gives ${itemsPerGroup} in each group.`,
       },
       visualEngine: {
-        componentToRender: (isShortQ && supportsStructured) ? "NONE" : (isShortQ ? "NUMBER_CARDS" : "EQUAL_GROUPS"),
-        componentData: { 
-          numGroups: groups,
-          itemsPerGroup: itemsPerGroup,
-          emoji: selectedIcon,
-          hideVisual: (isShortQ && supportsStructured)
-        }
+        componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
+        componentData: isShortQ 
+          ? { items: isMult ? [String(groups), 'x', String(itemsPerGroup), '=', '?'] : [String(total), '÷', String(groups), '=', '?'] }
+          : {}
       },
       inputRequirement: { inputType }
     };
 
     return {
-      aiPrompt: `${readingMandate}
-      STRICT: Return ONLY valid JSON.
-      HINT PROTOCOL:
-      - 1 short sentence focusing on the "${isMult ? 'Equal Groups' : 'Sharing'}" concept.
-      - NEVER reveal the final answer: ${answer}.
-      ARCHITECTURE MODE: ${supportsStructured ? '3-TYPE (Pure Math for Short Q)' : '2-TYPE (Brief Story allowed for Short Q)'}
-      
-      TEMPLATE: ${JSON.stringify(promptObject)}`,
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      ${isShortQ 
+        ? `STRICT: Provide a direct mathematical equation (${equationStr}). NO story context or names.` 
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a unique and creative 1-sentence localized Singaporean math story about ${extract(context.name)} and ${itemLabel} (visually represented by the emoji "${selectedIcon}") using ${isMult ? 'equal groups' : 'sharing equally'}. 
+        
+        MANDATORY: You MUST use the name "${extract(context.name)}" and the item "${itemLabel}". 
+        VARIETY GUARDRAIL: Do NOT default to common clichés like "pencils", "apples", or "oranges". 
+        Creative Examples: distributing prizes at a community event, organizing a hobby collection, preparing materials for a craft project, or sorting items for a school drive.`
+      }
+
+      CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
       metadata: { difficulty: 'foundation', logic: activeVariant, hideVisual: hideVisual }
     };
   }
@@ -84,13 +90,13 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       meta: commonMeta,
       content: {
         questionText: getQText(`[STORY] Use the grouping tool to find the answer.`, isSharing ? `${total} ÷ ${groups} = ?` : `${total} ÷ ${itemsPerGroup} = ?`, zodType),
-        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         options: null, 
+        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
-        solutionSteps: isSharing ? `Share ${total} items equally into ${groups} groups. There are ${answer} items in each group.` : `Group ${total} items into sets of ${itemsPerGroup}. You get ${answer} groups.`
+        solutionSteps: isSharing ? `1. Share ${total} items equally into ${groups} groups.\n2. There are ${answer} items in each group.` : `1. Group ${total} items into sets of ${itemsPerGroup}.\n2. You get ${answer} groups.`
       },
       visualEngine: {
-        componentToRender: (isShortQ && supportsStructured) ? "NONE" : "GROUPING_WORKSPACE",
+        componentToRender: "GROUPING_WORKSPACE",
         componentData: { 
           totalItems: total, 
           groups: isSharing ? groups : null, 
@@ -98,21 +104,24 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
           mode: isSharing ? 'SHARING' : 'GROUPING',
           icon: selectedIcon,
           items: Array(total).fill(selectedIcon),
-          hideVisual: (isShortQ && supportsStructured)
+          hideVisual: false
         }
       },
       inputRequirement: { inputType: 'STANDARD_TEXT' }
     };
 
     return {
-      aiPrompt: `${readingMandate}
-      STRICT: Return ONLY valid JSON.
-      HINT PROTOCOL:
-      - 1 short sentence focusing on the "${isSharing ? 'Sharing' : 'Grouping'}" concept.
-      - NEVER reveal the final answer: ${answer}.
-      ARCHITECTURE MODE: ${supportsStructured ? '3-TYPE (Pure Math for Short Q)' : '2-TYPE (Brief Story allowed for Short Q)'}
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      STRICT: This is an interactive ${isSharing ? 'sharing' : 'grouping'} variant. Replace the "[STORY]" tag in "questionText" with a highly unique and creative 1-sentence localized Singaporean story involving ${extract(context.name)} and ${extract(selectedContextItem)} (visually represented by "${selectedIcon}").
       
-      TEMPLATE: ${JSON.stringify(promptObject)}`,
+      MANDATORY: You MUST use the name "${extract(context.name)}" and the item "${extract(selectedContextItem)}". 
+      VARIETY GUARDRAIL: Avoid repetitive themes like "star stickers" or "pencils". 
+      The story should give a fresh and engaging reason for ${isSharing ? 'sharing' : 'grouping'} the ${total} items.
+      Creative Contexts: materials for a puppet show, resources for a science experiment, items for a charitable donation, or treats for a festive celebration.
+
+      CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
       metadata: { difficulty: 'foundation', logic: activeVariant, hideVisual: false }
     };
   }

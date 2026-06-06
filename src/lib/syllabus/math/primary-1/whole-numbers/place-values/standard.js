@@ -139,7 +139,7 @@ export const standardVariants = {
           "options": ${isMCQ ? mcqOptions : 'null'},
           "hint": ${JSON.stringify(getQText(`Try circling groups of 10 items. How many groups can you circle?`, `Count how many tens are in ${num}.`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`${num} has ${tens} tens, so he can make ${tens} groups of 10.`, `${num} ÷ 10 = ${tens} remainder ${ones}`))},          
+          "solutionSteps": ${JSON.stringify(getQText(`${num} has ${tens} tens, so he can make ${tens} groups of 10.`, `${num} = ${tens} tens and ${ones} ones`))},          
           "visualEngine": { 
             "componentToRender": "BASE_TEN_BLOCKS", 
             "componentData": { "tens": 0, "ones": ${num} } 

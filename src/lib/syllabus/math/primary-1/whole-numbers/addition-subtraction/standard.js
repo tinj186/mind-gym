@@ -60,8 +60,8 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           : `1. Subtract the ones: ${num1 % 10} - ${num2 % 10} = ${(num1 % 10) - (num2 % 10)}.\n2. Subtract the tens: ${Math.floor(num1 / 10) * 10} - ${Math.floor(num2 / 10) * 10} = ${Math.floor(num1 / 10) * 10 - Math.floor(num2 / 10) * 10}.\n3. Total is ${answer}.`
       },
       visualEngine: {
-        componentToRender: isStructure ? "NONE" : "NUMBER_CARDS",
-        componentData: isStructure ? {} : { items: [String(num1), operator, String(num2)] }
+        componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
+        componentData: isShortQ ? { items: [String(num1), operator, String(num2)] } : {}
       },
       inputRequirement: { inputType }
     };
@@ -70,7 +70,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
       ${isShortQ 
         ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a 1-sentence localized Singaporean math story about ${extract(context.name)} having ${num1} and ${num2} ${itemLabel}.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence Singaporean word problem involving ${extract(context.name)} and ${itemLabel}. The story must naturally incorporate the numbers ${num1} and ${num2} in an ${isAdd ? 'addition' : 'subtraction'} context (e.g., buying, collecting, or losing items).`
       }
 
       CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
@@ -80,7 +80,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         difficulty: 'standard', 
         steps: 2, 
         logic: isAdd ? "add_no_regroup" : "sub_no_regroup", 
-        hideVisual: isStructure 
+        hideVisual: !isShortQ 
       }
     };
   }
@@ -121,8 +121,8 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         solutionSteps: `1. ${num1} ${operator} ${num2} = ${answer}.`
       },
       visualEngine: {
-        componentToRender: isStructure ? "NONE" : "NUMBER_CARDS",
-        componentData: isStructure ? {} : { items: [String(num1), operator, String(num2)] }
+        componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
+        componentData: isShortQ ? { items: [String(num1), operator, String(num2)] } : {}
       },
       inputRequirement: { inputType }
     };
@@ -131,7 +131,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
       ${isShortQ 
         ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a 1-sentence localized Singaporean math story about ${extract(context.name)} having ${num1} and ${num2} ${itemLabel}.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence Singaporean word problem involving ${extract(context.name)} and ${itemLabel}. The story must naturally incorporate the numbers ${num1} and ${num2} in an ${isAdd ? 'addition' : 'subtraction'} context (e.g., sharing, finding, or spending).`
       }
 
       CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
@@ -141,7 +141,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         difficulty: 'standard', 
         steps: 2, 
         logic: "wp_basic", 
-        hideVisual: isStructure 
+        hideVisual: !isShortQ 
       }
     };
   }
@@ -163,8 +163,8 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         solutionSteps: `1. ${n1} + ${n2} = ${n1 + n2}.\n2. ${n1 + n2} + ${n3} = ${answer}.`
       },
       visualEngine: {
-        componentToRender: isStructure ? "NONE" : "NUMBER_CARDS",
-        componentData: isStructure ? {} : { items: [String(n1), "+", String(n2), "+", String(n3)] }
+        componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
+        componentData: isShortQ ? { items: [String(n1), "+", String(n2), "+", String(n3)] } : {}
       },
       inputRequirement: { inputType }
     };
@@ -173,13 +173,13 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
       ${isShortQ 
         ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a 1-sentence localized Singaporean story about ${extract(context.name)} and their ${n1}, ${n2}, and ${n3} ${itemLabel}.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence Singaporean word problem about ${extract(context.name)} and their ${n1}, ${n2}, and ${n3} ${itemLabel}. The story should logically combine these three groups.`
       }
 
       CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
 
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
-      metadata: { difficulty: 'standard', logic: "add_3_num", hideVisual: isStructure }
+      metadata: { difficulty: 'standard', logic: "add_3_num", hideVisual: !isShortQ }
     };
   }
 
@@ -203,8 +203,8 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         solutionSteps: `1. ${whole} - ${part1} = ${answer}.`
       },
       visualEngine: {
-        componentToRender: isStructure ? "NONE" : "NUMBER_CARDS",
-        componentData: isStructure ? {} : { items: isAdd ? [String(part1), "+", "?", "=", String(whole)] : [String(whole), "-", "?", "=", String(part1)] }
+        componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
+        componentData: isShortQ ? { items: isAdd ? [String(part1), "+", "?", "=", String(whole)] : [String(whole), "-", "?", "=", String(part1)] } : {}
       },
       inputRequirement: { inputType }
     };
@@ -213,13 +213,13 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
       ${isShortQ 
         ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a 1-sentence localized Singaporean story.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence Singaporean word problem involving ${extract(context.name)} and ${itemLabel}. The story should describe a situation where ${whole} is the total and ${part1} is one part, asking for the missing ${part2} ${itemLabel}.`
       }
 
       CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
 
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
-      metadata: { difficulty: 'standard', logic: "missing_part_100", hideVisual: isStructure }
+      metadata: { difficulty: 'standard', logic: "missing_part_100", hideVisual: !isShortQ }
     };
   }
 
@@ -247,11 +247,13 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      aiPrompt: `You are an expert Primary 1 math generator. ${readingMandate} ${formatInstructions}
       ${isShortQ 
         ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a 1-sentence localized Singaporean story about related facts.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence Singaporean word problem about related facts using ${extract(context.name)} and ${itemLabel}. (e.g., "If ${part1} ${itemLabel} and ${part2} ${itemLabel} make ${whole}...")`
       }
+
+      CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
 
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
       metadata: { difficulty: 'standard', logic: "fact_families", hideVisual: true }
@@ -277,21 +279,23 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         solutionSteps: `1. ${val1} ${isMore ? '+' : '-'} ${diff} = ${answer}.`
       },
       visualEngine: {
-        componentToRender: isStructure ? "NONE" : "NUMBER_CARDS",
-        componentData: isStructure ? {} : { items: [String(val1), isMore ? "+" : "-", String(diff)] }
+        componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
+        componentData: isShortQ ? { items: [String(val1), isMore ? "+" : "-", String(diff)] } : {}
       },
       inputRequirement: { inputType }
     };
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      aiPrompt: `You are an expert Primary 1 math generator. ${readingMandate} ${formatInstructions}
       ${isShortQ 
         ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story: "${extract(context.name)} has ${val1} ${itemLabel}. Another person has ${diff} ${isMore ? 'more' : 'fewer'} than ${extract(context.name)}."`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story: "${extract(context.name)} has ${val1} ${itemLabel}. Another person has ${diff} ${isMore ? 'more' : 'fewer'} than ${extract(context.name)}." You may use other localized objects (e.g. curry puffs, satay sticks) instead of ${itemLabel}.`
       }
 
+      CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
+
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
-      metadata: { difficulty: 'standard', logic: "comparison_basic", hideVisual: isStructure }
+      metadata: { difficulty: 'standard', logic: "comparison_basic", hideVisual: !isShortQ }
     };
   }
 
@@ -349,7 +353,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
 
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
-      metadata: { difficulty: 'standard', logic: "bond_100", hideVisual: false }
+      metadata: { difficulty: 'standard', logic: "bond_100", hideVisual: !isShortQ }
     };
   }
 }

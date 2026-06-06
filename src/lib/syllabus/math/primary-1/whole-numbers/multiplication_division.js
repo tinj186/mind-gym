@@ -11,7 +11,7 @@ export const multiplicationDivisionBlueprint = {
   id: 'p1-multiplication-division',
   title: 'Multiplication and Division',
   strand: 'Number and Algebra',
-  visualType: 'DYNAMIC', 
+  visualType: 'DYNAMIC',
 
   difficultyLevels: {
     foundation: {
@@ -45,11 +45,11 @@ export const multiplicationDivisionBlueprint = {
     standard_comparison_times_as_many: "Solve 'times as many' word problems within 40.",
     standard_skip_count_total: "Use skip counting by 2, 5, or 10 to find a total.",
     standard_unit_price_calc: "Calculate the total cost of multiple identical items.",
-    standard_sharing_missing_each: "Find how many in each group (Sharing).",
-    standard_grouping_missing_groups: "Find the number of groups (Grouping).",
-    standard_inverse_fact_families: "Solve division using a related multiplication fact.",
-    standard_even_odd_sharing: "Identify if a number can be shared equally (Even/Odd logic).",
-    standard_attribute_multiplication: "Count total attributes (e.g., wheels on 5 cars).",
+    //    standard_sharing_missing_each: "Find how many in each group (Sharing).",
+    //    standard_grouping_missing_groups: "Find the number of groups (Grouping).",
+    //    standard_inverse_fact_families: "Solve division using a related multiplication fact.",
+    //    standard_even_odd_sharing: "Identify if a number can be shared equally (Even/Odd logic).",
+    //    standard_attribute_multiplication: "Count total attributes (e.g., wheels on 5 cars).",
 
     advanced_multi_step_mult_add: "Multi-step: Multiply groups then add more.",
     advanced_multi_step_mult_sub: "Multi-step: Multiply groups then subtract.",
@@ -70,34 +70,34 @@ export const multiplicationDivisionBlueprint = {
     if (isMissing || violatesShort || violatesStructure) {
       const safeDiff = String(difficulty).toLowerCase();
       let validVariants = Object.keys(multiplicationDivisionBlueprint.variants).filter(k => k.startsWith(safeDiff));
-      
+
       // 2. APPLY SPECIFIC RULES BASED ON QUESTION TYPE
       if (isShort) {
         // Short questions: ONLY pure mathematical equations (exclude stories and interactive tools)
-        validVariants = validVariants.filter(k => 
-          !k.includes('word_problem') && 
-          !k.includes('logic') && 
+        validVariants = validVariants.filter(k =>
+          !k.includes('word_problem') &&
+          !k.includes('logic') &&
           !k.includes('interactive') ||
           k.includes('multiplication') || k.includes('division')
         );
       } else if (isStructure) {
         // Structured questions: ONLY word problems OR interactive tools
-        validVariants = validVariants.filter(k => 
-          k.includes('word_problem') || 
-          k.includes('logic') || 
+        validVariants = validVariants.filter(k =>
+          k.includes('word_problem') ||
+          k.includes('logic') ||
           k.includes('interactive') ||
           k.includes('multiplication') || k.includes('division')
         );
       }
-      
+
       activeVariant = validVariants[Math.floor(Math.random() * validVariants.length)] || 'foundation_multiplication';
     }
 
-    let formatInstructions = isMCQ 
+    let formatInstructions = isMCQ
       ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.`
-      : isShort 
+      : isShort
         ? `Format as Short Answer. The "options" field in your JSON should be null. CRITICAL: For the "questionText" string, output ONLY the mathematical equation using 'x' or '÷' (e.g., "4 x 5 = ?"). Do not use any English words. TOPIC: Multiplication/Division only. NO addition/subtraction.`
-        : `Format as Structured Question. The "options" field in your JSON should be null. CRITICAL: For the "questionText" string, write a clear localized word problem. CREATIVE INSTRUCTIONS: Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).`;
+        : `Format as Structured Question. The "options" field in your JSON should be null. CRITICAL: For the "questionText" string, write a clear localized word problem. CREATIVE INSTRUCTIONS: Generate a Singapore-themed word problem. Use varied local names, settings (e.g., community club, school, or home), and strictly use the specific items provided in the prompt logic.`;
 
     // Map to Zod enums
     const zodType = isMCQ ? 'MCQ' : isShort ? 'SHORT_QUESTION' : 'STRUCTURED';
@@ -130,11 +130,11 @@ export const multiplicationDivisionBlueprint = {
     const levelNum = parseInt(level.replace('Primary ', ''));
     const tier = levelNum <= 2 ? 'LOWER_BLOCK' : (levelNum <= 4 ? 'MIDDLE_BLOCK' : 'UPPER_BLOCK');
     const context = getRandomContext('GENERAL', tier);
-    
-    // Normalizing the label to prevent the [object Object] bug
-    const itemData = context?.selectedItem || { item: 'item', icon: '⭐' };
-    const cleanItemLabel = typeof itemData === 'string' 
-      ? itemData 
+
+    // Fix: Properly randomize the item from the context items array if selectedItem is not available
+    const itemData = context?.selectedItem || (context.items && context.items.length > 0 ? context.items[Math.floor(Math.random() * context.items.length)] : null) || { item: 'item', icon: '⭐' };
+    const cleanItemLabel = typeof itemData === 'string'
+      ? itemData
       : (itemData.item || itemData.name?.singular || itemData.name || 'item');
 
     if (String(cleanItemLabel).includes('[object')) console.warn("⚠️ [Blueprint: Mult/Div] Context item extraction failed for:", itemData);
@@ -143,8 +143,8 @@ export const multiplicationDivisionBlueprint = {
     const funIcons = ['⚽', '🏀', '⭐', '🚗', '🥟', '🍢', '🍡', '🍎'];
     const selectedIcon = itemData?.icon || funIcons[Math.floor(Math.random() * funIcons.length)];
 
-    // FIX: Only hide visuals for pure equations, NOT for interactive workspaces
-    const hideVisual = isShort && !activeVariant.includes('interactive');
+    // Visuals are hidden for text-only questions (Structured and MCQ) unless they use interactive tools
+    const hideVisual = !isShort && !activeVariant.includes('interactive');
 
     if (activeVariant.startsWith('foundation_')) {
       return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, cleanItemLabel, getQText, selectedIcon, hideVisual, supportsStructured);

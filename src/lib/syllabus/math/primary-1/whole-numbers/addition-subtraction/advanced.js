@@ -1,6 +1,12 @@
 import { numberToWords } from '@/lib/utils/math-helpers';
 import { getRandomContext } from '@/lib/utils/localization';
 
+// Robust extraction helper for localized context objects
+const extract = (val) => {
+  if (typeof val !== 'object' || val === null) return String(val);
+  return val.item || val.singular || val.name?.singular || val.text || val.val || String(val);
+};
+
 export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, displayName, getQText, selectedIcon, hideVisual) {
   const commonMeta = { level, topic, type: zodType, difficulty: zodDiff };
   const inputType = isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT';
@@ -35,37 +41,38 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const options = isMCQ ? [answer, String(parseInt(answer) - 1), String(parseInt(answer) + 10), String(num1 + 2)].sort(() => Math.random() - 0.5) : null;
 
     const promptObject = {
-      meta: commonMeta,
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many items does ${context.name} have ${isAdd ? 'now' : 'left'}?`, `${num1} ${operator} ${num2} = ?`),
-        hint: "[AI: INJECT HINT]",
         options: options,
+        hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
         solutionSteps: isAdd 
-          ? `First, add the ones: ${num1 % 10} + ${num2 % 10} = ${(num1 % 10) + (num2 % 10)}. Regroup 10 ones into 1 ten. Then add the tens. Total is ${answer}.`
-          : `Since we cannot subtract ${num2 % 10} from ${num1 % 10}, regroup 1 ten from ${Math.floor(num1 / 10)} tens as 10 ones. Now subtract the ones: ${num1 % 10 + 10} - ${num2 % 10} = ${num1 % 10 + 10 - num2 % 10}. Then subtract the remaining tens. Answer is ${answer}.`
+          ? `1. First, add the ones: ${num1 % 10} + ${num2 % 10} = ${(num1 % 10) + (num2 % 10)}.\n2. Regroup 10 ones into 1 ten.\n3. Then add the tens.\n4. Total is ${answer}.`
+          : `1. Since we cannot subtract ${num2 % 10} from ${num1 % 10}, regroup 1 ten from ${Math.floor(num1 / 10)} tens as 10 ones.\n2. Now subtract the ones: ${num1 % 10 + 10} - ${num2 % 10} = ${num1 % 10 + 10 - num2 % 10}.\n3. Then subtract the remaining tens.\n4. Answer is ${answer}.`
       },
       visualEngine: {
-        componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
-        componentData: { items: [String(num1), operator, String(num2)], hideVisual: isShortQ }
+        componentToRender: isStructure ? "NONE" : "NUMBER_CARDS",
+        componentData: isStructure ? {} : { items: [String(num1), operator, String(num2)] }
       },
       inputRequirement: { inputType }
     };
 
     return {
-      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
-      Task: 
-      1. Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story.
-      2. In the "hint" field, provide a conceptual clue about regrouping (tens and ones).
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
       ${isShortQ 
-        ? `3. DO NOT add a story for Short Questions.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-        : `3. The story MUST be localized.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-      }`,
+        ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean math story about ${extract(context.name)} and ${itemLabel} involving ${isAdd ? 'regrouping ones into tens' : 'regrouping tens into ones'}.`
+      }
+
+      CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
       metadata: { 
         difficulty: 'advanced', 
         steps: 3, 
         logic: isAdd ? "add_regroup" : "sub_regroup", 
-        hideVisual: isShortQ 
+        hideVisual: isStructure 
       }
     };
   }
@@ -79,30 +86,26 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const options = isMCQ ? [answer, String(num1 - num2), String(num1 + 10), String(num1)].sort(() => Math.random() - 0.5) : null;
 
     const promptObject = {
-      meta: commonMeta,
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many items does the second person have?`, `What is ${num2} more than ${num1}?`),
-        hint: "[AI: INJECT HINT]",
         options: options,
+        hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
-        solutionSteps: `To find "more than", we add the numbers: ${num1} + ${num2} = ${answer}.`
+        solutionSteps: `1. To find "more than", we add the numbers.\n2. ${num1} + ${num2} = ${answer}.`
       },
-      visualEngine: { 
-        componentToRender: "NONE", 
-        componentData: { hideVisual: true } 
-      },
+      visualEngine: { componentToRender: "NONE", componentData: {} },
       inputRequirement: { inputType }
     };
 
     return {
-      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
-      Task: 
-      1. Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story.
-      2. In the "hint" field, provide a conceptual clue about finding "more than".
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
       ${isShortQ 
-        ? `3. DO NOT add a story for Short Questions.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-        : `3. The story MUST be localized.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-      }`,
+        ? 'STRICT: Provide a direct mathematical question (e.g., "What is X more than Y?"). NO story context or names.' 
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean story about finding an amount that is ${num2} more than ${num1} ${itemLabel}.`
+      }
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
       metadata: { 
         difficulty: 'advanced', 
         steps: 3, 
@@ -121,30 +124,26 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const options = isMCQ ? [answer, String(num1 + num2), String(num1 - 10), String(num1)].sort(() => Math.random() - 0.5) : null;
 
     const promptObject = {
-      meta: commonMeta,
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many items does the second person have?`, `What is ${num2} less than ${num1}?`),
-        hint: "[AI: INJECT HINT]",
         options: options,
+        hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
-        solutionSteps: `To find "less than", we subtract: ${num1} - ${num2} = ${answer}.`
+        solutionSteps: `1. To find "less than", we subtract.\n2. ${num1} - ${num2} = ${answer}.`
       },
-      visualEngine: { 
-        componentToRender: "NONE", 
-        componentData: { hideVisual: true } 
-      },
+      visualEngine: { componentToRender: "NONE", componentData: {} },
       inputRequirement: { inputType }
     };
 
     return {
-      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
-      Task: 
-      1. Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story.
-      2. In the "hint" field, provide a conceptual clue about finding "less than".
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
       ${isShortQ 
-        ? `3. DO NOT add a story for Short Questions.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-        : `3. The story MUST be localized.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-      }`,
+        ? 'STRICT: Provide a direct mathematical question (e.g., "What is X less than Y?"). NO story context or names.' 
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean story about finding an amount that is ${num2} less than ${num1} ${itemLabel}.`
+      }
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
       metadata: { 
         difficulty: 'advanced', 
         steps: 3, 
@@ -160,54 +159,35 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const behind = Math.floor(Math.random() * 10) + 5; // People behind
     const totalPeople = inFront + behind + 1;
     const answer = String(totalPeople);
-
-    // Generate an actual array of forest friends for the visual engine
-    const animals = ['🦊', '🐰', '🐻', '🐼', '🐨', '🐯', '🦁', '🐵', '🐸', '🐨'];
-    const queueItems = Array.from({ length: totalPeople }).map((_, i) => {
-      if (i === inFront) return selectedIcon; // The target Fox/Animal
-      return animals[i % animals.length];
-    });
     
     const options = isMCQ ? [answer, String(inFront + behind), String(inFront + behind - 1), String(inFront + 1)].sort(() => Math.random() - 0.5) : null;
 
     const promptObject = {
-      meta: commonMeta,
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
-        questionText: getQText(`[STORY] How many people are there in the queue altogether?`, `There are ${inFront} people in front of ${context.name} and ${behind} people behind. How many people are in the queue?`, zodType),
-        hint: "[AI: INJECT HINT]",
+        questionText: getQText(`[STORY] How many people are there in the queue altogether?`, `There are ${inFront} people in front of ${extract(context.name)} and ${behind} people behind. How many people are in the queue?`),
         options: options,
+        hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
-        solutionSteps: `Add the people in front (${inFront}), the person themselves (1), and the people behind (${behind}): ${inFront} + 1 + ${behind} = ${answer}.`
+        solutionSteps: `1. Add the people in front: ${inFront}.\n2. Add ${extract(context.name)} themselves: 1.\n3. Add the people behind: ${behind}.\n4. Total: ${inFront} + 1 + ${behind} = ${answer}.`
       },
-      visualEngine: {
-        componentToRender: isShortQ ? "NONE" : "ORDINAL_LINE", // Ordinal line visual for word problems
-        componentData: { 
-          position: inFront, 
-          total: totalPeople, 
-          items: queueItems, 
-          icon: selectedIcon,
-          hideVisual: isShortQ,
-          label: "[AI: CONTEXT LABEL]"
-        } 
-      },
+      visualEngine: { componentToRender: "NONE", componentData: {} },
       inputRequirement: { inputType }
     };
 
     return {
-      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
-      Task: 
-      1. Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story.
-      2. In the "label" field within visualEngine.componentData, provide a context-relevant name for the formation (e.g., "Parade Marching Formation" or "Queue at Hawker Centre").
-      3. In the "hint" field, provide a conceptual clue about counting positions in a queue.
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
       ${isShortQ 
-        ? `3. DO NOT add a story for Short Questions.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-        : `3. The story MUST be localized.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-      }`,
+        ? 'STRICT: Provide a direct mathematical question. NO story context or names.' 
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean story about ${extract(context.name)} being in a queue.`
+      }
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
       metadata: { 
         difficulty: 'advanced', 
         steps: 3, 
         logic: "cross_ordinal_queue", 
-        hideVisual: isShortQ 
+        hideVisual: true 
       }
     };
   }
@@ -221,31 +201,27 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const answer = String(sum - right1);
 
     const promptObject = {
-      meta: commonMeta,
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many more must be added to the second group to make them equal?`, `${left1} + ${left2} = ${right1} + ?`),
-        hint: "[AI: INJECT HINT]",
         options: isMCQ ? [answer, String(sum), String(parseInt(answer) + 10), String(parseInt(answer) - 2)].sort(() => Math.random() - 0.5) : null,
+        hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
-        solutionSteps: `${left1} + ${left2} = ${sum}. To make the other side equal ${sum}, we subtract: ${sum} - ${right1} = ${answer}.`
+        solutionSteps: `1. Find the total of the first group: ${left1} + ${left2} = ${sum}.\n2. To make the other side equal ${sum}, we subtract the known amount: ${sum} - ${right1} = ${answer}.`
       },
-      visualEngine: {
-        componentToRender: "NONE",
-        componentData: { hideVisual: true }
-      },
+      visualEngine: { componentToRender: "NONE", componentData: {} },
       inputRequirement: { inputType }
     };
 
     return {
-      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
-      Task: 
-      1. Replace the "[STORY]" placeholder in the questionText with a 1-sentence Singaporean story.
-      2. In the "hint" field, provide a conceptual clue about making both sides of an equation equal.
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
       ${isShortQ 
-        ? `3. DO NOT add a story for Short Questions.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-        : `3. The story MUST be localized.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-      }`,
-      metadata: { difficulty: 'advanced', logic: "balance_eq", hideVisual: true }
+        ? 'STRICT: Provide a direct mathematical equation (e.g. A + B = C + ?). NO story context or names.' 
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean story about balancing two groups of ${itemLabel}.`
+      }
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'advanced', logic: "balance_eq", hideVisual: isStructure }
     };
   }
 
@@ -258,31 +234,27 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const answer = String(start);
 
     const promptObject = {
-      meta: commonMeta,
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
-        questionText: getQText(`[STORY] How many did ${context.name} have at first?`, `? - ${change1} + ${change2} = ${finalAmount}. Find the starting number.`),
-        hint: "[AI: INJECT HINT]",
+        questionText: getQText(`[STORY] How many did ${extract(context.name)} have at first?`, `? - ${change1} + ${change2} = ${finalAmount}. Find the starting number.`),
         options: isMCQ ? [answer, String(finalAmount + change1 + change2), String(finalAmount), String(start - 10)].sort(() => Math.random() - 0.5) : null,
+        hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
-        solutionSteps: `Work backwards from ${finalAmount}. Instead of adding ${change2}, subtract it: ${finalAmount} - ${change2} = ${finalAmount - change2}. Instead of subtracting ${change1}, add it: ${finalAmount - change2} + ${change1} = ${answer}.`
+        solutionSteps: `1. Work backwards from the final amount: ${finalAmount}.\n2. Reverse the last change: ${finalAmount} - ${change2} = ${finalAmount - change2}.\n3. Reverse the first change: ${finalAmount - change2} + ${change1} = ${answer}.`
       },
-      visualEngine: {
-        componentToRender: "NONE",
-        componentData: { hideVisual: true }
-      },
+      visualEngine: { componentToRender: "NONE", componentData: {} },
       inputRequirement: { inputType }
     };
 
     return {
-      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
-      Task: 
-      1. Replace the "[STORY]" placeholder in the questionText with a Singaporean word problem.
-      2. In the "hint" field, provide a conceptual clue about working backwards using opposite operations.
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
       ${isShortQ 
-        ? `3. DO NOT add a story for Short Questions.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-        : `3. The story MUST be localized.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-      }`,
-      metadata: { difficulty: 'advanced', logic: "working_backwards", hideVisual: true }
+        ? 'STRICT: Provide a direct mathematical equation involving a missing start (e.g. ? - X + Y = Z). NO story context or names.' 
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean word problem requiring the student to work backwards to find the starting number of ${itemLabel}.`
+      }
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'advanced', logic: "working_backwards", hideVisual: isStructure }
     };
   }
 
@@ -295,31 +267,27 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const answer = String(total);
 
     const promptObject = {
-      meta: commonMeta,
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
-        questionText: getQText(`[STORY] How many do they have altogether?`, `Amount A = ${aAmount}. Amount B is ${diff} more than A. What is A + B?`),
-        hint: "[AI: INJECT HINT]",
+        questionText: getQText(`[STORY] How many do they have altogether?`, `[Person 1] has ${aAmount} ${itemLabel}. [Person 2] has ${diff} more than [Person 1]. How many do they have in total?`),
         options: isMCQ ? [answer, String(bAmount), String(total + 10), String(aAmount + diff)].sort(() => Math.random() - 0.5) : null,
+        hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
-        solutionSteps: `First, find how many the second person has: ${aAmount} + ${diff} = ${bAmount}. Then, find the total: ${aAmount} + ${bAmount} = ${answer}.`
+        solutionSteps: `1. Find how many items the second person has: ${aAmount} + ${diff} = ${bAmount}.\n2. Find the total by adding both amounts: ${aAmount} + ${bAmount} = ${answer}.`
       },
-      visualEngine: {
-        componentToRender: isShortQ ? "NONE" : "COUNTING_OBJECTS",
-        componentData: { items: [String(aAmount), String(bAmount)], operator: "+", hideVisual: isShortQ }
-      },
+      visualEngine: { componentToRender: "NONE", componentData: {} },
       inputRequirement: { inputType }
     };
 
     return {
-      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
-      Task: 
-      1. Replace the "[STORY]" placeholder in the questionText with a Singaporean story.
-      2. In the "hint" field, provide a conceptual clue about solving a two-step problem.
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
       ${isShortQ 
-        ? `3. DO NOT add a story for Short Questions.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-        : `3. The story MUST be localized.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-      }`,
-      metadata: { difficulty: 'advanced', logic: "two_step_total", hideVisual: isShortQ }
+        ? 'STRICT: Provide a direct two-step mathematical question. NO story context. Use generic labels if necessary, but keep it purely mathematical.' 
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean story involving ${extract(context.name)} and another person. Do NOT use "A" and "B" or "Person 1" and "Person 2". Use real names (e.g., Siti, Ahmad, Wei Ling). Describe a scenario involving ${itemLabel} where one person has ${aAmount} and the other has ${diff} more.`
+      }
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'advanced', logic: "two_step_total", hideVisual: true }
     };
   }
 
@@ -332,37 +300,27 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const answer = String(shape2Val);
 
     const promptObject = {
-      meta: commonMeta,
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] Find the value of the circle.`, `▲ + ▲ = ${eq1Sum}. ▲ + ● = ${eq2Sum}. What is ●?`),
-        hint: "[AI: INJECT HINT]",
         options: isMCQ ? [answer, String(shape1Val), String(eq2Sum), String(shape2Val + 2)].sort(() => Math.random() - 0.5) : null,
+        hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
-        solutionSteps: `▲ + ▲ = ${eq1Sum}, so ▲ is ${shape1Val}. Substitute into the second equation: ${shape1Val} + ● = ${eq2Sum}. Therefore, ● = ${eq2Sum} - ${shape1Val} = ${answer}.`
+        solutionSteps: `1. ▲ + ▲ = ${eq1Sum}, so ▲ is ${shape1Val}.\n2. Substitute into the second equation: ${shape1Val} + ● = ${eq2Sum}.\n3. Therefore, ● = ${eq2Sum} - ${shape1Val} = ${answer}.`
       },
-      visualEngine: {
-        componentToRender: "SHAPE",
-        componentData: { 
-          puzzle: [
-            { items: ["triangle", "triangle"], sum: eq1Sum },
-            { items: ["triangle", "circle"], sum: eq2Sum }
-          ],
-          hideVisual: false 
-        }
-      },
+      visualEngine: { componentToRender: "NONE", componentData: {} },
       inputRequirement: { inputType }
     };
 
     return {
-      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
-      Task: 
-      1. Replace the "[STORY]" placeholder in the questionText with a story about shapes.
-      2. In the "hint" field, provide a conceptual clue about finding the value of one shape first.
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
       ${isShortQ 
-        ? `3. DO NOT add a story for Short Questions.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-        : `3. The story MUST be localized.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-      }`,
-      metadata: { difficulty: 'advanced', logic: "shape_substitution", hideVisual: false }
+        ? 'STRICT: Provide a direct shape logic question. NO story context or names.' 
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized story involving objects being used as symbols/shapes.`
+      }
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'advanced', logic: "shape_substitution", hideVisual: true }
     };
   }
 
@@ -375,13 +333,13 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const answer = String(ones1);
 
     const promptObject = {
-      meta: commonMeta,
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] The sum is ${sum}. What is the missing digit in the first number?`, `${tens1}? + ${num2} = ${sum}.`),
-        hint: "[AI: INJECT HINT]",
         options: isMCQ ? [answer, String(ones1 - 1), String(tens1), "1"].sort(() => Math.random() - 0.5) : null,
+        hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
-        solutionSteps: `To find the whole first number, do ${sum} - ${num2} = ${tens1 * 10 + ones1}. The missing ones digit is ${answer}.`
+        solutionSteps: `1. To find the whole first number, do ${sum} - ${num2} = ${tens1 * 10 + ones1}.\n2. The missing ones digit is ${answer}.`
       },
       visualEngine: {
         componentToRender: "NUMBER_CARDS",
@@ -391,15 +349,14 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `${readingMandate ? readingMandate + '\n' : ''}STRICT: Return ONLY valid JSON.
-      Task: 
-      1. Replace the "[STORY]" placeholder in the questionText with a story about a missing digit (e.g., an ink blot).
-      2. In the "hint" field, provide a conceptual clue about finding the total value of the missing-digit number first.
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
       ${isShortQ 
-        ? `3. DO NOT add a story for Short Questions.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-        : `3. The story MUST be localized.\n\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`
-      }`,
-      metadata: { difficulty: 'advanced', logic: "missing_digit", hideVisual: false }
+        ? 'STRICT: Provide a direct missing digit question (e.g. 2? + 14 = 38). NO story context or names.' 
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean story involving ${extract(context.name)} and ${itemLabel}. The story should describe a reason why a digit is missing, using varied scenarios such as an ink blot, a torn piece of paper, a hidden sticker, or a smudge. Do NOT always use the same theme.`
+      }
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'advanced', logic: "missing_digit", hideVisual: isStructure }
     };
   }
 }

@@ -43,21 +43,21 @@ export const additionSubtractionBlueprint = {
     foundation_missing_addend: "Find the missing addend in an equation within 20.",
     foundation_number_bond_logic: "Find the missing part in a number bond within 20.",
 
-//    standard_add_100_no_regroup: "Add two 2-digit numbers within 100 without regrouping.",
-//    standard_sub_100_no_regroup: "Subtract two 2-digit numbers within 100 without regrouping.",
-//    standard_add_three_numbers: "Add three 1-digit numbers with sums up to 20.",
-//    standard_missing_addend_100: "Find the missing addend in a 2-digit equation (no regrouping).",
+    standard_add_100_no_regroup: "Add two 2-digit numbers within 100 without regrouping.",
+    standard_sub_100_no_regroup: "Subtract two 2-digit numbers within 100 without regrouping.",
+    standard_add_three_numbers: "Add three 1-digit numbers with sums up to 20.",
+    standard_missing_addend_100: "Find the missing addend in a 2-digit equation (no regrouping).",
     standard_missing_subtrahend_100: "Find the missing subtrahend in a 2-digit equation (no regrouping).",
     standard_related_fact_families: "Use addition facts to solve related subtraction problems.",
     standard_comparison_more_basic: "Solve 'How many more' problems within 40 (no regrouping).",
     standard_comparison_fewer_basic: "Solve 'How many fewer' problems within 40 (no regrouping).",
     standard_number_bond_multiples_10: "Complete a number bond within 100 (e.g., 85 = 50 + ?).",
 
-    advanced_add_regrouping: "Add two numbers within 100 with regrouping.",
-    advanced_sub_regrouping: "Subtract two numbers within 100 with regrouping.",
-    advanced_comparative_more: "Solve 'more than' problems (e.g., What is X more than Y?).",
-    advanced_comparative_less: "Solve 'less than' problems (e.g., What is X less than Y?).",
-    advanced_cross_ordinal_queue: "Solve problems involving positions in a queue (ordinal logic).",
+//    advanced_add_regrouping: "Add two numbers within 100 with regrouping.",
+//    advanced_sub_regrouping: "Subtract two numbers within 100 with regrouping.",
+//    advanced_comparative_more: "Solve 'more than' problems (e.g., What is X more than Y?).",
+//    advanced_comparative_less: "Solve 'less than' problems (e.g., What is X less than Y?).",
+//    advanced_cross_ordinal_queue: "Solve problems involving positions in a queue (ordinal logic).",
     advanced_balance_equations: "Find the missing number to balance an equation (e.g., 12 + 5 = 10 + ?).",
     advanced_working_backwards: "Find the starting amount using the 'working backwards' heuristic.",
     advanced_two_step_total: "Solve 2-step word problems involving a comparison and a total sum.",
@@ -130,8 +130,10 @@ export const additionSubtractionBlueprint = {
     const itemData = context?.selectedItem || context.items[Math.floor(Math.random() * context.items.length)] || { name: 'item', icon: '⭐' };
 
     // Robust extraction to prevent [object Object]
-    const displayName = typeof itemData === 'string' 
-      ? itemData 
+    const displayName = (typeof itemData === 'object' && itemData !== null)
+      ? (itemData.singular || itemData.item || itemData.name?.singular || itemData.name || 'item')
+      : typeof itemData === 'string'
+      ? itemData
       : (itemData.singular || itemData.name || 'item');
 
     const selectedIcon = itemData?.icon || '⭐';

@@ -91,12 +91,12 @@ function parseAiResponse(text) {
   try {
     // Look for content between ```json and ``` blocks first
     const jsonBlockMatch = text.match(/```json\s*([\s\S]*?)\s*```/);
-    let jsonText = jsonBlockMatch ? jsonBlockMatch[1] : text;    
-   // Find the outer-most JSON delimiters to handle conversational noise and multiple structures    
-   const firstBrace = jsonText.indexOf('{');
-   const firstBracket = jsonText.indexOf('[');
-   const lastBrace = jsonText.lastIndexOf('}');       
-   const lastBracket = jsonText.lastIndexOf(']');
+    let jsonText = jsonBlockMatch ? jsonBlockMatch[1] : text;
+    // Find the outer-most JSON delimiters to handle conversational noise and multiple structures    
+    const firstBrace = jsonText.indexOf('{');
+    const firstBracket = jsonText.indexOf('[');
+    const lastBrace = jsonText.lastIndexOf('}');
+    const lastBracket = jsonText.lastIndexOf(']');
     let start = -1;
     let end = -1;
 
@@ -135,7 +135,7 @@ function parseAiOptions(optionsData) {
       return null; // Fallback if parsing fails (e.g., "null" string or invalid JSON string)
     }
   }
-  
+
   if (Array.isArray(parsed)) {
     return parsed.map(opt => {
       if (opt === null || opt === undefined) return "";
@@ -181,10 +181,19 @@ HINT GENERATION RULES:
 - Format solution steps strictly as a numbered list: "1. ..., 2. ..., 3. ...". Each step MUST start on a new line (use the \\n character).
 `;
 
+    // Safety guard: ensures componentData is always a plain object before spreading.
+    // If the AI returns componentData as a string, spreading it would create { 0: "N", 1: "u", ... }
+    // which causes the "spread-out alphabet" grid rendering bug.
+    const sanitizeComponentData = (data) => {
+      if (data === null || data === undefined) return {};
+      if (typeof data === 'object' && !Array.isArray(data)) return data;
+      return {}; // Discard strings, arrays, or any non-plain-object value
+    };
+
     const safeMapToSchema = (q) => {
       // Determine if we are processing raw AI output (Nested) or pre-flattened push object
       const isRawAI = !!(q.meta || q.content || q.visualEngine);
-      
+
       let prismaModelData = q.modelData || null;
 
       // TRANSFORM: Map visualEngine to modelData, respecting blueprint-level overrides
@@ -217,7 +226,7 @@ HINT GENERATION RULES:
         options: (() => {
           let opts = q.content?.options || q.options || null;
           if (opts === null) return null;
-          
+
           let processedOpts = [];
           if (Array.isArray(opts)) {
             processedOpts = opts.map(opt => {
@@ -249,8 +258,8 @@ HINT GENERATION RULES:
     let parsedQuestions = [];
 
     // --- PATH 1: HYBRID GENERATION (Blueprint Logic + AI Creativity) ---
-    const count = Math.min(quantity || 1, 10); 
-    
+    const count = Math.min(quantity || 1, 10);
+
     const safeDifficulty = String(difficulty || "foundation").toLowerCase();
     // Bulletproof case-insensitive matching to guarantee the blueprint is found
     const safeSubtopic = String(subtopic || "").trim().toLowerCase();
@@ -259,17 +268,17 @@ HINT GENERATION RULES:
 
     let blueprintResult = null;
     if (blueprintMeta && typeof blueprintMeta.generate === 'function') {
-        try {
-            // Test generation to confirm the blueprint is valid
-            blueprintResult = blueprintMeta.generate(safeDifficulty, variant, type);
-        } catch (e) {
-            console.warn("Blueprint valid check failed:", e);
-        }
+      try {
+        // Test generation to confirm the blueprint is valid
+        blueprintResult = blueprintMeta.generate(safeDifficulty, variant, type);
+      } catch (e) {
+        console.warn("Blueprint valid check failed:", e);
+      }
     }
 
     if (blueprintResult && blueprintResult.aiPrompt) {
       for (let i = 0; i < count; i++) {
-        
+
         // --- DYNAMIC VARIANT RANDOMIZATION ---
         let loopVariant = variant;
         // The engine (not the AI) must select the variant logic. 
@@ -278,27 +287,27 @@ HINT GENERATION RULES:
         const isValidForTier = blueprintMeta?.variants?.hasOwnProperty(variant) && variant.startsWith(safeDifficulty);
 
         if (!isValidForTier || isGeneric) {
-            const matchingVariants = Object.keys(blueprintMeta.variants || {}).filter(k => k.startsWith(safeDifficulty));
-            if (matchingVariants.length > 0) {
-                loopVariant = matchingVariants[Math.floor(Math.random() * matchingVariants.length)];
-            }
+          const matchingVariants = Object.keys(blueprintMeta.variants || {}).filter(k => k.startsWith(safeDifficulty));
+          if (matchingVariants.length > 0) {
+            loopVariant = matchingVariants[Math.floor(Math.random() * matchingVariants.length)];
+          }
         }
-        
+
         // Call the blueprint directly with the chosen variant
         const stepResult = blueprintMeta.generate(safeDifficulty, loopVariant, type);
-        
+
         let result;
         let retries = 3;
         let currentModelId;
         while (retries > 0) {
           currentModelId = getBestModel();
-          const model = genAI.getGenerativeModel({ 
+          const model = genAI.getGenerativeModel({
             model: currentModelId,
-            generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: 4096 } 
+            generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: 4096 }
           }, { apiVersion: 'v1beta' });
           try {
             result = await model.generateContent(baseSystemInstructions + "\n" + stepResult.aiPrompt);
-            break; 
+            break;
           } catch (error) {
             // Handle 503 (Busy) or 429 (Rate Limit) by rotating models
             if ((error.status === 503 || error.status === 429) && retries > 1) {
@@ -320,32 +329,35 @@ HINT GENERATION RULES:
               // THE NEW ENGINE: Try strict Zod validation first
               const validatedData = UniversalQuestionSchema.parse(q);
               parsedQuestions.push({
-                level, topic, subtopic: subtopic || "", heuristic: heuristic || null, 
+                level, topic, subtopic: subtopic || "", heuristic: heuristic || null,
                 difficulty, gradeLevel, subject: "Math",
-                type: validatedData.meta.type === 'SHORT_QUESTION' ? 'Short Question' : 
-                      validatedData.meta.type === 'STRUCTURED' ? 'Structured' : 
-                      validatedData.meta.type,
+                type: validatedData.meta.type === 'SHORT_QUESTION' ? 'Short Question' :
+                  validatedData.meta.type === 'STRUCTURED' ? 'Structured' :
+                    validatedData.meta.type,
                 strand: strand || blueprintMeta?.strand || "Number and Algebra",
                 isApproved: false,
                 finalAnswer: validatedData.content.finalAnswer,
                 options: validatedData.content.options || [],
-                modelData: {
-                  ...validatedData.visualEngine.componentData,
-                  type: validatedData.visualEngine.componentToRender,
-                  hideVisual: validatedData.visualEngine.componentData?.hideVisual !== undefined 
-                    ? validatedData.visualEngine.componentData.hideVisual 
-                    : validatedData.visualEngine.componentToRender === 'NONE',
-                  inputRequirement: validatedData.inputRequirement.inputType,
-                  finalAnswer: validatedData.content.finalAnswer,
-                  items: validatedData.visualEngine.componentData?.items || []
-                },
+                modelData: (() => {
+                  const safeData = sanitizeComponentData(validatedData.visualEngine.componentData);
+                  return {
+                    ...safeData,
+                    type: validatedData.visualEngine.componentToRender,
+                    hideVisual: safeData?.hideVisual !== undefined 
+                      ? safeData.hideVisual 
+                      : validatedData.visualEngine.componentToRender === 'NONE',
+                    inputRequirement: validatedData.inputRequirement.inputType,
+                    finalAnswer: validatedData.content.finalAnswer,
+                    items: Array.isArray(safeData?.items) ? safeData.items : []
+                  };
+                })(),
                 question: validatedData.content.questionText,
                 solution: validatedData.content.solutionSteps,
                 hint: validatedData.content.hint || null // Corrected to use validatedData.content.hint
               });
             } catch (zodError) {
               // Pull out AI-specific keys to prevent Prisma Unknown Argument errors
-              const { visualItems, modelData, questionText, solutionSteps, ...cleanQ } = q; 
+              const { visualItems, modelData, questionText, solutionSteps, ...cleanQ } = q;
 
               const prismaModelData = {
                 ...(modelData || {}),
@@ -363,7 +375,7 @@ HINT GENERATION RULES:
                 level,
                 topic,
                 subtopic: subtopic || "",
-                heuristic: heuristic || null, 
+                heuristic: heuristic || null,
                 difficulty,
                 gradeLevel,
                 subject: "Math",
@@ -388,173 +400,80 @@ HINT GENERATION RULES:
       }
     } else {
       // --- PATH 2 & 3: LEGACY AI PATHS (For non-migrated topics) ---
-     // Robust matching logic to find the blueprint by subtopic title
-     const blueprint = Object.values(blueprintRegistry).find(bp => bp.title === subtopic) || blueprintRegistry[`${level}-${topic}-${subtopic}`];
-     if (blueprint) {
+      // Robust matching logic to find the blueprint by subtopic title
+      const blueprint = Object.values(blueprintRegistry).find(bp => bp.title === subtopic) || blueprintRegistry[`${level}-${topic}-${subtopic}`];
+      if (blueprint) {
 
-       for (let i = 0; i < count; i++) {
-        // Fix: Variants in current blueprints (counting.js, ordinals.js) are Objects, not Arrays.
-        // We convert to entries or filter keys to avoid the .filter() crash.
-        let availableVariants = Object.keys(blueprint.variants || {});
-        const difficultyVariants = availableVariants.filter(v => v.startsWith(safeDifficulty));
-        
-        if (difficultyVariants.length > 0) {
-          availableVariants = difficultyVariants;
-        }
-        const selectedVariantKey = availableVariants[Math.floor(Math.random() * availableVariants.length)];
-        const variantDescription = blueprint.variants[selectedVariantKey] || "Standard variation";
+        for (let i = 0; i < count; i++) {
+          // Fix: Variants in current blueprints (counting.js, ordinals.js) are Objects, not Arrays.
+          // We convert to entries or filter keys to avoid the .filter() crash.
+          let availableVariants = Object.keys(blueprint.variants || {});
+          const difficultyVariants = availableVariants.filter(v => v.startsWith(safeDifficulty));
 
-        const formatInstruction = type === 'MCQ' 
-          ? "Format as MCQ. Include an 'options' array with 4 choices. 'finalAnswer' must exactly match one option."
-          : "Format as Short Answer. Do not include options.";
+          if (difficultyVariants.length > 0) {
+            availableVariants = difficultyVariants;
+          }
+          const selectedVariantKey = availableVariants[Math.floor(Math.random() * availableVariants.length)];
+          const variantDescription = blueprint.variants[selectedVariantKey] || "Standard variation";
 
-        const microPrompt = `Generate 1 Primary 1 Math question. Topic: ${topic}, Subtopic: ${subtopic}. 
+          const formatInstruction = type === 'MCQ'
+            ? "Format as MCQ. Include an 'options' array with 4 choices. 'finalAnswer' must exactly match one option."
+            : "Format as Short Answer. Do not include options.";
+
+          const microPrompt = `Generate 1 Primary 1 Math question. Topic: ${topic}, Subtopic: ${subtopic}. 
         Rule to follow strictly: ${variantDescription}. ${formatInstruction}        
         Output ONLY a valid JSON object: { question, options, solution, finalAnswer, visualItems, modelData, hint, context }. The "hint" field is MANDATORY and must contain conceptual scaffolding. Do not output an array or metadata.`;
-        
-        let result;
-        let retries = 3;
-        let currentModelId;
-        while (retries > 0) {
-          // Select model INSIDE the retry loop to allow rotation if one is busy
-          currentModelId = getBestModel();
-          const model = genAI.getGenerativeModel({ 
-            model: currentModelId,
-            // Increased temperature to 0.8 for creative variety in question selection
-            generationConfig: { responseMimeType: "application/json", temperature: 0.8, maxOutputTokens: 2048 } 
-          }, { apiVersion: 'v1beta' });
 
-          try {
-            result = await model.generateContent(baseSystemInstructions + "\n" + microPrompt);
-            break; 
-          } catch (error) {
-            // Handle 503 (Busy) or 429 (Rate Limit) by rotating models
-            if ((error.status === 503 || error.status === 429) && retries > 1) {
-              console.warn(`⚠️ Model ${currentModelId} busy. Cooling down and rotating...`);
-              const { cooldown } = await getDynamicDelays(currentModelId);
-              modelCooldowns[currentModelId] = Date.now() + cooldown;
-              retries--;
-              await new Promise(r => setTimeout(r, 1500));
-            } else throw error;
+          let result;
+          let retries = 3;
+          let currentModelId;
+          while (retries > 0) {
+            // Select model INSIDE the retry loop to allow rotation if one is busy
+            currentModelId = getBestModel();
+            const model = genAI.getGenerativeModel({
+              model: currentModelId,
+              // Increased temperature to 0.8 for creative variety in question selection
+              generationConfig: { responseMimeType: "application/json", temperature: 0.8, maxOutputTokens: 2048 }
+            }, { apiVersion: 'v1beta' });
+
+            try {
+              result = await model.generateContent(baseSystemInstructions + "\n" + microPrompt);
+              break;
+            } catch (error) {
+              // Handle 503 (Busy) or 429 (Rate Limit) by rotating models
+              if ((error.status === 503 || error.status === 429) && retries > 1) {
+                console.warn(`⚠️ Model ${currentModelId} busy. Cooling down and rotating...`);
+                const { cooldown } = await getDynamicDelays(currentModelId);
+                modelCooldowns[currentModelId] = Date.now() + cooldown;
+                retries--;
+                await new Promise(r => setTimeout(r, 1500));
+              } else throw error;
+            }
           }
-        }
 
-        const rawQData = parseAiResponse(result.response.text());
-        const aiDataBatch = Array.isArray(rawQData) ? rawQData : [rawQData];
+          const rawQData = parseAiResponse(result.response.text());
+          const aiDataBatch = Array.isArray(rawQData) ? rawQData : [rawQData];
 
-        for (const q of aiDataBatch) {
-          try {
-            const validatedData = UniversalQuestionSchema.parse(q);
-            parsedQuestions.push({
-              level, topic, subtopic, heuristic: heuristic || null, difficulty, gradeLevel, subject: "Math",
-              type: validatedData.meta.type === 'SHORT_QUESTION' ? 'Short Question' : 
-                    validatedData.meta.type === 'STRUCTURED' ? 'Structured' : 
-                    validatedData.meta.type,
-              strand: strand || blueprint.strand || "Number and Algebra",
-              isApproved: false,
-              finalAnswer: validatedData.content.finalAnswer,
-              options: validatedData.content.options || [],
-              modelData: {
-                ...validatedData.visualEngine.componentData,
-                type: validatedData.visualEngine.componentToRender,
-                hideVisual: validatedData.visualEngine.componentData?.hideVisual !== undefined 
-                  ? validatedData.visualEngine.componentData.hideVisual 
-                  : validatedData.visualEngine.componentToRender === 'NONE',
-                inputRequirement: validatedData.inputRequirement.inputType,
-                finalAnswer: validatedData.content.finalAnswer,
-                items: validatedData.visualEngine.componentData?.items || []
-              },
-              question: validatedData.content.questionText,
-                solution: validatedData.content.solutionSteps,
-              hint: validatedData.content.hint || null // Corrected to use validatedData.content.hint
-            });
-          } catch (zodError) {
-            // Pull out AI-specific keys to prevent Prisma Unknown Argument errors
-            const { visualItems, modelData, questionText, solutionSteps, ...cleanQ } = q; 
-
-            const prismaModelData = { 
-              ...(modelData || {}),
-              type: blueprint.visualType === 'DYNAMIC' ? (modelData?.type || "NONE") : blueprint.visualType,
-              items: (Array.isArray(visualItems) && visualItems.length > 0) ? visualItems : (modelData?.items || []),
-              hideVisual: !!modelData?.hideVisual, // No stepResult.metadata here
-            };
-            // Clean up modelData if properties are undefined
-            if (prismaModelData.type === undefined) delete prismaModelData.type;
-            if (prismaModelData.items === undefined) delete prismaModelData.items;
-            if (prismaModelData.hideVisual === undefined) delete prismaModelData.hideVisual;
-
-            parsedQuestions.push({
-              ...cleanQ,
-              level,
-              topic,
-              subtopic: subtopic || "",
-              heuristic: heuristic || "Standard", 
-              difficulty, gradeLevel, subject: "Math",
-              type: type === 'MCQ' ? 'MCQ' : (type.toLowerCase().includes('short') ? 'Short Question' : 'Structured'),
-              strand: strand || blueprint.strand || "Number and Algebra",
-              isApproved: false,
-              finalAnswer: typeof q.finalAnswer === 'object' ? JSON.stringify(q.finalAnswer) : String(q.finalAnswer || ""),
-              options: parseAiOptions(q.options),
-              modelData: prismaModelData,
-              question: cleanQ.question || questionText || q.question || "Problem data missing",
-              solution: cleanQ.solution || solutionSteps || q.solution || "No solution provided",
-              hint: q.content?.hint || q.hint || q.conceptualHint || q.content?.conceptualHint || null
-            });
-          }
-        }
-        await new Promise(r => setTimeout(r, 1500));
-      }
-    } else {
-      // --- PATH 2: BULK GENERATION FALLBACK (For Legacy Subtopics) ---
-      const levelData = SYLLABUS_DATA[level] || [];
-      const topicEntry = levelData.find(t => String(t.topic).toLowerCase() === String(topic).toLowerCase());
-      const blueprintData = topicEntry?.subtopics?.find(s => s.name === subtopic);
-      // Find the blueprint by matching the title to the subtopic
-      const bpMeta = Object.values(blueprintRegistry).find(bp => bp.title === subtopic) || blueprintData;
-
-      const systemPrompt = getSyllabusPrompt(Math.min(quantity, 3), level, strand || "Number and Algebra", topic, subtopic, heuristic, difficulty, type, blueprintData);
-      let attempts = 0;
-      const maxAttempts = modelPriorityList.length;
-      let lastError = null;
-
-      while (attempts < maxAttempts) {
-        const selectedModelId = getBestModel();
-        try {
-          const model = genAI.getGenerativeModel({ 
-            model: selectedModelId,
-            // Standardized temperature across both paths for consistent variety
-            generationConfig: { responseMimeType: "application/json", temperature: 0.8, maxOutputTokens: 2048 }
-          }, { apiVersion: 'v1beta' });
-          
-          const aiResult = await Promise.race([
-            model.generateContent(systemPrompt),
-            new Promise((_, reject) => setTimeout(() => reject(new Error("AI_TIMEOUT")), AI_TIMEOUT_MS))
-          ]);
-
-          const aiResponseText = aiResult.response.text();
-          const rawData = parseAiResponse(aiResponseText);
-          const rawQuestions = Array.isArray(rawData) ? rawData : [rawData];
-          
-          for (const q of rawQuestions) {
+          for (const q of aiDataBatch) {
             try {
               const validatedData = UniversalQuestionSchema.parse(q);
               parsedQuestions.push({
-                level, topic, subtopic: subtopic || "", heuristic: heuristic || null, 
-                difficulty, gradeLevel, subject: "Math",
-                type: validatedData.meta.type === 'SHORT_QUESTION' ? 'Short Question' : 
-                      validatedData.meta.type === 'STRUCTURED' ? 'Structured' : 
-                      validatedData.meta.type,
-                strand: strand || bpMeta?.strand || "Number and Algebra",
+                level, topic, subtopic, heuristic: heuristic || null, difficulty, gradeLevel, subject: "Math",
+                type: validatedData.meta.type === 'SHORT_QUESTION' ? 'Short Question' :
+                  validatedData.meta.type === 'STRUCTURED' ? 'Structured' :
+                    validatedData.meta.type,
+                strand: strand || blueprint.strand || "Number and Algebra",
                 isApproved: false,
                 finalAnswer: validatedData.content.finalAnswer,
                 options: validatedData.content.options || [],
                 modelData: {
                   ...validatedData.visualEngine.componentData,
                   type: validatedData.visualEngine.componentToRender,
-                  hideVisual: validatedData.visualEngine.componentData?.hideVisual !== undefined 
-                    ? validatedData.visualEngine.componentData.hideVisual 
+                  hideVisual: validatedData.visualEngine.componentData?.hideVisual !== undefined
+                    ? validatedData.visualEngine.componentData.hideVisual
                     : validatedData.visualEngine.componentToRender === 'NONE',
                   inputRequirement: validatedData.inputRequirement.inputType,
+                  finalAnswer: validatedData.content.finalAnswer,
                   items: validatedData.visualEngine.componentData?.items || []
                 },
                 question: validatedData.content.questionText,
@@ -563,11 +482,11 @@ HINT GENERATION RULES:
               });
             } catch (zodError) {
               // Pull out AI-specific keys to prevent Prisma Unknown Argument errors
-              const { visualItems, modelData, questionText, solutionSteps, ...cleanQ } = q; 
+              const { visualItems, modelData, questionText, solutionSteps, ...cleanQ } = q;
 
               const prismaModelData = {
                 ...(modelData || {}),
-                type: bpMeta?.visualType === 'DYNAMIC' ? (modelData?.type || null) : (bpMeta?.visualType || modelData?.type || null),
+                type: blueprint.visualType === 'DYNAMIC' ? (modelData?.type || "NONE") : blueprint.visualType,
                 items: (Array.isArray(visualItems) && visualItems.length > 0) ? visualItems : (modelData?.items || []),
                 hideVisual: !!modelData?.hideVisual, // No stepResult.metadata here
               };
@@ -578,12 +497,15 @@ HINT GENERATION RULES:
 
               parsedQuestions.push({
                 ...cleanQ,
-                level, topic, subtopic: subtopic || "", heuristic: heuristic || null, 
+                level,
+                topic,
+                subtopic: subtopic || "",
+                heuristic: heuristic || "Standard",
                 difficulty, gradeLevel, subject: "Math",
                 type: type === 'MCQ' ? 'MCQ' : (type.toLowerCase().includes('short') ? 'Short Question' : 'Structured'),
-                strand: strand || bpMeta?.strand || "Number and Algebra",
+                strand: strand || blueprint.strand || "Number and Algebra",
                 isApproved: false,
-                finalAnswer: typeof q.finalAnswer === 'object' ? JSON.stringify(q.finalAnswer) : String(q.finalAnswer),
+                finalAnswer: typeof q.finalAnswer === 'object' ? JSON.stringify(q.finalAnswer) : String(q.finalAnswer || ""),
                 options: parseAiOptions(q.options),
                 modelData: prismaModelData,
                 question: cleanQ.question || questionText || q.question || "Problem data missing",
@@ -592,17 +514,107 @@ HINT GENERATION RULES:
               });
             }
           }
-          if (parsedQuestions.length > 0) break;
-          break;
-        } catch (err) {
-          const { cooldown } = await getDynamicDelays(selectedModelId);
-          modelCooldowns[selectedModelId] = Date.now() + cooldown;
-          attempts++;
-          lastError = err;
+          await new Promise(r => setTimeout(r, 1500));
         }
+      } else {
+        // --- PATH 2: BULK GENERATION FALLBACK (For Legacy Subtopics) ---
+        const levelData = SYLLABUS_DATA[level] || [];
+        const topicEntry = levelData.find(t => String(t.topic).toLowerCase() === String(topic).toLowerCase());
+        const blueprintData = topicEntry?.subtopics?.find(s => s.name === subtopic);
+        // Find the blueprint by matching the title to the subtopic
+        const bpMeta = Object.values(blueprintRegistry).find(bp => bp.title === subtopic) || blueprintData;
+
+        const systemPrompt = getSyllabusPrompt(Math.min(quantity, 3), level, strand || "Number and Algebra", topic, subtopic, heuristic, difficulty, type, blueprintData);
+        let attempts = 0;
+        const maxAttempts = modelPriorityList.length;
+        let lastError = null;
+
+        while (attempts < maxAttempts) {
+          const selectedModelId = getBestModel();
+          try {
+            const model = genAI.getGenerativeModel({
+              model: selectedModelId,
+              // Standardized temperature across both paths for consistent variety
+              generationConfig: { responseMimeType: "application/json", temperature: 0.8, maxOutputTokens: 2048 }
+            }, { apiVersion: 'v1beta' });
+
+            const aiResult = await Promise.race([
+              model.generateContent(systemPrompt),
+              new Promise((_, reject) => setTimeout(() => reject(new Error("AI_TIMEOUT")), AI_TIMEOUT_MS))
+            ]);
+
+            const aiResponseText = aiResult.response.text();
+            const rawData = parseAiResponse(aiResponseText);
+            const rawQuestions = Array.isArray(rawData) ? rawData : [rawData];
+
+            for (const q of rawQuestions) {
+              try {
+                const validatedData = UniversalQuestionSchema.parse(q);
+                parsedQuestions.push({
+                  level, topic, subtopic: subtopic || "", heuristic: heuristic || null,
+                  difficulty, gradeLevel, subject: "Math",
+                  type: validatedData.meta.type === 'SHORT_QUESTION' ? 'Short Question' :
+                    validatedData.meta.type === 'STRUCTURED' ? 'Structured' :
+                      validatedData.meta.type,
+                  strand: strand || bpMeta?.strand || "Number and Algebra",
+                  isApproved: false,
+                  finalAnswer: validatedData.content.finalAnswer,
+                  options: validatedData.content.options || [],
+                  modelData: {
+                    ...validatedData.visualEngine.componentData,
+                    type: validatedData.visualEngine.componentToRender,
+                    hideVisual: validatedData.visualEngine.componentData?.hideVisual !== undefined
+                      ? validatedData.visualEngine.componentData.hideVisual
+                      : validatedData.visualEngine.componentToRender === 'NONE',
+                    inputRequirement: validatedData.inputRequirement.inputType,
+                    items: validatedData.visualEngine.componentData?.items || []
+                  },
+                  question: validatedData.content.questionText,
+                  solution: validatedData.content.solutionSteps,
+                  hint: validatedData.content.hint || null // Corrected to use validatedData.content.hint
+                });
+              } catch (zodError) {
+                // Pull out AI-specific keys to prevent Prisma Unknown Argument errors
+                const { visualItems, modelData, questionText, solutionSteps, ...cleanQ } = q;
+
+                const prismaModelData = {
+                  ...(modelData || {}),
+                  type: bpMeta?.visualType === 'DYNAMIC' ? (modelData?.type || null) : (bpMeta?.visualType || modelData?.type || null),
+                  items: (Array.isArray(visualItems) && visualItems.length > 0) ? visualItems : (modelData?.items || []),
+                  hideVisual: !!modelData?.hideVisual, // No stepResult.metadata here
+                };
+                // Clean up modelData if properties are undefined
+                if (prismaModelData.type === undefined) delete prismaModelData.type;
+                if (prismaModelData.items === undefined) delete prismaModelData.items;
+                if (prismaModelData.hideVisual === undefined) delete prismaModelData.hideVisual;
+
+                parsedQuestions.push({
+                  ...cleanQ,
+                  level, topic, subtopic: subtopic || "", heuristic: heuristic || null,
+                  difficulty, gradeLevel, subject: "Math",
+                  type: type === 'MCQ' ? 'MCQ' : (type.toLowerCase().includes('short') ? 'Short Question' : 'Structured'),
+                  strand: strand || bpMeta?.strand || "Number and Algebra",
+                  isApproved: false,
+                  finalAnswer: typeof q.finalAnswer === 'object' ? JSON.stringify(q.finalAnswer) : String(q.finalAnswer),
+                  options: parseAiOptions(q.options),
+                  modelData: prismaModelData,
+                  question: cleanQ.question || questionText || q.question || "Problem data missing",
+                  solution: cleanQ.solution || solutionSteps || q.solution || "No solution provided",
+                  hint: q.content?.hint || q.hint || q.conceptualHint || q.content?.conceptualHint || null
+                });
+              }
+            }
+            if (parsedQuestions.length > 0) break;
+            break;
+          } catch (err) {
+            const { cooldown } = await getDynamicDelays(selectedModelId);
+            modelCooldowns[selectedModelId] = Date.now() + cooldown;
+            attempts++;
+            lastError = err;
+          }
+        }
+        if (parsedQuestions.length === 0 && lastError) throw lastError;
       }
-      if (parsedQuestions.length === 0 && lastError) throw lastError;
-    }
     }
 
     if (parsedQuestions.length > 0) {
@@ -615,12 +627,12 @@ HINT GENERATION RULES:
       await prisma.questionBank.createMany({ data: finalData });
 
       // 3. Return the success response
-      return NextResponse.json({ 
-        success: true, 
-        count: finalData.length 
+      return NextResponse.json({
+        success: true,
+        count: finalData.length
       });
     }
-    
+
     throw new Error("No questions generated.");
   } catch (error) {
     console.error("❌ Generation failed:", error);
