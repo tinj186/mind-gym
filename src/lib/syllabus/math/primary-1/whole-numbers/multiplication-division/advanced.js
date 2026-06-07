@@ -503,4 +503,95 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       metadata: { difficulty: 'advanced', logic: activeVariant, hideVisual: hideVisual }
     };
   }
+
+  // 11. Attribute True/False Matrix Logic Puzzle
+  if (activeVariant === 'advanced_attribute_tf_matrix') {
+    const animals2Legs = [
+      { name: 'chickens', legs: 2, icon: '🐔' },
+      { name: 'ducks', legs: 2, icon: '🦆' },
+      { name: 'birds', legs: 2, icon: '🐦' }
+    ];
+    const animals4Legs = [
+      { name: 'cows', legs: 4, icon: '🐄' },
+      { name: 'cats', legs: 4, icon: '🐈' },
+      { name: 'dogs', legs: 4, icon: '🐕' }
+    ];
+
+    const entityA = animals2Legs[Math.floor(Math.random() * animals2Legs.length)];
+    const entityB = animals4Legs[Math.floor(Math.random() * animals4Legs.length)];
+
+    const countA = Math.floor(Math.random() * 3) + 2; // 2-4
+    const countB = Math.floor(Math.random() * 3) + 2; // 2-4
+
+    const totalLegs = (countA * entityA.legs) + (countB * entityB.legs);
+
+    // S1
+    const s1Correct = Math.random() > 0.5;
+    const s1Sum = s1Correct ? totalLegs : totalLegs + 2;
+    const s1 = `The animals have ${s1Sum} legs altogether.`;
+    const s1Ans = s1Correct ? 'T' : 'F';
+
+    // S2
+    const s2Correct = Math.random() > 0.5;
+    const s2Count = s2Correct ? countB : countB + 1;
+    const s2 = `There are ${s2Count} groups of 4 legs.`;
+    const s2Ans = s2Correct ? 'T' : 'F';
+
+    // S3
+    const s3Correct = Math.random() > 0.5;
+    let s3Num = 3;
+    if (s3Correct) {
+      const divisors = [2, 4, 5, 10].filter(d => totalLegs % d === 0);
+      s3Num = divisors.length > 0 ? divisors[Math.floor(Math.random() * divisors.length)] : 2;
+    } else {
+      const nonDivisors = [3, 4, 5].filter(d => totalLegs % d !== 0);
+      s3Num = nonDivisors.length > 0 ? nonDivisors[0] : 3;
+    }
+    const s3 = `They can be grouped equally so each group has ${s3Num} legs.`;
+    const s3Ans = totalLegs % s3Num === 0 ? 'T' : 'F';
+
+    const finalAnswer = `${s1Ans}, ${s2Ans}, ${s3Ans}`;
+
+    let options = null;
+    if (isMCQ) {
+      const possibleAnswers = ['T, T, T', 'T, T, F', 'T, F, T', 'T, F, F', 'F, T, T', 'F, T, F', 'F, F, T', 'F, F, F'];
+      let opts = [finalAnswer];
+      while (opts.length < 4) {
+        const rand = possibleAnswers[Math.floor(Math.random() * possibleAnswers.length)];
+        if (!opts.includes(rand)) opts.push(rand);
+      }
+      options = opts.sort(() => Math.random() - 0.5);
+    }
+
+    const promptObject = {
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
+      content: {
+        questionText: getQText(`Look at the animals. Are the statements below True or False?`, `Look at the animals. Are the statements below True or False?`, zodType),
+        options: options,
+        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
+        finalAnswer: finalAnswer,
+        solutionSteps: `1. There are ${countA} ${entityA.name} (${countA * 2} legs) and ${countB} ${entityB.name} (${countB * 4} legs).\\n2. Total legs = ${totalLegs}.\\n3. Statement 1 is ${s1Ans === 'T' ? 'True' : 'False'}.\\n4. Statement 2 is ${s2Ans === 'T' ? 'True' : 'False'}.\\n5. Statement 3 is ${s3Ans === 'T' ? 'True' : 'False'}.`
+      },
+      visualEngine: {
+        componentToRender: "TF_MATRIX_TABLE",
+        componentData: {
+          statements: [s1, s2, s3],
+          entities: [
+            { count: countA, icon: entityA.icon, name: entityA.name },
+            { count: countB, icon: entityB.icon, name: entityB.name }
+          ]
+        }
+      },
+      inputRequirement: { inputType: isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT' }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      STRICT: Do not generate a story context. Output the exact question text provided.
+      
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'advanced', logic: "attribute_tf_matrix", hideVisual: false }
+    };
+  }
+
 }

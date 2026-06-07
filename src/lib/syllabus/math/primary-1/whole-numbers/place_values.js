@@ -12,7 +12,7 @@ export const placeValuesBlueprint = {
   id: 'p1-place-values',
   title: 'Place Value (Tens/Ones)',
   strand: 'Number and Algebra',
-  visualType: 'DYNAMIC', 
+  visualType: 'DYNAMIC',
 
   // 1. OVERARCHING CONDITIONS
   difficultyLevels: {
@@ -54,6 +54,7 @@ export const placeValuesBlueprint = {
     standard_digit_clue: "Identify a number based on simple relative clues for its digits.",
     standard_expanded_form: "Identify the correct expanded form of a 2-digit number.",
     standard_equivalent_ones: "Convert a multiple of ten entirely into ones (e.g., 5 tens = 50 ones).",
+    standard_mixed_representation_audit: "Mixed representation auditing: identify which string format (expanded, words, tens/ones) is NOT equal to the target number.",
 
     advanced_extreme_regrouping: "Find missing tens when given an extreme amount of ones.",
     advanced_digit_clues: "Logic puzzle based on the sum and difference of the digits.",
@@ -69,7 +70,7 @@ export const placeValuesBlueprint = {
 
   // 3. GENERATION ENGINE
   generate: (difficulty = 'foundation', variant = 'foundation_identify', type = 'MCQ') => {
-    
+
     // --- 🛡️ SELF-HEALING PARAMETER POSITION ADAPTER ---
     const safeType = String(type).toLowerCase();
     const isShort = safeType.includes('short');
@@ -91,7 +92,7 @@ export const placeValuesBlueprint = {
       if (validVariants.length > 0) {
         activeVariant = validVariants[Math.floor(Math.random() * validVariants.length)];
       } else {
-        activeVariant = 'foundation_identify'; 
+        activeVariant = 'foundation_identify';
       }
     }
     // --------------------------------------------------
@@ -119,8 +120,8 @@ export const placeValuesBlueprint = {
       ? `\nSTRICT VISUAL PROTOCOL: This variant REQUIRES a visual. You MUST include the "visualEngine" block with "componentToRender": "BASE_TEN_BLOCKS" and "componentData" containing "tens", "ones", and "hundreds" (if applicable).`
       : '';
 
-    let formatInstructions = isMCQ 
-      ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}${visualProtocol}` 
+    let formatInstructions = isMCQ
+      ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}${visualProtocol}`
       : isStructure
         ? `Format as Structured Question. The "options" field in your JSON should be null. CRITICAL: For the "questionText" string, write a clear localized word problem.${hintProtocol}${visualProtocol}`
         : `Format as Short Answer. The "options" field in your JSON should be null.${hintProtocol}${visualProtocol}`;

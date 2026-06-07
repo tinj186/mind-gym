@@ -42,6 +42,8 @@ export const additionSubtractionBlueprint = {
     foundation_sub_20: "Subtract two numbers within 20.",
     foundation_missing_addend: "Find the missing addend in an equation within 20.",
     foundation_number_bond_logic: "Find the missing part in a number bond within 20.",
+    foundation_visual_cross_out: "Visual subtraction where a subset of rendered items are explicitly crossed out.",
+    foundation_fact_family_cards: "Construct an addition/subtraction equation using 3 visual number cards within 20.",
 
     standard_add_100_no_regroup: "Add two 2-digit numbers within 100 without regrouping.",
     standard_sub_100_no_regroup: "Subtract two 2-digit numbers within 100 without regrouping.",
@@ -52,17 +54,20 @@ export const additionSubtractionBlueprint = {
     standard_comparison_more_basic: "Solve 'How many more' problems within 40 (no regrouping).",
     standard_comparison_fewer_basic: "Solve 'How many fewer' problems within 40 (no regrouping).",
     standard_number_bond_multiples_10: "Complete a number bond within 100 (e.g., 85 = 50 + ?).",
+    standard_equation_equivalence: "Evaluate multiple full equations to find the one that matches a target sum/difference (no regrouping).",
+    standard_fact_family_cards: "Construct an equation using 3 visual number cards within 100.",
 
-//    advanced_add_regrouping: "Add two numbers within 100 with regrouping.",
-//    advanced_sub_regrouping: "Subtract two numbers within 100 with regrouping.",
-//    advanced_comparative_more: "Solve 'more than' problems (e.g., What is X more than Y?).",
-//    advanced_comparative_less: "Solve 'less than' problems (e.g., What is X less than Y?).",
-//    advanced_cross_ordinal_queue: "Solve problems involving positions in a queue (ordinal logic).",
+    advanced_add_regrouping: "Add two numbers within 100 with regrouping.",
+    advanced_sub_regrouping: "Subtract two numbers within 100 with regrouping.",
+    advanced_comparative_more: "Solve 'more than' problems (e.g., What is X more than Y?).",
+    advanced_comparative_less: "Solve 'less than' problems (e.g., What is X less than Y?).",
+    advanced_cross_ordinal_queue: "Solve problems involving positions in a queue (ordinal logic).",
     advanced_balance_equations: "Find the missing number to balance an equation (e.g., 12 + 5 = 10 + ?).",
     advanced_working_backwards: "Find the starting amount using the 'working backwards' heuristic.",
     advanced_two_step_total: "Solve 2-step word problems involving a comparison and a total sum.",
     advanced_shape_substitution: "Find the value of a symbol using simultaneous logic (e.g., A + A = 10).",
-    advanced_missing_digit_regrouping: "Find a missing digit in a 2-digit addition equation requiring regrouping."
+    advanced_missing_digit_regrouping: "Find a missing digit in a 2-digit addition equation requiring regrouping.",
+    advanced_equation_equivalence: "Evaluate multiple full equations to find the one matching a target sum/difference (requires regrouping)."
   },
 
   // 3. GENERATION ENGINE
@@ -79,7 +84,7 @@ export const additionSubtractionBlueprint = {
     const isStrictWordProblem = activeVariant.includes('word_problem') || activeVariant.includes('comparative') || activeVariant.includes('ordinal') || activeVariant.includes('comparison');
     const supportsEquation = !isStrictWordProblem; // add_20, missing_addend, number_bond, etc. all support equations
     const violatesShort = isShort && !supportsEquation;
-    const isAllowedForStructuredOrMCQ = isStrictWordProblem || activeVariant.includes('regrouping') || activeVariant.includes('missing_addend') || activeVariant.includes('number_bond') || activeVariant.includes('add_20') || activeVariant.includes('sub_20') || activeVariant.includes('missing_subtrahend') || activeVariant.includes('balance_equations') || activeVariant.includes('working_backwards') || activeVariant.includes('two_step_total') || activeVariant.includes('shape_substitution') || activeVariant.includes('missing_digit_regrouping');
+    const isAllowedForStructuredOrMCQ = isStrictWordProblem || activeVariant.includes('regrouping') || activeVariant.includes('missing_addend') || activeVariant.includes('number_bond') || activeVariant.includes('add_20') || activeVariant.includes('sub_20') || activeVariant.includes('missing_subtrahend') || activeVariant.includes('balance_equations') || activeVariant.includes('working_backwards') || activeVariant.includes('two_step_total') || activeVariant.includes('shape_substitution') || activeVariant.includes('missing_digit_regrouping') || activeVariant.includes('visual_cross_out') || activeVariant.includes('fact_family_cards') || activeVariant.includes('equation_equivalence');
     const violatesStructuredOrMCQ = (isStructure || isMCQ) && !isAllowedForStructuredOrMCQ;
 
     if (!additionSubtractionBlueprint.variants[variant] || violatesShort || violatesStructuredOrMCQ) {
@@ -133,8 +138,8 @@ export const additionSubtractionBlueprint = {
     const displayName = (typeof itemData === 'object' && itemData !== null)
       ? (itemData.singular || itemData.item || itemData.name?.singular || itemData.name || 'item')
       : typeof itemData === 'string'
-      ? itemData
-      : (itemData.singular || itemData.name || 'item');
+        ? itemData
+        : (itemData.singular || itemData.name || 'item');
 
     const selectedIcon = itemData?.icon || '⭐';
 

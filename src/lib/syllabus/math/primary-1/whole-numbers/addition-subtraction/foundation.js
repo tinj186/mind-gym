@@ -172,6 +172,101 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       }
     };
   }
+  // 4. Foundation Visual Cross Out
+  if (activeVariant === 'foundation_visual_cross_out') {
+    const total_count = Math.floor(Math.random() * 16) + 5; // 5 to 20
+    const crossed_count = Math.floor(Math.random() * (total_count - 1)) + 1; // 1 to total_count - 1
+    const remaining = total_count - crossed_count;
+    const answer = String(remaining);
+
+    const options = isMCQ ? [answer, String(total_count), String(crossed_count), String(remaining + 1)].sort(() => Math.random() - 0.5) : null;
+
+    const promptObject = {
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
+      content: {
+        questionText: getQText(`[STORY] Look at the picture. Complete the subtraction equation.`, `${total_count} - ${crossed_count} = ?`),
+        hint: "[AI: INJECT HINT]",
+        options: options,
+        finalAnswer: answer,
+        solutionSteps: `1. ${total_count} - ${crossed_count} = ${answer}.`
+      },
+      visualEngine: {
+        componentToRender: "CROSS_OUT_GROUP",
+        componentData: { totalItems: total_count, crossedItems: crossed_count, icon: selectedIcon }
+      },
+      inputRequirement: { inputType }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      ${isShortQ 
+        ? 'STRICT: Provide a direct mathematical question. NO story context or names.' 
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a 1-sentence localized Singaporean story about ${extract(context.name)} having ${total_count} ${itemLabel} and giving away or losing ${crossed_count}.`
+      }
+      
+      CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
+      
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { 
+        difficulty: 'foundation', 
+        steps: 1, 
+        logic: "visual_cross_out", 
+        hideVisual: false 
+      }
+    };
+  }
+
+  // 5. Foundation Fact Family Cards
+  if (activeVariant === 'foundation_fact_family_cards') {
+    const part1 = Math.floor(Math.random() * 9) + 1; // 1-9
+    const part2 = Math.floor(Math.random() * 9) + 1; // 1-9
+    const whole = part1 + part2;
+    
+    const isAdd = Math.random() > 0.5;
+    const operatorWord = isAdd ? 'addition' : 'subtraction';
+    
+    const answer = isAdd ? `${part1} + ${part2} = ${whole}` : `${whole} - ${part1} = ${part2}`;
+    
+    const distractors = [];
+    if (isAdd) {
+      distractors.push(`${whole} + ${part2} = ${part1}`);
+      distractors.push(`${part1} + ${whole} = ${part2}`);
+      distractors.push(`${part1} + ${part2} = ${whole + 1}`);
+    } else {
+      distractors.push(`${part1} - ${part2} = ${whole}`);
+      distractors.push(`${part2} - ${part1} = ${whole}`);
+      distractors.push(`${whole} - ${part2} = ${part1}`);
+    }
+
+    const items = [String(part1), String(part2), String(whole)].sort(() => Math.random() - 0.5);
+    const options = isMCQ ? [answer, ...distractors].sort(() => Math.random() - 0.5) : null;
+
+    const promptObject = {
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
+      content: {
+        questionText: `Use all the number cards to form a correct ${operatorWord} equation.`,
+        options: options,
+        hint: "[AI: INJECT HINT]",
+        finalAnswer: answer,
+        solutionSteps: `1. The correct ${operatorWord} equation is ${answer}.`
+      },
+      visualEngine: {
+        componentToRender: "NUMBER_CARDS",
+        componentData: { items: items }
+      },
+      inputRequirement: { inputType: isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT' }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      STRICT: Do not generate a story context. Output the exact question text provided.
+      
+      CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
+      
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'foundation', logic: "fact_family_cards", hideVisual: false }
+    };
+  }
 }
 
 export const foundationLogicWrapper = (activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {

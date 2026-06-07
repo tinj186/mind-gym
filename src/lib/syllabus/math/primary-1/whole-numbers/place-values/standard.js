@@ -365,6 +365,62 @@ export const standardVariants = {
         }`,
       metadata: { difficulty: 'standard', steps: 2, logic: "equivalence", hideVisual: false }
     };
+  },
+  standard_mixed_representation_audit: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    let target_number = Math.floor(Math.random() * 89) + 11;
+    while (target_number % 10 === 0) {
+      target_number = Math.floor(Math.random() * 89) + 11;
+    }
+    
+    const tens = Math.floor(target_number / 10);
+    const ones = target_number % 10;
+    
+    const valid1 = `${tens * 10} + ${ones}`;
+    const valid2 = `${tens} tens ${ones} ones`;
+    const valid3 = numberToWords(target_number);
+    
+    const distractorIsReversed = Math.random() > 0.5;
+    const distractor = distractorIsReversed ? `${ones} tens ${tens} ones` : `${tens} + ${ones}`;
+    
+    const items = [valid1, valid2, valid3, distractor].sort(() => Math.random() - 0.5);
+    const labels = ['A', 'B', 'C', 'D'];
+    
+    const distractorIndex = items.indexOf(distractor);
+    const distractorLetter = labels[distractorIndex];
+    
+    const mcqOptions = JSON.stringify(items);
+    
+    let questionTextStr;
+    let finalAnswerStr;
+    
+    if (isMCQ) {
+      questionTextStr = `Which of the following is NOT the same as ${target_number}?`;
+      finalAnswerStr = distractor;
+    } else {
+      questionTextStr = `Which of the following is NOT the same as ${target_number}?\n(A) ${items[0]}\n(B) ${items[1]}\n(C) ${items[2]}\n(D) ${items[3]}`;
+      finalAnswerStr = distractorLetter;
+    }
+    
+    return {
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_mixed_representation_audit question. DO NOT modify the mathematical structure or the final answer.
+        MATH CONSTRAINTS:
+        - Target Number: ${target_number}
+        - Final Answer MUST strictly be: "${finalAnswerStr}"
+        OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+        {
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": ${JSON.stringify(getQText(questionTextStr, questionTextStr))},
+            "options": ${isMCQ ? mcqOptions : 'null'},
+            "hint": ${JSON.stringify(getQText(`Read each option carefully. Three of them are correct ways to write ${target_number}. One is wrong.`, `Check each form.`))},
+            "finalAnswer": "${finalAnswerStr}",
+            "solutionSteps": ${JSON.stringify(getQText(`The wrong representation is ${distractor}. ${target_number} is correctly written as ${valid2}, ${valid1}, or '${valid3}'.`, `${distractor} is incorrect.`))}
+          },
+          "visualEngine": { "componentToRender": "NONE", "componentData": {} },
+          "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        }`,
+      metadata: { difficulty: 'standard', steps: 2, logic: "mixed_representation_audit", hideVisual: true }
+    };
   }
 };
 

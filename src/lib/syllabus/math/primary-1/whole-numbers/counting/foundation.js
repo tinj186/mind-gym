@@ -195,5 +195,103 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     };
   }
 
+  // 6. Visual Word Conversion
+  if (activeVariant === 'foundation_visual_word_conversion') {
+    const visual_count = Math.floor(Math.random() * 20) + 1; // 1-20
+    const target_word_string = numberToWords(visual_count);
+    
+    // distractors for MCQ
+    const distractors = [
+      numberToWords(Math.max(1, visual_count - 1)),
+      numberToWords(visual_count + 1),
+      numberToWords(visual_count + 2)
+    ];
+    // filter out duplicates if visual_count is very low, though logic is fine
+    const uniqueDistractors = [...new Set(distractors)];
+    while (uniqueDistractors.length < 3) {
+      uniqueDistractors.push(numberToWords(Math.floor(Math.random() * 20) + 1));
+    }
+    const options = isMCQ ? [target_word_string, ...uniqueDistractors.slice(0,3)].sort(() => Math.random() - 0.5) : null;
+
+    const itemPlural = context.items ? context.items[0]?.plural || selectedContextItem + 's' : 'items';
+
+    const promptObject = {
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
+      content: {
+        questionText: getQText(`Count and write the number of ${itemPlural} in words.`, `Count and write the number of items in words.`),
+        options: options,
+        hint: "[AI: INJECT HINT]",
+        finalAnswer: target_word_string,
+        solutionSteps: `1. There are ${visual_count} items.\n2. The number ${visual_count} in words is '${target_word_string}'.`
+      },
+      visualEngine: {
+        componentToRender: "ICON_GRID",
+        componentData: { totalItems: visual_count, icon: selectedIcon }
+      },
+      inputRequirement: { inputType: isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT' }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      STRICT: Do not generate a story context. Output the exact question text provided.
+      
+      CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
+      
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'foundation', logic: "visual_word_conversion", hideVisual: false }
+    };
+  }
+
+  // 7. Visual Set Comparison
+  if (activeVariant === 'foundation_visual_set_comparison') {
+    let set_a_count = Math.floor(Math.random() * 15) + 1; // 1-15
+    let set_b_count = Math.floor(Math.random() * 15) + 1;
+    while (set_a_count === set_b_count) {
+      set_b_count = Math.floor(Math.random() * 15) + 1;
+    }
+
+    const isMore = Math.random() > 0.5;
+    const targetLabel = isMore ? 'more' : 'fewer';
+    
+    let answer;
+    if (isMore) {
+      answer = set_a_count > set_b_count ? 'Set A' : 'Set B';
+    } else {
+      answer = set_a_count < set_b_count ? 'Set A' : 'Set B';
+    }
+
+    const itemPlural = context.items ? context.items[0]?.plural || selectedContextItem + 's' : 'items';
+    const options = isMCQ ? ['Set A', 'Set B'] : null;
+
+    const promptObject = {
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
+      content: {
+        questionText: getQText(`Look at the pictures. Which set has ${targetLabel} ${itemPlural}?`, `Which set has ${targetLabel} items?`),
+        options: options,
+        hint: "[AI: INJECT HINT]",
+        finalAnswer: answer,
+        solutionSteps: `1. Set A has ${set_a_count} items.\n2. Set B has ${set_b_count} items.\n3. Therefore, ${answer} has ${targetLabel} items.`
+      },
+      visualEngine: {
+        componentToRender: "TWO_SET_COMPARISON",
+        componentData: {
+          setA: { count: set_a_count, icon: selectedIcon },
+          setB: { count: set_b_count, icon: selectedIcon }
+        }
+      },
+      inputRequirement: { inputType: isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT' }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      STRICT: Do not generate a story context. Output the exact question text provided.
+      
+      CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
+      
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'foundation', logic: "visual_set_comparison", hideVisual: false }
+    };
+  }
+
   throw new Error(`Variant '${activeVariant}' logic block not implemented in foundation.js.`);
 }

@@ -359,4 +359,79 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       metadata: { difficulty: 'advanced', logic: "missing_digit", hideVisual: isStructure }
     };
   }
+
+  // 11. Advanced Equation Equivalence
+  if (activeVariant === 'advanced_equation_equivalence') {
+    // Force MCQ
+    const finalInputType = 'MCQ_BUTTONS';
+    const finalZodType = 'MCQ';
+    
+    const isAdd = Math.random() > 0.5;
+    let targetEq, targetSum;
+    let d1_sum, d2_sum, d3_sum;
+
+    if (isAdd) {
+      const o1 = Math.floor(Math.random() * 4) + 5; // 5-8
+      const t1 = Math.floor(Math.random() * 4) + 2; // 20-50
+      const num1 = t1 * 10 + o1;
+      
+      const o2 = Math.floor(Math.random() * (9 - (10 - o1))) + (10 - o1); // forces o1 + o2 >= 10
+      const t2 = Math.floor(Math.random() * 3) + 1; // 10-30
+      const num2 = t2 * 10 + o2;
+      
+      targetSum = num1 + num2;
+      targetEq = `${num1} + ${num2}`;
+      
+      d1_sum = targetSum - 10; // Forgot to carry
+      d2_sum = targetSum + 10; // Carried twice
+      d3_sum = (t1 + t2) * 10 + Math.abs(o1 - o2); // Subtracted ones instead of adding
+    } else {
+      const o1 = Math.floor(Math.random() * 4) + 1; // 1-4
+      const t1 = Math.floor(Math.random() * 4) + 5; // 50-80
+      const num1 = t1 * 10 + o1;
+      
+      const o2 = Math.floor(Math.random() * 4) + 5; // 5-8 (ensures o2 > o1)
+      const t2 = Math.floor(Math.random() * 3) + 1; // 10-30
+      const num2 = t2 * 10 + o2;
+      
+      targetSum = num1 - num2;
+      targetEq = `${num1} - ${num2}`;
+      
+      d1_sum = (t1 - t2) * 10 + Math.abs(o1 - o2); // Always subtracted smaller from larger
+      d2_sum = targetSum - 10; // Borrowed twice
+      d3_sum = targetSum + 10; // Forgot to borrow correctly
+    }
+
+    // Correct equation (use subtraction so it looks different)
+    const c_num1 = targetSum + 13;
+    const correctEq = `${c_num1} - 13`;
+
+    // Distractor equations
+    const distractor1 = `${d1_sum + 11} - 11`;
+    const distractor2 = `${d2_sum + 12} - 12`;
+    const distractor3 = `${d3_sum + 14} - 14`;
+
+    const options = [correctEq, distractor1, distractor2, distractor3].sort(() => Math.random() - 0.5);
+
+    const promptObject = {
+      meta: { level, topic, type: finalZodType, difficulty: zodDiff },
+      content: {
+        questionText: getQText(`Which of the following equations has the same answer as ${targetEq}?`, `Which of the following equations has the same answer as ${targetEq}?`),
+        options: options,
+        hint: "[AI: INJECT HINT]",
+        finalAnswer: correctEq,
+        solutionSteps: `1. ${targetEq} = ${targetSum}.\n2. Only ${correctEq} gives the same answer of ${targetSum}.`
+      },
+      visualEngine: { componentToRender: "NONE", componentData: {} },
+      inputRequirement: { inputType: finalInputType }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      STRICT: This is an advanced equation equivalence question. Do not generate a story. Keep the question strictly as provided.
+      
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'advanced', logic: "eq_equiv_regrouping", hideVisual: true }
+    };
+  }
 }

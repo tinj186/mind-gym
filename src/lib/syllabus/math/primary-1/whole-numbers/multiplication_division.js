@@ -40,27 +40,29 @@ export const multiplicationDivisionBlueprint = {
     foundation_grouping_interactive: "Interactive: Group items into sets of a specific size.",
     foundation_sharing_interactive: "Interactive: Share items equally into a given number of groups.",
 
-    standard_repeated_addition_convert: "Convert repeated addition to a multiplication equation.",
-    standard_array_rows_cols: "Find the total items in an array (rows and columns).",
-    standard_comparison_times_as_many: "Solve 'times as many' word problems within 40.",
-    standard_skip_count_total: "Use skip counting by 2, 5, or 10 to find a total.",
-    standard_unit_price_calc: "Calculate the total cost of multiple identical items.",
-    standard_sharing_missing_each: "Find how many in each group (Sharing).",
-    standard_grouping_missing_groups: "Find the number of groups (Grouping).",
-    standard_inverse_fact_families: "Solve division using a related multiplication fact.",
-    standard_even_odd_sharing: "Identify if a number can be shared equally (Even/Odd logic).",
-    standard_attribute_multiplication: "Count total attributes (e.g., wheels on 5 cars).",
+    //    standard_repeated_addition_convert: "Convert repeated addition to a multiplication equation.",
+    //    standard_array_rows_cols: "Find the total items in an array (rows and columns).",
+    //    standard_comparison_times_as_many: "Solve 'times as many' word problems within 40.",
+    //    standard_skip_count_total: "Use skip counting by 2, 5, or 10 to find a total.",
+    //    standard_unit_price_calc: "Calculate the total cost of multiple identical items.",
+    //    standard_sharing_missing_each: "Find how many in each group (Sharing).",
+    //    standard_grouping_missing_groups: "Find the number of groups (Grouping).",
+    //    standard_inverse_fact_families: "Solve division using a related multiplication fact.",
+    //    standard_even_odd_sharing: "Identify if a number can be shared equally (Even/Odd logic).",
+    //    standard_attribute_multiplication: "Count total attributes (e.g., wheels on 5 cars).",
+    standard_multiplication_syntax_audit: "Vocabulary audit: Identify which expression does NOT represent the total number of items shown.",
 
-    advanced_multi_step_mult_add: "Multi-step: Multiply groups then add more.",
-    advanced_multi_step_mult_sub: "Multi-step: Multiply groups then subtract.",
-    advanced_logic_wheels_legs: "Logic puzzle: Counting total wheels or legs across groups.",
-    advanced_multi_step_sharing_add: "Multi-step: Share equally then receive more.",
-    advanced_grouping_need_more: "Multi-step: Grouping and finding how many more needed.",
-    advanced_two_entities_total: "Multi-step: Total of two grouped quantities.",
-    advanced_two_entities_diff: "Multi-step: Difference of two grouped quantities.",
-    advanced_money_mult_change: "Money: Buy multiple items and find change.",
-    advanced_money_group_buy: "Money: Find how many items can be bought with a sum.",
-    advanced_balance_mult_add: "Multi-step: Equate a grouped quantity with another by finding difference."
+    //   advanced_multi_step_mult_add: "Multi-step: Multiply groups then add more.",
+    //    advanced_multi_step_mult_sub: "Multi-step: Multiply groups then subtract.",
+    //    advanced_logic_wheels_legs: "Logic puzzle: Counting total wheels or legs across groups.",
+    //    advanced_multi_step_sharing_add: "Multi-step: Share equally then receive more.",
+    //    advanced_grouping_need_more: "Multi-step: Grouping and finding how many more needed.",
+    //    advanced_two_entities_total: "Multi-step: Total of two grouped quantities.",
+    //    advanced_two_entities_diff: "Multi-step: Difference of two grouped quantities.",
+    //    advanced_money_mult_change: "Money: Buy multiple items and find change.",
+    //    advanced_money_group_buy: "Money: Find how many items can be bought with a sum.",
+    //  advanced_balance_mult_add: "Multi-step: Equate a grouped quantity with another by finding difference.",
+    advanced_attribute_tf_matrix: "Logic puzzle: Evaluate multiple True/False statements about the total attributes (e.g., legs/wheels) of mixed entities."
   },
 
   generate: (difficulty = 'foundation', variant = 'foundation_mult_eqn', type = 'MCQ') => {
@@ -138,7 +140,7 @@ export const multiplicationDivisionBlueprint = {
     const context = getRandomContext('GENERAL', tier);
 
     // Fix: Properly randomize the item from the context items array if selectedItem is not available
-    const itemData = context?.selectedItem || (context.items && context.items.length > 0 ? context.items[Math.floor(Math.random() * context.items.length)] : null) || { item: 'item', icon: '⭐' };
+    const itemData = context?.selectedItem || (context?.items && context.items.length > 0 ? context.items[Math.floor(Math.random() * context.items.length)] : null) || { item: 'item', icon: '⭐' };
     const cleanItemLabel = typeof itemData === 'string'
       ? itemData
       : (itemData.item || itemData.name?.singular || itemData.name || 'item');

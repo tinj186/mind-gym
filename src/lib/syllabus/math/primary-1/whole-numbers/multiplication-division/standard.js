@@ -389,4 +389,66 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       metadata: { difficulty: 'standard', logic: "attribute_mult", hideVisual: hideVisual }
     };
   }
+
+  // 11. Multiplication Syntax Audit
+  if (activeVariant === 'standard_multiplication_syntax_audit') {
+    const group_count = Math.floor(Math.random() * 4) + 2; // 2 to 5
+    const items_per_group = Math.floor(Math.random() * 8) + 2; // 2 to 9
+    
+    const valid1 = `${group_count} x ${items_per_group}`;
+    const wordGroup = numberToWords ? numberToWords(items_per_group) + 's' : `${items_per_group}s`;
+    const valid2 = `${group_count} ${wordGroup}`;
+    const valid3 = `${group_count} groups of ${items_per_group}`;
+    const distractor = `${group_count} + ${items_per_group}`;
+    
+    const items = [valid1, valid2, valid3, distractor].sort(() => Math.random() - 0.5);
+    const labels = ['A', 'B', 'C', 'D'];
+    
+    const distractorIndex = items.indexOf(distractor);
+    const distractorLetter = labels[distractorIndex];
+    
+    const itemPlural = context?.items ? context.items[0]?.plural || itemLabel + 's' : itemLabel + 's';
+    
+    let questionTextStr;
+    let finalAnswerStr;
+    
+    if (isMCQ) {
+      questionTextStr = `Look at the picture. Which sentence does NOT represent the total number of ${itemPlural}?`;
+      finalAnswerStr = distractor;
+    } else {
+      questionTextStr = `Look at the picture. Which sentence does NOT represent the total number of ${itemPlural}?\n(A) ${items[0]}\n(B) ${items[1]}\n(C) ${items[2]}\n(D) ${items[3]}`;
+      finalAnswerStr = distractorLetter;
+    }
+    
+    const promptObject = {
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
+      content: {
+        questionText: getQText(questionTextStr, questionTextStr, zodType),
+        options: isMCQ ? items : null,
+        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
+        finalAnswer: finalAnswerStr,
+        solutionSteps: `1. There are ${group_count} groups of ${items_per_group}.\n2. This can be written as ${valid1}, ${valid2}, or ${valid3}.\n3. ${distractor} is addition, which gives the wrong total.`
+      },
+      visualEngine: {
+        componentToRender: "GROUPING_WORKSPACE",
+        componentData: {
+          mode: "GROUPING",
+          targetGroupSize: items_per_group,
+          items: Array(group_count * items_per_group).fill(selectedIcon),
+          totalItems: group_count * items_per_group,
+          icon: selectedIcon
+        }
+      },
+      inputRequirement: { inputType }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      STRICT: Do not generate a story context. Output the exact question text provided.
+      
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'standard', logic: "syntax_audit", hideVisual: false }
+    };
+  }
+
 }

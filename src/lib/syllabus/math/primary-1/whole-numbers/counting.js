@@ -16,7 +16,7 @@ export const countingBlueprint = {
   title: 'Counting to 100',
   strand: 'Number and Algebra', // Retain strand as it's a core curriculum identifier
   visualType: 'DYNAMIC',
-  
+
   // 1. OVERARCHING CONDITIONS (Logical Constraints)
   difficultyLevels: {
     foundation: {
@@ -46,6 +46,8 @@ export const countingBlueprint = {
     foundation_number_words: "Match numerals to written number words within 20.",
     foundation_one_more_less: "Find 1 more or 1 less than a given number up to 20.",
     foundation_order_compare: "Compare and order a small set of random numbers up to 20.",
+    foundation_visual_word_conversion: "Visual counting translated directly into English word format (e.g., counting 8 items and answering 'eight').",
+    foundation_visual_set_comparison: "Compare two rendered visual groups (Set A and Set B) to determine which has more or fewer.",
 
     standard_count_on: "Counting on from a specific number to find a total.",
     standard_tens_ones: "Identifying the number of tens and ones in a 2-digit number.",
@@ -72,7 +74,7 @@ export const countingBlueprint = {
 
   // 3. GENERATION ENGINE
   generate: (difficulty = 'foundation', variant = 'foundation_grouping', type = 'MCQ') => {
-    
+
     // --- 🛡️ SELF-HEALING PARAMETER POSITION ADAPTER ---
     const safeType = String(type).toLowerCase();
     const isShort = safeType.includes('short');
@@ -94,7 +96,7 @@ export const countingBlueprint = {
       if (validVariants.length > 0) {
         activeVariant = validVariants[Math.floor(Math.random() * validVariants.length)];
       } else {
-        activeVariant = 'foundation_grouping'; 
+        activeVariant = 'foundation_grouping';
       }
     }
     // --------------------------------------------------
@@ -116,8 +118,8 @@ export const countingBlueprint = {
     const itemData = context.items[Math.floor(Math.random() * context.items.length)];
 
     // ROBUST EXTRACTION: Handle nested objects (e.g. { name: { singular: '...' } }) or direct keys
-    const selectedContextItem = typeof itemData === 'object' 
-      ? (itemData.item || itemData.singular || itemData.name?.singular || (typeof itemData.name === 'string' ? itemData.name : null) || itemData.text || itemData.name?.text || itemData.val || String(itemData)) 
+    const selectedContextItem = typeof itemData === 'object'
+      ? (itemData.item || itemData.singular || itemData.name?.singular || (typeof itemData.name === 'string' ? itemData.name : null) || itemData.text || itemData.name?.text || itemData.val || String(itemData))
       : itemData;
 
     if (String(selectedContextItem).includes('[object')) console.warn("⚠️ [Blueprint] Context item extraction failed for:", itemData);
@@ -144,7 +146,7 @@ Example: "Try counting on from the bigger number. What comes after 7?" or "How m
     } else {
       formatInstructions = `Format as Structured Question. The "options" field in your JSON should be null. CRITICAL: For the "questionText" string, write a clear localized word problem.${hintProtocol}${visualProtocol}`;
     }
-    
+
     // ==========================================
     // FOUNDATION LEVEL
     // ==========================================

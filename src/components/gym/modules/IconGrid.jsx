@@ -14,6 +14,7 @@ export default function IconGrid({ data, modelData, visualProps }) {
     (source?.icons?.length > 0 ? source.icons : null) || 
     (source?.items?.length > 0 ? source.items : null) || 
     (source?.visualItems?.length > 0 ? source.visualItems : null) || 
+    (source?.totalItems > 0 ? Array(Number(source.totalItems)).fill(source?.icon || '🔔') : null) ||
     (visualProps?.totalItems > 0 ? Array(Number(visualProps.totalItems)).fill(source?.icon || visualProps?.icon || '🔔') : null) ||
     (source?.count > 0 ? Array(Number(source.count)).fill(source?.icon || '🔔') : null) ||
     (source?.groups?.length > 0 ? source.groups.flatMap(count => Array(Number(count)).fill(source?.icon || source?.icons?.[0] || '⭐')) : []);

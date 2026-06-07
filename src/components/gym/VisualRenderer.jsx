@@ -28,6 +28,9 @@ const PlaceValueChart = lazy(() => import('./modules/PlaceValueChart'));
 const ClockDisplay = lazy(() => import('./modules/ClockDisplay'));
 const ShapeDisplay = lazy(() => import('./modules/ShapeDisplay'));
 const PictureGraphDisplay = lazy(() => import('./modules/PictureGraphDisplay'));
+const CrossOutGroup = lazy(() => import('./modules/CrossOutGroup'));
+const TwoSetComparison = lazy(() => import('./modules/TwoSetComparison'));
+const TFMatrixTable = lazy(() => import('./modules/TFMatrixTable'));
 
 export default function VisualRenderer({ type, ...props }) {
   const activeType = (
@@ -65,6 +68,18 @@ export default function VisualRenderer({ type, ...props }) {
           case 'SHAPE': return <Shape {...props} />;
           case 'SHAPE_DISPLAY': return <ShapeDisplay data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
           case 'PICTURE_GRAPH_DISPLAY': return <PictureGraphDisplay data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
+          case 'CROSS_OUT_GROUP': {
+            const data = props.visualEngine?.componentData || props.data || {};
+            return <CrossOutGroup totalItems={data.totalItems} crossedItems={data.crossedItems} selectedIcon={data.icon} />;
+          }
+          case 'TWO_SET_COMPARISON': {
+            const data = props.visualEngine?.componentData || props.data || {};
+            return <TwoSetComparison setA={data.setA} setB={data.setB} />;
+          }
+          case 'TF_MATRIX_TABLE': {
+            const data = props.visualEngine?.componentData || props.data || {};
+            return <TFMatrixTable statements={data.statements} entities={data.entities} />;
+          }
           
           default:
             return (

@@ -356,4 +356,126 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       metadata: { difficulty: 'standard', logic: "bond_100", hideVisual: !isShortQ }
     };
   }
+
+  // 8. Standard Equation Equivalence
+  if (activeVariant === 'standard_equation_equivalence') {
+    // Force MCQ
+    const finalInputType = 'MCQ_BUTTONS';
+    const finalZodType = 'MCQ';
+    
+    // Target equation (no regrouping)
+    const t1 = Math.floor(Math.random() * 5) + 1; 
+    const o1 = Math.floor(Math.random() * 5); 
+    const t2 = Math.floor(Math.random() * 4) + 1;
+    const o2 = Math.floor(Math.random() * (9 - o1));
+    const num1 = (t1 * 10) + o1;
+    const num2 = (t2 * 10) + o2;
+    const targetSum = num1 + num2;
+    const targetEq = `${num1} + ${num2}`;
+
+    // Correct match equation
+    let c_num1, c_num2;
+    do {
+      const c_t1 = Math.floor(Math.random() * (Math.floor(targetSum/10))) + 1;
+      const c_o1 = Math.floor(Math.random() * (targetSum % 10 + 1));
+      c_num1 = (c_t1 * 10) + c_o1;
+      c_num2 = targetSum - c_num1;
+    } while (c_num1 === num1);
+    const correctEq = `${c_num1} + ${c_num2}`;
+
+    // Generate 3 distractors
+    const distractors = [];
+    while(distractors.length < 3) {
+      const d_t1 = Math.floor(Math.random() * 5) + 1;
+      const d_o1 = Math.floor(Math.random() * 5);
+      const d_t2 = Math.floor(Math.random() * 4) + 1;
+      const d_o2 = Math.floor(Math.random() * (9 - d_o1));
+      const d_n1 = (d_t1 * 10) + d_o1;
+      const d_n2 = (d_t2 * 10) + d_o2;
+      const d_sum = d_n1 + d_n2;
+      if (d_sum !== targetSum) {
+        distractors.push(`${d_n1} + ${d_n2}`);
+      }
+    }
+
+    const options = [correctEq, ...distractors].sort(() => Math.random() - 0.5);
+
+    const promptObject = {
+      meta: { level, topic, type: finalZodType, difficulty: zodDiff },
+      content: {
+        questionText: getQText(`Which of the following equations has the same answer as ${targetEq}?`, `Which of the following equations has the same answer as ${targetEq}?`),
+        options: options,
+        hint: "[AI: INJECT HINT]",
+        finalAnswer: correctEq,
+        solutionSteps: `1. ${targetEq} = ${targetSum}.\n2. Only ${correctEq} gives the same total of ${targetSum}.`
+      },
+      visualEngine: {
+        componentToRender: "NONE",
+        componentData: {}
+      },
+      inputRequirement: { inputType: finalInputType }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      STRICT: This is an equation equivalence question. Do not generate a story. Keep the question strictly as provided.
+      
+      CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
+      
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'standard', logic: "eq_equiv", hideVisual: true }
+    };
+  }
+
+  // 9. Standard Fact Family Cards
+  if (activeVariant === 'standard_fact_family_cards') {
+    const part1 = Math.floor(Math.random() * 40) + 10;
+    const part2 = Math.floor(Math.random() * 40) + 10;
+    const whole = part1 + part2;
+    
+    const isAdd = Math.random() > 0.5;
+    const operatorWord = isAdd ? 'addition' : 'subtraction';
+    
+    const answer = isAdd ? `${part1} + ${part2} = ${whole}` : `${whole} - ${part1} = ${part2}`;
+    
+    const distractors = [];
+    if (isAdd) {
+      distractors.push(`${whole} + ${part2} = ${part1}`);
+      distractors.push(`${part1} + ${whole} = ${part2}`);
+      distractors.push(`${part1} + ${part2} = ${whole + 10}`);
+    } else {
+      distractors.push(`${part1} - ${part2} = ${whole}`);
+      distractors.push(`${part2} - ${part1} = ${whole}`);
+      distractors.push(`${whole} - ${part2} = ${part1 + 10}`);
+    }
+
+    const items = [String(part1), String(part2), String(whole)].sort(() => Math.random() - 0.5);
+    const options = isMCQ ? [answer, ...distractors].sort(() => Math.random() - 0.5) : null;
+
+    const promptObject = {
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
+      content: {
+        questionText: `Use all the number cards to form a correct ${operatorWord} equation.`,
+        options: options,
+        hint: "[AI: INJECT HINT]",
+        finalAnswer: answer,
+        solutionSteps: `1. The correct ${operatorWord} equation is ${answer}.`
+      },
+      visualEngine: {
+        componentToRender: "NUMBER_CARDS",
+        componentData: { items: items }
+      },
+      inputRequirement: { inputType: isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT' }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      STRICT: Do not generate a story context. Output the exact question text provided.
+      
+      CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
+      
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'standard', logic: "fact_family_cards", hideVisual: false }
+    };
+  }
 }
