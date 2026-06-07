@@ -8,6 +8,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   let componentData = null;
   let promptObject = { meta: commonMeta, content: {}, visualEngine: { componentToRender: "SHAPE_DISPLAY" }, inputRequirement: { inputType } };
   let seedInstructions = "";
+  let lockComponentData = true; // By default, prevent AI from hallucinating math-dependent structures
 
   // 1. Procedural Generation Pools
   const shapeTypes = ["circle", "triangle", "square", "rectangle"];
@@ -145,7 +146,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         x: 50,
         y: 50,
         scale: 2.5 - (i * 0.5),
-        fillOpacity: 0.7,
+        opacity: Math.max(0.3, 0.8 - (i * 0.15)),
         zIndex: 10 + (count - i)
       }));
 
@@ -164,32 +165,30 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     case 'advanced_composite_deconstruct_inventory': {
       commonMeta.heuristic = 'Total Part Inventory';
-      const subjects = ["rocket", "robot", "truck"];
+      const subjects = ["rocket", "robot", "truck", "castle", "house", "boat", "train"];
       const sub = subjects[Math.floor(Math.random() * subjects.length)];
       
-      // Procedural Robot/Rocket parts
-      const parts = [
-        { shapeType: "rectangle", x: 50, y: 60, scale: 1.5, color: "#3b82f6" }, // Body
-        { shapeType: "circle", x: 50, y: 30, scale: 0.8, color: "#eab308" },    // Head/Top
-        { shapeType: "triangle", x: 30, y: 70, scale: 0.6, color: "#ef4444", rotation: -45 }, // Leg/Fin
-        { shapeType: "triangle", x: 70, y: 70, scale: 0.6, color: "#ef4444", rotation: 45 }   // Leg/Fin
-      ];
+      // Let the AI generate the parts dynamically!
+      componentData = { layout: "COMPOSITE_GENERATIVE", parts: [], name: sub };
+      lockComponentData = false;
 
-      componentData = { layout: "COMPOSITE_GENERATIVE", parts, name: sub };
-
-      const inventory = "1 Rectangle, 1 Circle, 2 Triangles";
       promptObject.content = {
         questionText: `Which list shows all the shapes used to build this ${sub}?`,
-        finalAnswer: inventory,
-        options: getShuffledOptions(inventory, [
-          "2 Rectangles, 1 Circle, 1 Triangle",
-          "1 Square, 2 Circles, 2 Triangles",
-          "1 Rectangle, 2 Circles, 1 Triangle"
-        ]),
+        finalAnswer: "", // AI must calculate this
+        options: [], // AI must generate distractors
         hint: "Break the drawing down into pieces and count how many of each shape you see.",
-        solutionSteps: `The ${sub} is made of 1 large blue rectangle, 1 yellow circle, and 2 red triangles.`
+        solutionSteps: `The ${sub} is made of ...` // AI to fill in
       };
-      seedInstructions = `Inventory breakdown of a composite generative drawing.`;
+      
+      seedInstructions = `
+        TASK: You are an artist and a math teacher! 
+        1. Draw a '${sub}' using ONLY basic 2D shapes (circle, square, rectangle, triangle).
+        2. Create 4 to 8 shapes. Output them in visualEngine.componentData.parts.
+        3. Each part needs: shapeType, color (hex), x (20-80), y (20-80), scale (0.5 to 2.0). 
+        4. Based on your drawing, calculate the EXACT inventory of shapes.
+        5. Set content.finalAnswer to the correct inventory string (e.g. "1 Rectangle, 2 Circles, 1 Triangle").
+        6. Generate 3 plausible distractors for content.options.
+      `;
       break;
     }
 
@@ -269,9 +268,9 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     VARIANT: ${activeVariant}
 
     CRITICAL ARCHITECTURAL RUNTIME CONSTRAINTS:
-    - Visual layouts MUST use componentToRender: "SHAPE_DISPLAY".
+    ${promptObject.visualEngine.componentToRender === "SHAPE_DISPLAY" ? '- Visual layouts MUST use componentToRender: "SHAPE_DISPLAY".' : '- DO NOT generate any visual elements for this question. Keep visualEngine.componentToRender as null.'}
+    ${lockComponentData && promptObject.visualEngine.componentToRender !== null ? '- DO NOT modify the visualEngine.componentData object. You must return it exactly as provided.' : ''}
     - All 'x' and 'y' coordinates in parts must be strictly between 20 and 80.
-    - Every part in COMPOSITE_GENERATIVE must have an explicit opacity value (e.g., opacity: 0.8).
     - The output JSON object MUST contain 'content.hint' with a child-friendly clue.
     - 'content.solutionSteps' must be a descriptive string explanation (no nested JSON).
     - ${seedInstructions}

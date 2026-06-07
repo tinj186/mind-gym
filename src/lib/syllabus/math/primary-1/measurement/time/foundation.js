@@ -67,17 +67,54 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     case 'foundation_clock_parts': {
       commonMeta.heuristic = 'Clock Anatomy';
       componentToRender = null; // Pure conceptual text question
-      const askAboutHourHand = Math.random() > 0.5;
-      const finalAnswer = askAboutHourHand ? "Hour hand" : "Minute hand";
+      
+      const subVariant = Math.floor(Math.random() * 3);
+      let finalAnswer, allOptions, questionText, hint, solutionSteps, seedInst;
 
+      if (subVariant === 0) {
+        // Variation 0: Name by length
+        const askAboutHourHand = Math.random() > 0.5;
+        finalAnswer = askAboutHourHand ? "Hour hand" : "Minute hand";
+        allOptions = ["Hour hand", "Minute hand", "Second hand", "Number hand"];
+        questionText = `On an analog clock face, what do we call the ${askAboutHourHand ? 'short' : 'long'} hand?`;
+        hint = "The hand that points to the main hour numbers is always shorter!";
+        solutionSteps = `The short hand on a clock is the hour hand, and the long hand is the minute hand. So the correct answer is the ${finalAnswer}.`;
+        seedInst = `Identify features of clock hands. Target is the ${askAboutHourHand ? 'SHORT' : 'LONG'} hand.`;
+      } else if (subVariant === 1) {
+        // Variation 1: Where does Hour hand point at X o'clock?
+        const randomHour = Math.floor(Math.random() * 12) + 1;
+        const askByLength = Math.random() > 0.5;
+        const handName = askByLength ? "short hand" : "hour hand";
+        finalAnswer = String(randomHour);
+        let distractors = ["12", "6", String(randomHour === 12 ? 1 : randomHour + 1)];
+        if (randomHour === 12) distractors = ["9", "6", "1"];
+        allOptions = getShuffledOptions(finalAnswer, distractors);
+        questionText = `The time is exactly ${randomHour} o'clock. Which number does the ${handName} point directly to?`;
+        hint = "Remember, the hour hand tells us which hour it is!";
+        solutionSteps = `At exactly ${randomHour} o'clock, the hour hand (the short hand) points exactly at the number ${randomHour}.`;
+        seedInst = `Identify where the hour/short hand points at ${randomHour} o'clock.`;
+      } else {
+        // Variation 2: Where does Minute hand point at X o'clock?
+        const randomHour = Math.floor(Math.random() * 12) + 1;
+        const askByLength = Math.random() > 0.5;
+        const handName = askByLength ? "long hand" : "minute hand";
+        finalAnswer = "12";
+        let distractors = [String(randomHour), "6", "3"];
+        if (randomHour === 12 || randomHour === 6) distractors = ["9", "3", "1"];
+        allOptions = getShuffledOptions(finalAnswer, distractors);
+        questionText = `The time is exactly ${randomHour} o'clock. Which number does the ${handName} point directly to?`;
+        hint = "At any exact hour (like 1 o'clock or 4 o'clock), the long hand always points to the very top number!";
+        solutionSteps = `At any exact 'o'clock', zero minutes have passed. This means the minute hand (the long hand) points straight up to the number 12.`;
+        seedInst = `Identify where the minute/long hand points at ${randomHour} o'clock.`;
+      }
       promptObject.content = {
-        questionText: `On an analog clock face, what do we call the ${askAboutHourHand ? 'short' : 'long'} hand?`,
+        questionText,
         finalAnswer,
-        options: ["Hour hand", "Minute hand", "Second hand", "Number hand"],
-        hint: "The hand that points to the main hour numbers is always shorter!",
-        solutionSteps: `The short hand on a clock is the hour hand, and the long hand is the minute hand. So the correct answer is the ${finalAnswer}.`
+        options: allOptions,
+        hint,
+        solutionSteps
       };
-      seedInstructions = `Identify features of clock hands. Target is the ${askAboutHourHand ? 'SHORT' : 'LONG'} hand.`;
+      seedInstructions = seedInst;
       break;
     }
 
@@ -86,7 +123,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       componentToRender = null;
       const isNightScenario = Math.random() > 0.5;
       
-      const questionText = isNightScenario 
+      let questionText = isNightScenario 
         ? "Which of these activities do you usually do at night when it is dark outside?"
         : "Which of these activities do you usually do in the morning when the sun comes up?";
       const finalAnswer = isNightScenario ? "Going to sleep in bed" : "Eating breakfast before school";
@@ -94,10 +131,16 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         ? ["Playing at the school field", "Eating breakfast", "Watching the morning sunrise"]
         : ["Sleeping in pajamas", "Looking at stars in the sky", "Having dinner with family"];
 
+      const allOptions = getShuffledOptions(finalAnswer, distractors);
+      
+      if (!isMCQ) {
+        questionText += ` (Choose from: ${allOptions.join(' / ')})`;
+      }
+
       promptObject.content = {
         questionText,
         finalAnswer,
-        options: getShuffledOptions(finalAnswer, distractors),
+        options: allOptions,
         hint: isNightScenario ? "Think about what you do when the moon and stars are out!" : "Think about what you do right after you wake up to get ready for school!",
         solutionSteps: isNightScenario
           ? "We sleep in bed at night when it is dark outside. Playing on the field and eating breakfast are daytime routines."
@@ -112,21 +155,32 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       componentToRender = null;
       const scenario = Math.random() > 0.5;
       
-      const questionText = scenario
+      let questionText = scenario
         ? "Choose the correct order of events from morning to night."
         : "Siti is planning her day. What does she do first when she wakes up in the morning?";
         
       const finalAnswer = scenario 
-        ? "Wake up ➔ Eat lunch ➔ Sleep in bed" 
+        ? "Wake up, Eat lunch, Sleep in bed" 
         : "Brush her teeth";
-      const options = scenario
-        ? ["Wake up ➔ Eat lunch ➔ Sleep in bed", "Sleep in bed ➔ Eat lunch ➔ Wake up", "Eat lunch ➔ Sleep in bed ➔ Wake up"]
+        
+      const mcqOptions = scenario
+        ? ["Wake up, Eat lunch, Sleep in bed", "Sleep in bed, Eat lunch, Wake up", "Eat lunch, Sleep in bed, Wake up"]
         : ["Brush her teeth", "Pack her school bag to go home", "Have dinner with her family"];
+        
+      const allOptions = scenario ? mcqOptions : getShuffledOptions(finalAnswer, mcqOptions.slice(1));
+      
+      if (!isMCQ) {
+        if (scenario) {
+          questionText = "Arrange these events in the correct order from morning to night: Sleep in bed, Eat lunch, Wake up.";
+        } else {
+          questionText += ` (Choose from: ${allOptions.join(' / ')})`;
+        }
+      }
 
       promptObject.content = {
         questionText,
         finalAnswer,
-        options: scenario ? options : getShuffledOptions(finalAnswer, options.slice(1)),
+        options: allOptions,
         hint: "Think about what happens at the very start of your day versus the very end!",
         solutionSteps: scenario
           ? "Your day always starts with waking up in the morning, followed by having lunch in the afternoon, and ends with sleeping at night."
@@ -154,6 +208,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     - Your output JSON object MUST include the 'content.hint' parameter string. It cannot be null or empty. // Corrected from hintText
     - Your output JSON object MUST include 'content.solutionSteps' as a pure text explanation. DO NOT nest or repeat a visual layout element inside solutionSteps.
     - Keep hint short, encouraging, and actionable without revealing the direct target option selection.
+    - ${!isMCQ ? "CRITICAL: DO NOT modify, shorten, or rewrite the provided `questionText` template. You MUST preserve the exact choices (e.g. '(Choose from: ...)') or ordering instructions." : ""}
     - ${seedInstructions}
     
     OUTPUT MANDATE: Return ONLY a clean, valid JSON object structure matching the configuration blueprint layout. No markdown fence flags.

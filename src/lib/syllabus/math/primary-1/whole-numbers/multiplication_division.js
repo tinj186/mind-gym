@@ -45,15 +45,22 @@ export const multiplicationDivisionBlueprint = {
     standard_comparison_times_as_many: "Solve 'times as many' word problems within 40.",
     standard_skip_count_total: "Use skip counting by 2, 5, or 10 to find a total.",
     standard_unit_price_calc: "Calculate the total cost of multiple identical items.",
-    //    standard_sharing_missing_each: "Find how many in each group (Sharing).",
-    //    standard_grouping_missing_groups: "Find the number of groups (Grouping).",
-    //    standard_inverse_fact_families: "Solve division using a related multiplication fact.",
-    //    standard_even_odd_sharing: "Identify if a number can be shared equally (Even/Odd logic).",
-    //    standard_attribute_multiplication: "Count total attributes (e.g., wheels on 5 cars).",
+    standard_sharing_missing_each: "Find how many in each group (Sharing).",
+    standard_grouping_missing_groups: "Find the number of groups (Grouping).",
+    standard_inverse_fact_families: "Solve division using a related multiplication fact.",
+    standard_even_odd_sharing: "Identify if a number can be shared equally (Even/Odd logic).",
+    standard_attribute_multiplication: "Count total attributes (e.g., wheels on 5 cars).",
 
     advanced_multi_step_mult_add: "Multi-step: Multiply groups then add more.",
     advanced_multi_step_mult_sub: "Multi-step: Multiply groups then subtract.",
-    advanced_logic_wheels_legs: "Logic puzzle: Counting total wheels or legs across groups."
+    advanced_logic_wheels_legs: "Logic puzzle: Counting total wheels or legs across groups.",
+    advanced_multi_step_sharing_add: "Multi-step: Share equally then receive more.",
+    advanced_grouping_need_more: "Multi-step: Grouping and finding how many more needed.",
+    advanced_two_entities_total: "Multi-step: Total of two grouped quantities.",
+    advanced_two_entities_diff: "Multi-step: Difference of two grouped quantities.",
+    advanced_money_mult_change: "Money: Buy multiple items and find change.",
+    advanced_money_group_buy: "Money: Find how many items can be bought with a sum.",
+    advanced_balance_mult_add: "Multi-step: Equate a grouped quantity with another by finding difference."
   },
 
   generate: (difficulty = 'foundation', variant = 'foundation_mult_eqn', type = 'MCQ') => {
@@ -64,8 +71,8 @@ export const multiplicationDivisionBlueprint = {
 
     let activeVariant = variant;
     const isMissing = !multiplicationDivisionBlueprint.variants[activeVariant];
-    const violatesShort = isShort && activeVariant && (activeVariant.includes('word_problem') || activeVariant.includes('logic') || activeVariant.includes('interactive'));
-    const violatesStructure = isStructure && activeVariant && (!activeVariant.includes('word_problem') && !activeVariant.includes('logic') && !activeVariant.includes('interactive'));
+    const violatesShort = isShort && activeVariant && (activeVariant.includes('word_problem') || activeVariant.includes('interactive') || (activeVariant.includes('logic') && !activeVariant.includes('advanced')));
+    const violatesStructure = isStructure && activeVariant && (!activeVariant.includes('word_problem') && !activeVariant.includes('logic') && !activeVariant.includes('interactive') && !activeVariant.includes('standard') && !activeVariant.includes('advanced') && !activeVariant.includes('multiplication') && !activeVariant.includes('division'));
 
     if (isMissing || violatesShort || violatesStructure) {
       const safeDiff = String(difficulty).toLowerCase();
@@ -75,9 +82,7 @@ export const multiplicationDivisionBlueprint = {
       if (isShort) {
         // Short questions: ONLY pure mathematical equations (exclude stories and interactive tools)
         validVariants = validVariants.filter(k =>
-          !k.includes('word_problem') &&
-          !k.includes('logic') &&
-          !k.includes('interactive') ||
+          (!k.includes('word_problem') && !k.includes('interactive') && !(k.includes('logic') && !k.includes('advanced'))) ||
           k.includes('multiplication') || k.includes('division')
         );
       } else if (isStructure) {
@@ -86,7 +91,8 @@ export const multiplicationDivisionBlueprint = {
           k.includes('word_problem') ||
           k.includes('logic') ||
           k.includes('interactive') ||
-          k.includes('multiplication') || k.includes('division')
+          k.includes('multiplication') || k.includes('division') ||
+          k.includes('standard') || k.includes('advanced')
         );
       }
 

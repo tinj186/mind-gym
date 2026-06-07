@@ -355,10 +355,11 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
                 {q.options.map((opt, i) => {
                   // Highlight the option that matches the final answer
                   const optStr = String(opt ?? "");
-                  // Helper to strip labels (e.g., "A: 2" -> "2") and trim whitespace
+                  // Helper to strip labels (e.g., "A: 2" -> "2") and trim whitespace, but preserve time formats (e.g., "5:30")
                   const extractValue = (s) => {
-                    const str = String(s ?? "");
-                    return str.includes(':') ? str.split(':').slice(1).join(':').trim() : str.trim();
+                    const str = String(s ?? "").trim();
+                    if (/^\d{1,2}:\d{2}/.test(str)) return str;
+                    return str.includes(':') ? str.split(':').slice(1).join(':').trim() : str;
                   };
 
                   const cleanOpt = extractValue(optStr);

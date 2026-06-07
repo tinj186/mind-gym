@@ -3,6 +3,9 @@ import React from 'react';
 export default function ShapeDisplay({ data, hideCardStyles = false }) {
   if (!data) return null;
 
+  // Normalize layout/mode keys from syllabus logic
+  const layout = (data.layout || data.mode || 'SINGLE').toUpperCase();
+
   const renderPrimitiveShape = (shapeData) => {
     // Handle both string identifiers and detailed shape objects
     const { shapeType, color, size = 'large', rotation = 0 } = 
@@ -14,17 +17,24 @@ export default function ShapeDisplay({ data, hideCardStyles = false }) {
     const half = baseSize / 2;
     const typeKey = (shapeType || "").toLowerCase().trim();
 
+    let scale = 1;
+    if (size === 'small') scale = 0.5;
+    else if (size === 'medium') scale = 0.75;
+    else if (size === 'large') scale = 1.0;
+
     const style = {
-      transform: `rotate(${rotation}deg)`,
+      transform: `rotate(${rotation}deg) scale(${scale})`,
       transformOrigin: 'center',
       transition: 'all 0.3s ease'
     };
 
     const fillColor = color || '#3b82f6';
-    const fillOpacity = shapeData.opacity !== undefined ? shapeData.opacity : 1;
+    const isComposite = layout.startsWith('COMPOSITE');
+    // Allow explicit shapeData.opacity (used for dynamic stack layers), otherwise default to 0.8 for composite
+    const fillOpacity = shapeData.opacity !== undefined ? shapeData.opacity : (isComposite ? 0.8 : 1);
 
     return (
-      <svg viewBox={`0 0 ${baseSize} ${baseSize}`} className="w-full h-full overflow-visible drop-shadow-[2px_2px_0px_rgba(15,23,42,1)]" style={style}>
+      <svg viewBox={`0 0 ${baseSize} ${baseSize}`} className={`w-full h-full overflow-visible ${!isComposite ? 'drop-shadow-[2px_2px_0px_rgba(15,23,42,1)]' : ''}`} style={style}>
         {typeKey === 'circle' && (
           <circle cx={center} cy={center} r={half - 4} fill={fillColor} fillOpacity={fillOpacity} stroke="#0f172a" strokeWidth="4" />
         )}
@@ -44,9 +54,6 @@ export default function ShapeDisplay({ data, hideCardStyles = false }) {
   const containerStyle = hideCardStyles
     ? "bg-transparent p-0 border-0 shadow-none flex items-center justify-center"
     : "w-full max-w-md mx-auto p-8 bg-white rounded-[2rem] border-4 border-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] flex flex-col items-center justify-center min-h-[240px]";
-
-  // Normalize layout/mode keys from syllabus logic
-  const layout = (data.layout || data.mode || 'SINGLE').toUpperCase();
 
   return (
     <div className={containerStyle}>
@@ -104,8 +111,7 @@ export default function ShapeDisplay({ data, hideCardStyles = false }) {
                 top: part.style?.top,
                 left: part.style?.left,
                 transform: part.style?.transform, // 💡 Pure backend transform untouched!
-                zIndex: part.zIndex,
-                opacity: part.opacity !== undefined ? part.opacity : 1
+                zIndex: part.zIndex
               }}
             >
               {renderPrimitiveShape(part)}
@@ -126,8 +132,7 @@ export default function ShapeDisplay({ data, hideCardStyles = false }) {
                 top: `${part.y}%`,
                 left: `${part.x}%`,
                 transform: `translate(-50%, -50%) scale(${part.scale || 1})`,
-                zIndex: part.zIndex || idx,
-                opacity: part.opacity !== undefined ? part.opacity : 1
+                zIndex: part.zIndex || idx
               }}
             >
               {/* We pass rotation to renderPrimitiveShape to keep SVG rotation logic clean */}

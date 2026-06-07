@@ -38,7 +38,7 @@ export const lengthBlueprint = {
     foundation_find_same: "Identifying which two objects out of three have the exact same length.",
     foundation_identify_by_length: "Finding which specific object matches a given unit length.",
     foundation_true_false: "Evaluating a True/False statement about the relative lengths of two objects.",
-    
+
     // Standard & Advanced
     standard_baseline_comparison: "Comparing 3 distinct objects aligned horizontally to find the longest/shortest.",
     standard_find_shortest: "Identifying the shortest object among 3 items aligned horizontally.",
@@ -50,7 +50,7 @@ export const lengthBlueprint = {
     standard_as_long_as: "Identifying objects with equal lengths among a set.",
     standard_unit_difference_mcq: "Calculating the arithmetic difference in non-standard units between two items.",
     standard_mid_grid_alignment: "Calculating length for an object not starting at the grid baseline.",
-   
+
     advanced_indirect_difference: "Calculating missing length dimensions by adding or subtracting non-standard object units.",
     advanced_indirect_comparison: "Using transitive logic to compare and order three or more objects based on text clues (e.g., Object A is longer than B, B is longer than C).",
     advanced_misaligned_start: "Determining the true length of an object when it does not align with the zero baseline of the unit ruler track (handling custom start and end offsets).",
@@ -68,12 +68,12 @@ export const lengthBlueprint = {
  * Orchestrator for Length Generation
  * Attached to the blueprint for the global generator to find.
  */
-lengthBlueprint.generate = function(difficulty, variant, type) {
+lengthBlueprint.generate = function (difficulty, variant, type) {
   let activeVariant = variant || '';
-  
+
   // 🛡️ THE FIX: Extract all valid variants registered in this blueprint
   const validVariants = Object.keys(lengthBlueprint.variants);
-  
+
   // 🛡️ THE FIX: If the frontend sends an empty variant, or a legacy variant 
   // (like 'visual_line' from another topic), gracefully overwrite it!
   if (!activeVariant || !validVariants.includes(activeVariant)) {

@@ -30,14 +30,18 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         `${hour === 1 ? 12 : hour - 1}:30`
       ];
 
+      const questionText = isMCQ 
+        ? "Which digital clock shows the same time as the clock face?"
+        : "Please write the time shown on the clock in digital format.";
+
       promptObject.content = {
-        questionText: "Which digital clock shows the same time as the clock face?",
+        questionText,
         options: getShuffledOptions(digitalTime, distractors),
         finalAnswer: digitalTime,
         solutionSteps: `The analog clock shows the long hand at 6 and the short hand past ${hour}. This is ${hour}:30.`,
         hint: "Check the hour hand first, then see if the long hand is at 12 or 6!"
       };
-      seedInstructions = `Visual analog clock shows ${hour}:30. Students must select digital format "${digitalTime}".`;
+      seedInstructions = `Visual analog clock shows ${hour}:30. Target output: "${digitalTime}".`;
       break;
     }
 
@@ -239,6 +243,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     CRITICAL PROMPT SEED CONSTRAINTS:
     - Your output JSON object MUST include the 'content.hint' parameter string. It cannot be null or empty. // Corrected from hintText
     - Your output JSON object MUST include 'content.solutionSteps' as a pure text explanation. DO NOT nest or repeat a visual layout element inside solutionSteps.
+    - ${!isMCQ ? "CRITICAL: DO NOT modify, shorten, or rewrite the provided `questionText` template." : ""}
     - ${seedInstructions}
     - Component visual state: ${JSON.stringify(componentData)}
     - Ensure the questionText and finalAnswer are perfectly aligned with the clock state.

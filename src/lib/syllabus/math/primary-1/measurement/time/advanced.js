@@ -20,28 +20,36 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   switch (activeVariant) {
     case 'advanced_sequence_logic': {
       commonMeta.heuristic = 'Chronological Reasoning';
-      const events = [
-        { act: "Eating lunch", time: "12:30 p.m." },
-        { act: "Homework", time: "3:00 p.m." },
-        { act: "Eating dinner", time: "6:30 p.m." }
-      ];
-
       promptObject.visualEngine.componentToRender = null;
-      const correctOrder = events.map(e => e.act).join(", ");
-      const distractors = [
-        [...events].reverse().map(e => e.act).join(", "),
-        `${events[1].act}, ${events[0].act}, ${events[2].act}`,
-        `${events[0].act}, ${events[2].act}, ${events[1].act}`
-      ];
+      
+      // We use letters A, B, C so the student can easily type the answer in Short Question format.
+      // Event 1 = Earliest, Event 2 = Middle, Event 3 = Latest
+      let questionText = `Arrange these daily activities in order from earliest to latest:\n\nA. [AI GENERATED EVENT 2] (e.g., Eating lunch at half past 12)\nB. [AI GENERATED EVENT 1] (e.g., Waking up at 7 o'clock)\nC. [AI GENERATED EVENT 3] (e.g., Sleeping at 9 o'clock)`;
+      
+      if (!isMCQ) {
+        questionText += `\n\n(Write your answer as letters, e.g., B, A, C)`;
+      }
+
+      const correctOrder = "B, A, C";
+      const distractors = ["A, B, C", "B, C, A", "C, A, B"];
 
       promptObject.content = {
-        questionText: `Arrange these daily activities in order from earliest to latest:\n- ${events[2].act}\n- ${events[0].act}\n- ${events[1].act}`,
+        questionText,
         options: getShuffledOptions(correctOrder, distractors),
         finalAnswer: correctOrder,
-        solutionSteps: `Daily events happen in this order: ${events[0].act} (${events[0].time}), ${events[1].act} (${events[1].time}), and finally ${events[2].act} (${events[2].time}).`,
-        hint: "Think about your own day! What do you do first, and what comes later?"
+        solutionSteps: `B happens earliest in the day. A happens next. C happens last. So the correct order is ${correctOrder}.`,
+        hint: "Look at the times for each activity. Which one happens first in the day?"
       };
-      seedInstructions = `Sequence logic problem. Correct chronological string: "${correctOrder}".`;
+      
+      seedInstructions = `
+        CRITICAL INSTRUCTION: DO NOT hardcode the example events. You MUST creatively generate 3 distinct daily activities with their corresponding times (using whole or half hours).
+        - Event 1 must be the EARLIEST.
+        - Event 2 must be the MIDDLE.
+        - Event 3 must be the LATEST.
+        Replace the placeholders [AI GENERATED EVENT X] in the questionText with your generated events.
+        DO NOT change the order of the letters (A must be Event 2, B must be Event 1, C must be Event 3).
+        If !isMCQ, preserve the '(Write your answer...)' instruction.
+      `.trim();
       break;
     }
 

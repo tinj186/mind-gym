@@ -74,11 +74,11 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
-        questionText: getQText(`[STORY] How many ${itemLabel} are there in the array altogether?`, `${rows} x ${cols} = ?`, zodType),
+        questionText: getQText(`[STORY] How many ${itemLabel} are there altogether?`, `${rows} x ${cols} = ?`, zodType),
         options: isMCQ ? [answer, String(rows + cols), String(parseInt(answer) + 2), String(parseInt(answer) - 5)].sort(() => Math.random() - 0.5) : null,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
-        solutionSteps: `1. There are ${rows} rows and ${cols} columns.\n2. ${rows} x ${cols} = ${answer}.`
+        solutionSteps: `1. There are ${rows} rows with ${cols} in each row.\n2. ${rows} x ${cols} = ${answer}.`
       },
       visualEngine: {
         componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
@@ -92,7 +92,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
       ${isShortQ 
         ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative localized Singaporean story involving an array of ${rows} rows and ${cols} columns of ${itemLabel} (represented by the emoji "${selectedIcon}").`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative localized Singaporean story involving ${rows} rows with ${cols} ${itemLabel} in each row (represented by the emoji "${selectedIcon}"). DO NOT use the words "array" or "columns".`
       }
 
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,

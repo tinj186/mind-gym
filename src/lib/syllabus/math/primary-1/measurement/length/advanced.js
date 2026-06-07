@@ -215,18 +215,24 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     case 'advanced_perimeter_units': {
       commonMeta.heuristic = 'Open Boundary Path Accumulation';
       const targetShape = "Grid Frame Path";
-      const side1 = 3;
-      const side2 = 4;
-      const side3 = 3;
-      const cumulativePerimeter = side1 + side2 + side3;
+      const numSides = Math.floor(Math.random() * 3) + 2; // 2 to 4
+      const sides = [];
+      for(let i=0; i<numSides; i++) {
+        sides.push(Math.floor(Math.random() * 3) + 2); // 2 to 4 length
+      }
+      const cumulativePerimeter = sides.reduce((a, b) => a + b, 0);
 
       componentData.items = [{ label: targetShape, length: cumulativePerimeter }];
+      componentData.isPerimeter = true;
+      componentData.sides = sides;
+
+      const sidesText = sides.length === 2 ? `${sides[0]} and ${sides[1]}` : sides.slice(0, -1).join(', ') + ', and ' + sides[sides.length - 1];
 
       promptObject.content = {
-        questionText: `[Formulate Open Border Perimeter Question: Find the cumulative length around this 3-sided track frame map if the segments measure ${side1}, ${side2}, and ${side3} ${selectedUnit.name} respectively.]`,
+        questionText: `[Formulate Open Border Perimeter Question: Find the cumulative length around this ${numSides}-sided track frame map if the segments measure ${sidesText} ${selectedUnit.name} respectively.]`,
         finalAnswer: String(cumulativePerimeter),
-        options: isMCQ ? getShuffledOptions(String(cumulativePerimeter), [String(cumulativePerimeter - 1), String(side1 + side2), '12']) : null,
-        solutionSteps: `Accumulate the composite vector sides around boundary paths: ${side1} + ${side2} + ${side3} = ${cumulativePerimeter} units.`,
+        options: isMCQ ? getShuffledOptions(String(cumulativePerimeter), [String(cumulativePerimeter - 1), String(cumulativePerimeter + 2), '12']) : null,
+        solutionSteps: `Accumulate the composite vector sides around boundary paths: ${sides.join(' + ')} = ${cumulativePerimeter} units.`,
         hint: "Trace your finger around the outside edges and count every unit!"
       };
       seedInstructions = `Target context: A shape or path. Total perimeter accumulation along multi-sided open grids equal to: ${cumulativePerimeter}.`;
@@ -274,7 +280,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     CRITICAL PROMPT SEED CONSTRAINTS:
     - Your output JSON object MUST include the 'content.hint' parameter string. It cannot be null or empty.
     - ${seedInstructions}
-    - The structural data inside visualEngine items array must remain exactly as seeded.
+    - The structural data inside visualEngine.componentData (including items, isPerimeter, and sides) MUST remain exactly as seeded. Do NOT remove or modify any JSON keys.
     - Ensure your question narrative text and finalAnswer perfectly synchronize with these calculation numbers.
     - ${constitution}
     

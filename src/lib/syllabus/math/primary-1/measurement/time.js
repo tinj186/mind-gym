@@ -36,7 +36,7 @@ export const timeBlueprint = {
     foundation_digital_hour: "Reading digital clock readouts displaying whole hours (e.g., 4:00) and matching them to descriptive time text.",
     foundation_clock_parts: "Identifying the basic features of an analog clock face, specifically distinguishing between the long minute hand and the short hour hand.",
     foundation_sequence_simple: "Arranging two or three highly distinct everyday events in chronological order (e.g., waking up, going to school, sleeping at night).",
-    
+
     standard_to_half_hour: "Reading analog clocks showing half-hour increments.",
     standard_analog_digital: "Converting between analog clock faces and digital time formats.",
     standard_digital_half_hour: "Reading digital clock readouts displaying half-hour increments (e.g., 8:30) and matching them to descriptive time text.",
@@ -66,9 +66,9 @@ export const timeBlueprint = {
  */
 export default function timeSyllabusEntry(variant, difficulty, type) {
   let activeVariant = variant || '';
-  
+
   const validVariants = Object.keys(timeBlueprint.variants);
-  
+
   // Gracefully handle missing or legacy variants by selecting a default for the requested tier
   if (!activeVariant || !validVariants.includes(activeVariant)) {
     if (difficulty?.toLowerCase() === 'standard') {

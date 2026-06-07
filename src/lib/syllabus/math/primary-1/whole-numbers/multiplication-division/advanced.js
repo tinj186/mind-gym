@@ -37,7 +37,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const groupsTotal = groups * size;
     const answer = String(groupsTotal + extra);
     
-    const equationStr = `(${groups} x ${size}) + ${extra} = ?`;
+    const equationStr = `${groups} groups of ${size} and ${extra} more = ?`;
 
     const options = isMCQ ? [
       answer, 
@@ -56,8 +56,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         solutionSteps: `1. Step 1 (Groups): ${groups} x ${size} = ${groupsTotal}.\n2. Step 2 (Add extra): ${groupsTotal} + ${extra} = ${answer}.`
       },
       visualEngine: {
-        componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
-        componentData: isShortQ ? { items: ["(", String(groups), "x", String(size), ")", "+", String(extra)] } : {}
+        componentToRender: "NONE",
+        componentData: {}
       },
       inputRequirement: { inputType }
     };
@@ -65,7 +65,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
       ${isShortQ 
-        ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
+        ? `STRICT: Use exactly "${equationStr}" as the question. Ignore the rule about not using English words.`
         : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean math story involving ${groups} groups of ${size} ${itemLabel} (represented by the emoji "${selectedIcon}") and ${extra} more.`
       }
 
@@ -85,7 +85,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const groupsTotal = groups * size;
     const answer = String(groupsTotal - remove);
     
-    const equationStr = `(${groups} x ${size}) - ${remove} = ?`;
+    const equationStr = `${groups} groups of ${size}, take away ${remove} = ?`;
 
     const options = isMCQ ? [
       answer, 
@@ -104,8 +104,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         solutionSteps: `1. Step 1 (Groups): ${groups} x ${size} = ${groupsTotal}.\n2. Step 2 (Subtract): ${groupsTotal} - ${remove} = ${answer}.`
       },
       visualEngine: {
-        componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
-        componentData: isShortQ ? { items: ["(", String(groups), "x", String(size), ")", "-", String(remove)] } : {}
+        componentToRender: "NONE",
+        componentData: {}
       },
       inputRequirement: { inputType }
     };
@@ -113,7 +113,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
       ${isShortQ 
-        ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
+        ? `STRICT: Use exactly "${equationStr}" as the question. Ignore the rule about not using English words.`
         : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean math story involving ${groups} groups of ${size} ${itemLabel} (represented by the emoji "${selectedIcon}") where ${remove} are removed.`
       }
 
@@ -131,18 +131,20 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const legsPer = typeLabel === "tricycles" ? 3 : 4;
     const answer = String(count * legsPer);
 
+    const equationStr = `${count} ${typeLabel} have how many wheels?`;
+
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
-        questionText: getQText(`[STORY] How many wheels are there altogether?`, `${count} x ${legsPer} = ?`, zodType),
+        questionText: getQText(`[STORY] How many wheels are there altogether?`, equationStr, zodType),
         options: isMCQ ? [answer, String((count-1)*legsPer), String(count*(legsPer+1)), String(count+legsPer)].sort(() => Math.random() - 0.5) : null,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
         solutionSteps: `1. 1 ${typeLabel.slice(0,-1)} has ${legsPer} wheels.\n2. ${count} ${typeLabel} have ${count} x ${legsPer} = ${answer} wheels.`
       },
       visualEngine: {
-        componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
-        componentData: isShortQ ? { items: [String(count), "x", String(legsPer), "=", "?"] } : {}
+        componentToRender: "NONE",
+        componentData: {}
       },
       inputRequirement: { inputType }
     };
@@ -150,12 +152,355 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
       ${isShortQ 
-        ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
+        ? `STRICT: Use exactly "${equationStr}" as the question. Ignore the rule about not using English words.` 
         : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean story involving ${count} ${typeLabel} (visually represented by the emoji "${selectedIcon}").`
       }
 
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
       metadata: { difficulty: 'advanced', logic: "wheels_legs", hideVisual: hideVisual }
+    };
+  }
+
+  // 4. Multi-step: Share equally then receive more
+  if (activeVariant === 'advanced_multi_step_sharing_add') {
+    const itemLabel = extract(selectedContextItem);
+    const groups = Math.floor(Math.random() * 3) + 2; // 2 to 4
+    const each = Math.floor(Math.random() * 4) + 3; // 3 to 6
+    const total = groups * each;
+    const extra = Math.floor(Math.random() * 4) + 2; // 2 to 5
+    const answer = String(each + extra);
+    
+    const equationStr = `${total} shared equally among ${groups}, and ${extra} more = ?`;
+
+    const options = isMCQ ? [
+      answer, 
+      String(each), 
+      String(total + extra), 
+      String(each + extra + 2)
+    ].sort(() => Math.random() - 0.5) : null;
+
+    const promptObject = {
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
+      content: {
+        questionText: getQText(`[STORY] How many items does that person have now?`, equationStr, zodType),
+        options: options,
+        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
+        finalAnswer: answer,
+        solutionSteps: `1. Step 1 (Share): ${total} ÷ ${groups} = ${each}.\n2. Step 2 (Receive more): ${each} + ${extra} = ${answer}.`
+      },
+      visualEngine: {
+        componentToRender: "NONE",
+        componentData: {}
+      },
+      inputRequirement: { inputType }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
+      ${isShortQ 
+        ? `STRICT: Use exactly "${equationStr}" as the question. Ignore the rule about not using English words.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative localized Singaporean story where ${total} ${itemLabel} (represented by "${selectedIcon}") are shared equally among ${groups} people. Then, one person receives ${extra} more.`
+      }
+
+      CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'advanced', logic: activeVariant, hideVisual: hideVisual }
+    };
+  }
+
+  // 5. Multi-step: Grouping and finding how many more needed
+  if (activeVariant === 'advanced_grouping_need_more') {
+    const itemLabel = extract(selectedContextItem);
+    const size = Math.floor(Math.random() * 3) + 3; // 3 to 5
+    const currentItems = (Math.floor(Math.random() * 3) + 2) * size; // multiple of size
+    const targetGroups = (currentItems / size) + 1; // want one more group
+    const targetItems = targetGroups * size;
+    const needed = size;
+    const answer = String(needed);
+    
+    const equationStr = `Make ${targetGroups} groups of ${size} from ${currentItems}. How many more are needed?`;
+
+    const options = isMCQ ? [
+      answer, 
+      String(targetGroups), 
+      String(currentItems + needed), 
+      String(needed + 1)
+    ].sort(() => Math.random() - 0.5) : null;
+
+    const promptObject = {
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
+      content: {
+        questionText: getQText(`[STORY] How many more items are needed to make the required number of groups?`, equationStr, zodType),
+        options: options,
+        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
+        finalAnswer: answer,
+        solutionSteps: `1. Step 1 (Target total): ${targetGroups} groups of ${size} is ${targetGroups} x ${size} = ${targetItems}.\n2. Step 2 (Find difference): ${targetItems} - ${currentItems} = ${answer} more needed.`
+      },
+      visualEngine: {
+        componentToRender: "NONE",
+        componentData: {}
+      },
+      inputRequirement: { inputType }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
+      ${isShortQ 
+        ? `STRICT: Use exactly "${equationStr}" as the question. Ignore the rule about not using English words.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story where someone has ${currentItems} ${itemLabel} (represented by "${selectedIcon}") and wants to make ${targetGroups} groups with ${size} in each group.`
+      }
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'advanced', logic: activeVariant, hideVisual: hideVisual }
+    };
+  }
+
+  // 6. Multi-step: Total of two grouped quantities
+  if (activeVariant === 'advanced_two_entities_total') {
+    const itemLabel = extract(selectedContextItem);
+    const groupsA = Math.floor(Math.random() * 3) + 2;
+    const sizeA = Math.floor(Math.random() * 3) + 2;
+    const groupsB = Math.floor(Math.random() * 3) + 2;
+    const sizeB = Math.floor(Math.random() * 3) + 2;
+    
+    const totalA = groupsA * sizeA;
+    const totalB = groupsB * sizeB;
+    const answer = String(totalA + totalB);
+    
+    const equationStr = `${groupsA} groups of ${sizeA} and ${groupsB} groups of ${sizeB} altogether = ?`;
+
+    const options = isMCQ ? [
+      answer, 
+      String(totalA), 
+      String(totalB), 
+      String(totalA + totalB + 2)
+    ].sort(() => Math.random() - 0.5) : null;
+
+    const promptObject = {
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
+      content: {
+        questionText: getQText(`[STORY] How many items are there altogether?`, equationStr, zodType),
+        options: options,
+        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
+        finalAnswer: answer,
+        solutionSteps: `1. Person 1 has: ${groupsA} x ${sizeA} = ${totalA}.\n2. Person 2 has: ${groupsB} x ${sizeB} = ${totalB}.\n3. Total altogether: ${totalA} + ${totalB} = ${answer}.`
+      },
+      visualEngine: {
+        componentToRender: "NONE",
+        componentData: {}
+      },
+      inputRequirement: { inputType }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
+      ${isShortQ 
+        ? `STRICT: Use exactly "${equationStr}" as the question. Ignore the rule about not using English words.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story involving Person A with ${groupsA} groups of ${sizeA} ${itemLabel} and Person B with ${groupsB} groups of ${sizeB} ${itemLabel}.`
+      }
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'advanced', logic: activeVariant, hideVisual: hideVisual }
+    };
+  }
+
+  // 7. Multi-step: Difference of two grouped quantities
+  if (activeVariant === 'advanced_two_entities_diff') {
+    const itemLabel = extract(selectedContextItem);
+    const groupsA = Math.floor(Math.random() * 3) + 3; // 3 to 5
+    const sizeA = Math.floor(Math.random() * 3) + 3; // 3 to 5
+    const groupsB = Math.floor(Math.random() * 2) + 2; // 2 to 3
+    const sizeB = Math.floor(Math.random() * 2) + 2; // 2 to 3
+    
+    const totalA = groupsA * sizeA;
+    const totalB = groupsB * sizeB; // Ensure totalA is always > totalB
+    const answer = String(totalA - totalB);
+    
+    const equationStr = `Difference between ${groupsA} groups of ${sizeA} and ${groupsB} groups of ${sizeB} = ?`;
+
+    const options = isMCQ ? [
+      answer, 
+      String(totalA + totalB), 
+      String(totalA), 
+      String(totalA - totalB + 2)
+    ].sort(() => Math.random() - 0.5) : null;
+
+    const promptObject = {
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
+      content: {
+        questionText: getQText(`[STORY] How many more items does Person A have than Person B?`, equationStr, zodType),
+        options: options,
+        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
+        finalAnswer: answer,
+        solutionSteps: `1. Person A has: ${groupsA} x ${sizeA} = ${totalA}.\n2. Person B has: ${groupsB} x ${sizeB} = ${totalB}.\n3. Difference: ${totalA} - ${totalB} = ${answer} more.`
+      },
+      visualEngine: {
+        componentToRender: "NONE",
+        componentData: {}
+      },
+      inputRequirement: { inputType }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
+      ${isShortQ 
+        ? `STRICT: Use exactly "${equationStr}" as the question. Ignore the rule about not using English words.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story where Person A has ${groupsA} groups of ${sizeA} ${itemLabel} and Person B has ${groupsB} groups of ${sizeB} ${itemLabel}.`
+      }
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'advanced', logic: activeVariant, hideVisual: hideVisual }
+    };
+  }
+
+  // 8. Money: Buy multiple items and find change
+  if (activeVariant === 'advanced_money_mult_change') {
+    const itemLabel = extract(selectedContextItem);
+    const qty = Math.floor(Math.random() * 4) + 2; // 2 to 5
+    const unitPrice = [2, 5][Math.floor(Math.random() * 2)]; 
+    const totalCost = qty * unitPrice;
+    
+    // Choose a note that is larger than the total cost
+    const possibleNotes = [10, 50, 100].filter(n => n > totalCost);
+    const paidNote = possibleNotes[Math.floor(Math.random() * possibleNotes.length)] || 50;
+    
+    const answer = String(paidNote - totalCost);
+    
+    const equationStr = `Buy ${qty} items at $${unitPrice} each. Change from $${paidNote} = ?`;
+
+    const options = isMCQ ? [
+      answer, 
+      String(totalCost), 
+      String(paidNote - totalCost + 5), 
+      String(paidNote - totalCost - 1)
+    ].sort(() => Math.random() - 0.5) : null;
+
+    const promptObject = {
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
+      content: {
+        questionText: getQText(`[STORY] How much change does the person receive?`, equationStr, zodType),
+        options: options,
+        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
+        finalAnswer: answer,
+        solutionSteps: `1. Total cost of items: ${qty} x $${unitPrice} = $${totalCost}.\n2. Change received: $${paidNote} - $${totalCost} = $${answer}.`
+      },
+      visualEngine: {
+        componentToRender: "NONE",
+        componentData: {}
+      },
+      inputRequirement: { inputType }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
+      ${isShortQ 
+        ? `STRICT: Use exactly "${equationStr}" as the question. Ignore the rule about not using English words.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story where someone buys ${qty} ${itemLabel} for $${unitPrice} each, and pays with a $${paidNote} note.`
+      }
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'advanced', logic: activeVariant, hideVisual: hideVisual }
+    };
+  }
+
+  // 9. Money: Find how many items can be bought with a sum
+  if (activeVariant === 'advanced_money_group_buy') {
+    const itemLabel = extract(selectedContextItem);
+    const unitPrice = [2, 5, 10][Math.floor(Math.random() * 3)];
+    const qty = Math.floor(Math.random() * 4) + 2; // 2 to 5
+    const totalMoney = qty * unitPrice;
+    
+    const answer = String(qty);
+    
+    const equationStr = `$${totalMoney} ÷ $${unitPrice} = ?`;
+
+    const options = isMCQ ? [
+      answer, 
+      String(totalMoney), 
+      String(unitPrice), 
+      String(qty + 1)
+    ].sort(() => Math.random() - 0.5) : null;
+
+    const promptObject = {
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
+      content: {
+        questionText: getQText(`[STORY] How many items can be bought?`, equationStr, zodType),
+        options: options,
+        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
+        finalAnswer: answer,
+        solutionSteps: `1. Finding how many groups of $${unitPrice} are in $${totalMoney} is division.\n2. $${totalMoney} ÷ $${unitPrice} = ${answer} items.`
+      },
+      visualEngine: {
+        componentToRender: "NONE",
+        componentData: {}
+      },
+      inputRequirement: { inputType }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
+      ${isShortQ 
+        ? 'STRICT: Provide a direct mathematical equation involving money. NO story context or names.' 
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story where someone has $${totalMoney} and wants to buy ${itemLabel} that cost $${unitPrice} each.`
+      }
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'advanced', logic: activeVariant, hideVisual: hideVisual }
+    };
+  }
+
+  // 10. Multi-step: Equate a grouped quantity with another by finding difference
+  if (activeVariant === 'advanced_balance_mult_add') {
+    const itemLabel = extract(selectedContextItem);
+    const groupsA = Math.floor(Math.random() * 3) + 3; // 3 to 5
+    const sizeA = Math.floor(Math.random() * 3) + 3; // 3 to 5
+    const totalA = groupsA * sizeA;
+    
+    const currentB = Math.floor(Math.random() * 5) + 2; // 2 to 6
+    const answer = String(totalA - currentB);
+    
+    const equationStr = `${groupsA} groups of ${sizeA}, take away ${currentB} = ?`;
+
+    const options = isMCQ ? [
+      answer, 
+      String(totalA), 
+      String(totalA + currentB), 
+      String(totalA - currentB + 2)
+    ].sort(() => Math.random() - 0.5) : null;
+
+    const promptObject = {
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
+      content: {
+        questionText: getQText(`[STORY] How many more items does Person B need to have the same amount as Person A?`, equationStr, zodType),
+        options: options,
+        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
+        finalAnswer: answer,
+        solutionSteps: `1. Person A has: ${groupsA} x ${sizeA} = ${totalA}.\n2. Person B has ${currentB}. To find how many more are needed: ${totalA} - ${currentB} = ${answer}.`
+      },
+      visualEngine: {
+        componentToRender: "NONE",
+        componentData: {}
+      },
+      inputRequirement: { inputType }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
+      ${isShortQ 
+        ? `STRICT: Use exactly "${equationStr}" as the question. Ignore the rule about not using English words.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story where Person A has ${groupsA} groups of ${sizeA} ${itemLabel} and Person B has only ${currentB} ${itemLabel}.`
+      }
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'advanced', logic: activeVariant, hideVisual: hideVisual }
     };
   }
 }

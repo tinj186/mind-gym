@@ -31,6 +31,83 @@ export default function MeasurementUnit({ data, topic, difficulty, hideCardStyle
     ? "w-full bg-transparent p-0 border-0 shadow-none"
     : "w-full max-w-2xl mx-auto p-6 bg-white rounded-[2rem] border-4 border-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)]";
 
+  // 🔲 0. PERIMETER ENGINE
+  const isPerimeterRaw = data?.isPerimeter;
+  const isPerimeter = isPerimeterRaw === true || isPerimeterRaw === "true";
+  
+  let perimeterSides = [];
+  if (Array.isArray(data?.sides)) {
+    perimeterSides = data.sides.map(Number);
+  } else if (typeof data?.sides === 'string') {
+    perimeterSides = data.sides.replace(/[\[\]]/g, '').split(',').map(s => parseInt(s.trim()));
+  }
+
+  if (isPerimeter && perimeterSides.length >= 2) {
+    const unitSize = 40;
+    const innerGraphicSize = 32;
+    const gap = 6;
+    
+    const maxHorizontal = Math.max(perimeterSides[0] || 0, perimeterSides[2] || 0);
+    const maxVertical = Math.max(perimeterSides[1] || 0, perimeterSides[3] || 0);
+    const frameWidth = maxHorizontal * (unitSize + gap) - gap;
+    const frameHeight = maxVertical * (unitSize + gap) - gap;
+
+    return (
+      <div className={`${containerStyle} flex flex-col items-center justify-center py-20`}>
+        <div className="relative border-4 border-dashed border-slate-300 rounded-2xl flex items-center justify-center bg-slate-50"
+             style={{ width: `${frameWidth}px`, height: `${frameHeight}px` }}>
+          <span className="text-slate-400 font-bold uppercase tracking-widest text-lg px-2 text-center">
+            {data.items?.[0]?.label || "Path"}
+          </span>
+          
+          {/* Top Side */}
+          {perimeterSides.length >= 1 && (
+            <div className="absolute -top-[56px] left-0 w-full flex justify-center gap-[6px]">
+              {Array.from({ length: perimeterSides[0] }).map((_, uIdx) => (
+                <div key={`top-${uIdx}`} className="flex items-center justify-center bg-white border-2 border-slate-200 rounded-md shadow-sm shrink-0" style={{ width: `${unitSize}px`, height: `${unitSize}px` }}>
+                  <img src={`/assets/measurement/${data.unitIcon || 'paperclip.svg'}`} alt="unit" style={{ width: `${innerGraphicSize}px`, height: `${innerGraphicSize}px` }} className="object-contain" />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Right Side */}
+          {perimeterSides.length >= 2 && (
+            <div className="absolute top-0 -right-[56px] h-full flex flex-col justify-center gap-[6px]">
+              {Array.from({ length: perimeterSides[1] }).map((_, uIdx) => (
+                <div key={`right-${uIdx}`} className="flex items-center justify-center bg-white border-2 border-slate-200 rounded-md shadow-sm shrink-0" style={{ width: `${unitSize}px`, height: `${unitSize}px` }}>
+                  <img src={`/assets/measurement/${data.unitIcon || 'paperclip.svg'}`} alt="unit" style={{ width: `${innerGraphicSize}px`, height: `${innerGraphicSize}px` }} className="object-contain rotate-90" />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Bottom Side */}
+          {perimeterSides.length >= 3 && (
+            <div className="absolute -bottom-[56px] left-0 w-full flex justify-center gap-[6px]">
+              {Array.from({ length: perimeterSides[2] }).map((_, uIdx) => (
+                <div key={`bottom-${uIdx}`} className="flex items-center justify-center bg-white border-2 border-slate-200 rounded-md shadow-sm shrink-0" style={{ width: `${unitSize}px`, height: `${unitSize}px` }}>
+                  <img src={`/assets/measurement/${data.unitIcon || 'paperclip.svg'}`} alt="unit" style={{ width: `${innerGraphicSize}px`, height: `${innerGraphicSize}px` }} className="object-contain" />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Left Side */}
+          {perimeterSides.length === 4 && (
+            <div className="absolute top-0 -left-[56px] h-full flex flex-col justify-center gap-[6px]">
+              {Array.from({ length: perimeterSides[3] }).map((_, uIdx) => (
+                <div key={`left-${uIdx}`} className="flex items-center justify-center bg-white border-2 border-slate-200 rounded-md shadow-sm shrink-0" style={{ width: `${unitSize}px`, height: `${unitSize}px` }}>
+                  <img src={`/assets/measurement/${data.unitIcon || 'paperclip.svg'}`} alt="unit" style={{ width: `${innerGraphicSize}px`, height: `${innerGraphicSize}px` }} className="object-contain rotate-90" />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   if (isVerticalOrientation) {
     return (
       <div className={`${containerStyle} space-y-6`}>

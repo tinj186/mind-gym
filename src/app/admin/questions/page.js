@@ -103,7 +103,9 @@ export default async function AdminQuestionsPage({ searchParams }) {
           {error ? (
             <div className="text-red-500 text-center py-8">{error}</div>
           ) : (
-            <QuestionTable data={groupedSummary} />
+            <div className="overflow-x-auto pb-4">
+              <QuestionTable data={groupedSummary} />
+            </div>
           )}
         </div>
       </div>

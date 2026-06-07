@@ -34,7 +34,7 @@ export const shapesBlueprint = {
     foundation_identify_shape: "Identifying single shapes in various orientations.",
     foundation_classify_attribute: "Classifying shapes by color, shape, or size.",
     foundation_count_sides: "Counting the number of straight sides on basic shapes (up to 4 sides) to reinforce structural differences.",
-   foundation_size_comparison: "Identifying or comparing identical shape structures across distinct sizing metrics (e.g., finding the smallest square in a cluster).",
+    foundation_size_comparison: "Identifying or comparing identical shape structures across distinct sizing metrics (e.g., finding the smallest square in a cluster).",
     foundation_match_real_object: "Matching abstract 2D geometric shapes to illustrations or photos of everyday real-world items (e.g., a clock face matching a circle, or a door matching a rectangle).",
 
     standard_count_composite: "Counting individual shapes within a composite drawing.",
@@ -48,7 +48,7 @@ export const shapesBlueprint = {
     standard_find_all_target_shape: "Scanning a mixed grid of shapes and counting all instances of a specific target shape, ignoring size or rotation.",
     standard_match_composite_parts: "Matching a composite drawing to the exact decomposed inventory list of individual shapes used to build it.",
 
-   advanced_pattern_two_attributes: "Identifying the next item in a two-attribute pattern.",
+    advanced_pattern_two_attributes: "Identifying the next item in a two-attribute pattern.",
     advanced_attribute_logic: "Identifying shapes that satisfy multiple attribute constraints.",
     advanced_pattern_three_attributes: "Extrapolating the next item in a complex pattern where shape, color, and size change simultaneously.",
     advanced_pattern_retrograde_logic: "Deducing a missing sequence item at the start or middle of an advanced shape pattern array using reverse logical analysis.",
@@ -66,9 +66,9 @@ export default function shapesSyllabusEntry(variant, difficulty, type) {
   const validVariants = Object.keys(shapesBlueprint.variants);
 
   if (!activeVariant || !validVariants.includes(activeVariant)) {
-    activeVariant = difficulty?.toLowerCase() === 'standard' ? 'standard_count_composite' : 
-                    difficulty?.toLowerCase() === 'advanced' ? 'advanced_pattern_two_attributes' : 
-                    'foundation_identify_shape';
+    activeVariant = difficulty?.toLowerCase() === 'standard' ? 'standard_count_composite' :
+      difficulty?.toLowerCase() === 'advanced' ? 'advanced_pattern_two_attributes' :
+        'foundation_identify_shape';
   }
 
   const zodDiff = (difficulty || 'foundation').toUpperCase();
