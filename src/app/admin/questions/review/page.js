@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db';
 import ReviewList from '@/components/admin/ReviewList';
 import { SYLLABUS_DATA } from '@/lib/syllabus';
+import { blueprintRegistry } from '@/lib/syllabus/index';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -29,14 +30,36 @@ export default async function QuestionReviewPage({ searchParams }) {
   try {
     questions = await prisma.questionBank.findMany({
       where: whereClause,
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      include: {
+        attempts: {
+          select: { isCorrect: true }
+        }
+      }
     });
 
     // Sanitize options to ensure they are always strings (prevents opt.includes crashes)
-    questions = questions.map(q => ({
-      ...q,
-      options: Array.isArray(q.options) ? q.options.map(opt => String(opt ?? "")) : (q.type === 'MCQ' ? [] : null)
-    }));
+    questions = questions.map(q => {
+      const attemptsCount = q.attempts?.length || 0;
+      const correctCount = q.attempts?.filter(a => a.isCorrect).length || 0;
+      const successRate = attemptsCount > 0 ? Math.round((correctCount / attemptsCount) * 100) : 0;
+      
+      let variantDescription = null;
+      if (q.heuristic) {
+        const blueprintId = `${q.level}-${q.topic}-${q.subtopic}`;
+        const blueprint = blueprintRegistry[blueprintId];
+        if (blueprint && blueprint.variants && blueprint.variants[q.heuristic]) {
+          variantDescription = blueprint.variants[q.heuristic];
+        }
+      }
+
+      const { attempts, ...rest } = q;
+      return {
+        ...rest,
+        stats: { attemptsCount, successRate, variantDescription },
+        options: Array.isArray(q.options) ? q.options.map(opt => String(opt ?? "")) : (q.type === 'MCQ' ? [] : null)
+      };
+    });
   } catch (err) {
     console.error("❌ Failed to fetch questions for review:", err);
   }
@@ -68,43 +91,6 @@ export default async function QuestionReviewPage({ searchParams }) {
 
             <ReviewList initialQuestions={questions} isViewOnly={isApprovedFilter} />
           </main>
-
-          {blueprintData && (
-            <aside className="w-full lg:w-80 shrink-0">
-              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm sticky top-8 space-y-6">
-                <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-50 pb-4">
-                  Pedagogical Blueprint
-                </h3>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-2">Mandatory Phrasing</p>
-                    <div className="space-y-2">
-                      {blueprintData.blueprint.split(/(?<=[.!?])\s+/).map((sentence, idx) => (
-                        <p 
-                          key={idx} 
-                          className={`text-sm font-bold text-slate-700 leading-snug italic border-l-4 pl-3 py-2 pr-2 rounded-r-xl transition-colors ${
-                            idx % 2 === 0 
-                              ? 'bg-blue-50/50 border-blue-200' 
-                              : 'bg-slate-50/50 border-slate-200'
-                          }`}
-                        >
-                          {sentence}
-                        </p>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-2">Required Vocabulary</p>
-                    <div className="flex flex-wrap gap-1">
-                      {blueprintData.vocabulary.map(v => (
-                        <span key={v} className="px-2 py-1 bg-slate-50 border border-slate-100 text-slate-600 text-[9px] font-black uppercase rounded-lg">{v}</span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </aside>
-          )}
         </div>
       </div>
     </div>

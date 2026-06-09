@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import VisualRenderer from '@/components/gym/VisualRenderer';
+import VisualRenderer from '@/components/math/VisualRenderer';
 import { normalizeQuestionData, deriveVisualProps } from '@/lib/intelligence/workout-utils';
 
 export default function ArenaSession({ studentId, level, examPaper, durationMinutes }) {
@@ -27,6 +28,21 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
   const visualProps = useMemo(() => {
     return deriveVisualProps(normalizedQuestion);
   }, [normalizedQuestion]);
+
+  const hasValidatedToken = React.useRef(false);
+
+  // 🛡️ Forward-Button & Deep-Link Guard
+  useEffect(() => {
+    if (hasValidatedToken.current) return;
+
+    if (sessionStorage.getItem('allow_workout') !== 'true') {
+      console.warn("Unauthorized/Stale entry detected. Redirecting to dashboard.");
+      window.location.replace('/math');
+      return;
+    }
+    hasValidatedToken.current = true;
+    sessionStorage.removeItem('allow_workout');
+  }, []);
 
   // Global Countdown Controller
   useEffect(() => {
@@ -120,12 +136,12 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
         <div className="pt-8 border-t-4 border-black">
           <p className="text-sm text-slate-500 mb-8">Performance data has been synchronized with the master synapse map. Repaired pathways will be reflected on the dashboard.</p>
           
-          <Link 
-            href="/gym"
+          <button 
+            onClick={() => router.replace('/math')}
             className="inline-block bg-black text-white px-12 py-4 text-xl font-black tracking-widest hover:bg-slate-800 transition-all border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] active:shadow-none active:translate-x-1 active:translate-y-1"
           >
             Exit Arena →
-          </Link>
+          </button>
         </div>
       </div>
     );

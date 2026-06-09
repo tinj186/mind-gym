@@ -60,11 +60,18 @@ export async function getDailyWorkout(studentId, primaryLevel, options = { mode:
 
   if (options?.mode === 'isolation' && options?.subtopicId) {
     // STRICT TARGETING: Fetch 10 questions exclusively matching this subtopic ID
+    
+    // Capitalize difficulty from URL (e.g., 'foundation' -> 'Foundation')
+    const difficultyFilter = options.difficulty 
+      ? options.difficulty.charAt(0).toUpperCase() + options.difficulty.slice(1) 
+      : undefined;
+
     const questions = await prisma.questionBank.findMany({
       where: {
         level: primaryLevel,
         isApproved: true,
-        subtopic: options.subtopicId // Correctly mapped to the 'subtopic' field in QuestionBank schema
+        subtopic: options.subtopicId,
+        ...(difficultyFilter ? { difficulty: difficultyFilter } : {})
       },
       take: 10
     });

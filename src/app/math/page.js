@@ -1,6 +1,6 @@
-import GymQuestionPreviewClient from '@/components/gym/GymQuestionPreviewClient';
+import GymQuestionPreviewClient from '@/components/math/GymQuestionPreviewClient';
 // Import your normal student workout/gym view component as well
-import StudentGymView from '@/components/gym/StudentGymView'; 
+import StudentGymView from '@/components/math/StudentGymView'; 
 
 export const dynamic = 'force-dynamic';
 

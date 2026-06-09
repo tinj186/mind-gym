@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import VisualRenderer from '@/components/gym/VisualRenderer';
+import VisualRenderer from '@/components/math/VisualRenderer';
 import { normalizeQuestionData, deriveVisualProps } from '@/lib/intelligence/workout-utils';
 
 /**

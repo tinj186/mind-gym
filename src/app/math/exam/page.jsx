@@ -10,7 +10,7 @@ export default async function MockExamPage() {
   });
 
   if (!profile?.primaryLevel) {
-    redirect('/gym');
+    redirect('/math');
   }
 
   // Fetch exam questions matching the student's level, categorized by exam formatting sections

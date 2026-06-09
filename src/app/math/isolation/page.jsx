@@ -71,7 +71,7 @@ export default async function IsolationLabPage() {
               </div>
 
               <Link 
-                href={`/gym/workout?mode=isolation&subtopic=${encodeURIComponent(track.subTopicId)}`}
+                href={`/math/workout?mode=isolation&subtopic=${encodeURIComponent(track.subTopicId)}`}
                 className="mt-6 block text-center bg-slate-900 text-white py-3 text-xs font-black uppercase tracking-wider border-2 border-black hover:bg-slate-800 active:scale-95 transition-all"
               >
                 Fire Up Isolation Chamber →

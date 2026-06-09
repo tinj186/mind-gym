@@ -1,5 +1,7 @@
 import { prisma } from '@/lib/db';
 import { NextResponse } from 'next/server';
+import { SYLLABUS_DATA } from '@/lib/syllabus';
+import { blueprintRegistry } from '@/lib/syllabus/index';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,14 +24,36 @@ export async function GET(req) {
   try {
     const questions = await prisma.questionBank.findMany({ 
       where,
-      orderBy: { createdAt: 'desc' } // Ensure newest generations appear at the top
+      orderBy: { createdAt: 'desc' }, // Ensure newest generations appear at the top
+      include: {
+        attempts: {
+          select: { isCorrect: true }
+        }
+      }
     });
     
     // Ensure MCQ options are always strings to prevent UI crashes (opt.includes is not a function)
-    const sanitized = questions.map(q => ({
-      ...q,
-      options: Array.isArray(q.options) ? q.options.map(opt => (opt === null || opt === undefined) ? "" : String(opt)) : (q.type === 'MCQ' ? [] : null)
-    }));
+    const sanitized = questions.map(q => {
+      const attemptsCount = q.attempts?.length || 0;
+      const correctCount = q.attempts?.filter(a => a.isCorrect).length || 0;
+      const successRate = attemptsCount > 0 ? Math.round((correctCount / attemptsCount) * 100) : 0;
+      
+      let variantDescription = null;
+      if (q.heuristic) {
+        const blueprintId = `${q.level}-${q.topic}-${q.subtopic}`;
+        const blueprint = blueprintRegistry[blueprintId];
+        if (blueprint && blueprint.variants && blueprint.variants[q.heuristic]) {
+          variantDescription = blueprint.variants[q.heuristic];
+        }
+      }
+
+      const { attempts, ...rest } = q;
+      return {
+        ...rest,
+        stats: { attemptsCount, successRate, variantDescription },
+        options: Array.isArray(q.options) ? q.options.map(opt => (opt === null || opt === undefined) ? "" : String(opt)) : (q.type === 'MCQ' ? [] : null)
+      };
+    });
 
     return NextResponse.json(sanitized);
   } catch (error) {

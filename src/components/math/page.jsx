@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db';
 import { SYLLABUS_DATA } from '@/lib/syllabus';
-import DivisionBadge from '@/components/gym/DivisionBadge';
-import MathDashboardClient from '@/components/gym/MathDashboardClient';
+import DivisionBadge from '@/components/math/DivisionBadge';
+import MathDashboardClient from '@/components/math/MathDashboardClient';
 
 export default async function MathWingDashboard() {
   // Placeholder for session-based student selection

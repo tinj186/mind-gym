@@ -34,7 +34,6 @@ const nextConfig = {
 
   // 4. Reduce Background Noise/Telemetry for Network Storage
   devIndicators: {
-    appIsrStatus: false,
   },
 };
 

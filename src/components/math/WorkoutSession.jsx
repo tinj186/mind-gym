@@ -1,17 +1,18 @@
 "use client";
 
 import { useState, useEffect, useTransition, useMemo, useCallback } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { finalizeWorkoutAction, updateWorkoutProgressAction, saveAttemptAction } from '@/app/actions/workoutActions';
 import { normalizeQuestionData, deriveVisualProps } from '@/lib/intelligence/workout-utils';
-import VisualRenderer, { ESSENTIAL_VISUALS } from '@/components/gym/VisualRenderer';
+import VisualRenderer, { ESSENTIAL_VISUALS } from '@/components/math/VisualRenderer';
 import GroupingWorkspace from '@/components/tools/GroupingWorkspace'; // Import the interactive tool
 import confetti from 'canvas-confetti';
 
-export default function WorkoutSession({ studentId, level, initialQuestions = [], initialIndex = 0, initialLog = [], title = "Daily Training Sequence" }) {
+export default function WorkoutSession({ studentId, level, initialQuestions = [], initialIndex = 0, initialLog = [], title = "Daily Training Sequence", mode = "daily", subtopicId }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [answersLog, setAnswersLog] = useState(initialLog);
-  const [startTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   const [attempts, setAttempts] = useState(0);
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
@@ -59,6 +60,22 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
     normalizedQuestion?.visualEngine?.isEssential !== false &&
     normalizedQuestion?.metadata?.isScaffold !== true
   ) && hasVisualContent;
+
+  const hasValidatedToken = React.useRef(false);
+
+  // 🛡️ Forward-Button & Deep-Link Guard
+  useEffect(() => {
+    if (hasValidatedToken.current) return;
+    
+    if (sessionStorage.getItem('allow_workout') !== 'true') {
+      console.warn("Unauthorized/Stale entry detected. Redirecting to dashboard.");
+      window.location.replace('/math');
+      return;
+    }
+    hasValidatedToken.current = true;
+    // Consume the token immediately so a refresh/forward action kicks them out
+    sessionStorage.removeItem('allow_workout');
+  }, []);
 
   // Injecting Console Debugger
   useEffect(() => {
@@ -121,6 +138,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
     const newLog = [...answersLog, result];
     setAnswersLog(newLog);
     setAttempts(0);
+    setStartTime(Date.now());
     setShowHint(false);
     setShowSolution(false);
     setShowBarModel(false);
@@ -135,7 +153,9 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
           localStorage.setItem(`active_workout_${studentId}`, JSON.stringify({
             initialQuestions,
             currentIndex: nextIndex,
-            answersLog: newLog
+            answersLog: newLog,
+            mode,
+            subtopicId
           }));
         }
       } catch (e) { console.error("Real-time save failed:", e); }
@@ -224,7 +244,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
             🏆 RANK UP! Next Tier Unlocked.
           </motion.div>
         )}
-        <button onClick={() => window.location.href = '/gym'} className="px-12 py-4 bg-slate-900 text-white rounded-full font-black">Finish Training</button>
+        <button onClick={() => window.location.replace('/math')} className="px-12 py-4 bg-slate-900 text-white rounded-full font-black">Finish Training</button>
       </div>
     );
   }
@@ -238,7 +258,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
         <p className="text-slate-400">We couldn't find enough exercises for your current level.</p>
         <div className="flex gap-4 justify-center pt-4">
           <button onClick={() => window.location.reload()} className="px-8 py-3 bg-blue-600 text-white rounded-full font-black text-sm hover:bg-blue-700 transition-colors">↻ Retry Load</button>
-          <button onClick={() => window.location.href = '/gym'} className="px-8 py-3 bg-slate-100 text-slate-600 rounded-full font-black text-sm hover:bg-slate-200 transition-colors">Exit Arena</button>
+          <button onClick={() => window.location.replace('/math')} className="px-8 py-3 bg-slate-100 text-slate-600 rounded-full font-black text-sm hover:bg-slate-200 transition-colors">Exit Arena</button>
         </div>
       </div>
     );
@@ -310,14 +330,30 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
           )}
 
           {feedback !== 'solution_revealed' ? (
-            <input 
-              key={`input-${currentIndex}-${attempts}`}
-              autoFocus
-              onKeyDown={(e) => e.key === 'Enter' && handleAnswer(e.target.value)}
-              className="w-full text-4xl font-black p-8 bg-slate-50 rounded-3xl outline-none text-center"
-              placeholder="?"
-              disabled={feedback === 'correct'}
-            />
+            normalizedQuestion.options && normalizedQuestion.options.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                {normalizedQuestion.options.map((opt, idx) => (
+                  <button
+                    key={idx}
+                    disabled={feedback === 'correct'}
+                    onClick={() => handleAnswer(opt.replace(/^[A-D]:\s*/, '').trim())}
+                    className="text-left p-6 border-4 border-slate-200 rounded-2xl text-xl font-black transition-all hover:border-slate-900 hover:bg-slate-50 active:scale-95 disabled:opacity-50"
+                  >
+                    <span className="inline-block w-8 h-8 rounded-full border-2 border-slate-900 text-center leading-7 mr-4 text-sm">{['A','B','C','D'][idx] || idx + 1}</span>
+                    {opt.replace(/^[A-D]:\s*/, '')}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <input 
+                key={`input-${currentIndex}-${attempts}`}
+                autoFocus
+                onKeyDown={(e) => e.key === 'Enter' && handleAnswer(e.target.value)}
+                className="w-full text-4xl font-black p-8 bg-slate-50 rounded-3xl outline-none text-center"
+                placeholder="?"
+                disabled={feedback === 'correct'}
+              />
+            )
           ) : (
             <button
               onClick={() => {

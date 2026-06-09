@@ -1,42 +1,68 @@
-'use client';
-
 import Link from 'next/link';
+import { getStudentStatsAction } from '@/app/actions/statsActions';
+import { prisma } from '@/lib/db';
+import { getThemeForLevel } from '@/lib/LevelThemeConfig';
 
-export default function OverallView() {
-  const subjects = [
-    {
-      id: 'math',
-      name: 'Mathematics',
-      icon: '📐',
-      status: 'Active',
-      progress: 68,
-      lastSession: '2 hours ago',
-      color: 'blue'
-    },
-    {
-      id: 'science',
-      name: 'Science',
-      icon: '🧪',
-      status: 'Coming Soon',
-      progress: 0,
-      lastSession: 'N/A',
-      color: 'slate'
-    },
-    {
-      id: 'english',
-      name: 'English',
-      icon: '📚',
-      status: 'Coming Soon',
-      progress: 0,
-      lastSession: 'N/A',
-      color: 'slate'
-    }
-  ];
+function timeAgo(dateInput) {
+  if (!dateInput) return 'N/A';
+  
+  const date = new Date(dateInput);
+  const seconds = Math.floor((new Date() - date) / 1000);
+  
+  let interval = seconds / 31536000;
+  if (interval > 1) return Math.floor(interval) + " years ago";
+  
+  interval = seconds / 2592000;
+  if (interval > 1) return Math.floor(interval) + " months ago";
+  
+  interval = seconds / 86400;
+  if (interval > 1) return Math.floor(interval) + " days ago";
+  
+  interval = seconds / 3600;
+  if (interval > 1) return Math.floor(interval) + " hours ago";
+  
+  interval = seconds / 60;
+  if (interval > 1) return Math.floor(interval) + " minutes ago";
+  
+  return Math.floor(seconds) + " seconds ago";
+}
+
+export default async function OverallView() {
+  const studentId = "default-student";
+  let stats;
+  
+  try {
+    stats = await getStudentStatsAction(studentId);
+  } catch (error) {
+    stats = { avgStrength: 0, recentLogs: [] };
+  }
+
+  const profile = await prisma.studentProfile.findUnique({ where: { id: studentId } });
+  const currentLevel = profile?.primaryLevel || "";
+  const theme = getThemeForLevel(currentLevel);
+
+  const lastLogDate = stats?.recentLogs?.[0]?.createdAt;
+  const lastSessionText = lastLogDate ? timeAgo(lastLogDate) : 'Never practiced';
+  const progressScore = stats?.summary?.avgStrength || 0;
+
+  const subject = {
+    id: 'math',
+    name: 'Mathematics',
+    icon: '📐',
+    status: 'Active',
+    progress: progressScore,
+    lastSession: lastSessionText,
+    color: 'blue'
+  };
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
+      <header className="max-w-7xl mx-auto px-6 pt-8 flex justify-end">
+        <Link href="/parent" className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-colors shadow-md">
+          <span>👨‍👩‍👧‍👦</span> Parent Command Center
+        </Link>
+      </header>
       <main className="max-w-7xl mx-auto px-6 py-12">
-        
         {/* Welcome Section */}
         <section className="mb-12">
           <h1 className="text-4xl font-black text-slate-900 tracking-tight">THE TRAINING GROUND</h1>
@@ -45,56 +71,42 @@ export default function OverallView() {
 
         {/* Subjects Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {subjects.map((subject) => (
-            <div 
-              key={subject.id}
-              className={`group relative bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm transition-all ${
-                subject.status === 'Active' ? 'hover:shadow-xl hover:border-blue-200 cursor-pointer' : 'opacity-60 cursor-not-allowed'
-              }`}
-            >
-              <div className="flex justify-between items-start mb-6">
-                <div className="text-4xl bg-slate-50 w-16 h-16 flex items-center justify-center rounded-2xl group-hover:bg-blue-50 transition-colors">
-                  {subject.icon}
-                </div>
-                <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${
-                  subject.status === 'Active' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-slate-100 text-slate-400 border-slate-200'
-                }`}>
-                  {subject.status}
-                </span>
+          <div 
+            key={subject.id}
+            className={`group relative p-8 rounded-[2.5rem] border border-slate-200 shadow-sm transition-all hover:shadow-xl cursor-pointer ${theme === getThemeForLevel('Primary 6') ? 'bg-slate-900 text-slate-100 hover:border-amber-500' : 'bg-white hover:border-sky-200'}`}
+          >
+            <div className="flex justify-between items-start mb-6">
+              <div className={`text-4xl w-16 h-16 flex items-center justify-center rounded-2xl transition-colors ${theme === getThemeForLevel('Primary 6') ? 'bg-slate-800 group-hover:bg-slate-700' : 'bg-slate-50 group-hover:bg-sky-50'}`}>
+                {subject.icon}
               </div>
-
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">{subject.name}</h2>
-              <p className="text-sm text-slate-400 mb-8">
-                {subject.status === 'Active' ? `Last session: ${subject.lastSession}` : 'Enrollment currently closed'}
-              </p>
-
-              {/* Progress Bar (Visible for Active) */}
-              {subject.status === 'Active' && (
-                <div className="space-y-3">
-                  <div className="flex justify-between items-end">
-                    <span className="text-xs font-bold text-slate-500 uppercase">Synapse Strength</span>
-                    <span className="text-lg font-black text-blue-600">{subject.progress}%</span>
-                  </div>
-                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                    <div 
-                      className="bg-blue-600 h-full rounded-full transition-all duration-1000"
-                      style={{ width: `${subject.progress}%` }}
-                    />
-                  </div>
-                  <Link href="/gym">
-                    <button className="w-full mt-6 bg-slate-900 text-white py-4 rounded-2xl font-bold group-hover:bg-blue-600 transition-all">
-                      Open Wing →
-                    </button>
-                  </Link>
-                </div>
-              )}
+              <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${theme === getThemeForLevel('Primary 6') ? 'bg-slate-800 text-amber-500 border-amber-500/30' : 'bg-sky-50 text-sky-600 border-sky-100'}`}>
+                {subject.status}
+              </span>
             </div>
-          ))}
 
-          {/* New Subject Placeholder */}
-          <div className="border-2 border-dashed border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center p-8 text-center text-slate-300">
-            <div className="text-3xl mb-2">+</div>
-            <p className="text-sm font-bold uppercase tracking-widest">Request Wing</p>
+            <h2 className="text-2xl font-bold mb-2">{subject.name}</h2>
+            <p className="text-sm opacity-60 mb-8">
+              Last session: {subject.lastSession}
+            </p>
+
+            {/* Progress Bar (Visible for Active) */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-end">
+                <span className="text-xs font-bold uppercase opacity-60">Synapse Confidence</span>
+                <span className={`text-lg font-black ${theme.primaryColor}`}>{subject.progress}%</span>
+              </div>
+              <div className={`w-full h-2 rounded-full overflow-hidden ${theme === getThemeForLevel('Primary 6') ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                <div 
+                  className={`${theme.primaryBg} h-full rounded-full transition-all duration-1000`}
+                  style={{ width: `${subject.progress}%` }}
+                />
+              </div>
+              <Link href="/math">
+                <button className={`w-full mt-6 py-4 rounded-2xl font-bold transition-all cursor-pointer ${theme === getThemeForLevel('Primary 6') ? 'bg-amber-500 text-slate-900 hover:bg-amber-400' : 'bg-slate-900 text-white hover:bg-sky-600'}`}>
+                  Open Wing →
+                </button>
+              </Link>
+            </div>
           </div>
         </div>
       </main>

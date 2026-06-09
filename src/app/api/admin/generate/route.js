@@ -4,150 +4,15 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getBestModel, modelCooldowns, COOLDOWN_MS, refreshModelPriority, modelPriorityList, getDynamicDelays } from '@/lib/ai-config';
 import { SYLLABUS_DATA } from '@/lib/syllabus';
 import { getGeneratedQuestion, blueprintRegistry } from '@/lib/syllabus/index.js';
-import { UniversalQuestionSchema } from './questionSchema';
+import { 
+  getSyllabusPrompt, 
+  getBaseSystemInstructions, 
+  parseAiResponse, 
+  processAiQuestion 
+} from '@/lib/intelligence/generation-utils';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const AI_TIMEOUT_MS = 25000;
-
-/**
- * Builds a specialized prompt for the AI based on Singapore MOE Syllabus constraints.
- */
-function getSyllabusPrompt(quantity, level, strand, topic, subtopic, heuristic, difficulty, type, blueprintData) {
-  const p1Constraints = level === 'Primary 1' ? `
-    - Sentences must be extremely short (maximum 10-12 words per sentence).
-    - Use simple, active-voice sentence structures (e.g., "Siti has 5 apples. She gives 2 apples to Bala. How many apples are left?"). 
-    - Avoid complex multi-clause sentences or advanced conjunctions.
-    - Frame hints around concrete, visual items or actions (e.g., "Try counting the items in a group!", "Think about what happens when some items are given away!").
-    - Avoid abstract math vocabulary for lower grades (avoid technical terms like "subtract", "variable", "equation", "operation").
-    - Solutions must use straightforward step structures centered around visual models like "Number Bonds" or simple groups (e.g., "Step 1: Count the total blocks. Step 2: Take away 3 blocks.").` : '';
-
-  const systemPrompt = `
-You are an expert primary school math content generator specializing in the Singapore Math curriculum.
-You are generating content strictly for a student at the following educational level: ${level}.
-
-CRITICAL READABILITY CONSTRAINTS:
-- You MUST adapt your entire tone, vocabulary, and sentence length to match a student at the ${level} tier.${p1Constraints}
-- If the level is 'Primary 1', use short, punchy sentences. Do not use advanced words. Stick closely to the provided vocabulary terms.
-- The question must read like a friendly, clear, level-appropriate word problem.
-
-HINT GENERATION RULES:
-- Never give away the answer.
-- Provide a guiding hint using scaffolded, simple phrasing appropriate for a ${level} child.
-- Avoid abstract math vocabulary for lower grades. Use concrete object imagery (e.g., apples, blocks, toys).
-
-SOLUTION STEP RULES:
-- Break down the solution step-by-step.
-- Use primary school methodologies (like parts-and-whole or number bonds for Primary 1) to explain the math logically and clearly.
-- Keep calculation breakdowns clean, minimal, and fully explained with elementary phrasing.
-- Format each step strictly as a numbered list: "1. [Step description]", "2. [Step description]", etc. Each step MUST start on a new line (use the \n character).
-`;
-
-  const instructions = [];
-  instructions.push(`DIFFICULTY TIERS (Singapore MOE Style):
-    - Foundation: Basic mastery. Direct computation, single-step logic.
-    - Standard: Grade level expectation. Multi-step word problems.
-    - Advanced: Complex logic, high-order heuristics, or non-routine integration.`);
-
-  if (blueprintData) {
-    instructions.push(`MANDATORY BLUEPRINT: ${blueprintData.blueprint}`);
-    instructions.push(`MANDATORY VOCABULARY: Use these words: ${blueprintData.vocabulary.join(', ')}`);
-    instructions.push(`VISUAL STRATEGY: Ensure modelData uses ${blueprintData.visualType} logic.`);
-  }
-
-  return `
-    ${systemPrompt}
-    Output ONLY raw, valid JSON array. Do NOT include conversational text.
-    Generate ${quantity} new math questions for ${level} based on:
-    - Topic: ${topic}
-    - Sub-topic: ${subtopic}
-    - Difficulty: ${difficulty}
-    - Type: ${type}
-
-    Logical Integrity:
-    - Zero-Correction Policy: Finalize all logic internally before starting the JSON block.
-    - Ordinal Guardrail: If items are removed, the target item MUST remain in the list.
-    - Division Guardrail: Ensure total items are perfectly divisible by group size.
-
-    Output Format (JSON array of objects):
-    {
-      "question": "string",
-      "options": ${type === 'MCQ' ? '["A: ...", "B: ...", "C: ...", "D: ..."]' : 'null'},
-      "visualItems": "array of 5-8 emojis",
-      "modelData": object,
-      "solution": "step-by-step mathematical explanation formatted strictly as a numbered list (1. ..., 2. ..., 3. ...) with explicit \\n characters between steps",
-      "finalAnswer": "string or JSON object",
-      "hint": "MANDATORY: Provide a conceptual scaffolding hint (do NOT include the answer or specific numbers)",
-      "context": {
-        "item": "string name",
-        "icon": "string emoji"
-      }
-    }`.trim();
-}
-
-/**
- * Robustly extracts and parses JSON from AI response text, handling markdown blocks.
- */
-function parseAiResponse(text) {
-  try {
-    // Look for content between ```json and ``` blocks first
-    const jsonBlockMatch = text.match(/```json\s*([\s\S]*?)\s*```/);
-    let jsonText = jsonBlockMatch ? jsonBlockMatch[1] : text;
-    // Find the outer-most JSON delimiters to handle conversational noise and multiple structures    
-    const firstBrace = jsonText.indexOf('{');
-    const firstBracket = jsonText.indexOf('[');
-    const lastBrace = jsonText.lastIndexOf('}');
-    const lastBracket = jsonText.lastIndexOf(']');
-    let start = -1;
-    let end = -1;
-
-    // Determine if we are parsing an array or an object based on which comes first
-    if (firstBracket !== -1 && (firstBrace === -1 || firstBracket < firstBrace)) {
-      start = firstBracket;
-      end = lastBracket;
-    } else if (firstBrace !== -1) {
-      start = firstBrace;
-      end = lastBrace;
-    }
-
-    if (start !== -1 && end !== -1) {
-      jsonText = jsonText.substring(start, end + 1);
-    }
-    if (!jsonText) throw new Error("Empty JSON block");
-
-    return JSON.parse(jsonText);
-  } catch (e) {
-    console.error("Failed to parse AI JSON. Error:", e.message, "Raw text:", text);
-    throw new Error(`AI returned invalid JSON format: ${e.message}`);
-  }
-}
-
-/**
- * Safely parses the 'options' field from AI response, handling stringified JSON or "null" strings.
- * @param {*} optionsData The raw options data from the AI response.
- * @returns {Array|null} Parsed options array or null.
- */
-function parseAiOptions(optionsData) {
-  let parsed = optionsData;
-  if (typeof optionsData === 'string') {
-    try {
-      parsed = JSON.parse(optionsData);
-    } catch (e) {
-      return null; // Fallback if parsing fails (e.g., "null" string or invalid JSON string)
-    }
-  }
-
-  if (Array.isArray(parsed)) {
-    return parsed.map(opt => {
-      if (opt === null || opt === undefined) return "";
-      if (typeof opt === 'object' && opt !== null) {
-        // Handle cases where AI returns {"text": "...", "label": "A"}
-        return opt.text || opt.value || opt.label || JSON.stringify(opt);
-      }
-      return String(opt);
-    });
-  }
-  return null;
-}
 
 export async function POST(request) {
   try {
@@ -158,110 +23,12 @@ export async function POST(request) {
     const subject = metadata?.subject || 'Math';
     const gradeLevel = level === 'Primary 1' ? 'P1' : level;
 
-    // Prepare age-appropriate system instructions
-    const p1Constraints = level === 'Primary 1' ? `
-    - Sentences must be extremely short (maximum 10-12 words per sentence).
-    - Use simple, active-voice sentence structures.
-    - Avoid technical math terms in hints (avoid "subtract", "variable", "equation").
-    - Solutions must use straightforward step structures centered around visual models like "Number Bonds".` : '';
-
-    const baseSystemInstructions = `
-You are an expert primary school math content generator specializing in the Singapore Math curriculum.
-You are generating content strictly for a student at the following educational level: ${level}.
-
-CRITICAL READABILITY CONSTRAINTS:
-- You MUST adapt your entire tone, vocabulary, and sentence length to match a student at the ${level} tier.${p1Constraints}
-- If the level is 'Primary 1', use short, punchy sentences. Do not use advanced words.
-- The question must read like a friendly, clear, level-appropriate word problem.
-
-HINT GENERATION RULES:
-- Never give away the answer.
-- Provide a guiding hint using scaffolded, simple phrasing appropriate for a ${level} child.
-- Avoid abstract math vocabulary for lower grades. Use concrete object imagery.
-- Format solution steps strictly as a numbered list: "1. ..., 2. ..., 3. ...". Each step MUST start on a new line (use the \\n character).
-`;
-
-    // Safety guard: ensures componentData is always a plain object before spreading.
-    // If the AI returns componentData as a string, spreading it would create { 0: "N", 1: "u", ... }
-    // which causes the "spread-out alphabet" grid rendering bug.
-    const sanitizeComponentData = (data) => {
-      if (data === null || data === undefined) return {};
-      if (typeof data === 'object' && !Array.isArray(data)) return data;
-      return {}; // Discard strings, arrays, or any non-plain-object value
-    };
-
-    const safeMapToSchema = (q) => {
-      // Determine if we are processing raw AI output (Nested) or pre-flattened push object
-      const isRawAI = !!(q.meta || q.content || q.visualEngine);
-
-      let prismaModelData = q.modelData || null;
-
-      // TRANSFORM: Map visualEngine to modelData, respecting blueprint-level overrides
-      if (isRawAI && q.visualEngine) {
-        prismaModelData = {
-          type: q.visualEngine.componentToRender,
-          ...q.visualEngine.componentData,
-          // AUDIT FIX: Prefer q.modelData.hideVisual (the blueprint decision) over AI defaults
-          hideVisual: q.modelData?.hideVisual ?? q.visualEngine.componentData?.hideVisual ?? (q.visualEngine.componentToRender === 'NONE')
-        };
-      }
-
-      const formatValue = (val) => {
-        if (Array.isArray(val)) return val.join('\n');
-        if (typeof val === 'object' && val !== null) return JSON.stringify(val);
-        return String(val || "");
-      };
-
-      return {
-        subject: q.subject || q.meta?.subject || subject || 'Math',
-        strand: q.strand || q.meta?.strand || strand || 'Number and Algebra',
-        level: q.level || q.meta?.level || level || 'Primary 1',
-        gradeLevel: q.gradeLevel || q.meta?.gradeLevel || gradeLevel || 'P1',
-        heuristic: q.heuristic || q.meta?.heuristic || heuristic || 'Standard',
-        topic: q.topic || q.meta?.topic || topic || 'Whole Numbers',
-        subtopic: q.subtopic || q.meta?.subtopic || subtopic || '',
-        type: q.type || q.meta?.type || type || 'Short Question',
-        difficulty: q.difficulty || q.meta?.difficulty || difficulty || 'Foundation',
-        question: formatValue(q.content?.questionText || q.questionText || q.question || 'Missing question text'),
-        options: (() => {
-          let opts = q.content?.options || q.options || null;
-          if (opts === null) return null;
-
-          let processedOpts = [];
-          if (Array.isArray(opts)) {
-            processedOpts = opts.map(opt => {
-              if (opt === null || opt === undefined) return "";
-              if (typeof opt === 'object' && opt !== null) {
-                return opt.text || opt.value || opt.label || JSON.stringify(opt);
-              }
-              return String(opt);
-            });
-          } else if (typeof opts === 'string') {
-            const parsed = parseAiOptions(opts); // parseAiOptions already handles stringification
-            if (parsed && Array.isArray(parsed)) {
-              processedOpts = parsed;
-            }
-          }
-          // Deduplicate the options
-          return processedOpts.length > 0 ? [...new Set(processedOpts)] : null;
-        })(),
-        modelData: prismaModelData ? JSON.parse(JSON.stringify(prismaModelData)) : null,
-        // AUDIT FIX: Ensure visualItems (emojis) are mapped even if nested inside modelData
-        visualItems: q.visualItems || prismaModelData?.items || null,
-        hint: q.content?.hint || q.hint || q.conceptualHint || q.content?.conceptualHint || null,
-        solution: formatValue(q.content?.solutionSteps || q.solutionSteps || q.solution || 'Missing solution steps'),
-        finalAnswer: String(q.content?.finalAnswer ?? q.finalAnswer ?? ''),
-        isApproved: false
-      };
-    };
+    const baseSystemInstructions = getBaseSystemInstructions(level);
 
     let parsedQuestions = [];
 
-    // --- PATH 1: HYBRID GENERATION (Blueprint Logic + AI Creativity) ---
     const count = Math.min(quantity || 1, 10);
-
     const safeDifficulty = String(difficulty || "foundation").toLowerCase();
-    // Bulletproof case-insensitive matching to guarantee the blueprint is found
     const safeSubtopic = String(subtopic || "").trim().toLowerCase();
     const blueprintId = `${level}-${topic}-${subtopic}`;
     const blueprintMeta = blueprintRegistry[blueprintId] || Object.values(blueprintRegistry).find(bp => String(bp.title).toLowerCase() === safeSubtopic);
@@ -269,7 +36,6 @@ HINT GENERATION RULES:
     let blueprintResult = null;
     if (blueprintMeta && typeof blueprintMeta.generate === 'function') {
       try {
-        // Test generation to confirm the blueprint is valid
         blueprintResult = blueprintMeta.generate(safeDifficulty, variant, type);
       } catch (e) {
         console.warn("Blueprint valid check failed:", e);
@@ -277,12 +43,9 @@ HINT GENERATION RULES:
     }
 
     if (blueprintResult && blueprintResult.aiPrompt) {
+      // --- PATH 1: HYBRID GENERATION (Blueprint Logic + AI Creativity) ---
       for (let i = 0; i < count; i++) {
-
-        // --- DYNAMIC VARIANT RANDOMIZATION ---
         let loopVariant = variant;
-        // The engine (not the AI) must select the variant logic. 
-        // We re-roll if the variant is generic ('visual_line'), missing from the blueprint, or belongs to a different difficulty tier.
         const isGeneric = variant === 'visual_line' || !variant;
         const isValidForTier = blueprintMeta?.variants?.hasOwnProperty(variant) && variant.startsWith(safeDifficulty);
 
@@ -293,12 +56,11 @@ HINT GENERATION RULES:
           }
         }
 
-        // Call the blueprint directly with the chosen variant
         const stepResult = blueprintMeta.generate(safeDifficulty, loopVariant, type);
-
         let result;
         let retries = 3;
         let currentModelId;
+
         while (retries > 0) {
           currentModelId = getBestModel();
           const model = genAI.getGenerativeModel({
@@ -309,9 +71,7 @@ HINT GENERATION RULES:
             result = await model.generateContent(baseSystemInstructions + "\n" + stepResult.aiPrompt);
             break;
           } catch (error) {
-            // Handle 503 (Busy) or 429 (Rate Limit) by rotating models
             if ((error.status === 503 || error.status === 429) && retries > 1) {
-              console.warn(`⚠️ Model ${currentModelId} busy. Cooling down and rotating...`);
               const { cooldown } = await getDynamicDelays(currentModelId);
               modelCooldowns[currentModelId] = Date.now() + cooldown;
               retries--;
@@ -325,97 +85,26 @@ HINT GENERATION RULES:
           const aiBatch = Array.isArray(aiResponse) ? aiResponse : [aiResponse];
 
           for (const q of aiBatch) {
-            try {
-              // THE NEW ENGINE: Try strict Zod validation first
-              const validatedData = UniversalQuestionSchema.parse(q);
-              parsedQuestions.push({
-                level, topic, subtopic: subtopic || "", heuristic: heuristic || null,
-                difficulty, gradeLevel, subject: "Math",
-                type: validatedData.meta.type === 'SHORT_QUESTION' ? 'Short Question' :
-                  validatedData.meta.type === 'STRUCTURED' ? 'Structured' :
-                    validatedData.meta.type,
-                strand: strand || blueprintMeta?.strand || "Number and Algebra",
-                isApproved: false,
-                finalAnswer: validatedData.content.finalAnswer,
-                options: validatedData.content.options || [],
-                modelData: (() => {
-                  const safeData = sanitizeComponentData(validatedData.visualEngine.componentData);
-                  return {
-                    ...safeData,
-                    type: validatedData.visualEngine.componentToRender,
-                    hideVisual: safeData?.hideVisual !== undefined 
-                      ? safeData.hideVisual 
-                      : validatedData.visualEngine.componentToRender === 'NONE',
-                    inputRequirement: validatedData.inputRequirement.inputType,
-                    finalAnswer: validatedData.content.finalAnswer,
-                    items: Array.isArray(safeData?.items) ? safeData.items : []
-                  };
-                })(),
-                question: validatedData.content.questionText,
-                solution: validatedData.content.solutionSteps,
-                hint: validatedData.content.hint || null // Corrected to use validatedData.content.hint
-              });
-            } catch (zodError) {
-              // Pull out AI-specific keys to prevent Prisma Unknown Argument errors
-              const { visualItems, modelData, questionText, solutionSteps, ...cleanQ } = q;
-
-              const prismaModelData = {
-                ...(modelData || {}),
-                type: blueprintMeta?.visualType === 'DYNAMIC' ? (modelData?.type || "NONE") : (blueprintMeta?.visualType || modelData?.type || "NONE"),
-                items: (Array.isArray(visualItems) && visualItems.length > 0) ? visualItems : (modelData?.items || []),
-                hideVisual: !!stepResult.metadata?.hideVisual || !!modelData?.hideVisual,
-              };
-              // Clean up modelData if properties are undefined
-              if (prismaModelData.type === undefined) delete prismaModelData.type;
-              if (prismaModelData.items === undefined) delete prismaModelData.items;
-              if (prismaModelData.hideVisual === undefined) delete prismaModelData.hideVisual;
-
-              parsedQuestions.push({
-                ...cleanQ,
-                level,
-                topic,
-                subtopic: subtopic || "",
-                heuristic: heuristic || null,
-                difficulty,
-                gradeLevel,
-                subject: "Math",
-                type: type === 'MCQ' ? 'MCQ' : (type.toLowerCase().includes('short') ? 'Short Question' : 'Structured'),
-                strand: strand || blueprintMeta?.strand || "Number and Algebra",
-                isApproved: false,
-                finalAnswer: typeof q.finalAnswer === 'object' ? JSON.stringify(q.finalAnswer) : String(q.finalAnswer || ""),
-                options: parseAiOptions(q.options),
-                modelData: prismaModelData,
-                question: cleanQ.question || questionText || q.question || "Problem data missing",
-                solution: cleanQ.solution || solutionSteps || q.solution || "No solution provided",
-                hint: q.content?.hint || q.hint || q.conceptualHint || q.content?.conceptualHint || null
-              });
-            }
+            const context = { level, topic, subtopic, heuristic: loopVariant, difficulty, gradeLevel, type, strand, blueprintMeta, stepResult };
+            parsedQuestions.push(processAiQuestion(q, context));
           }
         }
-        // Small stagger for safety
         if (count > 1) {
           const { stagger } = await getDynamicDelays(currentModelId);
           await new Promise(r => setTimeout(r, stagger));
         }
       }
     } else {
-      // --- PATH 2 & 3: LEGACY AI PATHS (For non-migrated topics) ---
-      // Robust matching logic to find the blueprint by subtopic title
       const blueprint = Object.values(blueprintRegistry).find(bp => bp.title === subtopic) || blueprintRegistry[`${level}-${topic}-${subtopic}`];
       if (blueprint) {
-
+        // --- PATH 3: LEGACY AI PATHS (For non-migrated topics) ---
         for (let i = 0; i < count; i++) {
-          // Fix: Variants in current blueprints (counting.js, ordinals.js) are Objects, not Arrays.
-          // We convert to entries or filter keys to avoid the .filter() crash.
           let availableVariants = Object.keys(blueprint.variants || {});
           const difficultyVariants = availableVariants.filter(v => v.startsWith(safeDifficulty));
-
-          if (difficultyVariants.length > 0) {
-            availableVariants = difficultyVariants;
-          }
+          if (difficultyVariants.length > 0) availableVariants = difficultyVariants;
+          
           const selectedVariantKey = availableVariants[Math.floor(Math.random() * availableVariants.length)];
           const variantDescription = blueprint.variants[selectedVariantKey] || "Standard variation";
-
           const formatInstruction = type === 'MCQ'
             ? "Format as MCQ. Include an 'options' array with 4 choices. 'finalAnswer' must exactly match one option."
             : "Format as Short Answer. Do not include options.";
@@ -428,11 +117,9 @@ HINT GENERATION RULES:
           let retries = 3;
           let currentModelId;
           while (retries > 0) {
-            // Select model INSIDE the retry loop to allow rotation if one is busy
             currentModelId = getBestModel();
             const model = genAI.getGenerativeModel({
               model: currentModelId,
-              // Increased temperature to 0.8 for creative variety in question selection
               generationConfig: { responseMimeType: "application/json", temperature: 0.8, maxOutputTokens: 2048 }
             }, { apiVersion: 'v1beta' });
 
@@ -440,9 +127,7 @@ HINT GENERATION RULES:
               result = await model.generateContent(baseSystemInstructions + "\n" + microPrompt);
               break;
             } catch (error) {
-              // Handle 503 (Busy) or 429 (Rate Limit) by rotating models
               if ((error.status === 503 || error.status === 429) && retries > 1) {
-                console.warn(`⚠️ Model ${currentModelId} busy. Cooling down and rotating...`);
                 const { cooldown } = await getDynamicDelays(currentModelId);
                 modelCooldowns[currentModelId] = Date.now() + cooldown;
                 retries--;
@@ -455,64 +140,8 @@ HINT GENERATION RULES:
           const aiDataBatch = Array.isArray(rawQData) ? rawQData : [rawQData];
 
           for (const q of aiDataBatch) {
-            try {
-              const validatedData = UniversalQuestionSchema.parse(q);
-              parsedQuestions.push({
-                level, topic, subtopic, heuristic: heuristic || null, difficulty, gradeLevel, subject: "Math",
-                type: validatedData.meta.type === 'SHORT_QUESTION' ? 'Short Question' :
-                  validatedData.meta.type === 'STRUCTURED' ? 'Structured' :
-                    validatedData.meta.type,
-                strand: strand || blueprint.strand || "Number and Algebra",
-                isApproved: false,
-                finalAnswer: validatedData.content.finalAnswer,
-                options: validatedData.content.options || [],
-                modelData: {
-                  ...validatedData.visualEngine.componentData,
-                  type: validatedData.visualEngine.componentToRender,
-                  hideVisual: validatedData.visualEngine.componentData?.hideVisual !== undefined
-                    ? validatedData.visualEngine.componentData.hideVisual
-                    : validatedData.visualEngine.componentToRender === 'NONE',
-                  inputRequirement: validatedData.inputRequirement.inputType,
-                  finalAnswer: validatedData.content.finalAnswer,
-                  items: validatedData.visualEngine.componentData?.items || []
-                },
-                question: validatedData.content.questionText,
-                solution: validatedData.content.solutionSteps,
-                hint: validatedData.content.hint || null // Corrected to use validatedData.content.hint
-              });
-            } catch (zodError) {
-              // Pull out AI-specific keys to prevent Prisma Unknown Argument errors
-              const { visualItems, modelData, questionText, solutionSteps, ...cleanQ } = q;
-
-              const prismaModelData = {
-                ...(modelData || {}),
-                type: blueprint.visualType === 'DYNAMIC' ? (modelData?.type || "NONE") : blueprint.visualType,
-                items: (Array.isArray(visualItems) && visualItems.length > 0) ? visualItems : (modelData?.items || []),
-                hideVisual: !!modelData?.hideVisual, // No stepResult.metadata here
-              };
-              // Clean up modelData if properties are undefined
-              if (prismaModelData.type === undefined) delete prismaModelData.type;
-              if (prismaModelData.items === undefined) delete prismaModelData.items;
-              if (prismaModelData.hideVisual === undefined) delete prismaModelData.hideVisual;
-
-              parsedQuestions.push({
-                ...cleanQ,
-                level,
-                topic,
-                subtopic: subtopic || "",
-                heuristic: heuristic || "Standard",
-                difficulty, gradeLevel, subject: "Math",
-                type: type === 'MCQ' ? 'MCQ' : (type.toLowerCase().includes('short') ? 'Short Question' : 'Structured'),
-                strand: strand || blueprint.strand || "Number and Algebra",
-                isApproved: false,
-                finalAnswer: typeof q.finalAnswer === 'object' ? JSON.stringify(q.finalAnswer) : String(q.finalAnswer || ""),
-                options: parseAiOptions(q.options),
-                modelData: prismaModelData,
-                question: cleanQ.question || questionText || q.question || "Problem data missing",
-                solution: cleanQ.solution || solutionSteps || q.solution || "No solution provided",
-                hint: q.content?.hint || q.hint || q.conceptualHint || q.content?.conceptualHint || null
-              });
-            }
+            const context = { level, topic, subtopic, heuristic, difficulty, gradeLevel, type, strand, blueprintMeta: blueprint };
+            parsedQuestions.push(processAiQuestion(q, context));
           }
           await new Promise(r => setTimeout(r, 1500));
         }
@@ -521,7 +150,6 @@ HINT GENERATION RULES:
         const levelData = SYLLABUS_DATA[level] || [];
         const topicEntry = levelData.find(t => String(t.topic).toLowerCase() === String(topic).toLowerCase());
         const blueprintData = topicEntry?.subtopics?.find(s => s.name === subtopic);
-        // Find the blueprint by matching the title to the subtopic
         const bpMeta = Object.values(blueprintRegistry).find(bp => bp.title === subtopic) || blueprintData;
 
         const systemPrompt = getSyllabusPrompt(Math.min(quantity, 3), level, strand || "Number and Algebra", topic, subtopic, heuristic, difficulty, type, blueprintData);
@@ -534,7 +162,6 @@ HINT GENERATION RULES:
           try {
             const model = genAI.getGenerativeModel({
               model: selectedModelId,
-              // Standardized temperature across both paths for consistent variety
               generationConfig: { responseMimeType: "application/json", temperature: 0.8, maxOutputTokens: 2048 }
             }, { apiVersion: 'v1beta' });
 
@@ -548,61 +175,8 @@ HINT GENERATION RULES:
             const rawQuestions = Array.isArray(rawData) ? rawData : [rawData];
 
             for (const q of rawQuestions) {
-              try {
-                const validatedData = UniversalQuestionSchema.parse(q);
-                parsedQuestions.push({
-                  level, topic, subtopic: subtopic || "", heuristic: heuristic || null,
-                  difficulty, gradeLevel, subject: "Math",
-                  type: validatedData.meta.type === 'SHORT_QUESTION' ? 'Short Question' :
-                    validatedData.meta.type === 'STRUCTURED' ? 'Structured' :
-                      validatedData.meta.type,
-                  strand: strand || bpMeta?.strand || "Number and Algebra",
-                  isApproved: false,
-                  finalAnswer: validatedData.content.finalAnswer,
-                  options: validatedData.content.options || [],
-                  modelData: {
-                    ...validatedData.visualEngine.componentData,
-                    type: validatedData.visualEngine.componentToRender,
-                    hideVisual: validatedData.visualEngine.componentData?.hideVisual !== undefined
-                      ? validatedData.visualEngine.componentData.hideVisual
-                      : validatedData.visualEngine.componentToRender === 'NONE',
-                    inputRequirement: validatedData.inputRequirement.inputType,
-                    items: validatedData.visualEngine.componentData?.items || []
-                  },
-                  question: validatedData.content.questionText,
-                  solution: validatedData.content.solutionSteps,
-                  hint: validatedData.content.hint || null // Corrected to use validatedData.content.hint
-                });
-              } catch (zodError) {
-                // Pull out AI-specific keys to prevent Prisma Unknown Argument errors
-                const { visualItems, modelData, questionText, solutionSteps, ...cleanQ } = q;
-
-                const prismaModelData = {
-                  ...(modelData || {}),
-                  type: bpMeta?.visualType === 'DYNAMIC' ? (modelData?.type || null) : (bpMeta?.visualType || modelData?.type || null),
-                  items: (Array.isArray(visualItems) && visualItems.length > 0) ? visualItems : (modelData?.items || []),
-                  hideVisual: !!modelData?.hideVisual, // No stepResult.metadata here
-                };
-                // Clean up modelData if properties are undefined
-                if (prismaModelData.type === undefined) delete prismaModelData.type;
-                if (prismaModelData.items === undefined) delete prismaModelData.items;
-                if (prismaModelData.hideVisual === undefined) delete prismaModelData.hideVisual;
-
-                parsedQuestions.push({
-                  ...cleanQ,
-                  level, topic, subtopic: subtopic || "", heuristic: heuristic || null,
-                  difficulty, gradeLevel, subject: "Math",
-                  type: type === 'MCQ' ? 'MCQ' : (type.toLowerCase().includes('short') ? 'Short Question' : 'Structured'),
-                  strand: strand || bpMeta?.strand || "Number and Algebra",
-                  isApproved: false,
-                  finalAnswer: typeof q.finalAnswer === 'object' ? JSON.stringify(q.finalAnswer) : String(q.finalAnswer),
-                  options: parseAiOptions(q.options),
-                  modelData: prismaModelData,
-                  question: cleanQ.question || questionText || q.question || "Problem data missing",
-                  solution: cleanQ.solution || solutionSteps || q.solution || "No solution provided",
-                  hint: q.content?.hint || q.hint || q.conceptualHint || q.content?.conceptualHint || null
-                });
-              }
+              const context = { level, topic, subtopic, heuristic, difficulty, gradeLevel, type, strand, blueprintMeta: bpMeta };
+              parsedQuestions.push(processAiQuestion(q, context));
             }
             if (parsedQuestions.length > 0) break;
             break;
@@ -618,19 +192,9 @@ HINT GENERATION RULES:
     }
 
     if (parsedQuestions.length > 0) {
-      // 1. Map all questions (New or Old style) to the flat Schema
-      const finalData = parsedQuestions
-        .filter(q => q !== null) // Safety filter
-        .map(safeMapToSchema);
-
-      // 2. Perform a SINGLE database insertion
+      const finalData = parsedQuestions.filter(q => q !== null);
       await prisma.questionBank.createMany({ data: finalData });
-
-      // 3. Return the success response
-      return NextResponse.json({
-        success: true,
-        count: finalData.length
-      });
+      return NextResponse.json({ success: true, count: finalData.length });
     }
 
     throw new Error("No questions generated.");

@@ -55,24 +55,50 @@ export async function finalizeWorkoutAction(studentId, results) {
       total: 0, 
       topicId: curr.topicId,
       level: curr.level,
-      subject: curr.subject
+      subject: curr.subject,
+      attempts: []
     };
     acc[sid].total++;
     
     if (curr.isCorrect) acc[sid].weightedScore += 1.0;
     else if (curr.actualCorrect) acc[sid].weightedScore += 0.5;
 
+    acc[sid].attempts.push({
+      isCorrect: curr.isCorrect,
+      timeSpentSecs: curr.timeSpent || 0
+    });
+
     return acc;
   }, {});
 
   for (const [subTopicId, data] of Object.entries(subTopicResults)) {
-    const currentScore = (data.weightedScore / data.total) * 100;
     const mastery = await prisma.studentMastery.findUnique({
       where: { studentId_topicId_subTopicId: { studentId, topicId: data.topicId, subTopicId } }
     });
 
     const oldStrength = mastery?.synapseStrength || 0;
-    const newStrength = calculateSynapseStrength(currentScore, oldStrength);
+
+    // Fetch up to the last 10 attempts for this subtopic to compute fluency
+    const recentLogs = await prisma.attemptLog.findMany({
+      where: {
+        studentId,
+        question: {
+          topic: data.topicId,
+          subtopic: subTopicId || null
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+      select: {
+        isCorrect: true,
+        timeSpentSecs: true
+      }
+    });
+
+    // Fallback: If no logs found (e.g. database reset edge cases), use the current workout data
+    const attemptsToEvaluate = recentLogs.length > 0 ? recentLogs : data.attempts;
+
+    const { score: newStrength, metrics } = calculateSynapseStrength(attemptsToEvaluate, oldStrength);
     
     totalGrowth += (newStrength - oldStrength);
 
@@ -81,7 +107,10 @@ export async function finalizeWorkoutAction(studentId, results) {
 
     await prisma.studentMastery.upsert({
       where: { studentId_topicId_subTopicId: { studentId, topicId: data.topicId, subTopicId } },
-      update: { synapseStrength: newStrength },
+      update: { 
+        synapseStrength: newStrength,
+        fluencyMetrics: metrics 
+      },
       create: { 
         studentId, 
         topicId: data.topicId, 
@@ -91,12 +120,13 @@ export async function finalizeWorkoutAction(studentId, results) {
         level: data.level || "Primary 1",
         subject: data.subject || "Math",
         synapseStrength: newStrength, 
+        fluencyMetrics: metrics,
         totalReps: data.total 
       }
     });
   }
 
-  revalidatePath("/gym");
+  revalidatePath("/math");
   return {
     averageGrowth: totalGrowth.toFixed(1),
     rankUps

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { lazy, Suspense } from 'react';
-import IconGrid from '@/components/gym/modules/IconGrid';
+import IconGrid from '@/components/math/modules/IconGrid';
 
 // Core context blocks
 export const ESSENTIAL_VISUALS = [

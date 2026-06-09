@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function SynapseMap({ syllabus, masteryData, onStartTrack }) {
+export default function SynapseMap({ syllabus, masteryData, onStartTrack, activeWorkout }) {
   return (
     <div className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-700 pb-32">
       <div className="flex items-center gap-6">
@@ -20,10 +20,10 @@ export default function SynapseMap({ syllabus, masteryData, onStartTrack }) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {strandData.subtopics.map((subtopic, stIdx) => {
-                // ID Alignment: Using topicId and subTopicId for robust indexing
+                // ID Alignment: Using topic and subtopic string names from the syllabus structure
                 const mastery = masteryData.find(m => 
-                  m.topicId === strandData.topicId && 
-                  m.subTopicId === subtopic.id
+                  m.topic === strandData.topic && 
+                  m.subtopic === subtopic.name
                 );
                 const strength = mastery?.synapseStrength || 0;
                 const defectLog = mastery?.defectLog || {};
@@ -48,7 +48,7 @@ export default function SynapseMap({ syllabus, masteryData, onStartTrack }) {
                     <div className="flex justify-between items-start">
                       <h4 className="text-lg font-black text-slate-900 leading-tight pr-4">{subtopic.name}</h4>
                       <div className="flex flex-col items-end">
-                        <span className="text-[10px] font-black text-slate-400 uppercase leading-none mb-1">Strength</span>
+                        <span className="text-[10px] font-black text-slate-400 uppercase leading-none mb-1">Confidence</span>
                         <span className="text-xl font-black text-blue-600">{strength}%</span>
                       </div>
                     </div>
@@ -61,24 +61,33 @@ export default function SynapseMap({ syllabus, masteryData, onStartTrack }) {
                       />
                     </div>
 
-                    {/* Gamified Lock System */}
-                    <div className="grid grid-cols-3 gap-3">
-                      <DifficultyButton 
-                        label="Found." 
-                        active={true} 
-                        onClick={() => onStartTrack(subtopic, 'foundation')}
-                      />
-                      <DifficultyButton 
-                        label="Std." 
-                        active={strength >= 70} 
-                        onClick={() => strength >= 70 && onStartTrack(subtopic, 'standard')}
-                      />
-                      <DifficultyButton 
-                        label="Adv." 
-                        active={strength >= 85} 
-                        onClick={() => strength >= 85 && onStartTrack(subtopic, 'advanced')}
-                      />
-                    </div>
+                    {/* Gamified Lock System / Resume System */}
+                    {activeWorkout?.mode === 'isolation' && activeWorkout?.subtopicId === subtopic.name ? (
+                      <button 
+                        onClick={() => onStartTrack(subtopic, 'foundation')} // we can default to foundation, or keep it generic
+                        className="w-full bg-amber-100 text-amber-900 border-4 border-amber-300 py-3 rounded-2xl font-black uppercase tracking-widest hover:bg-amber-200 transition-colors animate-pulse"
+                      >
+                        Resume Workout ({activeWorkout.progress}/10)
+                      </button>
+                    ) : (
+                      <div className="grid grid-cols-3 gap-3">
+                        <DifficultyButton 
+                          label="Found." 
+                          active={!activeWorkout && true} 
+                          onClick={() => !activeWorkout && onStartTrack(subtopic, 'foundation')}
+                        />
+                        <DifficultyButton 
+                          label="Std." 
+                          active={!activeWorkout && strength >= 70} 
+                          onClick={() => !activeWorkout && strength >= 70 && onStartTrack(subtopic, 'standard')}
+                        />
+                        <DifficultyButton 
+                          label="Adv." 
+                          active={!activeWorkout && strength >= 85} 
+                          onClick={() => !activeWorkout && strength >= 85 && onStartTrack(subtopic, 'advanced')}
+                        />
+                      </div>
+                    )}
                   </div>
                 );
               })}

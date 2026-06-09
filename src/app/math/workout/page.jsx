@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db';
 import { getDailyWorkout } from '@/lib/intelligence/workout'; // 20/60/20 & Isolation engine logic
-import WorkoutSession from '@/components/gym/WorkoutSession';
+import WorkoutSession from '@/components/math/WorkoutSession';
 import { redirect } from 'next/navigation';
 
 export default async function DailyWorkoutPage({ searchParams }) {
@@ -8,6 +8,7 @@ export default async function DailyWorkoutPage({ searchParams }) {
   const params = await searchParams;
   const mode = params?.mode || "daily";
   const subtopicId = params?.subtopic || null;
+  const difficulty = params?.difficulty || null;
 
   // 1. Validate student profile and primary level configuration
   const profile = await prisma.studentProfile.findUnique({
@@ -15,13 +16,14 @@ export default async function DailyWorkoutPage({ searchParams }) {
   });
 
   if (!profile?.primaryLevel) {
-    redirect('/gym');
+    redirect('/math');
   }
 
   // 2. Fetch the 10-question set (Handles both composite mix and targeted isolation subtopics)
   const workoutSet = await getDailyWorkout(studentId, profile.primaryLevel, {
     mode,
-    subtopicId
+    subtopicId,
+    difficulty
   });
 
   if (!workoutSet || workoutSet.length === 0) {

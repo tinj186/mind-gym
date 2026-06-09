@@ -15,7 +15,7 @@ export default async function StudentNeuralDashboard({ params }) {
           <p className="font-mono text-slate-500 uppercase tracking-widest text-xs mt-2">Neural_Signature // ID: {stats.studentProfile?.externalId || id}</p>
         </div>
         <div className="flex gap-12">
-          <StatCard label="AVG SYNAPSE" value={`${stats.summary.avgStrength}%`} color="text-blue-600" />
+          <StatCard label="AVG CONFIDENCE" value={`${stats.summary.avgStrength}%`} color="text-blue-600" />
           <StudentActionsHeader studentId={id} />
           <StatCard label="TOTAL REPS" value={stats.summary.totalReps} color="text-indigo-600" />
         </div>
@@ -26,7 +26,7 @@ export default async function StudentNeuralDashboard({ params }) {
         <section className="col-span-8 space-y-8">
           <h2 className="text-2xl font-black tracking-tight flex items-center gap-3 text-slate-900">
             <span className="w-8 h-8 bg-slate-900 text-white flex items-center justify-center rounded-lg text-sm">01</span>
-            NEURAL MAP (BY TOPIC)
+            NEURAL CONFIDENCE MAP (BY TOPIC)
           </h2>
           <div className="grid grid-cols-1 gap-6">
             {stats.mastery.map((m) => (
@@ -48,6 +48,19 @@ export default async function StudentNeuralDashboard({ params }) {
                   </div>
                   <span className="font-black text-2xl w-16 text-right tabular-nums">{m.synapseStrength}%</span>
                 </div>
+                {m.fluencyMetrics && (
+                  <div className="flex gap-4 mt-4 pt-4 border-t border-slate-200">
+                    <div className="text-[10px] font-black uppercase text-slate-500">
+                      CORRECTNESS <span className="text-slate-900">{m.fluencyMetrics.correctness}%</span>
+                    </div>
+                    <div className="text-[10px] font-black uppercase text-slate-500">
+                      EFFICIENCY <span className="text-slate-900">{m.fluencyMetrics.efficiency}%</span>
+                    </div>
+                    <div className="text-[10px] font-black uppercase text-slate-500">
+                      CONSISTENCY <span className="text-slate-900">{m.fluencyMetrics.consistency}%</span>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
             {stats.mastery.length === 0 && (
