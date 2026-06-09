@@ -158,7 +158,8 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          quantity: 1, 
+          quantity: 1,
+          variant: q.heuristic, // Explicitly pass the variant so the engine recreates the EXACT same logic
           syllabus: q.level.match(/1|2/) ? 'P1_P2' : q.level.match(/3|4/) ? 'P3_P4' : 'P5_P6',
           metadata: { 
             level: q.level, 

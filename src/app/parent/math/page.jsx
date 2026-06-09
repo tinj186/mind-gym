@@ -23,6 +23,12 @@ export default async function MathAnalyticsDashboard() {
             ← Back to Hub
           </Link>
           <Link 
+            href="/parent/math/help" 
+            className="px-6 py-3 bg-indigo-100 border-4 border-slate-900 text-indigo-900 font-black uppercase tracking-widest text-xs hover:bg-indigo-200 hover:-translate-y-1 transition-transform shadow-[4px_4px_0px_0px_rgba(15,23,42,1)]"
+          >
+            Analytics Guide
+          </Link>
+          <Link 
             href="/math" 
             className="px-6 py-3 bg-blue-600 border-4 border-slate-900 text-white font-black uppercase tracking-widest text-xs hover:bg-blue-700 hover:-translate-y-1 transition-transform shadow-[4px_4px_0px_0px_rgba(15,23,42,1)]"
           >
