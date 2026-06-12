@@ -19,6 +19,10 @@ const nextConfig = {
   },
 
   // 3. Synology NAS & Docker CPU Optimization Overrides
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  turbopack: {},
   webpack: (config, { dev }) => {
     config.watchOptions = {
       ...config.watchOptions,

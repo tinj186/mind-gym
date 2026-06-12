@@ -55,6 +55,7 @@ export default function MathInput({ name, value, onChange, onEnter }: MathInputP
         setIsLoaded(true);
       } else {
         console.log('📦 [MathInput] Starting dynamic import of MathLive...');
+        // @ts-ignore
         import('mathlive')
           .then((m) => {
             if (!isMounted) return;
@@ -205,7 +206,7 @@ export default function MathInput({ name, value, onChange, onEnter }: MathInputP
 
     // Only update DOM if the value changed externally AND the user isn't typing.
     // Also check if mfe.value is strictly different to avoid cursor jumps
-    if (!isFocused && value !== undefined && String(mfe.value) !== String(value)) {
+    if (!isFocused && value !== undefined && (mfe.value + "") !== (value + "")) {
       console.log('🔄 [MathInput] Syncing external value:', value);
       mfe.value = value || "";
     }

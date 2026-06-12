@@ -45,7 +45,7 @@ export const advancedVariants = {
   },
   advanced_digit_clues: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const onesDigit = Math.floor(Math.random() * 6) + 4; // 4 to 9
-    const tensDigit = onesDigit - (Math.floor(Math.random() * 3) + 1); // 1 to 3 less than ones
+    let tensDigit = onesDigit - (Math.floor(Math.random() * 3) + 1); // 1 to 3 less than ones
     if (tensDigit < 1) tensDigit = 1; // Ensure tens digit is at least 1
     const num = (tensDigit * 10) + onesDigit;
     const sum = tensDigit + onesDigit;
@@ -292,7 +292,7 @@ export const advancedVariants = {
   advanced_missing_regrouped_tens: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const ones = Math.floor(Math.random() * 10) + 11; // 11 to 20 ones
     const totalNum = Math.floor(Math.random() * 40) + 30; // 30 to 69
-    const tens = Math.floor((totalNum - ones) / 10);
+    let tens = Math.floor((totalNum - ones) / 10);
     if (tens < 1) tens = 1; // Ensure at least 1 ten
     const num = (tens * 10) + ones; // Recalculate num based on valid tens and ones
 
