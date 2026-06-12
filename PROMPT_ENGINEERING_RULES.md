@@ -40,6 +40,13 @@ Law: The route.js controller must apply a Flattening Map before database inserti
 
 Execution: The engine renames questionText to question and solutionSteps to solution, and merges visual data into a single modelData column, ensuring Prisma compatibility without losing data depth.
 
+### 3.4 Cloud Neutrality & Vendor Lock-In Prevention
+To maintain the ability to smoothly migrate from Serverless (Vercel) to a containerized VPS (Docker/Render/DigitalOcean) in the future, strictly enforce the following architectural boundaries:
+
+* **No Proprietary Vercel Services:** Do not implement Vercel KV, Vercel Blob, or Vercel Postgres. Rely exclusively on standard PostgreSQL and S3-compatible APIs for storage to ensure database portability.
+* **No Edge Runtime Exclusivity:** Do not write core API routes or database logic that strictly relies on Vercel's Edge runtime. Standardize on the Node.js runtime to ensure your build can be containerized later.
+* **Absolute Auth Data Ownership:** Do not use proprietary Managed Auth providers (e.g., Supabase Auth, Clerk, Auth0) that silo user credentials out of our control. Exclusively use **NextAuth.js (Auth.js)** combined with the Prisma Adapter. All user profiles, sessions, and verification tokens MUST live inside our primary PostgreSQL database.
+
 4. Core Philosophy: The Gym Metaphor
 Synapse Building (Muscle Memory): Tracking a weighted moving average of mastery; recognizing that a concept is built over time.
 

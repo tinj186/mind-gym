@@ -222,6 +222,7 @@ export default function MathInput({ name, value, onChange, onEnter }: MathInputP
       <div className="relative group bg-white rounded-2xl border-2 border-slate-100 p-6 shadow-sm focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-50 transition-all">
         {/* The Math-Field Custom Element */}
         {isLoaded ? (
+          // @ts-ignore - Custom element loaded dynamically via MathLive
           <math-field
             ref={mfRef}
             tabIndex={0}

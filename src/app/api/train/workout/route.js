@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { getDailyWorkout } from '../../../../../prisma/workout';
+import { getDailyWorkout } from '@/lib/intelligence/workout';
 
 export const dynamic = 'force-dynamic';
 

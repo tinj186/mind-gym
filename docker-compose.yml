@@ -8,7 +8,6 @@ services:
       POSTGRES_DB: ${DB_NAME:-mindgym}
     expose:
       - "5432"
-    # Map the internal port 5432 to the host port 5433 to avoid conflicts
     ports:
       - "5433:5432"
     volumes:
@@ -40,7 +39,8 @@ services:
       # This ensures npm uses the folder directly in your project directory
       # which inherits the correct permissions from your Synology user.
     environment:
-      DATABASE_URL: "postgresql://${DB_USER:-gym_admin}:${DB_PASSWORD:-mindgym_pass}@db:5432/${DB_NAME:-mindgym}?schema=public&connect_timeout=30"
+      DATABASE_URL: ${DATABASE_URL}
+      DIRECT_URL: ${DIRECT_URL}
       WATCHPACK_POLLING: "true"
       HOME: /tmp
       NPM_CONFIG_CACHE: /tmp/.npm-cache
@@ -71,11 +71,6 @@ services:
       for i in {1..10}; do npx prisma db push && break || (echo 'Retrying DB connection in 5s...' && sleep 5); done &&
       chmod -R +x node_modules/@prisma/engines node_modules/.prisma &&
       npm run dev"
-    depends_on:
-      db:
-        condition: service_healthy
-    links:
-      - db
     networks:
       - mind_gym_net
 
