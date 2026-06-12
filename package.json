@@ -18,7 +18,7 @@
     "canvas-confetti": "^1.9.3",
     "framer-motion": "^12.38.0",
     "mathlive": "^0.109.1",
-    "next": "15.4.7",
+    "next": "15.4.10",
     "next-auth": "^4.24.14",
     "pg": "^8.13.1",
     "postcss": "^8.5.9",
