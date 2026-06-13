@@ -1,9 +1,10 @@
 import { prisma } from '@/lib/db';
 import ArenaSession from './ArenaSession';
 import { redirect } from 'next/navigation';
+import { getCurrentStudentId } from '@/lib/auth-utils';
 
 export default async function MockExamPage() {
-  const studentId = "default-student";
+  const studentId = await getCurrentStudentId() || "default-student";
 
   const profile = await prisma.studentProfile.findUnique({
     where: { id: studentId }

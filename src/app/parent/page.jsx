@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import SignOutButton from '@/components/auth/SignOutButton';
 
 export default function ParentHub() {
   return (
@@ -8,12 +9,15 @@ export default function ParentHub() {
           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Global Portal</span>
           <h1 className="text-3xl font-black text-slate-900">Parent Command Center</h1>
         </div>
-        <Link 
-          href="/" 
-          className="px-6 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors"
-        >
-          Back to Entry
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link 
+            href="/" 
+            className="px-6 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors"
+          >
+            Back to Entry
+          </Link>
+          <SignOutButton />
+        </div>
       </header>
 
       <main className="max-w-5xl mx-auto p-8 py-12">

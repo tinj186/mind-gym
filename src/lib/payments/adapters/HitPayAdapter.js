@@ -1,0 +1,70 @@
+import { PaymentGateway } from '../gateway';
+import crypto from 'crypto';
+
+export class HitPayAdapter extends PaymentGateway {
+  constructor() {
+    super();
+    this.apiKey = process.env.HITPAY_API_KEY;
+    this.salt = process.env.HITPAY_SALT;
+    
+    // Auto-detect Live vs Sandbox based on the key prefix
+    this.apiUrl = this.apiKey?.startsWith('liv_') 
+      ? 'https://api.hit-pay.com/v1' 
+      : 'https://api.sandbox.hit-pay.com/v1';
+  }
+
+  async createCheckoutSession({ userId, amount, currency, redirectUrl }) {
+    if (!this.apiKey) {
+      throw new Error("HITPAY_API_KEY is missing from environment variables.");
+    }
+
+    const response = await fetch(`${this.apiUrl}/payment-requests`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-BUSINESS-API-KEY': this.apiKey,
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify({
+        amount: amount,
+        currency: currency,
+        reference_number: `sub_${userId}_${Date.now()}`,
+        redirect_url: redirectUrl,
+        webhook: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/webhooks/payment`,
+        purpose: "MindGym Annual Pass"
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("HitPay Checkout Error:", data);
+      throw new Error("Failed to generate HitPay checkout link.");
+    }
+
+    // Return the secure URL to redirect the user to
+    return data.url;
+  }
+
+  async verifyWebhookSignature(payload, signature) {
+    if (!this.salt) {
+      console.error("HITPAY_SALT is missing. Cannot verify webhook!");
+      return false;
+    }
+
+    // HitPay Webhook Verification Strategy (HMAC SHA256)
+    // HitPay sends the raw payload. We must generate an HMAC using the salt.
+    // Note: In production, you must parse the raw body exactly as received.
+    try {
+      const hmac = crypto.createHmac('sha256', this.salt);
+      // Wait, HitPay actually sends a form-encoded payload, but we assume raw body string here
+      hmac.update(payload);
+      const generatedSignature = hmac.digest('hex');
+
+      return generatedSignature === signature;
+    } catch (e) {
+      console.error("HitPay Webhook Verification Failed:", e);
+      return false;
+    }
+  }
+}

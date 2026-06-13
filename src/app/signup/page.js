@@ -2,41 +2,58 @@
 
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-export default function LoginPage() {
+export default function SignupPage() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/parent'; // Default redirect
 
-  const handleCredentialsLogin = async (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
-    const res = await signIn('credentials', {
-      redirect: false,
-      email,
-      password,
-      callbackUrl,
-    });
+    try {
+      // 1. Create the user via our custom API
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password }),
+      });
 
-    setIsLoading(false);
+      const data = await res.json();
 
-    if (res?.error) {
-      setError('Invalid email or password.');
-    } else {
-      router.push(callbackUrl);
+      if (!res.ok) {
+        throw new Error(data.message || 'Something went wrong');
+      }
+
+      // 2. Automatically log them in after successful registration
+      const loginRes = await signIn('credentials', {
+        redirect: false,
+        email,
+        password,
+      });
+
+      if (loginRes?.error) {
+        throw new Error('Failed to log in automatically.');
+      }
+
+      // 3. Redirect to the parent portal
+      router.push('/parent');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleGoogleLogin = () => {
-    signIn('google', { callbackUrl });
+    signIn('google', { callbackUrl: '/parent' });
   };
 
   return (
@@ -47,7 +64,7 @@ export default function LoginPage() {
             Mind<span className="text-blue-600">Gym</span>
           </h1>
           <p className="mt-2 text-slate-400 font-medium uppercase text-xs tracking-widest">
-            Parent & Educator Portal
+            Create your Free Account
           </p>
         </div>
 
@@ -68,7 +85,7 @@ export default function LoginPage() {
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
             <path fill="none" d="M1 1h22v22H1z" />
           </svg>
-          Sign in with Google
+          Sign up with Google
         </button>
 
         <div className="relative">
@@ -76,11 +93,20 @@ export default function LoginPage() {
             <div className="w-full border-t border-slate-100"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-white text-slate-400">or continue with email</span>
+            <span className="px-4 bg-white text-slate-400">or register with email</span>
           </div>
         </div>
 
-        <form onSubmit={handleCredentialsLogin} className="space-y-4">
+        <form onSubmit={handleSignup} className="space-y-4">
+          <input 
+            type="text" 
+            name="name"
+            placeholder="Full Name"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full p-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-blue-600 focus:bg-white outline-none transition-all text-slate-900"
+          />
           <input 
             type="email" 
             name="email"
@@ -93,8 +119,9 @@ export default function LoginPage() {
           <input 
             type="password" 
             name="password"
-            placeholder="Password"
+            placeholder="Create Password"
             required
+            minLength={6}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full p-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-blue-600 focus:bg-white outline-none transition-all text-slate-900"
@@ -104,14 +131,14 @@ export default function LoginPage() {
             disabled={isLoading}
             className="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl hover:bg-blue-600 transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Signing in...' : 'Sign In'}
+            {isLoading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
 
         <p className="text-center text-slate-500 text-sm mt-6">
-          Don't have an account?{' '}
-          <Link href="/signup" className="text-blue-600 font-bold hover:underline">
-            Sign up for free
+          Already have an account?{' '}
+          <Link href="/login" className="text-blue-600 font-bold hover:underline">
+            Sign in
           </Link>
         </p>
       </div>

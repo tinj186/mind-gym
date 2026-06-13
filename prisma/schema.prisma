@@ -5,12 +5,15 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model StudentProfile {
   id            String           @id @default(uuid())
+  userId        String?          // Link to the Parent/User account
+  user          User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
   name          String           @default("Default Student") // Temporary default for existing rows
   externalId    String           @unique @default("default-external-id") // Temporary default for existing rows
   primaryLevel  String?          // Stores the auto-saved division (e.g., "Primary 1")
@@ -140,13 +143,21 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
+  id                 String    @id @default(cuid())
+  name               String?
+  email              String?   @unique
+  emailVerified      DateTime?
+  password           String?   // For Credentials login
+  image              String?
+  role               String    @default("USER") // USER or ADMIN
+  
+  // Stripe Integration Fields
+  stripeCustomerId   String?   @unique
+  subscriptionStatus String    @default("INACTIVE") // INACTIVE, ACTIVE, PAST_DUE, CANCELED
+
+  accounts         Account[]
+  sessions         Session[]
+  studentProfiles  StudentProfile[]
 }
 
 model VerificationToken {

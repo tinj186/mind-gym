@@ -7,7 +7,7 @@ import SynapseMap from './SynapseMap';
 import { useStudentContext } from '@/contexts/StudentContext';
 import { getThemeForLevel, getDailyTargetReps } from '@/lib/LevelThemeConfig';
 
-export default function MathDashboardClient({ syllabus, masteryData }) {
+export default function MathDashboardClient({ studentId, syllabus, masteryData }) {
   const router = useRouter();
   const [showTopicGrid, setShowTopicGrid] = useState(false);
   const [activeWorkout, setActiveWorkout] = useState(null);
@@ -16,7 +16,7 @@ export default function MathDashboardClient({ syllabus, masteryData }) {
   const dailyTarget = getDailyTargetReps(currentLevel);
 
   useEffect(() => {
-    const saved = localStorage.getItem('active_workout_default-student');
+    const saved = localStorage.getItem(`active_workout_${studentId}`);
     if (saved) {
       const data = JSON.parse(saved);
       if (data.answersLog?.length > 0 && data.answersLog?.length < 10) {

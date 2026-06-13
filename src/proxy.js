@@ -5,7 +5,9 @@ export default proxyFunction;
 
 export const config = {
   matcher: [
-    "/math/workout/:path*",
-    "/parent/:path*"
+    "/hub/:path*",
+    "/math/:path*",
+    "/parent/:path*",
+    "/admin/:path*"
   ]
 };

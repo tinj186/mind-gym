@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getDailyWorkout } from '@/lib/intelligence/workout';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,26 +11,33 @@ export const dynamic = 'force-dynamic';
  * Consumes the 20/60/20 Rep Structure algorithm.
  */
 export async function GET(request) {
-  const { searchParams } = new URL(request.url);
-  const studentId = searchParams.get('studentId');
-
-  if (!studentId) {
-    return NextResponse.json({ error: "Student ID required" }, { status: 400 });
+  const session = await getServerSession(authOptions);
+  
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const userId = session.user.id;
+
   try {
-    // Ensure profile exists to prevent record-not-found errors during workout generation
-    const profile = await prisma.studentProfile.upsert({
-      where: { id: studentId },
-      update: {},
-      create: { 
-        id: studentId, 
-        name: studentId === "default-student" ? "Default Student" : "New Student",
-        externalId: studentId === "default-student" ? "default-external-id" : studentId,
-        primaryLevel: "Primary 1" 
-      }
+    // Find the first student profile for this user, or create one if it doesn't exist
+    let profile = await prisma.studentProfile.findFirst({
+      where: { userId: userId }
     });
-    const level = profile?.primaryLevel || "Primary 1";
+
+    if (!profile) {
+      profile = await prisma.studentProfile.create({
+        data: {
+          userId: userId,
+          name: session.user.name || "Student",
+          externalId: `ext-${userId}`,
+          primaryLevel: "Primary 1"
+        }
+      });
+    }
+
+    const studentId = profile.id;
+    const level = profile.primaryLevel || "Primary 1";
 
     console.log(`--- [WORKOUT ENGINE] Init for Student: ${studentId} (${level}) ---`);
     const workout = await getDailyWorkout(studentId, level);

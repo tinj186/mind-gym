@@ -1,8 +1,9 @@
 import { prisma } from '@/lib/db';
 import Link from 'next/link';
+import { getCurrentStudentId } from '@/lib/auth-utils';
 
 export default async function IsolationLabPage() {
-  const studentId = "default-student"; // In production, this would come from authentication/session
+  const studentId = await getCurrentStudentId() || "default-student"; // In production, this would come from authentication/session
 
   // 1. Fetch mastery rows sorted by weakest strength first (The Defect Radar)
   const weakTracks = await prisma.studentMastery.findMany({

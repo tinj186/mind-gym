@@ -3,9 +3,10 @@ import { getStudentStatsAction } from '@/app/actions/statsActions';
 import ProficiencyHeatmap from '@/components/parent/math/ProficiencyHeatmap';
 import VariantAnalysis from '@/components/parent/math/VariantAnalysis';
 import AssessmentReadinessMap from '@/components/parent/math/AssessmentReadinessMap';
+import { getCurrentStudentId } from '@/lib/auth-utils';
 
 export default async function MathAnalyticsDashboard() {
-  const studentId = "default-student";
+  const studentId = await getCurrentStudentId() || "default-student";
   const stats = await getStudentStatsAction(studentId);
 
   return (

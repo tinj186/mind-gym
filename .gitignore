@@ -76,3 +76,5 @@ Thumbs.db
 *_backup.json
 questions_backup.json
 /public/backups/
+.vercel
+.env*

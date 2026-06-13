@@ -5,6 +5,7 @@ import MathDashboardClient from '@/components/math/MathDashboardClient';
 import Link from 'next/link';
 import { StudentProvider } from '@/contexts/StudentContext';
 import { getThemeForLevel, getDailyTargetReps } from '@/lib/LevelThemeConfig';
+import { getCurrentStudentId } from '@/lib/auth-utils';
 
 /**
  * StudentGymView: The primary neuro-trainer dashboard for students.
@@ -12,7 +13,7 @@ import { getThemeForLevel, getDailyTargetReps } from '@/lib/LevelThemeConfig';
  */
 export default async function StudentGymView() {
   // 1. Fetch real student data from your updated Prisma schema
-  const studentId = "default-student"; // In production, this comes from your session
+  const studentId = await getCurrentStudentId() || "default-student"; // In production, this comes from your session
   
   const profile = await prisma.studentProfile.findUnique({
     where: { id: studentId },

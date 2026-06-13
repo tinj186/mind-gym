@@ -1,113 +1,175 @@
+"use client";
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getStudentStatsAction } from '@/app/actions/statsActions';
-import { prisma } from '@/lib/db';
-import { getThemeForLevel } from '@/lib/LevelThemeConfig';
 
-function timeAgo(dateInput) {
-  if (!dateInput) return 'N/A';
+export default function PublicLandingPage() {
+  const router = useRouter();
   
-  const date = new Date(dateInput);
-  const seconds = Math.floor((new Date() - date) / 1000);
+  const [level, setLevel] = useState('Primary 1');
+  const [topic, setTopic] = useState('Whole Numbers');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [worksheet, setWorksheet] = useState(null);
+  const [error, setError] = useState('');
   
-  let interval = seconds / 31536000;
-  if (interval > 1) return Math.floor(interval) + " years ago";
-  
-  interval = seconds / 2592000;
-  if (interval > 1) return Math.floor(interval) + " months ago";
-  
-  interval = seconds / 86400;
-  if (interval > 1) return Math.floor(interval) + " days ago";
-  
-  interval = seconds / 3600;
-  if (interval > 1) return Math.floor(interval) + " hours ago";
-  
-  interval = seconds / 60;
-  if (interval > 1) return Math.floor(interval) + " minutes ago";
-  
-  return Math.floor(seconds) + " seconds ago";
-}
+  const handleGenerate = async (e) => {
+    e.preventDefault();
+    setIsGenerating(true);
+    setError('');
+    setWorksheet(null);
+    
+    try {
+      const res = await fetch('/api/public/worksheet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ level, topic, limit: 3 })
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.error || 'Failed to generate');
+      
+      setWorksheet(data.questions);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
-export default async function OverallView() {
-  const studentId = "default-student";
-  let stats;
-  
-  try {
-    stats = await getStudentStatsAction(studentId);
-  } catch (error) {
-    stats = { avgStrength: 0, recentLogs: [] };
-  }
-
-  const profile = await prisma.studentProfile.findUnique({ where: { id: studentId } });
-  const currentLevel = profile?.primaryLevel || "";
-  const theme = getThemeForLevel(currentLevel);
-
-  const lastLogDate = stats?.recentLogs?.[0]?.createdAt;
-  const lastSessionText = lastLogDate ? timeAgo(lastLogDate) : 'Never practiced';
-  const progressScore = stats?.summary?.avgStrength || 0;
-
-  const subject = {
-    id: 'math',
-    name: 'Mathematics',
-    icon: '📐',
-    status: 'Active',
-    progress: progressScore,
-    lastSession: lastSessionText,
-    color: 'blue'
+  const handleCheckout = async () => {
+    try {
+      const res = await fetch('/api/checkout/hitpay', { method: 'POST' });
+      const data = await res.json();
+      
+      if (res.status === 401) {
+        // User not logged in, redirect to login
+        router.push('/login?callbackUrl=/');
+        return;
+      }
+      
+      if (!res.ok) throw new Error(data.error);
+      
+      // Redirect to HitPay
+      window.location.href = data.url;
+    } catch (err) {
+      alert("Checkout failed: " + err.message);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
-      <header className="max-w-7xl mx-auto px-6 pt-8 flex justify-end">
-        <Link href="/parent" className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-colors shadow-md">
-          <span>👨‍👩‍👧‍👦</span> Parent Command Center
-        </Link>
-      </header>
-      <main className="max-w-7xl mx-auto px-6 py-12">
-        {/* Welcome Section */}
-        <section className="mb-12">
-          <h1 className="text-4xl font-black text-slate-900 tracking-tight">THE TRAINING GROUND</h1>
-          <p className="text-slate-500 font-medium">Select a wing to begin your neural conditioning.</p>
-        </section>
-
-        {/* Subjects Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <div 
-            key={subject.id}
-            className={`group relative p-8 rounded-[2.5rem] border border-slate-200 shadow-sm transition-all hover:shadow-xl cursor-pointer ${theme === getThemeForLevel('Primary 6') ? 'bg-slate-900 text-slate-100 hover:border-amber-500' : 'bg-white hover:border-sky-200'}`}
+    <div className="min-h-screen bg-slate-50">
+      {/* Header */}
+      <header className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+        <div className="font-black text-2xl tracking-tighter text-blue-600">MIND<span className="text-slate-800">GYM</span></div>
+        <div className="flex gap-4 items-center">
+          <Link href="/login" className="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors">Sign In</Link>
+          <button 
+            onClick={handleCheckout}
+            className="px-5 py-2 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-sm"
           >
-            <div className="flex justify-between items-start mb-6">
-              <div className={`text-4xl w-16 h-16 flex items-center justify-center rounded-2xl transition-colors ${theme === getThemeForLevel('Primary 6') ? 'bg-slate-800 group-hover:bg-slate-700' : 'bg-slate-50 group-hover:bg-sky-50'}`}>
-                {subject.icon}
-              </div>
-              <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${theme === getThemeForLevel('Primary 6') ? 'bg-slate-800 text-amber-500 border-amber-500/30' : 'bg-sky-50 text-sky-600 border-sky-100'}`}>
-                {subject.status}
-              </span>
+            Get Annual Pass
+          </button>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <main className="max-w-4xl mx-auto px-6 py-16 text-center">
+        <h1 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter leading-tight mb-6">
+          The Ultimate <br/><span className="text-blue-600">Neuro-Trainer</span> for Math.
+        </h1>
+        <p className="text-xl text-slate-600 mb-12 max-w-2xl mx-auto font-medium">
+          Generate high-quality, MOE-aligned worksheets instantly. Want auto-marking, performance tracking, and the 20/60/20 algorithm? Unlock the full Gym for S$29.90/year.
+        </p>
+
+        {/* Free Worksheet Generator Tool */}
+        <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-xl text-left max-w-3xl mx-auto relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-emerald-400"></div>
+          
+          <h2 className="text-2xl font-black mb-6">Free Worksheet Generator</h2>
+          
+          <form onSubmit={handleGenerate} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Select Level</label>
+              <select 
+                value={level} 
+                onChange={(e) => setLevel(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-3 font-medium outline-none"
+              >
+                <option value="Primary 1">Primary 1</option>
+                <option value="Primary 2">Primary 2</option>
+                <option value="Primary 3">Primary 3</option>
+                <option value="Primary 4">Primary 4</option>
+                <option value="Primary 5 (Standard)">Primary 5 (Std)</option>
+                <option value="Primary 6 (Standard)">Primary 6 (Std)</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Select Topic</label>
+              <select 
+                value={topic} 
+                onChange={(e) => setTopic(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-3 font-medium outline-none"
+              >
+                <option value="Whole Numbers">Whole Numbers</option>
+                <option value="Fractions">Fractions</option>
+                <option value="Measurement">Measurement</option>
+                <option value="Geometry">Geometry</option>
+              </select>
             </div>
 
-            <h2 className="text-2xl font-bold mb-2">{subject.name}</h2>
-            <p className="text-sm opacity-60 mb-8">
-              Last session: {subject.lastSession}
-            </p>
+            <button 
+              type="submit" 
+              disabled={isGenerating}
+              className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-blue-700 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isGenerating ? "Generating..." : "Generate Now"}
+            </button>
+          </form>
 
-            {/* Progress Bar (Visible for Active) */}
-            <div className="space-y-3">
-              <div className="flex justify-between items-end">
-                <span className="text-xs font-bold uppercase opacity-60">Synapse Confidence</span>
-                <span className={`text-lg font-black ${theme.primaryColor}`}>{subject.progress}%</span>
+          {error && <div className="mt-6 p-4 bg-red-50 text-red-600 text-sm font-bold rounded-xl">{error}</div>}
+
+          {/* Worksheet Results */}
+          {worksheet && (
+            <div className="mt-10 pt-10 border-t border-slate-100 animate-fade-in">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-black text-slate-800">Your Generated Worksheet</h3>
+                <span className="text-xs font-bold bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full uppercase tracking-widest">Printable</span>
               </div>
-              <div className={`w-full h-2 rounded-full overflow-hidden ${theme === getThemeForLevel('Primary 6') ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                <div 
-                  className={`${theme.primaryBg} h-full rounded-full transition-all duration-1000`}
-                  style={{ width: `${subject.progress}%` }}
-                />
+              
+              <div className="space-y-8 bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                {worksheet.map((q, idx) => (
+                  <div key={idx} className="pb-8 border-b border-slate-200 last:border-0 last:pb-0">
+                    <div className="flex gap-4">
+                      <span className="text-slate-400 font-black text-xl">{idx + 1}.</span>
+                      <div className="text-lg text-slate-800 font-medium leading-relaxed">
+                        {q.question}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <Link href="/math">
-                <button className={`w-full mt-6 py-4 rounded-2xl font-bold transition-all cursor-pointer ${theme === getThemeForLevel('Primary 6') ? 'bg-amber-500 text-slate-900 hover:bg-amber-400' : 'bg-slate-900 text-white hover:bg-sky-600'}`}>
-                  Open Wing →
-                </button>
-              </Link>
+
+              {/* The Bridge CTA */}
+              <div className="mt-12 text-center p-8 bg-slate-900 rounded-[2rem] shadow-2xl relative overflow-hidden">
+                <div className="relative z-10">
+                  <h3 className="text-2xl font-black text-white mb-2">Tired of marking papers manually?</h3>
+                  <p className="text-slate-400 font-medium mb-8 max-w-lg mx-auto">
+                    Get unlimited auto-generated questions, instant marking, and the 20/60/20 algorithm that tracks exactly what your child needs to practice.
+                  </p>
+                  <button 
+                    onClick={handleCheckout}
+                    className="bg-white text-slate-900 font-black px-8 py-4 rounded-xl hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.3)]"
+                  >
+                    Unlock Annual Pass for S$29.90
+                  </button>
+                  <p className="text-xs text-slate-500 font-bold mt-4 tracking-wide uppercase">30-Day Money-Back Guarantee</p>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
     </div>

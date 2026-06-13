@@ -2,9 +2,10 @@ import { prisma } from '@/lib/db';
 import { getDailyWorkout } from '@/lib/intelligence/workout'; // 20/60/20 & Isolation engine logic
 import WorkoutSession from '@/components/math/WorkoutSession';
 import { redirect } from 'next/navigation';
+import { getCurrentStudentId } from '@/lib/auth-utils';
 
 export default async function DailyWorkoutPage({ searchParams }) {
-  const studentId = "default-student"; // In production, this comes from session
+  const studentId = await getCurrentStudentId() || "default-student";
   const params = await searchParams;
   const mode = params?.mode || "daily";
   const subtopicId = params?.subtopic || null;
