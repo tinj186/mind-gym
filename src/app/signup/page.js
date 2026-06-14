@@ -44,7 +44,7 @@ export default function SignupPage() {
       }
 
       // 3. Redirect to the parent portal
-      router.push('/parent');
+      router.push('/hub');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -53,7 +53,7 @@ export default function SignupPage() {
   };
 
   const handleGoogleLogin = () => {
-    signIn('google', { callbackUrl: '/parent' });
+    signIn('google', { callbackUrl: '/hub' });
   };
 
   return (

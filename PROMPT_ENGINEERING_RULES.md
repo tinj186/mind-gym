@@ -132,3 +132,20 @@ Scalability Target: The architecture must be prepared to support a target of ~7,
 4. Developer Workflow: Cloud-Native Transition
 Stack Alignment: Transition all local development from Synology/Docker to a Vercel + Supabase workflow.
 Source of Truth: All database migrations and authentication (NextAuth.js + Prisma) must be managed through the Antigravity agent, ensuring the local development environment perfectly mirrors the cloud production environment.
+5. Modern Security & Route Protection
+Zero-Trust Architecture: All API routes must assume requests are malicious unless verified by NextAuth.js session tokens.
+Database Integrity: Never use raw SQL queries or string concatenation. All database interactions MUST go through the Prisma ORM to prevent SQL injection.
+Edge Middleware Lock: The file `src/proxy.js` acts as the absolute gatekeeper. It explicitly protects `/hub`, `/math`, `/parent`, and `/admin`. No private application logic should ever be exposed outside these guarded paths.
+Execution Environment: The backend Node.js environment must never use `exec()`, `eval()`, or `child_process`. All grading logic must be deterministic and sandboxed.
+
+6. File Map (Current Source of Truth)
+To ensure AI agents understand the modern Vercel/Supabase Phase 2 Architecture, adhere to this mapping:
+- `prisma/schema.prisma`: The absolute Source of Truth for all database models (User, StudentProfile, QuestionBank, AttemptLog).
+- `src/proxy.js`: The NextAuth Middleware that locks down the app.
+- `src/app/page.js`: The Public SEO Magnet (Free Worksheet Generator).
+- `src/lib/payments/gateway.js`: The core of the Payment-Agnostic architecture.
+- `src/lib/payments/adapters/HitPayAdapter.js`: The active Singapore payment gateway.
+- `src/app/api/webhooks/payment/route.js`: The secure listener that validates HMAC signatures and updates `subscriptionStatus` to ACTIVE.
+
+7. Agent Index Trigger Command
+!INDEX_TRIGGER: ALL AI AGENTS joining this conversation MUST read `prisma/schema.prisma` and `src/lib/payments/gateway.js` to understand the database architecture and payment decoupling before proposing any backend or subscription changes.

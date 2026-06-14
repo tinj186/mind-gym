@@ -116,7 +116,7 @@ export default function AdminSettingsPage() {
             <div className="flex items-center gap-4 p-6 bg-slate-50 rounded-2xl border border-slate-100">
               <div className={`w-3 h-3 rounded-full ${dbStatus === 'online' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : dbStatus === 'checking' ? 'bg-slate-300 animate-pulse' : 'bg-red-500 animate-pulse'}`} />
               <div>
-                <p className="font-bold text-slate-900">PostgreSQL Database (Synology Container)</p>
+                <p className="font-bold text-slate-900">PostgreSQL Database (Supabase Cloud)</p>
                 <p className="text-xs font-black text-slate-400 uppercase tracking-widest">{dbStatus}</p>
                 {dbError && <p className="text-[10px] text-red-500 font-mono mt-1 max-w-md break-words">{dbError}</p>}
               </div>

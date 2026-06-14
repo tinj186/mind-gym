@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/parent'; // Default redirect
+  const callbackUrl = searchParams.get('callbackUrl') || '/hub'; // Default redirect
 
   const handleCredentialsLogin = async (e) => {
     e.preventDefault();
