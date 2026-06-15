@@ -94,7 +94,21 @@ The trainer curates a 10-question set using the 20/60/20 Rep Structure:
 
 20% Challenge: Introduction of new subtopics or higher difficulty tiers.
 
-9. Question Type Architecture (Structural Logic)
+9. The Assessment & Exhaustion Pipeline
+The engine enforces strict progression and provides total visibility into content consumption to prevent repetition and pinpoint mechanical bottlenecks.
+
+I. True Randomness & Zero Repeats (The No-Repeat Protocol)
+Mock Exams and timed assessments must NEVER present a student with a question they have previously seen. 
+Protocol: The `MockExam` generation engine must execute a strict sub-query against the `AttemptLog` to explicitly strip out any `questionId` the student has historically touched before randomizing the remaining vault.
+
+II. Admin Exhaustion Drill-down
+The system calculates real-time "Exhaustion Metrics" by dividing a student's unique attempts by the total vault size. 
+Protocol: To maintain performance, high-level exhaustion is tracked at the `primaryLevel` on the Admin Roster. Detailed Subtopic Exhaustion Drill-downs (identifying specific topics >95% consumed) must run on a dedicated, on-demand API route (`/api/admin/users/exhaustion`) to prevent massive database joins on page load.
+
+III. Parent Assessment Audit
+The Parent Hub bridges the gap between AI diagnostic strength and actual exam execution. It tracks `conceptualMastery` (Synapse Strength) vs `accuracy` (Timed Exam Performance). If a student has high mastery but poor exam accuracy, the system triggers an "Execution Risk" warning, shifting the focus from concept teaching to speed and error reduction.
+
+10. Question Type Architecture (Structural Logic)
 The Engine enforces distinct content rules based on the syllabus "Type Count" to maintain mathematical focus and reading stamina.
 
 I. The 2-Type Protocol (Short & MCQ Only)
