@@ -62,7 +62,7 @@ export default function PublicLandingPage() {
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
       <header className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
-        <div className="font-black text-2xl tracking-tighter text-blue-600">MIND<span className="text-slate-800">GYM</span></div>
+        <div className="font-black text-2xl tracking-tighter text-blue-600">LEARN<span className="text-slate-800">REPS</span></div>
         <div className="flex gap-4 items-center">
           <Link href="/login" className="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors">Sign In</Link>
           <button 
@@ -80,7 +80,7 @@ export default function PublicLandingPage() {
           The Ultimate <br/><span className="text-blue-600">Neuro-Trainer</span> for Math.
         </h1>
         <p className="text-xl text-slate-600 mb-12 max-w-2xl mx-auto font-medium">
-          Generate high-quality, MOE-aligned worksheets instantly. Want auto-marking, performance tracking, and the 20/60/20 algorithm? Unlock the full Gym for S$29.90/year.
+          Start the journey with our complete Primary 1 Math engine. (Primary 2–6 rolling out soon). Generate syllabus-ready worksheets instantly. Want auto-marking, AI performance tracking, and the adaptive 20/60/20 algorithm? Unlock the P1 Annual Pass to The Learn Reps for S$29.90.
         </p>
 
         {/* Free Worksheet Generator Tool */}
@@ -163,7 +163,7 @@ export default function PublicLandingPage() {
                     onClick={handleCheckout}
                     className="bg-white text-slate-900 font-black px-8 py-4 rounded-xl hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.3)]"
                   >
-                    Unlock Annual Pass for S$29.90
+                    Unlock P1 Annual Pass for S$29.90
                   </button>
                   <p className="text-xs text-slate-500 font-bold mt-4 tracking-wide uppercase">30-Day Money-Back Guarantee</p>
                 </div>

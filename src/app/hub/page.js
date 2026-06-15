@@ -47,15 +47,35 @@ export default async function OverallView() {
   const lastSessionText = lastLogDate ? timeAgo(lastLogDate) : 'Never practiced';
   const progressScore = stats?.summary?.avgStrength || 0;
 
-  const subject = {
-    id: 'math',
-    name: 'Mathematics',
-    icon: '📐',
-    status: 'Active',
-    progress: progressScore,
-    lastSession: lastSessionText,
-    color: 'blue'
-  };
+  const subjects = [
+    {
+      id: 'math-p1',
+      name: 'Primary 1 Math',
+      icon: '📐',
+      status: 'Available Now',
+      progress: progressScore,
+      lastSession: lastSessionText,
+      isActive: true,
+    },
+    {
+      id: 'math-p2',
+      name: 'Primary 2 Math',
+      icon: '🔒',
+      status: 'Coming Q3',
+      progress: 0,
+      lastSession: 'In Development',
+      isActive: false,
+    },
+    {
+      id: 'math-p3',
+      name: 'Primary 3 Math',
+      icon: '🔒',
+      status: 'Coming Q4',
+      progress: 0,
+      lastSession: 'In Development',
+      isActive: false,
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -74,43 +94,67 @@ export default async function OverallView() {
 
         {/* Subjects Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <div 
-            key={subject.id}
-            className={`group relative p-8 rounded-[2.5rem] border border-slate-200 shadow-sm transition-all hover:shadow-xl cursor-pointer ${theme === getThemeForLevel('Primary 6') ? 'bg-slate-900 text-slate-100 hover:border-amber-500' : 'bg-white hover:border-sky-200'}`}
-          >
-            <div className="flex justify-between items-start mb-6">
-              <div className={`text-4xl w-16 h-16 flex items-center justify-center rounded-2xl transition-colors ${theme === getThemeForLevel('Primary 6') ? 'bg-slate-800 group-hover:bg-slate-700' : 'bg-slate-50 group-hover:bg-sky-50'}`}>
-                {subject.icon}
+          {subjects.map((subj) => (
+            <div 
+              key={subj.id}
+              className={`group relative p-8 rounded-[2.5rem] border shadow-sm transition-all ${
+                subj.isActive 
+                  ? theme === getThemeForLevel('Primary 6') 
+                    ? 'bg-slate-900 text-slate-100 border-slate-700 hover:border-amber-500 hover:shadow-xl cursor-pointer' 
+                    : 'bg-white border-slate-200 hover:border-sky-200 hover:shadow-xl cursor-pointer'
+                  : 'bg-slate-50 border-slate-200 opacity-60 grayscale cursor-not-allowed'
+              }`}
+            >
+              <div className="flex justify-between items-start mb-6">
+                <div className={`text-4xl w-16 h-16 flex items-center justify-center rounded-2xl transition-colors ${
+                  subj.isActive 
+                    ? theme === getThemeForLevel('Primary 6') ? 'bg-slate-800 group-hover:bg-slate-700' : 'bg-slate-50 group-hover:bg-sky-50'
+                    : 'bg-slate-100'
+                }`}>
+                  {subj.icon}
+                </div>
+                <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${
+                  subj.isActive 
+                    ? theme === getThemeForLevel('Primary 6') ? 'bg-slate-800 text-amber-500 border-amber-500/30' : 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                    : 'bg-slate-100 text-slate-500 border-slate-200'
+                }`}>
+                  {subj.status}
+                </span>
               </div>
-              <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${theme === getThemeForLevel('Primary 6') ? 'bg-slate-800 text-amber-500 border-amber-500/30' : 'bg-sky-50 text-sky-600 border-sky-100'}`}>
-                {subject.status}
-              </span>
-            </div>
 
-            <h2 className="text-2xl font-bold mb-2">{subject.name}</h2>
-            <p className="text-sm opacity-60 mb-8">
-              Last session: {subject.lastSession}
-            </p>
+              <h2 className="text-2xl font-bold mb-2">{subj.name}</h2>
+              <p className="text-sm opacity-60 mb-8">
+                {subj.isActive ? `Last session: ${subj.lastSession}` : subj.lastSession}
+              </p>
 
-            {/* Progress Bar (Visible for Active) */}
-            <div className="space-y-3">
-              <div className="flex justify-between items-end">
-                <span className="text-xs font-bold uppercase opacity-60">Synapse Confidence</span>
-                <span className={`text-lg font-black ${theme.primaryColor}`}>{subject.progress}%</span>
-              </div>
-              <div className={`w-full h-2 rounded-full overflow-hidden ${theme === getThemeForLevel('Primary 6') ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                <div 
-                  className={`${theme.primaryBg} h-full rounded-full transition-all duration-1000`}
-                  style={{ width: `${subject.progress}%` }}
-                />
-              </div>
-              <Link href="/math">
-                <button className={`w-full mt-6 py-4 rounded-2xl font-bold transition-all cursor-pointer ${theme === getThemeForLevel('Primary 6') ? 'bg-amber-500 text-slate-900 hover:bg-amber-400' : 'bg-slate-900 text-white hover:bg-sky-600'}`}>
-                  Open Wing →
-                </button>
-              </Link>
+              {/* Progress Bar (Visible for Active) */}
+              {subj.isActive ? (
+                <div className="space-y-3">
+                  <div className="flex justify-between items-end">
+                    <span className="text-xs font-bold uppercase opacity-60">Synapse Confidence</span>
+                    <span className={`text-lg font-black ${theme.primaryColor}`}>{subj.progress}%</span>
+                  </div>
+                  <div className={`w-full h-2 rounded-full overflow-hidden ${theme === getThemeForLevel('Primary 6') ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                    <div 
+                      className={`${theme.primaryBg} h-full rounded-full transition-all duration-1000`}
+                      style={{ width: `${subj.progress}%` }}
+                    />
+                  </div>
+                  <Link href="/math">
+                    <button className={`w-full mt-6 py-4 rounded-2xl font-bold transition-all cursor-pointer ${theme === getThemeForLevel('Primary 6') ? 'bg-amber-500 text-slate-900 hover:bg-amber-400' : 'bg-slate-900 text-white hover:bg-sky-600'}`}>
+                      Open Wing →
+                    </button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="mt-6 pt-6 border-t border-slate-200">
+                  <button disabled className="w-full py-4 rounded-2xl font-bold bg-slate-200 text-slate-400 cursor-not-allowed">
+                    In Development
+                  </button>
+                </div>
+              )}
             </div>
-          </div>
+          ))}
         </div>
       </main>
     </div>
