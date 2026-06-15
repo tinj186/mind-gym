@@ -114,7 +114,6 @@ export default function PublicLandingPage() {
                 className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-3 font-medium outline-none"
               >
                 <option value="Whole Numbers">Whole Numbers</option>
-                <option value="Fractions">Fractions</option>
                 <option value="Measurement">Measurement</option>
                 <option value="Geometry">Geometry</option>
               </select>
