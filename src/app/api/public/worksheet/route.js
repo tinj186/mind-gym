@@ -17,24 +17,36 @@ export async function POST(req) {
     };
 
     if (subtopic) whereClause.subtopic = subtopic;
-    if (type) whereClause.type = type;
 
-    // Fetch from the question bank
-    // Note: Since Prisma doesn't have native ORDER BY RAND(), we'll fetch a larger pool and shuffle
-    const questions = await prisma.questionBank.findMany({
-      where: whereClause,
-      take: 50, // Fetch up to 50
+    // Fetch from the question bank by specific types to create the 5-3-1 mix
+    const mcqs = await prisma.questionBank.findMany({
+      where: { ...whereClause, type: 'MCQ' },
+      take: 30, // Fetch pool to shuffle
     });
 
-    if (questions.length === 0) {
+    const shortQs = await prisma.questionBank.findMany({
+      where: { ...whereClause, type: 'SHORT_QUESTION' },
+      take: 20, 
+    });
+
+    const structuredQs = await prisma.questionBank.findMany({
+      where: { ...whereClause, type: 'STRUCTURED' },
+      take: 10, 
+    });
+
+    const shuffle = (arr) => arr.sort(() => 0.5 - Math.random());
+
+    const selectedMCQs = shuffle(mcqs).slice(0, 5);
+    const selectedShort = shuffle(shortQs).slice(0, 3);
+    const selectedStructured = shuffle(structuredQs).slice(0, 1);
+
+    const selectedQuestions = [...selectedMCQs, ...selectedShort, ...selectedStructured];
+
+    if (selectedQuestions.length === 0) {
       return NextResponse.json({ 
         error: "No questions found for these criteria. Try a different topic or level!" 
       }, { status: 404 });
     }
-
-    // Shuffle and pick 'limit' questions
-    const shuffled = questions.sort(() => 0.5 - Math.random());
-    const selectedQuestions = shuffled.slice(0, Math.min(limit, questions.length));
 
     return NextResponse.json({ questions: selectedQuestions }, { status: 200 });
 
