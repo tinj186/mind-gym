@@ -61,7 +61,7 @@ export default function PublicLandingPage() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+      <header className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50 print:hidden">
         <div className="font-black text-2xl tracking-tighter text-blue-600">LEARN<span className="text-slate-800">REPS</span></div>
         <div className="flex gap-4 items-center">
           <Link href="/login" className="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors">Sign In</Link>
@@ -76,20 +76,20 @@ export default function PublicLandingPage() {
 
       {/* Hero Section */}
       <main className="max-w-4xl mx-auto px-6 py-16 text-center">
-        <h1 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter leading-tight mb-6">
+        <h1 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter leading-tight mb-6 print:hidden">
           The Ultimate <br/><span className="text-blue-600">Neuro-Trainer</span> for Math.
         </h1>
-        <p className="text-xl text-slate-600 mb-12 max-w-2xl mx-auto font-medium">
+        <p className="text-xl text-slate-600 mb-12 max-w-2xl mx-auto font-medium print:hidden">
           Start the journey with our complete Primary 1 Math engine. (Primary 2–6 rolling out soon). Generate syllabus-ready worksheets instantly. Want auto-marking, AI performance tracking, and the adaptive 20/60/20 algorithm? Unlock the P1 Annual Pass to The Learn Reps for S$29.90.
         </p>
 
         {/* Free Worksheet Generator Tool */}
-        <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-xl text-left max-w-3xl mx-auto relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-emerald-400"></div>
+        <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-xl text-left max-w-3xl mx-auto relative overflow-hidden print:border-0 print:shadow-none print:p-0">
+          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-emerald-400 print:hidden"></div>
           
           <h2 className="text-2xl font-black mb-6">Free Worksheet Generator</h2>
           
-          <form onSubmit={handleGenerate} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+          <form onSubmit={handleGenerate} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end print:hidden">
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Select Level</label>
               <select 
@@ -135,10 +135,18 @@ export default function PublicLandingPage() {
             <div className="mt-10 pt-10 border-t border-slate-100 animate-fade-in">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xl font-black text-slate-800">Your Generated Worksheet</h3>
-                <span className="text-xs font-bold bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full uppercase tracking-widest">Printable</span>
+                <div className="flex gap-2">
+                  <span className="text-xs font-bold bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full uppercase tracking-widest print:hidden">Printable</span>
+                  <button 
+                    onClick={() => window.print()}
+                    className="text-xs font-bold bg-slate-900 text-white px-4 py-1 rounded-full uppercase tracking-widest hover:bg-blue-600 transition-colors cursor-pointer print:hidden shadow-md active:scale-95 flex items-center gap-2"
+                  >
+                    <span>🖨️</span> Print PDF
+                  </button>
+                </div>
               </div>
               
-              <div className="space-y-8 bg-slate-50 p-6 rounded-2xl border border-slate-200">
+              <div className="space-y-8 bg-slate-50 p-6 rounded-2xl border border-slate-200 print:bg-white print:border-0 print:p-0">
                 {worksheet.map((q, idx) => (
                   <div key={idx} className="pb-8 border-b border-slate-200 last:border-0 last:pb-0">
                     <div className="flex gap-4">
@@ -152,7 +160,7 @@ export default function PublicLandingPage() {
               </div>
 
               {/* The Bridge CTA */}
-              <div className="mt-12 text-center p-8 bg-slate-900 rounded-[2rem] shadow-2xl relative overflow-hidden">
+              <div className="mt-12 text-center p-8 bg-slate-900 rounded-[2rem] shadow-2xl relative overflow-hidden print:hidden">
                 <div className="relative z-10">
                   <h3 className="text-2xl font-black text-white mb-2">Tired of marking papers manually?</h3>
                   <p className="text-slate-400 font-medium mb-8 max-w-lg mx-auto">
