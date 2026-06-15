@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { normalizeQuestionData, deriveVisualProps } from '@/lib/intelligence/workout-utils';
+import VisualRenderer from '@/components/math/VisualRenderer';
 
 export default function PublicLandingPage() {
   const router = useRouter();
@@ -147,16 +149,40 @@ export default function PublicLandingPage() {
               </div>
               
               <div className="space-y-8 bg-slate-50 p-6 rounded-2xl border border-slate-200 print:bg-white print:border-0 print:p-0">
-                {worksheet.map((q, idx) => (
-                  <div key={idx} className="pb-8 border-b border-slate-200 last:border-0 last:pb-0">
-                    <div className="flex gap-4">
-                      <span className="text-slate-400 font-black text-xl">{idx + 1}.</span>
-                      <div className="text-lg text-slate-800 font-medium leading-relaxed">
-                        {q.question}
+                {worksheet.map((rawQ, idx) => {
+                  const q = normalizeQuestionData(rawQ);
+                  const vProps = deriveVisualProps(q);
+                  const currentVisual = q?.visualEngine?.componentToRender;
+                  const hasVisualContent = currentVisual && currentVisual !== "NONE";
+
+                  return (
+                    <div key={idx} className="pb-8 border-b border-slate-200 last:border-0 last:pb-0 print:pb-8 print:border-b">
+                      <div className="flex gap-4">
+                        <span className="text-slate-400 font-black text-xl">{idx + 1}.</span>
+                        <div className="w-full">
+                          <div className="text-lg text-slate-800 font-medium leading-relaxed">
+                            {q.question}
+                          </div>
+                          
+                          {/* Visual Component Rendered for Public Worksheets */}
+                          {hasVisualContent && (
+                            <div className="mt-6 p-6 bg-white border-2 border-slate-100 rounded-2xl shadow-sm print:shadow-none print:border print:border-slate-300">
+                              <VisualRenderer 
+                                type={currentVisual} 
+                                data={q?.visualEngine?.componentData || {}}
+                                modelData={q.modelData}
+                                visualProps={vProps}
+                                questionId={q.id}
+                                topic={q.topic}
+                                attempts={1} // Static print mode
+                              />
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* The Bridge CTA */}
