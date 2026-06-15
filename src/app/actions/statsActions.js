@@ -56,28 +56,12 @@ export async function getStudentStatsAction(studentId) {
   let examResults = [];
   try {
     examResults = await prisma.mockExamResult.findMany({
-      where: { studentId }
+      where: { studentId },
+      orderBy: { createdAt: 'desc' } // Fetch most recent exams
     });
   } catch (e) {
-    // Fallback if DB push is still processing or permissions locked
-    examResults = [
-      {
-        topicId: 't1',
-        topic: 'Whole Numbers',
-        accuracy: 65,
-        speedAnalysis: { slowestMechanic: 'Division', avgTime: 45 },
-        errorPatterns: ['CARELESS', 'TIMEOUT'],
-        sectionBreakdown: { mcq: 80, short: 60, structured: 50 }
-      },
-      {
-        topicId: 't2',
-        topic: 'Fractions',
-        accuracy: 90,
-        speedAnalysis: { slowestMechanic: 'Addition', avgTime: 12 },
-        errorPatterns: [],
-        sectionBreakdown: { mcq: 90, short: 90, structured: 90 }
-      }
-    ];
+    console.error("Failed to fetch exam results:", e);
+    examResults = [];
   }
 
   return {

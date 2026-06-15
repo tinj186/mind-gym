@@ -9,9 +9,12 @@ import VisualRenderer, { ESSENTIAL_VISUALS } from '@/components/math/VisualRende
 import GroupingWorkspace from '@/components/tools/GroupingWorkspace'; // Import the interactive tool
 import confetti from 'canvas-confetti';
 
+import ExamReviewBoard from '@/components/math/ExamReviewBoard';
+
 export default function WorkoutSession({ studentId, level, initialQuestions = [], initialIndex = 0, initialLog = [], title = "Daily Training Sequence", mode = "daily", subtopicId }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [answersLog, setAnswersLog] = useState(initialLog);
+  const [lastSubmittedAnswer, setLastSubmittedAnswer] = useState("");
   const [startTime, setStartTime] = useState(Date.now());
   const [attempts, setAttempts] = useState(0);
   const [showHint, setShowHint] = useState(false);
@@ -182,6 +185,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
         isCorrect: attempts === 0, // Mastery is only "Success" if gotten right on the 1st try
         assistedCorrect: attempts > 0,
         actualCorrect: true,
+        studentAnswer: submittedAnswer,
         attempts: attempts + 1,
         timeSpent: Math.floor((Date.now() - startTime) / 1000)
       };
@@ -190,6 +194,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
         moveToNext(result);
       }, 1500);
     } else {
+      setLastSubmittedAnswer(submittedAnswer);
       setFeedback('wrong');
       const nextAttempt = attempts + 1;
       setAttempts(nextAttempt);
@@ -227,25 +232,12 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
 
   if (summary) {
     return (
-      <div className="max-w-4xl mx-auto p-12 text-center space-y-8">
-        <h2 className="text-5xl font-black text-slate-900">Workout Summary</h2>
-        <div className="grid grid-cols-2 gap-8">
-          <div className="bg-blue-50 p-8 rounded-3xl">
-            <p className="text-sm font-black text-blue-500 uppercase">Growth</p>
-            <p className="text-4xl font-black text-blue-900">+{summary.averageGrowth}%</p>
-          </div>
-        </div>
-        {summary.rankUps.length > 0 && (
-          <motion.div 
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-green-500 text-white p-6 rounded-3xl font-black text-xl"
-          >
-            🏆 RANK UP! Next Tier Unlocked.
-          </motion.div>
-        )}
-        <button onClick={() => window.location.replace('/math')} className="px-12 py-4 bg-slate-900 text-white rounded-full font-black">Finish Training</button>
-      </div>
+      <ExamReviewBoard 
+        summary={summary} 
+        initialQuestions={initialQuestions} 
+        answersLog={answersLog} 
+        mode={mode}
+      />
     );
   }
 
@@ -280,14 +272,6 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
             <div key={i} className={`h-2 w-8 rounded-full transition-colors ${i < currentIndex ? 'bg-green-500' : i === currentIndex ? 'bg-blue-500' : 'bg-slate-100'}`} />
           ))}
         </div>
-
-        <button 
-          onClick={() => window.location.reload()}
-          className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors flex items-center gap-2 group"
-        >
-          <span className="group-hover:rotate-180 transition-transform duration-500">🔄</span>
-          <span>Regenerate Workout</span>
-        </button>
       </div>
 
       <AnimatePresence mode="wait">
@@ -366,6 +350,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
                   isCorrect: false,
                   assistedCorrect: false,
                   actualCorrect: false,
+                  studentAnswer: lastSubmittedAnswer,
                   attempts: attempts,
                   timeSpent: Math.floor((Date.now() - startTime) / 1000)
                 };
@@ -386,7 +371,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
           {feedback === 'solution_revealed' && (
             <div className="p-6 bg-rose-50 rounded-2xl border-2 border-rose-200 animate-in zoom-in-95">
               <p className="text-rose-900 font-black text-xs uppercase tracking-widest mb-2">Form Check: Let's see the steps</p>
-              <p className="text-slate-700 text-sm italic leading-relaxed">{normalizedQuestion.solution}</p>
+              <p className="text-slate-700 text-sm italic leading-relaxed whitespace-pre-wrap">{normalizedQuestion.solution}</p>
             </div>
           )}
         </motion.div>

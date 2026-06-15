@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { calculateSynapseStrength } from "@/lib/intelligence/synapse";
 import { revalidatePath } from "next/cache";
+import { runBackgroundDiagnostic } from "./diagnosticActions";
 
 /**
  * Real-Time Saving: Logs an individual attempt and increments the rep count.
@@ -105,11 +106,14 @@ export async function finalizeWorkoutAction(studentId, results) {
     if (oldStrength < 70 && newStrength >= 70) rankUps.push(subTopicId);
     if (oldStrength < 85 && newStrength >= 85) rankUps.push(subTopicId);
 
-    await prisma.studentMastery.upsert({
+    const currentTotalReps = (mastery?.totalReps || 0) + data.total;
+
+    const updatedMastery = await prisma.studentMastery.upsert({
       where: { studentId_topicId_subTopicId: { studentId, topicId: data.topicId, subTopicId } },
       update: { 
         synapseStrength: newStrength,
-        fluencyMetrics: metrics 
+        fluencyMetrics: metrics,
+        totalReps: { increment: data.total }
       },
       create: { 
         studentId, 
@@ -121,9 +125,34 @@ export async function finalizeWorkoutAction(studentId, results) {
         subject: data.subject || "Math",
         synapseStrength: newStrength, 
         fluencyMetrics: metrics,
-        totalReps: data.total 
+        totalReps: currentTotalReps 
       }
     });
+  }
+
+  // Topic-Level Background Diagnostic Trigger
+  const uniqueTopics = [...new Set(Object.values(subTopicResults).map(d => d.topicId))];
+  
+  for (const topicId of uniqueTopics) {
+    const topicMasteryRows = await prisma.studentMastery.findMany({
+      where: { studentId, topicId }
+    });
+    
+    if (!topicMasteryRows.length) continue;
+
+    const topicTotalReps = topicMasteryRows.reduce((sum, m) => sum + m.totalReps, 0);
+    const validRows = topicMasteryRows.filter(m => (m.synapseStrength || 0) > 0);
+    const topicAvgStrength = validRows.length > 0 
+      ? Math.round(validRows.reduce((sum, m) => sum + (m.synapseStrength || 0), 0) / validRows.length)
+      : 0;
+
+    const defectLog = typeof topicMasteryRows[0].defectLog === 'object' && topicMasteryRows[0].defectLog !== null ? topicMasteryRows[0].defectLog : {};
+    const lastTopicDiagnosticReps = defectLog.lastTopicDiagnosticReps || 0;
+    const repsSinceLast = topicTotalReps - lastTopicDiagnosticReps;
+
+    if (repsSinceLast >= 10 && topicAvgStrength < 50) {
+      runBackgroundDiagnostic(studentId, topicId, topicTotalReps).catch(console.error);
+    }
   }
 
   revalidatePath("/math");

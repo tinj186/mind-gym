@@ -25,22 +25,36 @@ export async function POST(req) {
     });
 
     const shortQs = await prisma.questionBank.findMany({
-      where: { ...whereClause, type: 'SHORT_QUESTION' },
+      where: { ...whereClause, type: 'Short Question' },
       take: 20, 
     });
 
     const structuredQs = await prisma.questionBank.findMany({
-      where: { ...whereClause, type: 'STRUCTURED' },
+      where: { ...whereClause, type: 'Structured' },
       take: 10, 
     });
 
     const shuffle = (arr) => arr.sort(() => 0.5 - Math.random());
 
     const selectedMCQs = shuffle(mcqs).slice(0, 5);
-    const selectedShort = shuffle(shortQs).slice(0, 3);
+    const selectedShort = shuffle(shortQs).slice(0, 2);
     const selectedStructured = shuffle(structuredQs).slice(0, 1);
 
-    const selectedQuestions = [...selectedMCQs, ...selectedShort, ...selectedStructured];
+    let selectedQuestions = [...selectedMCQs, ...selectedShort, ...selectedStructured];
+
+    // If we didn't hit 8 questions because of missing types, pad with whatever is left!
+    if (selectedQuestions.length < 8) {
+      const remainingNeeded = 8 - selectedQuestions.length;
+      
+      const unusedMCQs = mcqs.filter(m => !selectedMCQs.find(s => s.id === m.id));
+      const unusedShort = shortQs.filter(m => !selectedShort.find(s => s.id === m.id));
+      const unusedStruct = structuredQs.filter(m => !selectedStructured.find(s => s.id === m.id));
+      
+      const leftoverPool = shuffle([...unusedMCQs, ...unusedShort, ...unusedStruct]);
+      const padding = leftoverPool.slice(0, remainingNeeded);
+      
+      selectedQuestions = [...selectedQuestions, ...padding];
+    }
 
     if (selectedQuestions.length === 0) {
       return NextResponse.json({ 

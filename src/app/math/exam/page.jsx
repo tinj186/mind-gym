@@ -14,11 +14,19 @@ export default async function MockExamPage() {
     redirect('/math');
   }
 
-  // Fetch exam questions matching the student's level, categorized by exam formatting sections
-  const rawQuestions = await prisma.questionBank.findMany({
-    where: { level: profile.primaryLevel },
-    take: 60 // Pull a larger pool to ensure enough for each section
-  });
+  // Fetch random exam questions across the entire vault natively at the database level,
+  // strictly excluding any questions the student has already seen.
+  const rawQuestions = await prisma.$queryRaw`
+    SELECT * FROM "QuestionBank" 
+    WHERE level = ${profile.primaryLevel} 
+    AND id NOT IN (
+      SELECT DISTINCT "questionId" 
+      FROM "AttemptLog" 
+      WHERE "studentId" = ${studentId}
+    )
+    ORDER BY RANDOM() 
+    LIMIT 150
+  `;
 
   // Normalize question data (parsing options and modelData)
   const formattedQuestions = rawQuestions.map(q => ({

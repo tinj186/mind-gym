@@ -25,12 +25,50 @@ export async function GET(req) {
         role: true,
         subscriptionStatus: true,
         studentProfiles: {
-          select: { name: true }
+          select: { id: true, name: true, primaryLevel: true }
         }
       }
     });
 
-    return NextResponse.json({ users }, { status: 200 });
+    // Compute Exhaustion Engine Metrics
+    // 1. Get total questions available per level
+    const levelCountsRaw = await prisma.questionBank.groupBy({
+      by: ['level'],
+      _count: { id: true }
+    });
+    const levelTotals = levelCountsRaw.reduce((acc, curr) => {
+      acc[curr.level] = curr._count.id;
+      return acc;
+    }, {});
+
+    // 2. Map through users and compute exhaustion for each student profile
+    const usersWithExhaustion = await Promise.all(users.map(async (user) => {
+      const enrichedProfiles = await Promise.all(user.studentProfiles.map(async (student) => {
+        const totalAttempted = await prisma.attemptLog.findMany({
+          where: { studentId: student.id },
+          select: { questionId: true },
+          distinct: ['questionId']
+        });
+
+        const attemptedCount = totalAttempted.length;
+        const totalBankCount = levelTotals[student.primaryLevel] || 1; // Prevent div by 0
+        const exhaustionPercent = Math.min(100, Math.round((attemptedCount / totalBankCount) * 100));
+
+        return {
+          ...student,
+          exhaustionPercent,
+          attemptedCount,
+          totalBankCount
+        };
+      }));
+
+      return {
+        ...user,
+        studentProfiles: enrichedProfiles
+      };
+    }));
+
+    return NextResponse.json({ users: usersWithExhaustion }, { status: 200 });
   } catch (error) {
     console.error("Failed to fetch users:", error);
     return NextResponse.json({ error: "Internal Error" }, { status: 500 });

@@ -12,15 +12,15 @@ export default withAuth(
     // 1. Maintenance Mode Interceptor
     if (MAINTENANCE_MODE) {
       // 1a. The Secret Developer Bypass
-      // If you visit mindgym.com/?bypass=admin, it sets a secure cookie to let you in.
+      // If you visit thelearnreps.com/?bypass=admin, it sets a secure cookie to let you in.
       if (url.searchParams.get('bypass') === 'admin') {
         const response = NextResponse.redirect(new URL('/', req.url));
-        response.cookies.set('mindgym_bypass', 'true', { maxAge: 60 * 60 * 24 * 30 }); // Good for 30 days
+        response.cookies.set('learnreps_bypass', 'true', { maxAge: 60 * 60 * 24 * 30 }); // Good for 30 days
         return response;
       }
 
       // 1b. Check if user has the bypass ticket
-      const hasBypass = req.cookies.has('mindgym_bypass');
+      const hasBypass = req.cookies.has('learnreps_bypass');
       
       // 1c. If they don't have the ticket, and they aren't already on the /offline page, kick them out!
       // (We also allow /api/webhooks to pass through so HitPay doesn't break if a payment is processing)

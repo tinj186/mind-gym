@@ -1,6 +1,13 @@
 import Script from 'next/script';
 import './globals.css'; // This line is the "Power Switch" for your CSS
 
+import GlobalNavbar from '@/components/layout/GlobalNavbar';
+
+export const metadata = {
+  title: 'Learn Reps',
+  description: 'The Ultimate Neuro-Trainer for Education.',
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
@@ -12,6 +19,7 @@ export default function RootLayout({ children }) {
             window.MathfieldElement.soundsDirectory = "https://unpkg.com/mathlive@0.109.1/dist/sounds/";
           `
         }} />
+        <GlobalNavbar />
         {children}
       </body>
     </html>

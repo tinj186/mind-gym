@@ -31,22 +31,37 @@ export default function DivisionModal({ studentId, isOpen, onClose }) {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-          {divisions.map((level) => (
-            <button
-              key={level}
-              disabled={loading}
-              onClick={() => handleSelect(level)}
-              className="group relative p-8 bg-slate-50 hover:bg-slate-900 rounded-[2.5rem] border-2 border-slate-100 hover:border-slate-900 transition-all active:scale-95 text-left overflow-hidden"
-            >
-              <div className="relative z-10 space-y-1">
-                <span className="text-[10px] font-black text-slate-400 group-hover:text-blue-400 uppercase tracking-widest transition-colors">MOE Syllabus</span>
-                <p className="text-2xl font-black text-slate-900 group-hover:text-white transition-colors">{level}</p>
-              </div>
-              <div className="absolute -right-4 -bottom-6 text-9xl font-black text-slate-200 opacity-20 group-hover:opacity-10 transition-opacity italic">
-                {level.split(' ')[1]}
-              </div>
-            </button>
-          ))}
+          {divisions.map((level) => {
+            const isAvailable = level === 'Primary 1';
+            return (
+              <button
+                key={level}
+                disabled={loading || !isAvailable}
+                onClick={() => handleSelect(level)}
+                className={`group relative p-8 rounded-[2.5rem] border-2 transition-all text-left overflow-hidden ${
+                  isAvailable 
+                    ? "bg-slate-50 hover:bg-slate-900 border-slate-100 hover:border-slate-900 active:scale-95 cursor-pointer" 
+                    : "bg-slate-50/50 border-slate-100/50 opacity-50 cursor-not-allowed"
+                }`}
+              >
+                <div className="relative z-10 space-y-1">
+                  <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${
+                    isAvailable ? "text-slate-400 group-hover:text-blue-400" : "text-slate-300"
+                  }`}>
+                    {isAvailable ? "Available Now" : "Coming Soon"}
+                  </span>
+                  <p className={`text-2xl font-black transition-colors ${
+                    isAvailable ? "text-slate-900 group-hover:text-white" : "text-slate-400"
+                  }`}>
+                    {level}
+                  </p>
+                </div>
+                <div className="absolute -right-4 -bottom-6 text-9xl font-black text-slate-200 opacity-20 group-hover:opacity-10 transition-opacity italic">
+                  {level.split(' ')[1]}
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

@@ -7,13 +7,16 @@ export const LEVEL_THEMES = {
     pageBg: 'bg-gradient-to-br from-sky-50 via-white to-emerald-50',
     statusBarTheme: 'bg-gradient-to-r from-sky-400 to-blue-500 text-white border-blue-700',
     zoneVariants: {
-      blue: "bg-sky-50 border-sky-100 text-sky-900 hover:border-sky-400 hover:bg-sky-100",
-      bluePrimary: "bg-sky-400 border-sky-500 text-white shadow-[0_20px_50px_-12px_rgba(56,189,248,0.5)] hover:-translate-y-2",
-      amber: "bg-yellow-50 border-yellow-200 text-yellow-900 hover:border-yellow-400 hover:bg-yellow-100",
-      amberPrimary: "bg-amber-400 border-amber-500 text-white shadow-[0_20px_50px_-12px_rgba(251,191,36,0.5)] hover:-translate-y-2",
-      amberActive: "ring-[6px] ring-yellow-400 ring-offset-4 border-yellow-400 bg-white !text-slate-900",
-      slate: "bg-red-50 border-red-200 text-red-900 hover:border-red-400 hover:bg-red-100",
-      slatePrimary: "bg-rose-400 border-rose-500 text-white shadow-[0_20px_50px_-12px_rgba(251,113,133,0.5)] hover:-translate-y-2"
+      blue: "bg-white border-slate-200 text-slate-900 hover:border-sky-300 hover:shadow-xl hover:-translate-y-1 shadow-sm",
+      bluePrimary: "bg-white border-slate-200 text-slate-900 shadow-sm hover:border-sky-400 hover:shadow-xl hover:-translate-y-1",
+      blueIcon: "bg-sky-50 text-sky-500",
+      amber: "bg-white border-slate-200 text-slate-900 hover:border-amber-300 hover:shadow-xl hover:-translate-y-1 shadow-sm",
+      amberPrimary: "bg-white border-slate-200 text-slate-900 shadow-sm hover:border-amber-400 hover:shadow-xl hover:-translate-y-1",
+      amberIcon: "bg-amber-50 text-amber-500",
+      amberActive: "ring-2 ring-amber-400 border-amber-400 bg-white !text-slate-900 shadow-md",
+      slate: "bg-white border-slate-200 text-slate-900 hover:border-rose-300 hover:shadow-xl hover:-translate-y-1 shadow-sm",
+      slatePrimary: "bg-white border-slate-200 text-slate-900 shadow-sm hover:border-rose-400 hover:shadow-xl hover:-translate-y-1",
+      slateIcon: "bg-rose-50 text-rose-500",
     }
   },
   // Intermediate: Structured, indigo/purple, clear

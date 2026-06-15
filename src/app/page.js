@@ -62,19 +62,6 @@ export default function PublicLandingPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50 print:hidden">
-        <div className="font-black text-2xl tracking-tighter text-blue-600">LEARN<span className="text-slate-800">REPS</span></div>
-        <div className="flex gap-4 items-center">
-          <Link href="/login" className="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors">Sign In</Link>
-          <button 
-            onClick={handleCheckout}
-            className="px-5 py-2 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-sm"
-          >
-            Get Annual Pass
-          </button>
-        </div>
-      </header>
 
       {/* Hero Section */}
       <main className="max-w-4xl mx-auto px-6 py-16 text-center">
@@ -86,7 +73,7 @@ export default function PublicLandingPage() {
         </p>
 
         {/* Free Worksheet Generator Tool */}
-        <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-xl text-left max-w-3xl mx-auto relative overflow-hidden print:border-0 print:shadow-none print:p-0">
+        <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-xl text-left max-w-3xl mx-auto relative overflow-hidden print:overflow-visible print:border-0 print:shadow-none print:p-0">
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-emerald-400 print:hidden"></div>
           
           <h2 className="text-2xl font-black mb-6">Free Worksheet Generator</h2>
@@ -149,40 +136,99 @@ export default function PublicLandingPage() {
               </div>
               
               <div className="space-y-8 bg-slate-50 p-6 rounded-2xl border border-slate-200 print:bg-white print:border-0 print:p-0">
-                {worksheet.map((rawQ, idx) => {
-                  const q = normalizeQuestionData(rawQ);
-                  const vProps = deriveVisualProps(q);
-                  const currentVisual = q?.visualEngine?.componentToRender;
-                  const hasVisualContent = currentVisual && currentVisual !== "NONE";
+                {['MCQ', 'Short Question', 'Structured'].map((typeLabel, sectionIdx) => {
+                  const sectionQs = worksheet.filter(q => q.type === typeLabel);
+                  if (sectionQs.length === 0) return null;
+                  
+                  const sectionTitles = {
+                    MCQ: "Section A: Multiple Choice",
+                    'Short Question': "Section B: Short Answer",
+                    'Structured': "Section C: Structured"
+                  };
+
+                  // Calculate the starting question number for this section
+                  const startIndex = worksheet.findIndex(q => q.type === typeLabel);
 
                   return (
-                    <div key={idx} className="pb-8 border-b border-slate-200 last:border-0 last:pb-0 print:pb-8 print:border-b">
-                      <div className="flex gap-4">
-                        <span className="text-slate-400 font-black text-xl">{idx + 1}.</span>
-                        <div className="w-full">
-                          <div className="text-lg text-slate-800 font-medium leading-relaxed">
-                            {q.question}
-                          </div>
-                          
-                          {/* Visual Component Rendered for Public Worksheets */}
-                          {hasVisualContent && (
-                            <div className="mt-6 p-6 bg-white border-2 border-slate-100 rounded-2xl shadow-sm print:shadow-none print:border print:border-slate-300">
-                              <VisualRenderer 
-                                type={currentVisual} 
-                                data={q?.visualEngine?.componentData || {}}
-                                modelData={q.modelData}
-                                visualProps={vProps}
-                                questionId={q.id}
-                                topic={q.topic}
-                                attempts={1} // Static print mode
-                              />
+                    <div key={typeLabel} className="mb-12">
+                      <h4 className="text-xl font-black text-slate-800 mb-6 border-b-2 border-slate-200 pb-2 print:border-slate-800">
+                        {sectionTitles[typeLabel]}
+                      </h4>
+                      <div className="space-y-8">
+                        {sectionQs.map((rawQ, localIdx) => {
+                          const q = normalizeQuestionData(rawQ);
+                          const vProps = deriveVisualProps(q);
+                          const currentVisual = q?.visualEngine?.componentToRender;
+                          const hasVisualContent = currentVisual && currentVisual !== "NONE";
+                          const globalIdx = startIndex + localIdx;
+
+                          return (
+                            <div key={globalIdx} className="pb-8 border-b border-slate-200 last:border-0 last:pb-0 print:pb-8 print:border-b print:break-inside-avoid">
+                              <div className="flex gap-4">
+                                <span className="text-slate-400 font-black text-xl">{globalIdx + 1}.</span>
+                                <div className="w-full">
+                                  <div className="text-lg text-slate-800 font-medium leading-relaxed">
+                                    {q.question}
+                                  </div>
+                                  
+                                  {hasVisualContent && (
+                                    <div className="mt-6 p-6 bg-white border-2 border-slate-100 rounded-2xl shadow-sm print:shadow-none print:border print:border-slate-300">
+                                      <VisualRenderer 
+                                        type={currentVisual} 
+                                        data={q?.visualEngine?.componentData || {}}
+                                        modelData={q.modelData}
+                                        visualProps={vProps}
+                                        questionId={q.id}
+                                        topic={q.topic}
+                                        attempts={0}
+                                      />
+                                    </div>
+                                  )}
+
+                                  {/* MCQ Options Display (Visible on screen and PDF) */}
+                                  {rawQ.type === 'MCQ' && q.options && (
+                                    <div className="grid grid-cols-2 gap-4 mt-8">
+                                      {q.options.map((opt, oIdx) => (
+                                        <div key={oIdx} className="text-sm font-medium border border-slate-200 p-4 rounded-xl bg-white print:border-none print:p-0 print:bg-transparent">
+                                          <span className="print:hidden font-bold mr-2 text-slate-400">{['A','B','C','D'][oIdx]}:</span>
+                                          <span className="hidden print:inline mr-2 font-bold text-slate-400">(   )</span>
+                                          <span className="text-slate-900 font-bold">{opt}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+
+                                  {/* Space for working in PDF */}
+                                  <div className="hidden print:block mt-8 border-t border-dashed border-slate-300 pt-8">
+                                    {rawQ.type !== 'MCQ' && (
+                                      <div className="h-24"></div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
                             </div>
-                          )}
-                        </div>
+                          );
+                        })}
                       </div>
                     </div>
                   );
                 })}
+
+                {/* Answer Key (Only visible when printing) */}
+                <div className="hidden print:block mt-16 pt-8 border-t-4 border-slate-900 break-before-page">
+                  <h4 className="text-2xl font-black text-slate-900 mb-6">Answer Key</h4>
+                  <div className="grid grid-cols-2 gap-x-12 gap-y-6">
+                    {worksheet.map((rawQ, idx) => {
+                      const q = normalizeQuestionData(rawQ);
+                      return (
+                        <div key={idx} className="flex items-start gap-3 text-base break-inside-avoid">
+                          <span className="font-black text-slate-500 min-w-[2rem]">{idx + 1}.</span>
+                          <span className="font-medium text-slate-900">{q.finalAnswer}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
 
               {/* The Bridge CTA */}

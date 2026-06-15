@@ -15,7 +15,7 @@ export default function OfflinePage() {
         </h1>
         
         <p className="text-slate-600 font-medium text-lg mb-8 max-w-lg mx-auto">
-          Mind Gym is currently offline for scheduled maintenance and core engine upgrades. We will be back online shortly.
+          Learn Reps is currently offline for scheduled maintenance and core engine upgrades. We will be back online shortly.
         </p>
 
         <div className="inline-block bg-slate-100 border-2 border-slate-200 px-6 py-3 rounded-xl">

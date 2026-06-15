@@ -31,7 +31,7 @@ function LoginContent() {
     if (res?.error) {
       setError('Invalid email or password.');
     } else {
-      router.push(callbackUrl);
+      window.location.href = callbackUrl;
     }
   };
 
@@ -44,7 +44,7 @@ function LoginContent() {
       <div className="w-full max-w-md space-y-8 bg-white p-10 rounded-[2.5rem] shadow-xl border border-slate-100">
         <div className="text-center">
           <h1 className="text-3xl font-black tracking-tighter uppercase text-slate-900">
-            Mind<span className="text-blue-600">Gym</span>
+            Learn<span className="text-blue-600">Reps</span>
           </h1>
           <p className="mt-2 text-slate-400 font-medium uppercase text-xs tracking-widest">
             Parent & Educator Portal

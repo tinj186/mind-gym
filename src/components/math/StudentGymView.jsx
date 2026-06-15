@@ -73,57 +73,50 @@ export default async function StudentGymView() {
 
   return (
     <StudentProvider initialLevel={currentLevel}>
-      <div className={`min-h-screen ${theme.pageBg || 'bg-white'}`}>
-        {/* Gym Header with Division Auto-Save Badge */}
-        <header className="p-6 flex justify-between items-center border-b border-slate-200/50 sticky top-0 bg-white/40 backdrop-blur-xl z-50">
+      <div className={`min-h-screen ${theme.pageBg || 'bg-white'} p-6 max-w-7xl mx-auto`}>
+        {/* Gym Header Section */}
+        <header className="mb-8 flex justify-between items-end">
           <div className="flex flex-col">
-            <span className={`text-[10px] font-black uppercase tracking-[0.3em] block ${theme.primaryColor}`}>
-              Math Practice
+            <span className={`text-[10px] font-black uppercase tracking-[0.3em] block ${theme.primaryColor} mb-2`}>
+              Training Wing
             </span>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tighter">
+            <h1 className="text-4xl font-black text-slate-900 tracking-tighter">
               {theme.headerTitle}
             </h1>
           </div>
         
-        <div className="flex items-center gap-4">
-          <Link 
-            href="/parent" 
-            title="Parent Command Center" 
-            className="w-10 h-10 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition-colors text-lg"
-          >
-            👨‍👩‍👧‍👦
-          </Link>
-          <DivisionBadge studentId={studentId} currentLevel={currentLevel} />
-        </div>
-      </header>
+          <div className="flex items-center gap-4">
+            <DivisionBadge studentId={studentId} currentLevel={currentLevel} />
+          </div>
+        </header>
 
-      <main className="p-6 max-w-7xl mx-auto space-y-12">
+      <main className="space-y-12">
         {/* Neural Status Header */}
-        <section className={`${theme.statusBarTheme} border-[6px] rounded-[3rem] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-12 font-bold uppercase`}>
-          <div className="text-[10px] mb-10 tracking-widest font-black opacity-90">
+        <section className={`${theme.statusBarTheme} rounded-[2.5rem] shadow-lg p-12 font-bold uppercase relative overflow-hidden`}>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
+          <div className="relative z-10 text-sm mb-8 tracking-widest font-black opacity-90">
             MY PROGRESS // {profile?.name?.toUpperCase() || "DEFAULT_STUDENT"}
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-10">
             <div className="flex flex-col">
-              <span className="text-[10px] opacity-70 mb-1 tracking-tighter">TODAY'S GOAL</span>
-              <span className="text-4xl font-black tracking-tighter">{todayReps}/{dailyTarget} <span className="text-sm font-bold opacity-70">REPS</span></span>
+              <span className="text-sm opacity-90 mb-2 tracking-wider font-bold">TODAY'S GOAL</span>
+              <span className="text-5xl font-black tracking-tighter">{todayReps}/{dailyTarget} <span className="text-xl font-bold opacity-70">REPS</span></span>
             </div>
             
             <div className="flex flex-col">
-              <span className="text-[10px] opacity-70 mb-1 tracking-tighter">STREAK</span>
-              <span className="text-4xl font-black tracking-tighter text-orange-400">{currentStreak} DAYS 🔥</span>
+              <span className="text-sm opacity-90 mb-2 tracking-wider font-bold">STREAK</span>
+              <span className="text-5xl font-black tracking-tighter">
+                {currentStreak} DAYS {currentStreak === 0 ? '🧊' : currentStreak < 3 ? '⚡️' : currentStreak < 7 ? '🔥' : '🚀'}
+              </span>
             </div>
             
             <div className="flex flex-col">
-              <span className="text-[10px] opacity-70 mb-1 tracking-tighter">TOTAL PRACTICE</span>
-              <span className="text-4xl font-black tracking-tighter tabular-nums">{totalReps}</span>
+              <span className="text-sm opacity-90 mb-2 tracking-wider font-bold">TOTAL PRACTICE</span>
+              <span className="text-5xl font-black tracking-tighter tabular-nums">{totalReps}</span>
             </div>
           </div>
 
-          <div className="inline-block bg-white/20 px-4 py-2 text-[10px] font-black border-[3px] border-current hover:bg-white/30 transition-colors cursor-pointer">
-            READY FOR A CHALLENGE? // YOU'RE DOING GREAT!
-          </div>
         </section>
 
           <MathDashboardClient 

@@ -2,6 +2,81 @@
 
 import { useState, useEffect } from 'react';
 
+function StudentExhaustionCard({ student }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [drilldown, setDrilldown] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleToggle = async () => {
+    if (isExpanded) {
+      setIsExpanded(false);
+      return;
+    }
+    
+    setIsExpanded(true);
+    if (!drilldown) {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/api/admin/users/exhaustion?studentId=${student.id}&level=${encodeURIComponent(student.primaryLevel)}`);
+        const data = await res.json();
+        if (data.breakdown) {
+          setDrilldown(data.breakdown);
+        }
+      } catch (err) {
+        console.error("Failed to fetch drilldown:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-1 bg-slate-50 border border-slate-200 p-2 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors" onClick={handleToggle}>
+      <div className="flex justify-between items-center">
+        <span className="text-sm font-bold text-slate-700">{student.name}</span>
+        <span className={`text-[10px] font-black ${student.exhaustionPercent >= 95 ? 'text-red-600' : 'text-slate-500'}`}>
+          {student.exhaustionPercent}% Vault
+        </span>
+      </div>
+      {/* Main Progress Bar Container */}
+      <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+        <div 
+          className={`h-full rounded-full transition-all duration-500 ${student.exhaustionPercent >= 95 ? 'bg-red-500' : 'bg-blue-500'}`}
+          style={{ width: `${Math.max(2, student.exhaustionPercent || 0)}%` }}
+        />
+      </div>
+
+      {/* Expanded Drilldown */}
+      {isExpanded && (
+        <div className="mt-2 pt-2 border-t border-slate-200 space-y-2 cursor-default" onClick={e => e.stopPropagation()}>
+          {isLoading ? (
+            <div className="text-[10px] text-slate-400 font-bold uppercase text-center py-2">Loading breakdown...</div>
+          ) : drilldown && drilldown.length > 0 ? (
+            drilldown.map((item, idx) => (
+              <div key={idx} className="space-y-1">
+                <div className="flex justify-between items-center text-[10px]">
+                  <span className="font-bold text-slate-600 truncate max-w-[120px]" title={item.subtopic}>{item.subtopic}</span>
+                  <span className={`font-black ${item.percentage >= 95 ? 'text-red-600' : 'text-slate-400'}`}>
+                    {item.percentage}%
+                  </span>
+                </div>
+                <div className="h-1 w-full bg-slate-200 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full rounded-full ${item.percentage >= 95 ? 'bg-red-500' : 'bg-indigo-400'}`}
+                    style={{ width: `${Math.max(2, item.percentage)}%` }}
+                  />
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-[10px] text-slate-400 font-bold uppercase text-center py-2">No subtopic data</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function UserRosterPage() {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -120,11 +195,9 @@ export default function UserRosterPage() {
 
                 <td className="p-4">
                   {user.studentProfiles.length > 0 ? (
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-3 w-56">
                       {user.studentProfiles.map((s, idx) => (
-                        <span key={idx} className="text-sm text-slate-700 bg-slate-100 px-2 py-1 rounded inline-block w-max">
-                          {s.name}
-                        </span>
+                        <StudentExhaustionCard key={idx} student={s} />
                       ))}
                     </div>
                   ) : (

@@ -76,7 +76,7 @@ export default async function AdminDashboard() {
       <header className="flex justify-between items-end">
         <div>
           <h2 className="text-4xl font-black text-slate-900 tracking-tight uppercase">Command Center</h2>
-          <p className="text-slate-500 font-bold uppercase text-xs tracking-widest mt-2">Real-time Mind Gym Operations</p>
+          <p className="text-slate-500 font-bold uppercase text-xs tracking-widest mt-2">Real-time Learn Reps Operations</p>
         </div>
       </header>
 

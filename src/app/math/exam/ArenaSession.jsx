@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import VisualRenderer from '@/components/math/VisualRenderer';
 import { normalizeQuestionData, deriveVisualProps } from '@/lib/intelligence/workout-utils';
+import ExamReviewBoard from '@/components/math/ExamReviewBoard';
+import { saveMockExamAction } from '@/app/actions/examActions';
 
 export default function ArenaSession({ studentId, level, examPaper, durationMinutes }) {
   const router = useRouter();
@@ -98,51 +100,62 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
     const totalCorrect = mcq.correct + short.correct + structured.correct;
     const totalQuestions = mcq.total + short.total + structured.total;
 
-    setScoreSummary({
+    const scoreSummaryData = {
       total: { correct: totalCorrect, total: totalQuestions, percent: Math.round((totalCorrect / totalQuestions) * 100) },
       sections: { mcq, short, structured }
+    };
+
+    setScoreSummary(scoreSummaryData);
+
+    // Prepare data to send to database
+    const flattenedQuestions = [
+      ...examPaper.mcq.map(q => ({ ...q, type: 'MULTIPLE_CHOICE' })),
+      ...examPaper.short.map(q => ({ ...q, type: 'SHORT_ANSWER' })),
+      ...examPaper.structured.map(q => ({ ...q, type: 'STRUCTURED' }))
+    ];
+    
+    const generatedAnswersLog = flattenedQuestions.map(q => {
+      const studentAns = String(answers[q.id] || '').trim().toLowerCase();
+      const realAns = String(q.finalAnswer || '').trim().toLowerCase();
+      return {
+        questionId: q.id,
+        studentAnswer: answers[q.id] || '',
+        actualCorrect: studentAns === realAns
+      };
     });
+
+    // Save to PostgreSQL backend
+    saveMockExamAction(studentId, scoreSummaryData, flattenedQuestions, generatedAnswersLog).catch(console.error);
 
     setIsSubmitted(true);
     setShowReport(true);
   };
 
   if (showReport && scoreSummary) {
+    const flattenedQuestions = [
+      ...examPaper.mcq.map(q => ({ ...q, type: 'MULTIPLE_CHOICE' })),
+      ...examPaper.short.map(q => ({ ...q, type: 'SHORT_ANSWER' })),
+      ...examPaper.structured.map(q => ({ ...q, type: 'STRUCTURED' }))
+    ];
+    
+    const generatedAnswersLog = flattenedQuestions.map(q => {
+      const studentAns = String(answers[q.id] || '').trim().toLowerCase();
+      const realAns = String(q.finalAnswer || '').trim().toLowerCase();
+      return {
+        questionId: q.id,
+        studentAnswer: answers[q.id] || '',
+        actualCorrect: studentAns === realAns
+      };
+    });
+
     return (
-      <div className="max-w-4xl mx-auto p-12 bg-white border-[4px] border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] font-bold uppercase text-black space-y-12">
-        <div className="text-[10px] tracking-widest font-black text-slate-400">NEURAL_REPORT // {studentId.toUpperCase()}</div>
-        
-        <div className="space-y-4">
-          <h1 className="text-6xl font-black tracking-tighter italic">Simulation Finalized</h1>
-          <div className="text-3xl font-black text-blue-600">Total Score: {scoreSummary.total.percent}% ({scoreSummary.total.correct}/{scoreSummary.total.total})</div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {Object.entries(scoreSummary.sections).map(([name, stats]) => (
-            <div key={name} className="border-4 border-black p-6 bg-slate-50">
-              <div className="text-[10px] text-slate-400 mb-2">{name}</div>
-              <div className="text-2xl font-black">{Math.round((stats.correct / stats.total) * 100) || 0}%</div>
-              <div className="text-xs text-slate-500 mt-1">{stats.correct} / {stats.total} Correct</div>
-              <div className="w-full h-2 bg-slate-200 mt-4 border-2 border-black overflow-hidden">
-                <div 
-                  className="h-full bg-black" 
-                  style={{ width: `${(stats.correct / stats.total) * 100}%` }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="pt-8 border-t-4 border-black">
-          <p className="text-sm text-slate-500 mb-8">Performance data has been synchronized with the master synapse map. Repaired pathways will be reflected on the dashboard.</p>
-          
-          <button 
-            onClick={() => router.replace('/math')}
-            className="inline-block bg-black text-white px-12 py-4 text-xl font-black tracking-widest hover:bg-slate-800 transition-all border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] active:shadow-none active:translate-x-1 active:translate-y-1"
-          >
-            Exit Arena →
-          </button>
-        </div>
+      <div className="animate-in fade-in zoom-in-95 duration-500 w-full">
+        <ExamReviewBoard 
+          summary={null} 
+          initialQuestions={flattenedQuestions}
+          answersLog={generatedAnswersLog}
+          mode="mock_exam"
+        />
       </div>
     );
   }

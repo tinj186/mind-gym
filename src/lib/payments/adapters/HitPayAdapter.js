@@ -31,7 +31,7 @@ export class HitPayAdapter extends PaymentGateway {
         reference_number: `sub_${userId}_${Date.now()}`,
         redirect_url: redirectUrl,
         webhook: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/webhooks/payment`,
-        purpose: "MindGym Annual Pass"
+        purpose: "LearnReps Annual Pass"
       })
     });
 
