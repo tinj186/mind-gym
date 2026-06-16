@@ -2,6 +2,7 @@
  * Blueprint for Primary 1: Money
  * FOCUS: Counting money, note exchanges, and simple item transaction values.
  */
+import { getRandomContext } from '@/lib/utils/localization';
 import { foundationLogic } from './money/foundation';
 import { standardLogic } from './money/standard';
 import { advancedLogic } from './money/advanced';
@@ -53,7 +54,7 @@ export const moneyBlueprint = {
     standard_reverse_price_lookup: "Deducing the original cost of a purchased item by subtracting the received change from the note used to pay.",
     standard_multi_item_change: "A two-step problem calculating the combined cost of two items and finding the remaining change from a fixed starting note.",
 
-    // Advanced Tier (Expanded to 10 variants total)
+    // Advanced Tier
     advanced_transaction_change: "Multi-step shopping stories calculating total cost and change.",
     advanced_savings_and_spending: "Tracking money values across sequential savings additions and spending reductions over multiple steps.",
     advanced_pooled_affordability: "Two characters pooling distinct sets of money to purchase a shared item, calculating the resulting change or shortfall.",
@@ -66,40 +67,59 @@ export const moneyBlueprint = {
     advanced_multi_item_gift_sharing: "Calculating total cost for buying items for multiple people and checking the change from a high-denomination note."
   },
 
-  generate(difficulty = 'foundation', variant = '', type = 'SHORT_QUESTION') {
-    // Ensure activeVariant is a string and handle object-type variants or nulls from UI
-    let activeVariant = typeof variant === 'object' ? (variant?.id || '') : (variant || '').toString();
+  generate: (difficulty = 'foundation', variant = 'foundation_counting_coins', type = 'MCQ') => {
+    const safeType = String(type).toLowerCase();
+    const isShort = safeType.includes('short');
+    const isStructure = safeType.includes('structure') || safeType.includes('structured');
+    const isMCQ = safeType.includes('mcq');
 
-    // Defaulting Logic: If variant is empty, the generic "Money" name, or missing tier prefixes,
-    // route to a safe default based on difficulty to avoid unhandled Error throws.
-    if (!activeVariant || activeVariant === 'Money' || !/^(foundation|standard|advanced)_/.test(activeVariant)) {
-      if (difficulty?.toLowerCase() === 'standard') activeVariant = 'standard_value_exchange';
-      else if (difficulty?.toLowerCase() === 'advanced') activeVariant = 'advanced_transaction_change';
-      else activeVariant = 'foundation_counting_coins';
+    let finalDifficulty = difficulty;
+    let finalVariant = variant;
+
+    if (typeof difficulty === 'string' && difficulty.includes('_')) {
+      finalVariant = difficulty;
+      finalDifficulty = variant || 'standard';
     }
 
-    // Normalize type labels from UI (e.g., "Short Question" -> "SHORT_QUESTION")
-    const normType = type?.toUpperCase()?.replace(/\s/g, '_') || 'SHORT_QUESTION';
-    const isMCQ = normType === 'MCQ' || normType === 'MCQ_BUTTONS';
-    const isShort = normType === 'SHORT_QUESTION';
-    const isStructure = normType === 'STRUCTURED';
+    let activeVariant = finalVariant;
+    if (!moneyBlueprint.variants[finalVariant]) {
+      const validVariants = Object.keys(moneyBlueprint.variants).filter(k => k.startsWith(finalDifficulty));
+      if (validVariants.length > 0) {
+        activeVariant = validVariants[Math.floor(Math.random() * validVariants.length)];
+      } else {
+        activeVariant = 'foundation_counting_coins'; 
+      }
+    }
 
-    const zodType = normType;
-    const zodDiff = (difficulty || 'foundation').toUpperCase();
-    const level = "Primary 1";
-    const topic = "Money";
+    const config = moneyBlueprint.difficultyLevels[finalDifficulty] || moneyBlueprint.difficultyLevels.foundation;
+    const zodType = isMCQ ? 'MCQ' : isShort ? 'SHORT_QUESTION' : 'STRUCTURED';
+    const zodDiff = finalDifficulty.charAt(0).toUpperCase() + finalDifficulty.slice(1);
+    const level = 'Primary 1';
+    const topic = 'Money';
 
-    // Dynamic routing to the variant modules matching our architecture layout
+    const getQText = (words, equation) => isShort ? equation : words;
+    const levelNum = parseInt(level.replace('Primary ', ''));
+    const tier = levelNum <= 2 ? 'LOWER_BLOCK' : (levelNum <= 4 ? 'MIDDLE_BLOCK' : 'UPPER_BLOCK');
+    const context = getRandomContext('SHOPPING', tier);
+
+    const hintProtocol = `\nCRITICAL HINT PROTOCOL: You MUST provide a conceptual "hint" field in your JSON. Focus on counting currency correctly.`;
+
+    let formatInstructions = isMCQ 
+      ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}` 
+      : `Format as Short Answer. The "options" field in your JSON should be null.${hintProtocol}`;
+
     if (activeVariant.startsWith('foundation_')) {
-      return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic);
-    }
-    if (activeVariant.startsWith('standard_')) {
-      return standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic);
-    }
-    if (activeVariant.startsWith('advanced_')) {
-      return advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic);
+      return foundationLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
     }
 
-    throw new Error(`Variant '${activeVariant}' logic pathway not found inside Money module.`);
+    if (activeVariant.startsWith('standard_')) {
+      return standardLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
+    }
+
+    if (activeVariant.startsWith('advanced_')) {
+      return advancedLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
+    }
+
+    throw new Error(`Variant '${finalVariant}' not valid.`);
   }
 };

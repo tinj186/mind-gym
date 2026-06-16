@@ -26,6 +26,26 @@ export const standardVariants = {
 
     const visualProtocol = `\nSTRICT VISUAL PROTOCOL: You MUST generate an array of ${totalItems} UNIQUE emojis for the "visualItems" field. Match these emojis to the theme of your story.`;
 
+    let options = [backOrdinal, ORDINAL_SYMBOLS[Math.max(0, targetFromBack - 2)], ORDINAL_SYMBOLS[Math.min(11, targetFromBack)], ORDINAL_SYMBOLS[Math.min(11, targetFromBack + 1)]];
+    options = [...new Set(options)];
+    while(options.length < 4) {
+      options.push(ORDINAL_SYMBOLS[Math.floor(Math.random() * 12)]);
+      options = [...new Set(options)];
+    }
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [ORDINAL_SYMBOLS[Math.max(0, targetFromBack - 2)]]: "CONCEPTUAL_ERROR",
+        [ORDINAL_SYMBOLS[Math.min(11, targetFromBack)]]: "CONCEPTUAL_ERROR",
+        [ORDINAL_SYMBOLS[Math.min(11, targetFromBack + 1)]]: "CARELESS_CALCULATION"
+      };
+      options.forEach(opt => { if (opt !== backOrdinal && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_reverse question. DO NOT modify the mathematical structure or the final answer.${visualProtocol}
         
@@ -43,7 +63,8 @@ export const standardVariants = {
         OUTPUT FORMAT (Return ONLY valid JSON):
         {
           "questionText": "...",
-          "options": ${type === 'MCQ' ? JSON.stringify([ORDINAL_SYMBOLS[targetFromBack - 2] || "1st", backOrdinal, ORDINAL_SYMBOLS[targetFromBack], ORDINAL_SYMBOLS[targetFromBack + 1]]) : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`If you know the position from the front, how can you use the total number of items to find the position from the back?`, `Think: Total - Front Position + 1`))},
           "visualItems": ["emoji1", "emoji2", "..."],
           "modelData": { "direction": "left" },
@@ -62,6 +83,26 @@ export const standardVariants = {
 
     const visualProtocol = `\nSTRICT VISUAL PROTOCOL: You MUST generate an array of ${totalItems} UNIQUE emojis for the "visualItems" field. Match these emojis to the theme of your story.`;
 
+    let options = [answer, "2nd", "4th", "5th"];
+    options = [...new Set(options)];
+    while(options.length < 4) {
+      options.push(ORDINAL_SYMBOLS[Math.floor(Math.random() * 12)]);
+      options = [...new Set(options)];
+    }
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        ["2nd"]: "CONCEPTUAL_ERROR",
+        ["4th"]: "CONCEPTUAL_ERROR",
+        ["5th"]: "CARELESS_CALCULATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_change question. DO NOT modify the mathematical structure or the final answer.${visualProtocol}
         
@@ -79,7 +120,8 @@ export const standardVariants = {
         OUTPUT FORMAT (Return ONLY valid JSON):
         {
           "questionText": "...",
-          "options": ${type === 'MCQ' ? '["2nd", "3rd", "4th", "5th"]' : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`If someone in front of ${sName} leaves, does ${sName}'s position move forward or backward? By how many spots?`, `Think: Does the position number get smaller or larger?`))},
           "visualItems": ["emoji1", "emoji2", "..."],
           "modelData": { "direction": "left" },
@@ -99,6 +141,25 @@ export const standardVariants = {
 
     const visualProtocol = `\nSTRICT VISUAL PROTOCOL: You MUST generate an array of ${totalItems} UNIQUE emojis for the "visualItems" field. Match these emojis to the theme of your story.`;
 
+    let options = [answer, ORDINAL_WORDS[Math.max(0, rightPositionIndex - 1)], ORDINAL_WORDS[Math.min(11, rightPositionIndex + 1)], ORDINAL_WORDS[Math.min(11, rightPositionIndex + 2)]];
+    options = [...new Set(options)];
+    while(options.length < 4) {
+      options.push(ORDINAL_WORDS[Math.floor(Math.random() * 12)]);
+      options = [...new Set(options)];
+    }
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [ORDINAL_WORDS[Math.max(0, rightPositionIndex - 1)]]: "CONCEPTUAL_ERROR",
+        [ORDINAL_WORDS[Math.min(11, rightPositionIndex + 1)]]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_from_the_right question. DO NOT modify the mathematical structure or the final answer.${visualProtocol}
         MATH CONSTRAINTS:
@@ -116,7 +177,8 @@ export const standardVariants = {
         { 
           "questionText": "...", 
           "hint": "Start counting from the rightmost item. Counting from the right, which position is it in?",
-          "options": ${type === 'MCQ' ? JSON.stringify([ORDINAL_WORDS[Math.max(0, rightPositionIndex - 1)], answer, ORDINAL_WORDS[Math.min(9, rightPositionIndex + 1)], ORDINAL_WORDS[Math.min(9, rightPositionIndex + 2)]]) : 'null'}, 
+          "options": ${mcqOptions}, 
+          "defectMap": ${defectMapStr},
           "visualItems": ["emoji1", "emoji2", "..."], 
           "modelData": { "direction": "right" }, 
           "finalAnswer": "${answer}", 
@@ -136,6 +198,25 @@ export const standardVariants = {
     const eventDesc = joinPos === 1 ? "joins the front of the queue" : `joins the queue at the ${joinOrdinal} position`;
     const visualProtocol = `\nSTRICT VISUAL PROTOCOL: You MUST generate an array of ${startPos + 2} UNIQUE emojis for the "visualItems" field. Match these emojis to the theme of your story.`;
 
+    let options = [answer, ORDINAL_WORDS[Math.max(0, startPos - 2)], ORDINAL_WORDS[startPos - 1], ORDINAL_WORDS[Math.min(11, newPos)]];
+    options = [...new Set(options)];
+    while(options.length < 4) {
+      options.push(ORDINAL_WORDS[Math.floor(Math.random() * 12)]);
+      options = [...new Set(options)];
+    }
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [ORDINAL_WORDS[Math.max(0, startPos - 2)]]: "CONCEPTUAL_ERROR",
+        [ORDINAL_WORDS[startPos - 1]]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_join_front question. DO NOT modify the mathematical structure or the final answer.${visualProtocol}
         MATH CONSTRAINTS:
@@ -151,7 +232,8 @@ export const standardVariants = {
         { 
           "questionText": "...", 
           "hint": ${JSON.stringify(getQText(`If someone joins the line in front of ${sName}, does ${sName}'s position move forward or backward? By how many spots?`, `Think: Does the position number get smaller or larger?`))},
-          "options": ${type === 'MCQ' ? JSON.stringify([ORDINAL_WORDS[startPos - 2] || "first", ORDINAL_WORDS[startPos - 1], answer, ORDINAL_WORDS[newPos]]) : 'null'}, 
+          "options": ${mcqOptions}, 
+          "defectMap": ${defectMapStr},
           "visualItems": ["emoji1", "emoji2", "..."], 
           "modelData": { "direction": "left" }, 
           "finalAnswer": "${answer}", 
@@ -171,6 +253,25 @@ export const standardVariants = {
     const eventDesc = leavePos === 1 ? "at the very front leaves" : `at the ${leaveOrdinal} position leaves`;
     const visualProtocol = `\nSTRICT VISUAL PROTOCOL: You MUST generate an array of ${startPos + 1} UNIQUE emojis for the "visualItems" field. Match these emojis to the theme of your story.`;
 
+    let options = [answer, ORDINAL_WORDS[Math.max(0, newPos - 2)], ORDINAL_WORDS[startPos - 1], ORDINAL_WORDS[startPos]];
+    options = [...new Set(options)];
+    while(options.length < 4) {
+      options.push(ORDINAL_WORDS[Math.floor(Math.random() * 12)]);
+      options = [...new Set(options)];
+    }
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [ORDINAL_WORDS[Math.max(0, newPos - 2)]]: "CONCEPTUAL_ERROR",
+        [ORDINAL_WORDS[startPos - 1]]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_leave_front question. DO NOT modify the mathematical structure or the final answer.${visualProtocol}
         MATH CONSTRAINTS:
@@ -186,7 +287,8 @@ export const standardVariants = {
         { 
           "questionText": "...", 
           "hint": ${JSON.stringify(getQText(`If someone in front of ${sName} leaves, does ${sName}'s position move forward or backward? By how many spots?`, `Think: Does the position number get smaller or larger?`))},
-          "options": ${type === 'MCQ' ? JSON.stringify([ORDINAL_WORDS[newPos - 2] || "first", answer, ORDINAL_WORDS[startPos - 1], ORDINAL_WORDS[startPos]]) : 'null'}, 
+          "options": ${mcqOptions}, 
+          "defectMap": ${defectMapStr},
           "visualItems": ["emoji1", "emoji2", "..."], 
           "modelData": { "direction": "left" }, 
           "finalAnswer": "${answer}", 
@@ -203,6 +305,26 @@ export const standardVariants = {
     const answer = ORDINAL_WORDS[targetPos - 1];
     const sName = extract(context.name);
 
+    let options = [answer, ORDINAL_WORDS[Math.max(0, targetPos - 2)], ORDINAL_WORDS[targetPos], ORDINAL_WORDS[basePos + stepsAhead - 1]];
+    options = [...new Set(options)];
+    while(options.length < 4) {
+      options.push(ORDINAL_WORDS[Math.floor(Math.random() * 12)]);
+      options = [...new Set(options)];
+    }
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [ORDINAL_WORDS[Math.max(0, targetPos - 2)]]: "CONCEPTUAL_ERROR",
+        [ORDINAL_WORDS[targetPos]]: "CONCEPTUAL_ERROR",
+        [ORDINAL_WORDS[basePos + stepsAhead - 1]]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_relative_ahead question. DO NOT modify the mathematical structure or the final answer.
         MATH CONSTRAINTS:
@@ -217,7 +339,8 @@ export const standardVariants = {
         { 
           "questionText": "...", 
           "hint": ${JSON.stringify(getQText(`If someone is 'ahead' in a race, is their position number smaller or larger than yours?`, `Think: Smaller number means further ahead.`))},
-          "options": ${type === 'MCQ' ? JSON.stringify([ORDINAL_WORDS[targetPos - 2] || "first", answer, ORDINAL_WORDS[targetPos], ORDINAL_WORDS[basePos + stepsAhead - 1]]) : 'null'}, 
+          "options": ${mcqOptions}, 
+          "defectMap": ${defectMapStr},
           "visualItems": [], 
           "finalAnswer": "${answer}", 
           "solutionSteps": ${JSON.stringify(getQText(`${basePos} - ${stepsAhead} = ${targetPos}. The position is ${answer}.`, `${basePos} - ${stepsAhead} = ${targetPos}`))}
@@ -233,6 +356,25 @@ export const standardVariants = {
     const answer = ORDINAL_WORDS[targetPos - 1];
     const sName = extract(context.name);
 
+    let options = [answer, ORDINAL_WORDS[Math.max(0, targetPos - 3)], ORDINAL_WORDS[Math.max(0, targetPos - 2)], ORDINAL_WORDS[Math.min(11, targetPos)]];
+    options = [...new Set(options)];
+    while(options.length < 4) {
+      options.push(ORDINAL_WORDS[Math.floor(Math.random() * 12)]);
+      options = [...new Set(options)];
+    }
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [ORDINAL_WORDS[Math.max(0, targetPos - 2)]]: "CONCEPTUAL_ERROR",
+        [ORDINAL_WORDS[Math.min(11, targetPos)]]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_relative_behind question. DO NOT modify the mathematical structure or the final answer.
         MATH CONSTRAINTS:
@@ -247,7 +389,8 @@ export const standardVariants = {
         { 
           "questionText": "...", 
           "hint": ${JSON.stringify(getQText(`If someone is 'behind' in a queue, is their position number smaller or larger than yours?`, `Think: Larger number means further behind.`))},
-          "options": ${type === 'MCQ' ? JSON.stringify([ORDINAL_WORDS[targetPos - 3], ORDINAL_WORDS[targetPos - 2], answer, ORDINAL_WORDS[targetPos]]) : 'null'}, 
+          "options": ${mcqOptions}, 
+          "defectMap": ${defectMapStr},
           "visualItems": [], 
           "finalAnswer": "${answer}", 
           "solutionSteps": ${JSON.stringify(getQText(`${basePos} + ${stepsBehind} = ${targetPos}. The position is ${answer}.`, `${basePos} + ${stepsBehind} = ${targetPos}`))}
@@ -261,6 +404,25 @@ export const standardVariants = {
     const endPos = startPos + 2; 
     const targetPos = startPos + 1;
     const answer = ORDINAL_WORDS[targetPos - 1];
+
+    let options = [answer, ORDINAL_WORDS[Math.max(0, startPos - 2)], ORDINAL_WORDS[startPos - 1], ORDINAL_WORDS[endPos - 1]];
+    options = [...new Set(options)];
+    while(options.length < 4) {
+      options.push(ORDINAL_WORDS[Math.floor(Math.random() * 12)]);
+      options = [...new Set(options)];
+    }
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [ORDINAL_WORDS[startPos - 1]]: "CONCEPTUAL_ERROR",
+        [ORDINAL_WORDS[endPos - 1]]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_between_positions question.
@@ -276,7 +438,8 @@ export const standardVariants = {
         { 
           "questionText": ${JSON.stringify(getQText(`Which ordinal position is exactly between the ${ORDINAL_WORDS[startPos - 1]} and ${ORDINAL_WORDS[endPos - 1]} positions?`, `Find the position exactly between ${ORDINAL_SYMBOLS[startPos - 1]} and ${ORDINAL_SYMBOLS[endPos - 1]}.`))}, 
           "hint": ${JSON.stringify(getQText(`What number comes exactly in the middle of the two given numbers?`, `Think: What's between X and Y?`))},
-          "options": ${type === 'MCQ' ? JSON.stringify([ORDINAL_WORDS[startPos - 2] || "zero", ORDINAL_WORDS[startPos - 1], answer, ORDINAL_WORDS[endPos - 1]]) : 'null'}, 
+          "options": ${mcqOptions}, 
+          "defectMap": ${defectMapStr},
           "visualItems": [], 
           "finalAnswer": "${answer}", 
           "solutionSteps": ${JSON.stringify(getQText(`The number between ${startPos} and ${endPos} is ${targetPos}, which is the ${answer} position.`, `${startPos} < ${targetPos} < ${endPos}`))}
@@ -292,6 +455,25 @@ export const standardVariants = {
     const answer = String(total);
     const sName = extract(context.name);
 
+    let options = [answer, String(total - 2), String(total - 1), String(total + 1)];
+    options = [...new Set(options)];
+    while(options.length < 4) {
+      options.push(String(Math.floor(Math.random() * 15) + 3));
+      options = [...new Set(options)];
+    }
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [String(total - 1)]: "CONCEPTUAL_ERROR",
+        [String(total + 1)]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_find_total question. DO NOT modify the mathematical structure or the final answer.
         MATH CONSTRAINTS:
@@ -306,7 +488,8 @@ export const standardVariants = {
         { 
           "questionText": "...", 
           "hint": ${JSON.stringify(getQText(`If you add the position from the front and the position from the back, what does that sum represent? How do you adjust for the person being counted twice?`, `Think: Front + Back - 1`))},
-          "options": ${type === 'MCQ' ? JSON.stringify([String(total - 2), String(total - 1), answer, String(total + 1)]) : 'null'}, 
+          "options": ${mcqOptions}, 
+          "defectMap": ${defectMapStr},
           "visualItems": [], 
           "finalAnswer": "${answer}", 
           "solutionSteps": ${JSON.stringify(getQText(`${frontPos} (front) + ${backPos} (back) - 1 (overlapping person) = ${total}.`, `${frontPos} + ${backPos} - 1 = ${total}`))}
@@ -319,6 +502,24 @@ export const standardVariants = {
     const posA = Math.floor(Math.random() * 3) + 1; 
     const posB = posA + Math.floor(Math.random() * 4) + 2; 
     const answer = ORDINAL_WORDS[posA - 1];
+
+    let options = [answer, ORDINAL_WORDS[Math.max(0, posA - 2)], ORDINAL_WORDS[posB - 1], ORDINAL_WORDS[posB]];
+    options = [...new Set(options)];
+    while(options.length < 4) {
+      options.push(ORDINAL_WORDS[Math.floor(Math.random() * 12)]);
+      options = [...new Set(options)];
+    }
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [ORDINAL_WORDS[posB - 1]]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_swap_positions question.
@@ -335,7 +536,8 @@ export const standardVariants = {
         { 
           "questionText": ${JSON.stringify(getQText(`Item A is ${ORDINAL_WORDS[posA - 1]} and Item B is ${ORDINAL_WORDS[posB - 1]}. If they swap positions, what is Item B's new position?`, `${ORDINAL_SYMBOLS[posA - 1]} and ${ORDINAL_SYMBOLS[posB - 1]} swap. ${ORDINAL_SYMBOLS[posB - 1]} is now at ? position.`))}, 
           "hint": ${JSON.stringify(getQText(`If two items swap positions, what happens to their original spots?`, `Think: They exchange places.`))},
-          "options": ${type === 'MCQ' ? JSON.stringify([ORDINAL_WORDS[posA - 2] || "zero", answer, ORDINAL_WORDS[posB - 1], ORDINAL_WORDS[posB]]) : 'null'}, 
+          "options": ${mcqOptions}, 
+          "defectMap": ${defectMapStr},
           "visualItems": [], 
           "finalAnswer": "${answer}", 
           "solutionSteps": ${JSON.stringify(getQText(`Since they swap, Item B takes Item A's original spot, which was ${answer}.`, `Swap spots: ${answer}`))}

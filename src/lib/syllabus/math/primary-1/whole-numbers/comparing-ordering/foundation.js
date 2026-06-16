@@ -12,7 +12,19 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const askGreater = Math.random() > 0.5;
     const answer = askGreater ? String(Math.max(num1, num2)) : String(Math.min(num1, num2));
     const targetWord = askGreater ? "greater" : "smaller"; // Renamed from targetWord to targetWord
-    const options = isMCQ ? [String(num1), String(num2), String(Math.max(num1, num2) + 10), String(Math.min(num1, num2) - 5)] : null;
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      const wrongAnswer = askGreater ? String(Math.min(num1, num2)) : String(Math.max(num1, num2));
+      options = Array.from(new Set([answer, wrongAnswer, String(Math.max(num1, num2) + 10), String(Math.min(num1, num2) - 5)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [wrongAnswer]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
     const hint = getQText(`Look at the tens digits of ${num1} and ${num2}. Which one is ${targetWord}?`, `Compare the tens place first.`);
 
     const questionText = getQText(`Look at the number cards. Which number is ${targetWord}?`, `Which is ${targetWord}: ${num1} or ${num2}?`);
@@ -24,6 +36,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         content: {
           questionText: questionText,
           options: options,
+          defectMap: defectMap,
           hint: hint,
           finalAnswer: answer,
           solutionSteps: solutionSteps
@@ -54,7 +67,16 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
        distractor = Math.floor(Math.random() * 80) + 10; 
     } while (nums.includes(distractor) || (askGreatest && distractor > Math.max(...nums)) || (!askGreatest && distractor < Math.min(...nums)));
 
-    const options = isMCQ ? [String(nums[0]), String(nums[1]), String(nums[2]), String(distractor)] : null;
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      options = Array.from(new Set([String(nums[0]), String(nums[1]), String(nums[2]), String(distractor)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {};
+      options.forEach(opt => { if (opt !== answer) defectMap[opt] = "CONCEPTUAL_ERROR"; });
+    }
     const hint = getQText(`Look at all the numbers. Which one has the ${askGreatest ? 'most' : 'least'} tens?`, `Compare the tens places.`);
 
     const questionText = getQText(`Look at the number cards. Which is the ${targetWord} number?`, `Which is the ${targetWord}: ${nums[0]}, ${nums[1]}, or ${nums[2]}?`);
@@ -66,6 +88,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         content: {
           questionText: questionText,
           options: options,
+          defectMap: defectMap,
           hint: hint,
           finalAnswer: answer,
           solutionSteps: solutionSteps
@@ -83,7 +106,19 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
   if (activeVariant === 'foundation_next_number') {
     const num = Math.floor(Math.random() * 88) + 10; // 10 to 97
     const answer = String(num + 1);
-    const options = isMCQ ? [String(num - 1), answer, String(num + 10), String(num)] : null;
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      options = Array.from(new Set([String(num - 1), answer, String(num + 10), String(num)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(num - 1)]: "CONFUSED_OPERATION",
+        [String(num)]: "CONSTANT_VIOLATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
     const hint = getQText(`Think about counting forward from ${num}. What is the next number?`, `Counting on from ${num}...`);
 
     const questionText = getQText(`Look at the number cards. What number comes just after ${num}?`, `What number comes after ${num}?`);
@@ -95,6 +130,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         content: {
           questionText: questionText,
           options: options,
+          defectMap: defectMap,
           hint: hint,
           finalAnswer: answer,
           solutionSteps: solutionSteps
@@ -112,7 +148,19 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
   if (activeVariant === 'foundation_before_number') {
     const num = Math.floor(Math.random() * 88) + 11; // 11 to 98
     const answer = String(num - 1);
-    const options = isMCQ ? [String(num + 1), answer, String(num - 10), String(num)] : null;
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      options = Array.from(new Set([String(num + 1), answer, String(num - 10), String(num)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(num + 1)]: "CONFUSED_OPERATION",
+        [String(num)]: "CONSTANT_VIOLATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
     const hint = getQText(`Think about counting backwards from ${num}. What number comes before it?`, `Counting back from ${num}...`);
 
     const questionText = getQText(`Look at the number cards. What number comes just before ${num}?`, `What number comes before ${num}?`);
@@ -124,6 +172,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         content: {
           questionText: questionText,
           options: options,
+          defectMap: defectMap,
           hint: hint,
           finalAnswer: answer,
           solutionSteps: solutionSteps

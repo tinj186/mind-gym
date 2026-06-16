@@ -40,13 +40,25 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const operator = isMult ? 'x' : '÷';
     const equationStr = isMult ? `${groups} x ${itemsPerGroup} = ?` : `${total} ÷ ${groups} = ?`;
 
-    const options = isMCQ ? [answer, String(parseInt(answer) + 1), String(parseInt(answer) - 1), isMult ? String(groups + itemsPerGroup) : String(total)].sort(() => Math.random() - 0.5) : null;
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = Array.from(new Set([answer, String(parseInt(answer) + 1), String(parseInt(answer) - 1), isMult ? String(groups + itemsPerGroup) : String(total)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {};
+      if (isMult) defectMap[String(groups + itemsPerGroup)] = "CONFUSED_OPERATION";
+      else defectMap[String(total)] = "CONSTANT_VIOLATION";
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     const promptObject = {
       meta: commonMeta,
       content: {
         questionText: getQText(`[STORY] How many are there ${isMult ? 'altogether' : 'in each group'}?`, equationStr, zodType),
         options: options,
+        defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
         solutionSteps: isMult ? `1. ${groups} groups of ${itemsPerGroup} makes ${total}.` : `1. ${total} shared into ${groups} groups gives ${itemsPerGroup} in each group.`,

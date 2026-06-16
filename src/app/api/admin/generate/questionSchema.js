@@ -16,6 +16,7 @@ export const UniversalQuestionSchema = z.object({
     finalAnswer: z.string(),
     solutionSteps: z.string(),
     hint: z.string().optional(),
+    defectMap: z.record(z.string()).optional().nullable(),
   }),
 
   // 3. VISUAL ENGINE: The Polymorphic Payload

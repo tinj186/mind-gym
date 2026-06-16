@@ -36,11 +36,26 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const additionStr = Array(count).fill(num).join(' + ');
     const answer = String(count);
 
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = Array.from(new Set([answer, String(num), String(count * num), String(count + 1)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(num)]: "CONCEPTUAL_ERROR",
+        [String(count * num)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
+
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many groups of ${num} are there in the addition?`, `${additionStr} = ? x ${num}`, zodType),
-        options: isMCQ ? [answer, String(num), String(count * num), String(count + 1)].sort(() => Math.random() - 0.5) : null,
+        options: options,
+        defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
         solutionSteps: `1. ${additionStr} is ${num} added ${count} times.\n2. This is ${count} groups of ${num}.\n3. Therefore, ${additionStr} = ${count} x ${num}.`
@@ -71,11 +86,25 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const cols = Math.floor(Math.random() * 4) + 3;
     const answer = String(rows * cols);
 
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = Array.from(new Set([answer, String(rows + cols), String(parseInt(answer) + 2), String(parseInt(answer) - 5)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(rows + cols)]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
+
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many ${itemLabel} are there altogether?`, `${rows} x ${cols} = ?`, zodType),
-        options: isMCQ ? [answer, String(rows + cols), String(parseInt(answer) + 2), String(parseInt(answer) - 5)].sort(() => Math.random() - 0.5) : null,
+        options: options,
+        defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
         solutionSteps: `1. There are ${rows} rows with ${cols} in each row.\n2. ${rows} x ${cols} = ${answer}.`
@@ -106,11 +135,26 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const times = Math.floor(Math.random() * 3) + 2; 
     const answer = String(startVal * times);
 
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = Array.from(new Set([answer, String(startVal + times), String(startVal), String(parseInt(answer) + 5)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(startVal + times)]: "CONFUSED_OPERATION",
+        [String(startVal)]: "CONSTANT_VIOLATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
+
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many ${itemLabel} does the second person have?`, `${times} x ${startVal} = ?`, zodType),
-        options: isMCQ ? [answer, String(startVal + times), String(startVal), String(parseInt(answer) + 5)].sort(() => Math.random() - 0.5) : null,
+        options: options,
+        defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
         solutionSteps: `1. ${times} times as many as ${startVal} means we multiply by ${times}.\n2. ${times} x ${startVal} = ${answer}.`
@@ -141,11 +185,25 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const groups = Math.floor(Math.random() * 4) + 3;
     const answer = String(groups * step);
 
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = Array.from(new Set([answer, String(parseInt(answer) - step), String(parseInt(answer) + step), String(groups)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(groups)]: "CONSTANT_VIOLATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
+
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] If you skip count by ${step} for ${groups} jumps, what is the total?`, `${groups} x ${step} = ?`, zodType),
-        options: isMCQ ? [answer, String(parseInt(answer) - step), String(parseInt(answer) + step), String(groups)].sort(() => Math.random() - 0.5) : null,
+        options: options,
+        defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
         solutionSteps: `1. Counting by ${step} for ${groups} times: ${Array.from({length: groups}, (_, i) => (i + 1) * step).join(', ')}.\n2. The total is ${answer}.`
@@ -176,11 +234,25 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const price = [2, 5, 10][Math.floor(Math.random() * 3)]; 
     const answer = String(qty * price);
 
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = Array.from(new Set([answer, String(qty + price), String(parseInt(answer) - price), String(parseInt(answer) + 10)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(qty + price)]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
+
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How much does ${context.name} pay in total?`, `${qty} x $${price} = ?`, zodType),
-        options: isMCQ ? [answer, String(qty + price), String(parseInt(answer) - price), String(parseInt(answer) + 10)].sort(() => Math.random() - 0.5) : null,
+        options: options,
+        defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
         solutionSteps: `1. Each item costs $${price}.\n2. For ${qty} items, we calculate ${qty} x ${price} = ${answer}.`
@@ -212,11 +284,26 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const total = groups * each;
     const answer = String(each);
 
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = Array.from(new Set([answer, String(total), String(groups), String(each + 1)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(total)]: "CONSTANT_VIOLATION",
+        [String(groups)]: "CONSTANT_VIOLATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
+
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many ${itemLabel} does each person get?`, `${total} ÷ ${groups} = ?`, zodType),
-        options: isMCQ ? [answer, String(total), String(groups), String(each + 1)].sort(() => Math.random() - 0.5) : null,
+        options: options,
+        defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
         solutionSteps: `1. Sharing ${total} items among ${groups} people means we divide by ${groups}.\n2. ${total} ÷ ${groups} = ${answer} each.`
@@ -248,11 +335,26 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const total = groups * size;
     const answer = String(groups);
     
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = Array.from(new Set([answer, String(total), String(size), String(groups + 1)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(total)]: "CONSTANT_VIOLATION",
+        [String(size)]: "CONSTANT_VIOLATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
+
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many groups can ${context.name} make?`, `${total} ÷ ${size} = ?`, zodType),
-        options: isMCQ ? [answer, String(total), String(size), String(groups + 1)].sort(() => Math.random() - 0.5) : null,
+        options: options,
+        defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
         solutionSteps: `1. Putting ${total} items into groups of ${size} means we divide by ${size}.\n2. ${total} ÷ ${size} = ${answer} groups.`
@@ -284,11 +386,27 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const prod = n1 * n2;
     const answer = String(n1);
 
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = Array.from(new Set([answer, String(n2), String(prod), String(n1 + n2)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(n2)]: "CONSTANT_VIOLATION",
+        [String(prod)]: "CONSTANT_VIOLATION",
+        [String(n1 + n2)]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
+
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] If ${n1} x ${n2} = ${prod}, what is ${prod} ÷ ${n2}?`, `If ${n1} x ${n2} = ${prod}, then ${prod} ÷ ${n2} = ?`, zodType),
-        options: isMCQ ? [answer, String(n2), String(prod), String(n1 + n2)].sort(() => Math.random() - 0.5) : null,
+        options: options,
+        defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
         solutionSteps: `1. Division is the opposite of multiplication.\n2. Since ${n1} x ${n2} = ${prod}, it follows that ${prod} ÷ ${n2} = ${n1}.`
@@ -319,11 +437,19 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const isEven = total % 2 === 0;
     const answer = isEven ? "Yes" : "No";
 
+    let defectMap = null;
+    if (isMCQ) {
+      defectMap = {
+        [answer === "Yes" ? "No" : "Yes"]: "CONCEPTUAL_ERROR"
+      };
+    }
+
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] Can ${context.name} share these ${itemLabel} equally between 2 friends without any left over?`, `Can ${total} be shared equally into 2 groups?`, zodType),
         options: ["Yes", "No"],
+        defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
         solutionSteps: `1. ${total} is an ${isEven ? 'even' : 'odd'} number.\n2. ${isEven ? 'Even numbers can be shared equally into 2 groups.' : 'Odd numbers will always have 1 left over when shared into 2 groups.'}`
@@ -361,11 +487,27 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const count = Math.floor(Math.random() * 4) + 3; // 3 to 6
     const answer = String(count * scenario.per);
 
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = Array.from(new Set([answer, String(count), String(scenario.per), String(count + scenario.per)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(count)]: "CONSTANT_VIOLATION",
+        [String(scenario.per)]: "CONSTANT_VIOLATION",
+        [String(count + scenario.per)]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
+
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many ${scenario.attr} are there altogether?`, `${count} x ${scenario.per} = ?`, zodType),
-        options: isMCQ ? [answer, String(count), String(scenario.per), String(count + scenario.per)].sort(() => Math.random() - 0.5) : null,
+        options: options,
+        defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
         solutionSteps: `1. Each ${scenario.type.slice(0, -1)} has ${scenario.per} ${scenario.attr}.\n2. ${count} ${scenario.type} have ${count} x ${scenario.per} = ${answer} ${scenario.attr}.`
@@ -420,11 +562,21 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       finalAnswerStr = distractorLetter;
     }
     
+    let defectMap = null;
+    if (isMCQ) {
+      defectMap = {
+        [valid1]: "CONCEPTUAL_ERROR",
+        [valid2]: "CONCEPTUAL_ERROR",
+        [valid3]: "CONCEPTUAL_ERROR"
+      };
+    }
+    
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(questionTextStr, questionTextStr, zodType),
         options: isMCQ ? items : null,
+        defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: finalAnswerStr,
         solutionSteps: `1. There are ${group_count} groups of ${items_per_group}.\n2. This can be written as ${valid1}, ${valid2}, or ${valid3}.\n3. ${distractor} is addition, which gives the wrong total.`

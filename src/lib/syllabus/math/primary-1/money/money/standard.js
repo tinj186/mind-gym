@@ -1,113 +1,363 @@
-export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic) {
-  const commonMeta = { level, topic, subtopic: 'Money', type: zodType, difficulty: zodDiff, strand: 'Measurement and Geometry', subject: 'Math', gradeLevel: 'P1', heuristic: 'Money Calculations' };
-  const inputType = isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT';
+import { getRandomContext } from '@/lib/utils/localization';
 
-  // 1. Core Procedural Generator Engine for Standard Tier (Max $50 Boundary)
-  const fullPool = ['10¢', '20¢', '50¢', '$1', '$2', '$5', '$10', '$50'];
-  const generatedItems = [];
-  let sumCents = 0;
+const getShuffledOptions = (correct, distractors) => [correct, ...distractors].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4);
+const generateMoneyString = (cents) => cents >= 100 ? `$${(cents / 100).toFixed(2)}` : `${cents}¢`;
 
-  // Set asset volume limits based on variant design parameters
-  let targetCount = Math.floor(Math.random() * 3) + 3; // 3 to 5 pieces default
-  if (activeVariant === 'standard_value_exchange') targetCount = 1; // Single item to break down
-
-  // Safe generation loop bounded within $50.00 max limit
-  for (let i = 0; i < 12; i++) {
-    if (generatedItems.length >= targetCount) break;
+export const standardVariants = {
+  standard_value_exchange: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const parentNotes = ['$1', '$2', '$5', '$10', '$50'];
+    const randomParent = parentNotes[Math.floor(Math.random() * parentNotes.length)];
+    const parentVal = parseInt(randomParent.replace('$', ''), 10) * 100;
     
-    const randomItem = fullPool[Math.floor(Math.random() * fullPool.length)];
-    const itemValueCents = randomItem.endsWith('¢') 
-      ? parseInt(randomItem.replace('¢', ''), 10) 
-      : parseInt(randomItem.replace('$', ''), 10) * 100;
+    // Choose a valid sub-coin or smaller note to exchange into
+    let validSubTokens = ['10¢', '20¢', '50¢'];
+    if (parentVal >= 500) validSubTokens.push('$1', '$2');
+    if (parentVal >= 1000) validSubTokens.push('$5');
+    if (parentVal >= 5000) validSubTokens.push('$10');
+    
+    const randomSubToken = validSubTokens[Math.floor(Math.random() * validSubTokens.length)];
+    const subVal = randomSubToken.endsWith('¢') ? parseInt(randomSubToken.replace('¢', ''), 10) : parseInt(randomSubToken.replace('$', ''), 10) * 100;
+    
+    // Only proceed if it divides cleanly (which it should based on Singapore currency structure)
+    const count = parentVal / subVal;
+    const answer = String(count);
 
-    if (sumCents + itemValueCents <= 5000) {
-      generatedItems.push(randomItem);
-      sumCents += itemValueCents;
+    const questionTextTemplate = getQText(`How many ${randomSubToken} coins/notes make ${randomParent}?`, `Exchange ${randomParent} to ${randomSubToken} = ? count`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, String(count + 1), String(Math.max(1, count - 1)), String(count + 2)];
+    options = getShuffledOptions(answer, options);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
-  }
 
-  // Fallback to guarantee values are never empty
-  if (generatedItems.length === 0) {
-    generatedItems.push('$5', '$2', '50¢');
-    sumCents = 750;
-  }
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-  const displayTotal = sumCents >= 100 ? `$${(sumCents/100).toFixed(2)}` : `${sumCents}¢`;
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Count how many ${randomSubToken} it takes to reach ${randomParent}.`, `Count up to total.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`It takes ${count} of ${randomSubToken} to make exactly ${randomParent}.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "NONE",
+          "componentData": {}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'standard', steps: 1, logic: "value_exchange", hideVisual: true }
+    };
+  },
 
-  // 2. Inject context parameters matching target variant profiles
-  const componentData = {
-    items: generatedItems,
-    total: displayTotal
-  };
-
-  let variantConstitution = "Calculate the total amount of money shown.";
-
-  // Tailor runtime rules and target criteria context fields
-  if (activeVariant === 'standard_value_exchange') {
-    variantConstitution = `Frame around currency denomination exchange. (e.g., How many smaller coins match the rendered parent value of ${displayTotal}?).`;
-  } else if (activeVariant === 'standard_two_item_total') {
-    variantConstitution = `Frame around combining costs. (e.g., Buying an item matching ${displayTotal} and a second item. Find the combined total cost).`;
-  } else if (activeVariant === 'standard_calculating_change') {
-    const paidOptions = sumCents <= 500 ? [500, 1000] : sumCents <= 1000 ? [1000, 5000] : [5000];
-    const rawPaid = paidOptions[Math.floor(Math.random() * paidOptions.length)];
-    componentData.paidAmount = `$${(rawPaid / 100).toFixed(2)}`;
-    variantConstitution = `Frame around transaction change. The item price is exactly ${displayTotal}. The student pays with a ${componentData.paidAmount} note. Calculate the change.`;
-  } else if (activeVariant === 'standard_affordability_check') {
-    const targetDiff = (Math.floor(Math.random() * 3) + 1) * 50; // shift by 50c increments
-    const itemPriceCents = Math.random() > 0.5 ? sumCents + targetDiff : Math.max(50, sumCents - targetDiff);
-    componentData.targetPrice = `$${(itemPriceCents / 100).toFixed(2)}`;
-    variantConstitution = `Frame around an affordability evaluation. Compare the visual set worth ${displayTotal} against an object priced at ${componentData.targetPrice}. State if they can afford it or determine the comparison boolean outcome.`;
-  } else if (activeVariant === 'standard_shortfall_needed') {
-    const shortfallCents = (Math.floor(Math.random() * 4) + 1) * 50;
-    componentData.targetPrice = `$${((sumCents + shortfallCents) / 100).toFixed(2)}`;
-    variantConstitution = `Frame around finding shortfalls. The user wants to buy an item costing ${componentData.targetPrice} but only has the visual set worth ${displayTotal}. Find the extra shortfall amount needed.`;
-  } else if (activeVariant === 'standard_price_comparison') {
-    variantConstitution = `Frame around price comparison rankings using ${displayTotal} as a baseline value anchor compared against other abstract prices.`;
-  } else if (activeVariant === 'standard_amount_difference') {
-    variantConstitution = `Frame around tracking differences. Person A has the visual collection totaling ${displayTotal}. Person B has a different configuration. Calculate the numeric difference between their amounts.`;
-  } else if (activeVariant === 'standard_equivalent_sets') {
-    variantConstitution = `Frame around equivalence matching. Identify an alternate coin/note configuration that results in the exact same total sum value of ${displayTotal}.`;
-  } else if (activeVariant === 'standard_reverse_price_lookup') {
-    const rawChange = (Math.floor(Math.random() * 3) + 1) * 100;
-    componentData.changeReceived = `$${(rawChange / 100).toFixed(2)}`;
-    variantConstitution = `Frame around reverse subtraction calculation loops. The student pays for an item with the visual notes worth ${displayTotal} and receives ${componentData.changeReceived} back in change. Deducing the original item price.`;
-  } else if (activeVariant === 'standard_multi_item_change') {
-    variantConstitution = `Frame as a 2-step math calculation problem. Sum up multiple items within a transaction flow using the visual baseline total ${displayTotal}.`;
-  }
-
-  const promptObject = {
-    meta: commonMeta,
-    content: {
-      questionText: "[AI: Generate a clear P1 money question customized to the target variant task context profile]", 
-      hint: "[AI: Provide a step-by-step counting breakdown or strategic approach hint without revealing the final numeric answer]",
-      options: isMCQ ? ["Placeholder1", "Placeholder2", "Placeholder3", "Placeholder4"] : null, 
-      finalAnswer: "[AI: Insert calculated numeric or currency response string]",
-      solutionSteps: "[AI: Detail full calculation step-by-step math pathway equations]"
-    },
-    visualEngine: {
-      componentToRender: "SINGAPORE_MONEY",
-      componentData: componentData
-    },
-    inputRequirement: { inputType }
-  };
-
-  const constitution = isShort ? "SHORT QUESTION MANDATE: Pure mathematical counting notation only. You must NOT include character names, shopping stories, backstories, or narrative text. Keep the questionText text brief and direct (e.g., 'Count the total amount of money shown below.')." :
-                       isStructure ? "STRUCTURED QUESTION MANDATE: A localized simple word problem scenario utilizing Singapore context anchors, character names, or real-world transactions (e.g., 'Siti has these notes in her purse. She buys a bun...')." :
-                       "MCQ MANDATE: A standard multiple-choice word problem scenario with 4 distinct options.";
-
-  const instructions = `
-    TASK: Generate a Primary 1 Mathematics Standard-tier money question following the structural rules of: ${constitution}.
-    LOCALIZATION: Singapore currency standards (10¢, 20¢, 50¢, $1, $2, $5, $10, $50).
+  standard_two_item_total: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const item1Cents = Math.floor(Math.random() * 20) * 100 + (Math.random() > 0.5 ? 50 : 0);
+    const item2Cents = Math.floor(Math.random() * 20) * 100 + (Math.random() > 0.5 ? 50 : 0);
+    const totalCents = item1Cents + item2Cents;
     
-    TARGET SYLLABUS VARIANT CODE REFERENCE: ${activeVariant}
-    
-    CRITICAL GENERATION PARAMETERS:
-    - You MUST NEVER alter the array tokens or parameters inside 'visualEngine'. Keep 'items' and 'total' exactly as structured.
-    - Carefully calculate your 'finalAnswer' and 'solutionSteps' so they are mathematically derived from the exact item set value sum provided: ${displayTotal}.
-    
-    OUTPUT MANDATE: Replace all string brackets inside 'content'. Return ONLY a clean, parseable JSON object matching this schema blueprint structure:
-    ${JSON.stringify(promptObject)}
-  `;
+    const item1Str = generateMoneyString(item1Cents);
+    const item2Str = generateMoneyString(item2Cents);
+    const answer = generateMoneyString(totalCents);
 
-  return { aiPrompt: instructions, parseResponse: (json) => json };
-}
+    const questionTextTemplate = getQText(`Item A costs ${item1Str} and Item B costs ${item2Str}. What is the total cost?`, `Total cost = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, generateMoneyString(totalCents + 100), generateMoneyString(Math.abs(item1Cents - item2Cents)), generateMoneyString(totalCents + 50)];
+    options = getShuffledOptions(answer, options);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Add the two amounts together to find the total.`, `Add the amounts.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`Total cost = ${item1Str} + ${item2Str} = ${answer}.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "NONE",
+          "componentData": {}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'standard', steps: 1, logic: "two_item_total", hideVisual: true }
+    };
+  },
+
+  standard_calculating_change: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const notePool = [500, 1000, 5000];
+    const paidCents = notePool[Math.floor(Math.random() * notePool.length)];
+    const priceCents = paidCents - (Math.floor(Math.random() * (paidCents / 100 - 1)) + 1) * 100 - (Math.random() > 0.5 ? 50 : 0);
+    const changeCents = paidCents - priceCents;
+    
+    const paidStr = generateMoneyString(paidCents);
+    const priceStr = generateMoneyString(priceCents);
+    const answer = generateMoneyString(changeCents);
+
+    const questionTextTemplate = getQText(`An item costs ${priceStr}. You pay with a ${paidStr} note. How much change will you receive?`, `Change received = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, generateMoneyString(changeCents + 100), generateMoneyString(Math.max(50, changeCents - 50)), generateMoneyString(paidCents + priceCents)];
+    options = getShuffledOptions(answer, options);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { 
+        if (opt !== answer) {
+          if (opt === generateMoneyString(paidCents + priceCents)) defectMapObj[opt] = "CONCEPTUAL_ERROR";
+          else defectMapObj[opt] = "CARELESS_CALCULATION"; 
+        }
+      });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Subtract the price from the amount paid to find the change.`, `Subtract price from paid.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`Change = ${paidStr} - ${priceStr} = ${answer}.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "NONE",
+          "componentData": {}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'standard', steps: 1, logic: "calculating_change", hideVisual: true }
+    };
+  },
+
+  standard_shortfall_needed: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const targetPriceCents = (Math.floor(Math.random() * 20) + 10) * 100;
+    const haveCents = targetPriceCents - (Math.floor(Math.random() * 8) + 1) * 100 - (Math.random() > 0.5 ? 50 : 0);
+    const shortfallCents = targetPriceCents - haveCents;
+    
+    const targetPriceStr = generateMoneyString(targetPriceCents);
+    const haveStr = generateMoneyString(haveCents);
+    const answer = generateMoneyString(shortfallCents);
+
+    const questionTextTemplate = getQText(`An item costs ${targetPriceStr}. You only have ${haveStr}. How much more money do you need?`, `More money needed = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, generateMoneyString(shortfallCents + 100), generateMoneyString(Math.max(50, shortfallCents - 50)), generateMoneyString(targetPriceCents + haveCents)];
+    options = getShuffledOptions(answer, options);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { 
+        if (opt !== answer) {
+          if (opt === generateMoneyString(targetPriceCents + haveCents)) defectMapObj[opt] = "CONCEPTUAL_ERROR";
+          else defectMapObj[opt] = "CARELESS_CALCULATION"; 
+        }
+      });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Subtract the amount you have from the total price.`, `Subtract have from price.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`Shortfall = ${targetPriceStr} - ${haveStr} = ${answer}.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "NONE",
+          "componentData": {}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'standard', steps: 1, logic: "shortfall_needed", hideVisual: true }
+    };
+  },
+
+  standard_price_comparison: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const isMost = Math.random() > 0.5;
+    const items = [
+      { name: 'Item A', price: Math.floor(Math.random() * 10) * 100 + 50 },
+      { name: 'Item B', price: Math.floor(Math.random() * 10) * 100 + 100 },
+      { name: 'Item C', price: Math.floor(Math.random() * 10) * 100 + 150 }
+    ];
+    // Ensure all prices are unique
+    items.forEach((item, index) => {
+      item.price += index * 100;
+    });
+    // Shuffle
+    items.sort(() => Math.random() - 0.5);
+
+    let targetItem = items[0];
+    items.forEach(item => {
+      if (isMost && item.price > targetItem.price) targetItem = item;
+      if (!isMost && item.price < targetItem.price) targetItem = item;
+    });
+
+    const answer = targetItem.name;
+    const priceStrings = items.map(i => `${i.name}: ${generateMoneyString(i.price)}`).join(', ');
+
+    const questionTextTemplate = getQText(`Here are some prices: ${priceStrings}. Which item costs the ${isMost ? 'most' : 'least'}?`, `${isMost ? 'Highest' : 'Lowest'} price item = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = items.map(i => i.name);
+    options = getShuffledOptions(answer, options);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Compare the dollar amounts first, then the cents if the dollars are the same.`, `Compare values.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`Comparing the prices, ${answer} has the ${isMost ? 'highest' : 'lowest'} price at ${generateMoneyString(targetItem.price)}.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "NONE",
+          "componentData": {}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'standard', steps: 1, logic: "price_comparison", hideVisual: true }
+    };
+  },
+
+  standard_multi_item_change: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const item1Cents = Math.floor(Math.random() * 10) * 100 + (Math.random() > 0.5 ? 50 : 0);
+    const item2Cents = Math.floor(Math.random() * 10) * 100 + (Math.random() > 0.5 ? 50 : 0);
+    const totalCents = item1Cents + item2Cents;
+    
+    const paidOptions = [2000, 5000];
+    const paidCents = paidOptions.find(p => p > totalCents) || 5000;
+    const changeCents = paidCents - totalCents;
+    
+    const item1Str = generateMoneyString(item1Cents);
+    const item2Str = generateMoneyString(item2Cents);
+    const paidStr = generateMoneyString(paidCents);
+    const totalStr = generateMoneyString(totalCents);
+    const answer = generateMoneyString(changeCents);
+
+    const questionTextTemplate = getQText(`You buy Item A for ${item1Str} and Item B for ${item2Str}. You pay with a ${paidStr} note. How much change will you receive?`, `Change received = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, generateMoneyString(changeCents + 100), generateMoneyString(paidCents - item1Cents), generateMoneyString(totalCents)];
+    options = getShuffledOptions(answer, options);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { 
+        if (opt !== answer) {
+          if (opt === generateMoneyString(totalCents)) defectMapObj[opt] = "CONCEPTUAL_ERROR";
+          else defectMapObj[opt] = "CARELESS_CALCULATION"; 
+        }
+      });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`First find the total cost of the items, then subtract that from the amount paid.`, `Add costs, then subtract from paid.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`Total cost = ${item1Str} + ${item2Str} = ${totalStr}. Change = ${paidStr} - ${totalStr} = ${answer}.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "NONE",
+          "componentData": {}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'standard', steps: 2, logic: "multi_item_change", hideVisual: true }
+    };
+  }
+};
+
+export const standardLogic = (activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  // Use fallback if activeVariant not explicitly implemented
+  let targetVariant = standardVariants[activeVariant] ? activeVariant : 'standard_multi_item_change';
+  return standardVariants[targetVariant](config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
+};

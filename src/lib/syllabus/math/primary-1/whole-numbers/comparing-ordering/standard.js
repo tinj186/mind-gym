@@ -20,7 +20,20 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const distractor3 = [sortedNums[1], sortedNums[0], sortedNums[2], sortedNums[3]].join(', ');
     
     const targetWord = askAsc ? "smallest to greatest" : "greatest to smallest";
-    const options = isMCQ ? [answer, distractor1, distractor2, distractor3] : null;
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      options = Array.from(new Set([answer, distractor1, distractor2, distractor3])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [distractor1]: "CONCEPTUAL_ERROR",
+        [distractor2]: "CARELESS_CALCULATION",
+        [distractor3]: "CARELESS_CALCULATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
     const hint = getQText(`Compare the tens of all numbers. Start with the one that has the ${askAsc ? 'least' : 'most'} tens.`, `Which number is the ${askAsc ? 'smallest' : 'greatest'}?`);
 
     const questionText = getQText(`Arrange these number cards from ${targetWord}:`, `Arrange from ${targetWord}: ${nums.join(', ')}`);
@@ -32,6 +45,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         content: {
           questionText: questionText,
           options: options,
+          defectMap: defectMap,
           hint: hint,
           finalAnswer: answer,
           solutionSteps: solutionSteps
@@ -57,7 +71,20 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const d1 = lower - Math.floor(Math.random() * 5) - 1;
     const d2 = upper + Math.floor(Math.random() * 5) + 1;
     const d3 = upper + Math.floor(Math.random() * 10) + 6;
-    const options = isMCQ ? [String(d1), answer, String(d2), String(d3)] : null;
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      options = Array.from(new Set([String(d1), answer, String(d2), String(d3)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(d1)]: "CONSTANT_VIOLATION",
+        [String(d2)]: "CONSTANT_VIOLATION",
+        [String(d3)]: "CONSTANT_VIOLATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
     const hint = getQText(`The number must be larger than ${lower} and less than ${upper}.`, `${lower} < ? < ${upper}`);
 
     const questionText = getQText(`Look at the number cards. Which number can replace the question mark so that the numbers are in order from smallest to greatest?`, `What number is between ${lower} and ${upper}?`);
@@ -70,6 +97,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         content: {
           questionText: questionText,
           options: options,
+          defectMap: defectMap,
           hint: hint,
           finalAnswer: answer,
           solutionSteps: solutionSteps
@@ -94,7 +122,16 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const targetWord = askGreatest ? "most" : "least";
     const answer = String(askGreatest ? Math.max(...amounts) : Math.min(...amounts));
     const distractor = askGreatest ? Math.max(...amounts) + 5 : Math.min(...amounts) - 5; // Renamed from distractor to distractor
-    const options = isMCQ ? [String(amounts[0]), String(amounts[1]), String(amounts[2]), String(distractor)] : null;
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      options = Array.from(new Set([String(amounts[0]), String(amounts[1]), String(amounts[2]), String(distractor)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {};
+      options.forEach(opt => { if (opt !== answer) defectMap[opt] = "CONCEPTUAL_ERROR"; });
+    }
 
     const promptStart = `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Compare Word Problem\n - Amounts: ${amounts.join(', ')}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n - Do NOT put emojis in the question text.`;
     const solutionSteps = getQText(`Comparing the amounts, the ${targetWord} amount is ${answer}.`, `${answer} is the ${targetWord}.`);
@@ -105,6 +142,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         content: {
           questionText: "[Insert full localized Singaporean word problem here]", // AI fills this
           options: options,
+          defectMap: defectMap,
           hint: "[Insert conceptual hint here]",
           finalAnswer: answer,
           solutionSteps: solutionSteps
@@ -127,7 +165,19 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const displaySeq = [...sequence];
     displaySeq[missingIdx] = "?";
     
-    const options = isMCQ ? [String(sequence[missingIdx] - 1), answer, String(sequence[missingIdx] + 1), String(start + 10)] : null;
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      options = Array.from(new Set([String(sequence[missingIdx] - 1), answer, String(sequence[missingIdx] + 1), String(start + 10)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(sequence[missingIdx] - 1)]: "CONFUSED_OPERATION",
+        [String(start + 10)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
     const hint = getQText(`The numbers are going up by 1. What comes after ${sequence[missingIdx - 1]}?`, `Count forward by 1.`);
 
     const questionText = getQText(`Look at the number cards. What is the missing number in the pattern?`, `Find the missing number: ${displaySeq.join(', ')}`);
@@ -139,6 +189,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         content: {
           questionText: questionText,
           options: options,
+          defectMap: defectMap,
           hint: hint,
           finalAnswer: answer,
           solutionSteps: solutionSteps
@@ -161,7 +212,19 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const displaySeq = [...sequence];
     displaySeq[missingIdx] = "?";
     
-    const options = isMCQ ? [String(sequence[missingIdx] + 1), answer, String(sequence[missingIdx] - 1), String(start - 10)] : null;
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      options = Array.from(new Set([String(sequence[missingIdx] + 1), answer, String(sequence[missingIdx] - 1), String(start - 10)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(sequence[missingIdx] + 1)]: "CONFUSED_OPERATION",
+        [String(start - 10)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
     const hint = getQText(`The numbers are going down by 1. What comes before ${sequence[missingIdx - 1]}?`, `Count backward by 1.`);
 
     const questionText = getQText(`Look at the number cards. What is the missing number in the pattern?`, `Find the missing number: ${displaySeq.join(', ')}`);
@@ -173,6 +236,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         content: {
           questionText: questionText,
           options: options,
+          defectMap: defectMap,
           hint: hint,
           finalAnswer: answer,
           solutionSteps: solutionSteps
@@ -194,7 +258,16 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       if (!nums.includes(n)) nums.push(n);
     }
     const answer = String(Math.max(...nums));
-    const options = isMCQ ? nums.map(String) : null;
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      options = Array.from(new Set(nums.map(String))).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {};
+      options.forEach(opt => { if (opt !== answer) defectMap[opt] = "CONCEPTUAL_ERROR"; });
+    }
     const hint = getQText(`Compare the tens digits of all cards. Which one is the biggest?`, `Look for the most tens.`);
 
     const questionText = getQText(`Which is the greatest number among the cards?`, `Which is the greatest: ${nums.join(', ')}?`);
@@ -206,6 +279,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         content: {
           questionText: questionText,
           options: options,
+          defectMap: defectMap,
           hint: hint,
           finalAnswer: answer,
           solutionSteps: solutionSteps
@@ -227,7 +301,16 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       if (!nums.includes(n)) nums.push(n);
     }
     const answer = String(Math.min(...nums));
-    const options = isMCQ ? nums.map(String) : null;
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      options = Array.from(new Set(nums.map(String))).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {};
+      options.forEach(opt => { if (opt !== answer) defectMap[opt] = "CONCEPTUAL_ERROR"; });
+    }
     const hint = getQText(`Compare the tens digits of all cards. Which one is the smallest?`, `Look for the least tens.`);
 
     const questionText = getQText(`Which is the smallest number among the cards?`, `Which is the smallest: ${nums.join(', ')}?`);
@@ -239,6 +322,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         content: {
           questionText: questionText,
           options: options,
+          defectMap: defectMap,
           hint: hint,
           finalAnswer: answer,
           solutionSteps: solutionSteps
@@ -263,7 +347,22 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const targetWord = askGreater ? "greater" : "smaller";
     const answer = askGreater ? String(Math.max(changedVal, compareVal)) : String(Math.min(changedVal, compareVal));
 
-    const mcqOptions = isMCQ ? JSON.stringify([String(changedVal), String(compareVal), String(base), String(changedVal + 5)].sort(() => Math.random() - 0.5)) : 'null';
+    let mcqOptions = 'null';
+    let defectMapJSON = 'null';
+    if (isMCQ) {
+      const wrongOpAnswer = String(Math.max(changedVal, compareVal) === parseInt(answer) ? Math.min(changedVal, compareVal) : Math.max(changedVal, compareVal));
+      let options = Array.from(new Set([String(changedVal), String(compareVal), String(base), String(changedVal + 5)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      
+      const defectMap = {
+        [String(base)]: "CONSTANT_VIOLATION",
+        [wrongOpAnswer]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+      defectMapJSON = JSON.stringify(defectMap);
+    }
     const questionTextTemplate = getQText(`Which is ${targetWord}: ${amount} more than ${base} or ${compareVal}?`, `Which is ${targetWord}: ${amount} more than ${base} or ${compareVal}?`);
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
 
@@ -280,6 +379,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
+          "defectMap": ${defectMapJSON},
           "hint": "Find what ${amount} more than ${base} is first.",
           "finalAnswer": "${answer}",
           "solutionSteps": "1. Find ${amount} more than ${base}: ${base} + ${amount} = ${changedVal}.\\n2. Compare ${changedVal} and ${compareVal}.\\n3. The ${targetWord} number is ${answer}."
@@ -301,7 +401,22 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const targetWord = askGreater ? "greater" : "smaller";
     const answer = askGreater ? String(Math.max(changedVal, compareVal)) : String(Math.min(changedVal, compareVal));
 
-    const mcqOptions = isMCQ ? JSON.stringify([String(changedVal), String(compareVal), String(base), String(changedVal - 5)].sort(() => Math.random() - 0.5)) : 'null';
+    let mcqOptions = 'null';
+    let defectMapJSON = 'null';
+    if (isMCQ) {
+      const wrongOpAnswer = String(Math.max(changedVal, compareVal) === parseInt(answer) ? Math.min(changedVal, compareVal) : Math.max(changedVal, compareVal));
+      let options = Array.from(new Set([String(changedVal), String(compareVal), String(base), String(changedVal - 5)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      
+      const defectMap = {
+        [String(base)]: "CONSTANT_VIOLATION",
+        [wrongOpAnswer]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+      defectMapJSON = JSON.stringify(defectMap);
+    }
     const questionTextTemplate = getQText(`Which is ${targetWord}: ${amount} less than ${base} or ${compareVal}?`, `Which is ${targetWord}: ${amount} less than ${base} or ${compareVal}?`);
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
 
@@ -318,6 +433,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
+          "defectMap": ${defectMapJSON},
           "hint": "Find what ${amount} less than ${base} is first.",
           "finalAnswer": "${answer}",
           "solutionSteps": "1. Find ${amount} less than ${base}: ${base} - ${amount} = ${changedVal}.\\n2. Compare ${changedVal} and ${compareVal}.\\n3. The ${targetWord} number is ${answer}."

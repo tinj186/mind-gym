@@ -39,18 +39,31 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     
     const equationStr = `${groups} groups of ${size} and ${extra} more = ?`;
 
-    const options = isMCQ ? [
-      answer, 
-      String(groupsTotal), 
-      String(groupsTotal + extra + 1), 
-      String(groups + size + extra)
-    ].sort(() => Math.random() - 0.5) : null;
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = Array.from(new Set([
+        answer, 
+        String(groupsTotal), 
+        String(groupsTotal + extra + 1), 
+        String(groups + size + extra)
+      ])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+
+      defectMap = {
+        [String(groupsTotal)]: "CONCEPTUAL_ERROR",
+        [String(groups + size + extra)]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many items are there altogether?`, equationStr, zodType),
         options: options,
+        defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
         solutionSteps: `1. Step 1 (Groups): ${groups} x ${size} = ${groupsTotal}.\n2. Step 2 (Add extra): ${groupsTotal} + ${extra} = ${answer}.`
@@ -87,18 +100,31 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     
     const equationStr = `${groups} groups of ${size}, take away ${remove} = ?`;
 
-    const options = isMCQ ? [
-      answer, 
-      String(groupsTotal), 
-      String(groupsTotal - remove - 1), 
-      String(groupsTotal + remove)
-    ].sort(() => Math.random() - 0.5) : null;
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = Array.from(new Set([
+        answer, 
+        String(groupsTotal), 
+        String(groupsTotal - remove - 1), 
+        String(groupsTotal + remove)
+      ])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+
+      defectMap = {
+        [String(groupsTotal)]: "CONCEPTUAL_ERROR",
+        [String(groupsTotal + remove)]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many items are left?`, equationStr, zodType),
         options: options,
+        defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
         solutionSteps: `1. Step 1 (Groups): ${groups} x ${size} = ${groupsTotal}.\n2. Step 2 (Subtract): ${groupsTotal} - ${remove} = ${answer}.`
@@ -133,11 +159,25 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     const equationStr = `${count} ${typeLabel} have how many wheels?`;
 
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = Array.from(new Set([answer, String((count-1)*legsPer), String(count*(legsPer+1)), String(count+legsPer)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+
+      defectMap = {
+        [String(count+legsPer)]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
+
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many wheels are there altogether?`, equationStr, zodType),
-        options: isMCQ ? [answer, String((count-1)*legsPer), String(count*(legsPer+1)), String(count+legsPer)].sort(() => Math.random() - 0.5) : null,
+        options: options,
+        defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
         solutionSteps: `1. 1 ${typeLabel.slice(0,-1)} has ${legsPer} wheels.\n2. ${count} ${typeLabel} have ${count} x ${legsPer} = ${answer} wheels.`
@@ -172,18 +212,31 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     
     const equationStr = `${total} shared equally among ${groups}, and ${extra} more = ?`;
 
-    const options = isMCQ ? [
-      answer, 
-      String(each), 
-      String(total + extra), 
-      String(each + extra + 2)
-    ].sort(() => Math.random() - 0.5) : null;
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = Array.from(new Set([
+        answer, 
+        String(each), 
+        String(total + extra), 
+        String(each + extra + 2)
+      ])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+
+      defectMap = {
+        [String(each)]: "CONCEPTUAL_ERROR",
+        [String(total + extra)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many items does that person have now?`, equationStr, zodType),
         options: options,
+        defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
         solutionSteps: `1. Step 1 (Share): ${total} ÷ ${groups} = ${each}.\n2. Step 2 (Receive more): ${each} + ${extra} = ${answer}.`
@@ -222,18 +275,30 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     
     const equationStr = `Make ${targetGroups} groups of ${size} from ${currentItems}. How many more are needed?`;
 
-    const options = isMCQ ? [
-      answer, 
-      String(targetGroups), 
-      String(currentItems + needed), 
-      String(needed + 1)
-    ].sort(() => Math.random() - 0.5) : null;
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = Array.from(new Set([
+        answer, 
+        String(targetGroups), 
+        String(currentItems + needed), 
+        String(needed + 1)
+      ])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+
+      defectMap = {
+        [String(targetGroups)]: "CONSTANT_VIOLATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many more items are needed to make the required number of groups?`, equationStr, zodType),
         options: options,
+        defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
         solutionSteps: `1. Step 1 (Target total): ${targetGroups} groups of ${size} is ${targetGroups} x ${size} = ${targetItems}.\n2. Step 2 (Find difference): ${targetItems} - ${currentItems} = ${answer} more needed.`
@@ -272,18 +337,31 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     
     const equationStr = `${groupsA} groups of ${sizeA} and ${groupsB} groups of ${sizeB} altogether = ?`;
 
-    const options = isMCQ ? [
-      answer, 
-      String(totalA), 
-      String(totalB), 
-      String(totalA + totalB + 2)
-    ].sort(() => Math.random() - 0.5) : null;
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = Array.from(new Set([
+        answer, 
+        String(totalA), 
+        String(totalB), 
+        String(totalA + totalB + 2)
+      ])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+
+      defectMap = {
+        [String(totalA)]: "CONCEPTUAL_ERROR",
+        [String(totalB)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many items are there altogether?`, equationStr, zodType),
         options: options,
+        defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
         solutionSteps: `1. Person 1 has: ${groupsA} x ${sizeA} = ${totalA}.\n2. Person 2 has: ${groupsB} x ${sizeB} = ${totalB}.\n3. Total altogether: ${totalA} + ${totalB} = ${answer}.`
@@ -322,18 +400,31 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     
     const equationStr = `Difference between ${groupsA} groups of ${sizeA} and ${groupsB} groups of ${sizeB} = ?`;
 
-    const options = isMCQ ? [
-      answer, 
-      String(totalA + totalB), 
-      String(totalA), 
-      String(totalA - totalB + 2)
-    ].sort(() => Math.random() - 0.5) : null;
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = Array.from(new Set([
+        answer, 
+        String(totalA + totalB), 
+        String(totalA), 
+        String(totalA - totalB + 2)
+      ])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+
+      defectMap = {
+        [String(totalA + totalB)]: "CONFUSED_OPERATION",
+        [String(totalA)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many more items does Person A have than Person B?`, equationStr, zodType),
         options: options,
+        defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
         solutionSteps: `1. Person A has: ${groupsA} x ${sizeA} = ${totalA}.\n2. Person B has: ${groupsB} x ${sizeB} = ${totalB}.\n3. Difference: ${totalA} - ${totalB} = ${answer} more.`
@@ -373,18 +464,30 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     
     const equationStr = `Buy ${qty} items at $${unitPrice} each. Change from $${paidNote} = ?`;
 
-    const options = isMCQ ? [
-      answer, 
-      String(totalCost), 
-      String(paidNote - totalCost + 5), 
-      String(paidNote - totalCost - 1)
-    ].sort(() => Math.random() - 0.5) : null;
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = Array.from(new Set([
+        answer, 
+        String(totalCost), 
+        String(paidNote - totalCost + 5), 
+        String(paidNote - totalCost - 1)
+      ])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+
+      defectMap = {
+        [String(totalCost)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How much change does the person receive?`, equationStr, zodType),
         options: options,
+        defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
         solutionSteps: `1. Total cost of items: ${qty} x $${unitPrice} = $${totalCost}.\n2. Change received: $${paidNote} - $${totalCost} = $${answer}.`
@@ -420,18 +523,31 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     
     const equationStr = `$${totalMoney} ÷ $${unitPrice} = ?`;
 
-    const options = isMCQ ? [
-      answer, 
-      String(totalMoney), 
-      String(unitPrice), 
-      String(qty + 1)
-    ].sort(() => Math.random() - 0.5) : null;
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = Array.from(new Set([
+        answer, 
+        String(totalMoney), 
+        String(unitPrice), 
+        String(qty + 1)
+      ])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+
+      defectMap = {
+        [String(totalMoney)]: "CONSTANT_VIOLATION",
+        [String(unitPrice)]: "CONSTANT_VIOLATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many items can be bought?`, equationStr, zodType),
         options: options,
+        defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
         solutionSteps: `1. Finding how many groups of $${unitPrice} are in $${totalMoney} is division.\n2. $${totalMoney} ÷ $${unitPrice} = ${answer} items.`
@@ -468,18 +584,31 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     
     const equationStr = `${groupsA} groups of ${sizeA}, take away ${currentB} = ?`;
 
-    const options = isMCQ ? [
-      answer, 
-      String(totalA), 
-      String(totalA + currentB), 
-      String(totalA - currentB + 2)
-    ].sort(() => Math.random() - 0.5) : null;
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = Array.from(new Set([
+        answer, 
+        String(totalA), 
+        String(totalA + currentB), 
+        String(totalA - currentB + 2)
+      ])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+
+      defectMap = {
+        [String(totalA)]: "CONCEPTUAL_ERROR",
+        [String(totalA + currentB)]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many more items does Person B need to have the same amount as Person A?`, equationStr, zodType),
         options: options,
+        defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: answer,
         solutionSteps: `1. Person A has: ${groupsA} x ${sizeA} = ${totalA}.\n2. Person B has ${currentB}. To find how many more are needed: ${totalA} - ${currentB} = ${answer}.`
@@ -563,11 +692,18 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       options = opts.sort(() => Math.random() - 0.5);
     }
 
+    let defectMap = null;
+    if (isMCQ) {
+      defectMap = {};
+      options.forEach(opt => { if (opt !== finalAnswer) defectMap[opt] = "CONCEPTUAL_ERROR"; });
+    }
+
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`Look at the animals. Are the statements below True or False?`, `Look at the animals. Are the statements below True or False?`, zodType),
         options: options,
+        defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: finalAnswer,
         solutionSteps: `1. There are ${countA} ${entityA.name} (${countA * 2} legs) and ${countB} ${entityB.name} (${countB * 4} legs).\\n2. Total legs = ${totalLegs}.\\n3. Statement 1 is ${s1Ans === 'T' ? 'True' : 'False'}.\\n4. Statement 2 is ${s2Ans === 'T' ? 'True' : 'False'}.\\n5. Statement 3 is ${s3Ans === 'T' ? 'True' : 'False'}.`

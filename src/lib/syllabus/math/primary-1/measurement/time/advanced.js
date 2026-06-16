@@ -1,255 +1,486 @@
-/**
- * Advanced Tier: Time sequencing and one-hour duration shifts.
- * PATH: src/lib/syllabus/math/primary-1/measurement/time/advanced.js
- */
-export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic) {
-  const commonMeta = { level, topic, subtopic: 'Time', type: zodType, difficulty: zodDiff, strand: 'Measurement and Geometry', subject: 'Math', gradeLevel: 'P1' };
-  
-  const inputType = isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT';
-  let componentData = null;
-  let promptObject = { meta: commonMeta, content: {}, visualEngine: { componentToRender: "CLOCK_DISPLAY" }, inputRequirement: { inputType } };
-  let seedInstructions = "";
+import { getRandomContext } from '@/lib/utils/localization';
 
-  const getShuffledOptions = (correct, distractors) => {
-    if (!isMCQ) return null;
-    return [correct, ...distractors]
-      .filter((v, i, a) => a.indexOf(v) === i)
-      .sort(() => Math.random() - 0.5);
-  };
+const getShuffledOptions = (correct, distractors) => [correct, ...distractors].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4);
 
-  switch (activeVariant) {
-    case 'advanced_sequence_logic': {
-      commonMeta.heuristic = 'Chronological Reasoning';
-      promptObject.visualEngine.componentToRender = null;
-      
-      // We use letters A, B, C so the student can easily type the answer in Short Question format.
-      // Event 1 = Earliest, Event 2 = Middle, Event 3 = Latest
-      let questionText = `Arrange these daily activities in order from earliest to latest:\n\nA. [AI GENERATED EVENT 2] (e.g., Eating lunch at half past 12)\nB. [AI GENERATED EVENT 1] (e.g., Waking up at 7 o'clock)\nC. [AI GENERATED EVENT 3] (e.g., Sleeping at 9 o'clock)`;
-      
-      if (!isMCQ) {
-        questionText += `\n\n(Write your answer as letters, e.g., B, A, C)`;
-      }
+export const advancedVariants = {
+  advanced_one_hour_shift: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const startHour = Math.floor(Math.random() * 10) + 1; 
+    const isLater = Math.random() > 0.5;
+    const endHour = isLater ? startHour + 1 : (startHour === 1 ? 12 : startHour - 1);
+    const answer = `${endHour} o'clock`;
+    const componentData = { hour: startHour, minute: 0, displayType: 'analog' };
 
-      const correctOrder = "B, A, C";
-      const distractors = ["A, B, C", "B, C, A", "C, A, B"];
+    const questionTextTemplate = getQText(`Minah started her homework at the time shown on the clock face. She finished exactly 1 hour ${isLater ? 'later' : 'earlier'}. What time did she finish?`, `Time 1 hour ${isLater ? 'later' : 'earlier'} = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
 
-      promptObject.content = {
-        questionText,
-        options: getShuffledOptions(correctOrder, distractors),
-        finalAnswer: correctOrder,
-        solutionSteps: `B happens earliest in the day. A happens next. C happens last. So the correct order is ${correctOrder}.`,
-        hint: "Look at the times for each activity. Which one happens first in the day?"
-      };
-      
-      seedInstructions = `
-        CRITICAL INSTRUCTION: DO NOT hardcode the example events. You MUST creatively generate 3 distinct daily activities with their corresponding times (using whole or half hours).
-        - Event 1 must be the EARLIEST.
-        - Event 2 must be the MIDDLE.
-        - Event 3 must be the LATEST.
-        Replace the placeholders [AI GENERATED EVENT X] in the questionText with your generated events.
-        DO NOT change the order of the letters (A must be Event 2, B must be Event 1, C must be Event 3).
-        If !isMCQ, preserve the '(Write your answer...)' instruction.
-      `.trim();
-      break;
+    let options = [answer, `${startHour} o'clock`, `${(endHour % 12) + 1} o'clock`, `${endHour}:30`];
+    options = getShuffledOptions(answer, options);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    case 'advanced_half_hour_shift': {
-      commonMeta.heuristic = 'Boundary Shifting';
-      const hour = Math.floor(Math.random() * 11) + 1;
-      componentData = { hour, minute: 30, displayType: 'analog' };
-      
-      const targetTime = `${hour + 1} o'clock`;
-      const distractors = [`${hour}:30`, `${hour} o'clock`, `${hour + 2} o'clock`];
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      promptObject.content = {
-        questionText: `The clock shows half past ${hour}. What time will it be in exactly 30 minutes?`,
-        options: getShuffledOptions(targetTime, distractors),
-        finalAnswer: targetTime,
-        solutionSteps: `At half past ${hour}, the minute hand is at 6. In 30 minutes, it will move to 12, completing the hour to ${hour + 1} o'clock.`,
-        hint: "Half an hour is 30 minutes. If you add half an hour to a 'half past' time, you get a new 'o'clock' time!"
-      };
-      seedInstructions = `Shifting across hour boundary from ${hour}:30 to ${hour + 1}:00.`;
-      break;
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Imagine moving the short hour hand forward or backward by one big number!`, `Move the hour hand.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`The clock shows ${startHour} o'clock. 1 hour ${isLater ? 'after' : 'before'} ${startHour} is ${endHour} o'clock.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "CLOCK_DISPLAY",
+          "componentData": ${JSON.stringify(componentData)}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'advanced', steps: 2, logic: "one_hour_shift", hideVisual: false }
+    };
+  },
+
+  advanced_sequence_logic: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    let questionText = `Arrange these daily activities in order from earliest to latest:\n\nA. [AI GENERATED EVENT 2]\nB. [AI GENERATED EVENT 1]\nC. [AI GENERATED EVENT 3]`;
+    if (!isMCQ) questionText += `\n\n(Write your answer as letters, e.g., B, A, C)`;
+
+    const answer = "B, A, C";
+    const distractors = ["A, B, C", "B, C, A", "C, A, B"];
+
+    const storyInstruction = `CRITICAL INSTRUCTION: Generate 3 distinct daily activities with their corresponding times. Event 1 (earliest) must be placed in B. Event 2 (middle) must be placed in A. Event 3 (latest) must be placed in C. Replace the placeholders [AI GENERATED EVENT X] in the questionText with your generated events.`;
+
+    let options = getShuffledOptions(answer, distractors);
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    case 'advanced_elapsed_time_simple': {
-      commonMeta.heuristic = 'Interval Calculation';
-      promptObject.visualEngine.componentToRender = null;
-      const startHour = Math.floor(Math.random() * 3) + 1; 
-      const endHour = startHour + 1;
-      const finalAnswer = "1 hour and 30 minutes";
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      promptObject.content = {
-        questionText: `How much time has passed between ${startHour} o'clock and half past ${endHour}?`,
-        options: getShuffledOptions(finalAnswer, ["1 hour", "2 hours", "30 minutes", "2 hours and 30 minutes"]),
-        finalAnswer,
-        solutionSteps: `From ${startHour} o'clock to ${endHour} o'clock is 1 hour. From ${endHour} o'clock to half past ${endHour} is 30 minutes. Total: 1 hour and 30 minutes.`,
-        hint: "Count the hours first, then add the 30 minutes for the 'half past' part."
-      };
-      seedInstructions = `Calculate duration from ${startHour}:00 to ${endHour}:30.`;
-      break;
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(questionText)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Look at the times for each activity. Which one happens first in the day?`, `Check the times.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`B happens earliest in the day. A happens next. C happens last. So the correct order is ${answer}.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "NONE",
+          "componentData": {}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'advanced', steps: 2, logic: "sequence_logic", hideVisual: true }
+    };
+  },
+
+  advanced_half_hour_shift: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const hour = Math.floor(Math.random() * 11) + 1;
+    const answer = `${hour + 1} o'clock`;
+    const componentData = { hour, minute: 30, displayType: 'analog' };
+
+    const questionTextTemplate = getQText(`The clock shows half past ${hour}. What time will it be in exactly 30 minutes?`, `Time 30 mins after half past ${hour} = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, `${hour}:30`, `${hour} o'clock`, `${hour + 2} o'clock`];
+    options = getShuffledOptions(answer, options);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    case 'advanced_clock_pattern_prediction': {
-      commonMeta.heuristic = 'Temporal Patterns';
-      promptObject.visualEngine.componentToRender = null;
-      const hour = Math.floor(Math.random() * 10) + 1;
-      const sequence = `${hour} o'clock ➔ half past ${hour} ➔ ${hour + 1} o'clock`;
-      const nextTime = `half past ${hour + 1}`;
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      promptObject.content = {
-        questionText: `Look at the pattern: ${sequence}. What time comes next?`,
-        options: getShuffledOptions(nextTime, [`${hour + 1} o'clock`, `${hour + 2} o'clock`, `half past ${hour}`]),
-        finalAnswer: nextTime,
-        solutionSteps: `The pattern shows time moving forward by 30 minutes each step. After ${hour + 1} o'clock, the next time is half past ${hour + 1}.`,
-        hint: "Is the time jumping by a whole hour or half an hour (30 minutes)?"
-      };
-      seedInstructions = `Predict next item in +30 min pattern starting at ${hour}:00.`;
-      break;
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Half an hour is 30 minutes. If you add half an hour to a 'half past' time, you get a new 'o'clock' time!`, `Add 30 minutes.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`At half past ${hour}, the minute hand is at 6. In 30 minutes, it will move to 12, completing the hour to ${hour + 1} o'clock.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "CLOCK_DISPLAY",
+          "componentData": ${JSON.stringify(componentData)}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'advanced', steps: 2, logic: "half_hour_shift", hideVisual: false }
+    };
+  },
+
+  advanced_elapsed_time_simple: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const startHour = Math.floor(Math.random() * 3) + 1; 
+    const endHour = startHour + 1;
+    const answer = "1 hour and 30 minutes";
+
+    const questionTextTemplate = getQText(`How much time has passed between ${startHour} o'clock and half past ${endHour}?`, `Duration from ${startHour}:00 to ${endHour}:30 = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, "1 hour", "2 hours", "30 minutes", "2 hours and 30 minutes"];
+    options = getShuffledOptions(answer, options);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    case 'advanced_activity_duration_logic': {
-      commonMeta.heuristic = 'Backward Deduction';
-      promptObject.visualEngine.componentToRender = null;
-      const startHour = Math.floor(Math.random() * 8) + 1;
-      const duration = 1;
-      const endHour = startHour + duration;
-      const name = "Ali";
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      promptObject.content = {
-        questionText: `${name} finished his lunch at ${endHour} o'clock. He spent 1 hour eating. What time did he start eating?`,
-        options: getShuffledOptions(`${startHour} o'clock`, [`${endHour} o'clock`, `${startHour + 2} o'clock`, "12 o'clock"]),
-        finalAnswer: `${startHour} o'clock`,
-        solutionSteps: `If he finished at ${endHour} o'clock and took 1 hour, we go back 1 hour from ${endHour}. ${endHour} - 1 = ${startHour} o'clock.`,
-        hint: "To find a start time, we need to count backwards from the finish time!"
-      };
-      seedInstructions = `Deduce start time given end time ${endHour}:00 and 1 hour duration.`;
-      break;
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Count the hours first, then add the 30 minutes for the 'half past' part.`, `Calculate duration.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`From ${startHour} o'clock to ${endHour} o'clock is 1 hour. From ${endHour} o'clock to half past ${endHour} is 30 minutes. Total: 1 hour and 30 minutes.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "NONE",
+          "componentData": {}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'advanced', steps: 2, logic: "elapsed_time_simple", hideVisual: true }
+    };
+  },
+
+  advanced_clock_pattern_prediction: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const hour = Math.floor(Math.random() * 10) + 1;
+    const sequence = `${hour} o'clock ➔ half past ${hour} ➔ ${hour + 1} o'clock`;
+    const answer = `half past ${hour + 1}`;
+
+    const questionTextTemplate = getQText(`Look at the pattern: ${sequence}. What time comes next?`, `Next time in pattern = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, `${hour + 1} o'clock`, `${hour + 2} o'clock`, `half past ${hour}`];
+    options = getShuffledOptions(answer, options);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    case 'advanced_transitive_time_comparison': {
-      commonMeta.heuristic = 'Transitive Duration Logic';
-      promptObject.visualEngine.componentToRender = null;
-      const names = ["Meiling", "John", "Siti", "Ahmad"].sort(() => Math.random() - 0.5);
-      const [name1, name2, name3] = names;
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      promptObject.content = {
-        questionText: `${name1} spent more time than ${name2} on homework. ${name2} spent more time than ${name3}. Who spent the least amount of time?`,
-        options: getShuffledOptions(name3, [name1, name2, "They spent the same time"]),
-        finalAnswer: name3,
-        solutionSteps: `Since ${name1} > ${name2} and ${name2} > ${name3}, ${name3} must be the one who spent the least time.`,
-        hint: "Try drawing lines to show who spent more time. The shortest line is the person who spent the least time!"
-      };
-      seedInstructions = `Transitive logic comparison between 3 people. Target: shortest duration.`;
-      break;
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Is the time jumping by a whole hour or half an hour (30 minutes)?`, `Find the pattern.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`The pattern shows time moving forward by 30 minutes each step. After ${hour + 1} o'clock, the next time is ${answer}.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "NONE",
+          "componentData": {}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'advanced', steps: 2, logic: "clock_pattern_prediction", hideVisual: true }
+    };
+  },
+
+  advanced_activity_duration_logic: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const startHour = Math.floor(Math.random() * 8) + 1;
+    const duration = 1;
+    const endHour = startHour + duration;
+    const name = "Ali";
+    const answer = `${startHour} o'clock`;
+
+    const questionTextTemplate = getQText(`${name} finished his lunch at ${endHour} o'clock. He spent 1 hour eating. What time did he start eating?`, `Start time = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, `${endHour} o'clock`, `${startHour + 2} o'clock`, "12 o'clock"];
+    options = getShuffledOptions(answer, options);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    case 'advanced_half_hour_hand_drift': {
-      commonMeta.heuristic = 'Analog Anatomy';
-      promptObject.visualEngine.componentToRender = null;
-      const hour = Math.floor(Math.random() * 11) + 1;
-      const nextHour = hour === 12 ? 1 : hour + 1;
-      const finalAnswer = `Exactly halfway between ${hour} and ${nextHour}`;
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      promptObject.content = {
-        questionText: `Where is the short hour hand pointing when the time is exactly half past ${hour}?`,
-        options: getShuffledOptions(finalAnswer, [`Exactly at ${hour}`, `Exactly at ${nextHour}`, `Exactly at 6`]),
-        finalAnswer,
-        solutionSteps: `At half past ${hour}, 30 minutes have passed. The hour hand moves slowly throughout the hour and will be halfway between ${hour} and ${nextHour}.`,
-        hint: "The hour hand doesn't stay on a number for the whole hour. It moves slowly toward the next number!"
-      };
-      seedInstructions = `Conceptual hand drift question for half-past ${hour}.`;
-      break;
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`To find a start time, we need to count backwards from the finish time!`, `Subtract duration.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`If he finished at ${endHour} o'clock and took 1 hour, we go back 1 hour from ${endHour}. ${endHour} - 1 = ${startHour} o'clock.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "NONE",
+          "componentData": {}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'advanced', steps: 2, logic: "activity_duration_logic", hideVisual: true }
+    };
+  },
+
+  advanced_transitive_time_comparison: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const names = ["Meiling", "John", "Siti", "Ahmad"].sort(() => Math.random() - 0.5);
+    const [name1, name2, name3] = names;
+    const answer = name3;
+
+    const questionTextTemplate = getQText(`${name1} spent more time than ${name2} on homework. ${name2} spent more time than ${name3}. Who spent the least amount of time?`, `Who spent least time = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, name1, name2, "They spent the same time"];
+    options = getShuffledOptions(answer, options);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    case 'advanced_split_schedule_total': {
-      commonMeta.heuristic = 'Compound Duration';
-      promptObject.visualEngine.componentToRender = null;
-      const name = "Wei Ming";
-      const finalAnswer = "1 hour and 30 minutes";
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      promptObject.content = {
-        questionText: `${name} read for 1 hour in the morning and 30 minutes at night. How much time did he spend reading in total?`,
-        options: getShuffledOptions(finalAnswer, ["1 hour", "2 hours", "30 minutes", "2 hours and 30 minutes"]),
-        finalAnswer,
-        solutionSteps: `Total time = Morning time + Night time. 1 hour + 30 minutes = 1 hour and 30 minutes.`,
-        hint: "Add the hours together, and then add the minutes."
-      };
-      seedInstructions = `Summing 1 hour and 30 minutes.`;
-      break;
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Try drawing lines to show who spent more time. The shortest line is the person who spent the least time!`, `Use transitive logic.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`Since ${name1} > ${name2} and ${name2} > ${name3}, ${name3} must be the one who spent the least time.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "NONE",
+          "componentData": {}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'advanced', steps: 2, logic: "transitive_time_comparison", hideVisual: true }
+    };
+  },
+
+  advanced_half_hour_hand_drift: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const hour = Math.floor(Math.random() * 11) + 1;
+    const nextHour = hour === 12 ? 1 : hour + 1;
+    const answer = `Exactly halfway between ${hour} and ${nextHour}`;
+
+    const questionTextTemplate = getQText(`Where is the short hour hand pointing when the time is exactly half past ${hour}?`, `Hour hand pos at half past ${hour} = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, `Exactly at ${hour}`, `Exactly at ${nextHour}`, `Exactly at 6`];
+    options = getShuffledOptions(answer, options);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    case 'advanced_earlier_later_clue_parsing': {
-      commonMeta.heuristic = 'Clue Adjustment Logic';
-      const hour = Math.floor(Math.random() * 8) + 2; 
-      const isLate = Math.random() > 0.5;
-      componentData = { hour, minute: 0, displayType: 'analog' };
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      const finalAnswer = isLate ? `${hour - 1} o'clock` : `${hour + 1} o'clock`;
-      const distractors = isLate 
-        ? [`${hour} o'clock`, `${hour + 1} o'clock`, `${hour - 2} o'clock`]
-        : [`${hour} o'clock`, `${hour - 1} o'clock`, `${hour + 2} o'clock`];
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`The hour hand doesn't stay on a number for the whole hour. It moves slowly toward the next number!`, `Check the hour hand.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`At half past ${hour}, 30 minutes have passed. The hour hand moves slowly throughout the hour and will be halfway between ${hour} and ${nextHour}.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "NONE",
+          "componentData": {}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'advanced', steps: 1, logic: "half_hour_hand_drift", hideVisual: true }
+    };
+  },
 
-      promptObject.content = {
-        questionText: `The clock shows when Aminah arrived at the library. She says she is 1 hour too ${isLate ? 'late' : 'early'}. What time was she supposed to be there?`,
-        options: getShuffledOptions(finalAnswer, distractors),
-        finalAnswer,
-        solutionSteps: isLate 
-          ? `Being late means she arrived after the correct time. ${hour} o'clock minus 1 hour is ${hour - 1} o'clock.`
-          : `Being early means she arrived before the correct time. ${hour} o'clock plus 1 hour is ${hour + 1} o'clock.`,
-        hint: isLate ? "If you are late, the event started before you got there!" : "If you are early, the event will start after you got there!"
-      };
-      seedInstructions = `Story logic adjusting ${hour}:00 based on 'too ${isLate ? 'late' : 'early'}'.`;
-      break;
+  advanced_split_schedule_total: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const name = "Wei Ming";
+    const answer = "1 hour and 30 minutes";
+
+    const questionTextTemplate = getQText(`${name} read for 1 hour in the morning and 30 minutes at night. How much time did he spend reading in total?`, `Total time = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, "1 hour", "2 hours", "30 minutes", "2 hours and 30 minutes"];
+    options = getShuffledOptions(answer, options);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    default: // advanced_one_hour_shift
-      commonMeta.heuristic = 'Temporal Displacement';
-      const startHour = Math.floor(Math.random() * 10) + 1; // Start at 1-10
-      const isLater = Math.random() > 0.5;
-      const endHour = isLater ? startHour + 1 : (startHour === 1 ? 12 : startHour - 1);
-      
-      componentData = { hour: startHour, minute: 0, displayType: 'analog' };
-      
-      const targetTime = `${endHour} o'clock`;
-      const distractors = [
-        `${startHour} o'clock`,
-        `${(endHour % 12) + 1} o'clock`,
-        `${endHour}:30`
-      ];
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      promptObject.content = {
-        questionText: `Minah started her homework at the time shown on the clock face. She finished exactly 1 hour ${isLater ? 'later' : 'earlier'}. What time did she finish?`,
-        options: getShuffledOptions(targetTime, distractors),
-        finalAnswer: targetTime,
-        solutionSteps: `The clock shows ${startHour} o'clock. 1 hour ${isLater ? 'after' : 'before'} ${startHour} is ${endHour} o'clock.`,
-        hint: "Imagine moving the short hour hand forward or backward by one big number!"
-      };
-      seedInstructions = `Initial analog visual set to ${startHour}:00. Student must calculate +/- 1 hour. Correct answer: "${targetTime}".`;
-      break;
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Add the hours together, and then add the minutes.`, `Add times together.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`Total time = Morning time + Night time. 1 hour + 30 minutes = 1 hour and 30 minutes.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "NONE",
+          "componentData": {}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'advanced', steps: 2, logic: "split_schedule_total", hideVisual: true }
+    };
+  },
+
+  advanced_earlier_later_clue_parsing: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const hour = Math.floor(Math.random() * 8) + 2; 
+    const isLate = Math.random() > 0.5;
+    const answer = isLate ? `${hour - 1} o'clock` : `${hour + 1} o'clock`;
+    const componentData = { hour, minute: 0, displayType: 'analog' };
+
+    const questionTextTemplate = getQText(`The clock shows when Aminah arrived at the library. She says she is 1 hour too ${isLate ? 'late' : 'early'}. What time was she supposed to be there?`, `Expected time = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let distractors = isLate 
+      ? [`${hour} o'clock`, `${hour + 1} o'clock`, `${hour - 2} o'clock`]
+      : [`${hour} o'clock`, `${hour - 1} o'clock`, `${hour + 2} o'clock`];
+    let options = getShuffledOptions(answer, distractors);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(isLate ? "If you are late, the event started before you got there!" : "If you are early, the event will start after you got there!", `Adjust for ${isLate ? 'late' : 'early'}.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(isLate ? `Being late means she arrived after the correct time. ${hour} o'clock minus 1 hour is ${hour - 1} o'clock.` : `Being early means she arrived before the correct time. ${hour} o'clock plus 1 hour is ${hour + 1} o'clock.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "CLOCK_DISPLAY",
+          "componentData": ${JSON.stringify(componentData)}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'advanced', steps: 2, logic: "earlier_later_clue_parsing", hideVisual: false }
+    };
   }
+};
 
-  if (promptObject.visualEngine.componentToRender) {
-    promptObject.visualEngine.componentData = componentData;
-  } else {
-    delete promptObject.visualEngine;
+export const advancedLogic = (activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  if (advancedVariants[activeVariant]) {
+    return advancedVariants[activeVariant](config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
   }
-
-  const instructions = `
-    TASK: Generate a Primary 1 Advanced Time reasoning question.
-    VARIANT: ${activeVariant}
-    PEDAGOGY: Multi-step chronological reasoning and duration arithmetic limited to +/- 1 whole hour or 30-minute shifts.
-    
-    CRITICAL PROMPT SEED CONSTRAINTS:
-    - Your output JSON object MUST include the 'content.hint' parameter string. It cannot be null or empty. // Corrected from hintText
-    - Your output JSON object MUST include 'content.solutionSteps' as a pure text explanation. DO NOT nest or repeat a visual layout element inside solutionSteps.
-    - ${seedInstructions}
-    - Component visual state parameters: ${componentData ? JSON.stringify(componentData) : 'None'}
-    - Narrative and finalAnswer must be perfectly synchronized with the seeded logic.
-    
-    OUTPUT MANDATE: Return ONLY a valid JSON object structure matching this shape. No markdown blocks.
-    ${JSON.stringify(promptObject)}
-  `;
-
-  return { aiPrompt: instructions, parseResponse: (json) => json };
-}
+};

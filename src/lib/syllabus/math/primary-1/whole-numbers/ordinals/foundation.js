@@ -20,6 +20,22 @@ export const foundationVariants = {
     const sName = extract(context.name);
     const sItem = extract(context.items[0]);
     const visualProtocol = `\nSTRICT VISUAL PROTOCOL: You MUST generate an array of ${config.maxItems} UNIQUE objects for the "visualItems" field. Each object must have an "icon" (emoji) and a "label" (one-word name, e.g., "Apple"). Match these to your theme.`;
+    
+    let options = [targetOrdinal, ORDINAL_SYMBOLS[Math.max(0, targetIdx - 1)], ORDINAL_SYMBOLS[Math.min(9, targetIdx + 1)], ORDINAL_SYMBOLS[Math.min(9, targetIdx + 2)]];
+    options = [...new Set(options)];
+    while(options.length < 4) {
+      options.push(ORDINAL_SYMBOLS[Math.floor(Math.random() * 10)]);
+      options = [...new Set(options)];
+    }
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== targetOrdinal) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a foundation_direct question. DO NOT modify the mathematical structure or the final answer.${visualProtocol}
@@ -41,7 +57,8 @@ export const foundationVariants = {
         {
           "questionText": "Look at the row of labeled items. What is the position of the [Item Label] from the left?",
           "hint": "Start counting from the left side. Which position is the [Chosen Emoji] in?",
-          "options": ${type === 'MCQ' ? JSON.stringify(ORDINAL_SYMBOLS.slice(0, 4)) : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "visualEngine": {
             "componentToRender": "ORDINAL_LINE",
             "componentData": {
@@ -67,7 +84,20 @@ export const foundationVariants = {
     const distractors = askForSymbol 
       ? [ORDINAL_SYMBOLS[Math.max(0, targetIndex - 1)], ORDINAL_SYMBOLS[Math.min(9, targetIndex + 1)], ORDINAL_SYMBOLS[Math.min(9, targetIndex + 2)]]
       : [ORDINAL_WORDS[Math.max(0, targetIndex - 1)], ORDINAL_WORDS[Math.min(9, targetIndex + 1)], ORDINAL_WORDS[Math.min(9, targetIndex + 2)]];
-    const optionsArray = type === 'MCQ' ? JSON.stringify([distractors[0], answer, distractors[1], distractors[2]]) : 'null';
+    let options = [...new Set([answer, ...distractors])];
+    while(options.length < 4) {
+      options.push(askForSymbol ? ORDINAL_SYMBOLS[Math.floor(Math.random() * 10)] : ORDINAL_WORDS[Math.floor(Math.random() * 10)]);
+      options = [...new Set(options)];
+    }
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a foundation_item_to_position question. DO NOT modify the mathematical structure or the final answer.${visualProtocol}
@@ -86,7 +116,8 @@ export const foundationVariants = {
         { 
           "questionText": "Look at the row of labeled items. Counting from the left, what is the position of the [Target Label]?", 
           "hint": "Start counting from the left. Which position is the [Target Label]?",
-          "options": ${optionsArray}, 
+          "options": ${mcqOptions}, 
+          "defectMap": ${defectMapStr},
           "visualEngine": {
             "componentToRender": "ORDINAL_LINE",
             "componentData": { "items": [{"icon": "emoji1", "label": "Name1"}, "..."], "direction": "left" }
@@ -124,7 +155,8 @@ export const foundationVariants = {
         { 
           "questionText": "Look at the labeled items. Which item is in the ${targetPosition} position?", 
           "hint": "Count from the left until you reach the ${targetPosition}. Which item do you see?",
-          "options": ["Name 1", "Name 2", "Name 3", "Name 4"], 
+          "options": ${type === 'MCQ' ? `["[Correct Name]", "[Wrong Name 1]", "[Wrong Name 2]", "[Wrong Name 3]"]` : 'null'}, 
+          "defectMap": ${type === 'MCQ' ? `{"[Wrong Name 1]": "CONCEPTUAL_ERROR", "[Wrong Name 2]": "CONCEPTUAL_ERROR", "[Wrong Name 3]": "CONCEPTUAL_ERROR"}` : 'null'},
           "visualEngine": {
             "componentToRender": "ORDINAL_LINE",
             "componentData": { "items": [{"icon": "emoji1", "label": "Name1"}, "..."], "direction": "left" }
@@ -146,7 +178,20 @@ export const foundationVariants = {
     const cluePosition = ORDINAL_WORDS[clueIndex];
     const answer = ORDINAL_WORDS[targetIndex];
     const distractors = [ORDINAL_WORDS[targetIndex - 1], ORDINAL_WORDS[targetIndex + 1], ORDINAL_WORDS[targetIndex - 2]].filter(Boolean);
-    const optionsArray = type === 'MCQ' ? JSON.stringify([distractors[0], answer, distractors[1], distractors[2]]) : 'null';
+    let options = [...new Set([answer, ...distractors])];
+    while(options.length < 4) {
+      options.push(ORDINAL_WORDS[Math.floor(Math.random() * 10)]);
+      options = [...new Set(options)];
+    }
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a foundation_next_position question. DO NOT modify the mathematical structure or the final answer. CRITICAL: This is a text-only conceptual question. No visual rendering or "visualItems" should be provided.
@@ -161,7 +206,8 @@ export const foundationVariants = {
         { 
           "questionText": "If [Name] is in the ${cluePosition} position, what position is just ${clueWord} [Name] in the line?", 
           "hint": ${JSON.stringify(getQText(`If someone is "just behind" you, their position number is one greater. If "just in front", it's one less.`, `Think: +1 for behind, -1 for in front.`))},
-          "options": ${optionsArray}, 
+          "options": ${mcqOptions}, 
+          "defectMap": ${defectMapStr},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`The position ${clueWord} ${cluePosition} is ${answer}.`, `${ORDINAL_SYMBOLS[clueIndex]} ${askNext ? '+ 1' : '- 1'} = ${ORDINAL_WORDS[targetIndex]}`))},
           "visualEngine": { "componentToRender": "NONE", "componentData": {} }
@@ -177,7 +223,20 @@ export const foundationVariants = {
     const distractors = askForSymbol 
       ? [ORDINAL_SYMBOLS[totalItems - 3], ORDINAL_SYMBOLS[totalItems - 2], ORDINAL_SYMBOLS[totalItems - 4] || "1st"]
       : [ORDINAL_WORDS[totalItems - 3], ORDINAL_WORDS[totalItems - 2], ORDINAL_WORDS[totalItems - 4] || "first"];
-    const optionsArray = type === 'MCQ' ? JSON.stringify([distractors[0], distractors[1], answer, distractors[2]]) : 'null';
+    let options = [...new Set([answer, ...distractors])];
+    while(options.length < 4) {
+      options.push(askForSymbol ? ORDINAL_SYMBOLS[Math.floor(Math.random() * 10)] : ORDINAL_WORDS[Math.floor(Math.random() * 10)]);
+      options = [...new Set(options)];
+    }
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
     const sItem = extract(context.items[0]);
 
     return {
@@ -194,7 +253,8 @@ export const foundationVariants = {
         { 
           "questionText": ${JSON.stringify(getQText(`In a row of ${numberToWords(totalItems)} items, what is the position of the last item?`, `Last of ${totalItems} = ?`))}, 
           "hint": ${JSON.stringify(getQText(`The last position in a line of items is the same as the total number of items.`, `Last position = Total items.`))},
-          "options": ${optionsArray}, 
+          "options": ${mcqOptions}, 
+          "defectMap": ${defectMapStr},
           "finalAnswer": "${answer}", 
           "solutionSteps": ${JSON.stringify(getQText(`Since there are ${totalItems} items, the last one is in the ${answer} position.`, `Last = ${answer}`))},
           "visualEngine": { "componentToRender": "NONE", "componentData": {} }

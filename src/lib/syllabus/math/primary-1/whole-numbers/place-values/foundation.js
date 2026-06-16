@@ -29,6 +29,21 @@ export const foundationVariants = {
     }
     const mcqOptions = type === 'MCQ' ? JSON.stringify(uniqueOptions.sort(() => Math.random() - 0.5)) : 'null';
 
+    let defectMapObj = null;
+    if (type === 'MCQ') {
+      defectMapObj = {
+        [`${tens} tens ${ (ones + 1) % 10 } ones`]: "CARELESS_CALCULATION",
+        [`${ (tens % 8) + 1 } tens ${ones} ones`]: "CARELESS_CALCULATION",
+        [String(num)]: "CONCEPTUAL_ERROR"
+      };
+      uniqueOptions.forEach(opt => {
+        if (opt !== answer && !defectMapObj[opt]) {
+          defectMapObj[opt] = "CARELESS_CALCULATION";
+        }
+      });
+    }
+    const defectMapStr = type === 'MCQ' ? JSON.stringify(defectMapObj) : 'null';
+
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a foundation_identify question. DO NOT modify the mathematical structure or the final answer.
         MATH CONSTRAINTS:
@@ -46,6 +61,7 @@ export const foundationVariants = {
         {
           "questionText": ${JSON.stringify(getQText(`How many tens and ones are there in the number ${num}?`, `${num} = ? tens ? ones`))},
           "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`The number on the left shows the tens. The number on the right shows the ones. Count the tens and ones blocks.`, `Count the ▮ (tens) and ▪ (ones).`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`${num} has ${tens} tens and ${ones} ones.`, `${num} = ${tens} tens + ${ones} ones`))},          
@@ -79,6 +95,26 @@ export const foundationVariants = {
     }
     const mcqOptions = type === 'MCQ' ? JSON.stringify(uniqueOptions.sort(() => Math.random() - 0.5)) : 'null';
 
+    let defectMapObj = null;
+    if (type === 'MCQ') {
+      defectMapObj = {};
+      if (isTens) {
+        defectMapObj[String(tens)] = "CONCEPTUAL_ERROR";
+        defectMapObj[String(ones)] = "CONCEPTUAL_ERROR";
+        defectMapObj[String(ones * 10)] = "CONCEPTUAL_ERROR";
+      } else {
+        defectMapObj[String(ones * 10)] = "CONCEPTUAL_ERROR";
+        defectMapObj[String(tens)] = "CONCEPTUAL_ERROR";
+        defectMapObj[String(tens * 10)] = "CONCEPTUAL_ERROR";
+      }
+      uniqueOptions.forEach(opt => {
+        if (opt !== answer && !defectMapObj[opt]) {
+          defectMapObj[opt] = "CARELESS_CALCULATION";
+        }
+      });
+    }
+    const defectMapStr = type === 'MCQ' ? JSON.stringify(defectMapObj) : 'null';
+
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a foundation_value question. DO NOT modify the mathematical structure or the final answer.
         MATH CONSTRAINTS:
@@ -97,6 +133,7 @@ export const foundationVariants = {
         {
           "questionText": ${JSON.stringify(getQText(`In the number ${num}, what is the value of the digit ${digit}?`, `Value of ${digit} in ${num} = ?`))},
           "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Check the place where the digit ${digit} is sitting. If it is in the tens place, its value is ${digit} tens.`, `Which place is ${digit} in?`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`The digit ${digit} is in the ${place} place, so its value is ${answer}.`, `Digit ${digit} in ${place} place. Value = ${answer}`))},          
@@ -128,6 +165,20 @@ export const foundationVariants = {
     }
     const mcqOptions = type === 'MCQ' ? JSON.stringify(uniqueOptions.sort(() => Math.random() - 0.5)) : 'null';
 
+    let defectMapObj = null;
+    if (type === 'MCQ') {
+      defectMapObj = {
+        [String((ones * 10) + tens)]: "CONCEPTUAL_ERROR",
+        [String(tens + ones)]: "CONFUSED_OPERATION"
+      };
+      uniqueOptions.forEach(opt => {
+        if (opt !== answer && !defectMapObj[opt]) {
+          defectMapObj[opt] = "CARELESS_CALCULATION";
+        }
+      });
+    }
+    const defectMapStr = type === 'MCQ' ? JSON.stringify(defectMapObj) : 'null';
+
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a foundation_compose question. DO NOT modify the mathematical structure or the final answer.
         MATH CONSTRAINTS:
@@ -145,6 +196,7 @@ export const foundationVariants = {
         {
           "questionText": ${JSON.stringify(getQText(`What number is formed by ${tens} tens and ${ones} ones?`, `${tens} tens + ${ones} ones = ?`))},
           "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`${tens} tens is the same as ${tens * 10}. Now add the ${ones} ones to it.`, `${tens * 10} + ${ones} = ?`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`${tens} tens is ${tens * 10} and ${ones} ones is ${ones}. ${tens * 10} + ${ones} = ${num}.`, `${tens * 10} + ${ones} = ${num}`))},          
@@ -174,7 +226,21 @@ export const foundationVariants = {
       uniqueOptions.push(String(Math.floor(Math.random() * 9) + 1));
       uniqueOptions = [...new Set(uniqueOptions)];
     }
-    const mcqOptions = type === 'MCQ' ? JSON.stringify(uniqueOptions.sort(() => Math.random() - 0.5)) : 'null'; // Corrected: Use mcqOptions
+    const mcqOptions = type === 'MCQ' ? JSON.stringify(uniqueOptions.sort(() => Math.random() - 0.5)) : 'null';
+
+    let defectMapObj = null;
+    if (type === 'MCQ') {
+      defectMapObj = {
+        [String(ones)]: "CONCEPTUAL_ERROR",
+        [String(tens * 10)]: "CONCEPTUAL_ERROR"
+      };
+      uniqueOptions.forEach(opt => {
+        if (opt !== answer && !defectMapObj[opt]) {
+          defectMapObj[opt] = "CARELESS_CALCULATION";
+        }
+      });
+    }
+    const defectMapStr = type === 'MCQ' ? JSON.stringify(defectMapObj) : 'null';
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a foundation_decompose_tens question. DO NOT modify the mathematical structure or the final answer.
         MATH CONSTRAINTS:
@@ -193,6 +259,7 @@ export const foundationVariants = {
         {
           "questionText": ${JSON.stringify(getQText(`Fill in the blank: ${num} = ____ tens ${ones} ones.`, `${num} = ? tens ${ones} ones`))},
           "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`How many groups of 10 blocks can you find in the number ${num}? Count the long bars.`, `Count the long bars (▮).`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`${num} has ${tens} tens and ${ones} ones.`, `${num} = ${tens} tens + ${ones} ones`))},          
@@ -225,6 +292,26 @@ export const foundationVariants = {
     }
     const mcqOptions = type === 'MCQ' ? JSON.stringify(uniqueOptions.sort(() => Math.random() - 0.5)) : 'null';
 
+    let defectMapObj = null;
+    if (type === 'MCQ') {
+      defectMapObj = {};
+      if (isTens) {
+        defectMapObj[String(ones)] = "CONCEPTUAL_ERROR";
+        defectMapObj[String(tens * 10)] = "CONCEPTUAL_ERROR";
+        defectMapObj[String(ones * 10)] = "CONCEPTUAL_ERROR";
+      } else {
+        defectMapObj[String(tens)] = "CONCEPTUAL_ERROR";
+        defectMapObj[String(ones * 10)] = "CONCEPTUAL_ERROR";
+        defectMapObj[String(tens * 10)] = "CONCEPTUAL_ERROR";
+      }
+      uniqueOptions.forEach(opt => {
+        if (opt !== answer && !defectMapObj[opt]) {
+          defectMapObj[opt] = "CARELESS_CALCULATION";
+        }
+      });
+    }
+    const defectMapStr = type === 'MCQ' ? JSON.stringify(defectMapObj) : 'null';
+
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a foundation_digit_position question. DO NOT modify the mathematical structure or the final answer.
         MATH CONSTRAINTS:
@@ -243,6 +330,7 @@ export const foundationVariants = {
         {
           "questionText": ${JSON.stringify(getQText(`In the number ${num}, which digit is in the ${place} place?`, `Digit in ${place} place of ${num} = ?`))},
           "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`The first digit from the left is the tens place. The second digit is the ones place.`, `Look at ${num}. Which digit is for ${place}?`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`The number ${num} has ${tens} in the tens place and ${ones} in the ones place.`, `Tens: ${tens}, Ones: ${ones}`))},          

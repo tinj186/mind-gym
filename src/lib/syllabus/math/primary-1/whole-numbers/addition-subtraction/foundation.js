@@ -30,13 +30,26 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const answer = isAdd ? String(num1 + num2) : String(num1 - num2);
     const operator = isAdd ? '+' : '-';
 
-    const options = isMCQ ? [answer, String(parseInt(answer) + 1), String(parseInt(answer) - 1), String(parseInt(answer) + 2)].sort(() => Math.random() - 0.5) : null;
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      const wrongOpAnswer = isAdd ? String(num1 - num2) : String(num1 + num2);
+      options = Array.from(new Set([answer, wrongOpAnswer, String(parseInt(answer) + 1), String(parseInt(answer) - 1)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [wrongOpAnswer]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && opt !== wrongOpAnswer) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many ${isAdd ? 'altogether' : 'are left'}?`, `${num1} ${operator} ${num2} = ?`),
         options: options,
+        defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
         solutionSteps: `1. ${num1} ${operator} ${num2} = ${answer}.`
@@ -74,13 +87,27 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const answer = String(sum - part);
     const isFirstMissing = Math.random() > 0.5;
 
-    const options = isMCQ ? [answer, String(sum), String(part), String(sum + 1)].sort(() => Math.random() - 0.5) : null;
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      const addedAnswer = String(sum + part);
+      options = Array.from(new Set([answer, String(sum), addedAnswer, String(parseInt(answer) + 1)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(sum)]: "CONSTANT_VIOLATION",
+        [addedAnswer]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many more does ${extract(context.name)} need?`, isFirstMissing ? `? + ${part} = ${sum}` : `${part} + ? = ${sum}`),
         options: options,
+        defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
         solutionSteps: `1. ${sum} - ${part} = ${answer}.`
@@ -138,12 +165,28 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       visualData = { whole: String(whole), part1: String(part1), part2: "?", hideVisual: false };
     }
     
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      const addedAnswer = missingPos === 0 ? String(part1 + part2 + 1) : String(whole + (missingPos === 1 ? part2 : part1)); // Wrong operation
+      options = Array.from(new Set([answer, String(whole), addedAnswer, String(parseInt(answer) + 1)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(whole)]: "CONSTANT_VIOLATION",
+        [addedAnswer]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
+    
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] ${qTextSuffix}`, "Find the missing number in the number bond."),
         hint: "[AI: INJECT HINT]",
-        options: isMCQ ? [answer, String(whole), String(part1), String(parseInt(answer) + 1)].sort(() => Math.random() - 0.5) : null,
+        options: options,
+        defectMap: defectMap,
         finalAnswer: answer,
         solutionSteps: `1. ${solutionSteps}`
       },
@@ -179,7 +222,20 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const remaining = total_count - crossed_count;
     const answer = String(remaining);
 
-    const options = isMCQ ? [answer, String(total_count), String(crossed_count), String(remaining + 1)].sort(() => Math.random() - 0.5) : null;
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      const addedAnswer = String(total_count + crossed_count);
+      options = Array.from(new Set([answer, String(total_count), addedAnswer, String(remaining + 1)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(total_count)]: "CONSTANT_VIOLATION",
+        [addedAnswer]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
@@ -187,6 +243,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         questionText: getQText(`[STORY] Look at the picture. Complete the subtraction equation.`, `${total_count} - ${crossed_count} = ?`),
         hint: "[AI: INJECT HINT]",
         options: options,
+        defectMap: defectMap,
         finalAnswer: answer,
         solutionSteps: `1. ${total_count} - ${crossed_count} = ${answer}.`
       },
@@ -239,13 +296,20 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     }
 
     const items = [String(part1), String(part2), String(whole)].sort(() => Math.random() - 0.5);
-    const options = isMCQ ? [answer, ...distractors].sort(() => Math.random() - 0.5) : null;
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      options = [answer, ...distractors].slice(0, 4).sort(() => Math.random() - 0.5);
+      defectMap = {};
+      distractors.forEach(d => defectMap[d] = "CONCEPTUAL_ERROR");
+    }
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: `Use all the number cards to form a correct ${operatorWord} equation.`,
         options: options,
+        defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
         solutionSteps: `1. The correct ${operatorWord} equation is ${answer}.`

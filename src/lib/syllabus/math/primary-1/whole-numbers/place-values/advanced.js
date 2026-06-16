@@ -19,6 +19,18 @@ export const advancedVariants = {
     ).sort(() => Math.random() - 0.5).slice(0, 3);
     if (!options.includes(num)) options.push(num); // Ensure correct answer is always present
     while (options.length < 4) options.push(Math.floor(Math.random() * 89) + 10); // Fill with random if needed
+    const mcqOptions = type === 'MCQ' ? JSON.stringify(options.map(String).sort(() => Math.random() - 0.5)) : 'null';
+
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      let defectMapObj = {
+        [String(num - 10)]: "CONCEPTUAL_ERROR",
+        [String(num + 10)]: "CONCEPTUAL_ERROR",
+        [String((tens + 1) * 10 + (ones % 10))]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== num && !defectMapObj[String(opt)]) defectMapObj[String(opt)] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating an advanced_extreme_regrouping question. DO NOT modify the mathematical structure or the final answer. NO addition or subtraction stories.
@@ -31,7 +43,8 @@ export const advancedVariants = {
         OUTPUT FORMAT (Return ONLY a single valid JSON object):
         {
           "questionText": ${JSON.stringify(getQText(`What number is ${tens} tens and ${ones} ones?`, `${tens} tens ${ones} ones = ?`))},
-          "options": ${type === 'MCQ' ? JSON.stringify(options) : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Remember that ${ones} ones can make another ten. ${tens} tens is ${tens * 10}. Add ${ones} to it.`, `What is ${tens * 10} + ${ones}?`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`${tens} tens is ${tens * 10}. ${tens * 10} + ${ones} = ${num}.`, `${tens * 10} + ${ones} = ${num}`))},          
@@ -57,7 +70,18 @@ export const advancedVariants = {
     ).sort(() => Math.random() - 0.5).slice(0, 3);
     if (!options.includes(num)) options.push(num);
     while (options.length < 4) options.push(Math.floor(Math.random() * 89) + 10);
-    const mcqOptions = JSON.stringify(options.map(String).sort(() => Math.random() - 0.5));
+    const mcqOptions = type === 'MCQ' ? JSON.stringify(options.map(String).sort(() => Math.random() - 0.5)) : 'null';
+
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      let defectMapObj = {
+        [String(num - 1)]: "CARELESS_CALCULATION",
+        [String(num + 1)]: "CARELESS_CALCULATION",
+        [String((onesDigit * 10) + tensDigit)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== num && !defectMapObj[String(opt)]) defectMapObj[String(opt)] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator.
@@ -70,7 +94,8 @@ export const advancedVariants = {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(getQText(`I am a 2-digit number. The sum of my digits is ${sum}. My tens digit is ${diff} less than my ones digit. What number am I?`, `2-digit number: Sum of digits is ${sum}, tens digit is ${diff} less than ones?`))},
-          "options": ${isMCQ ? mcqOptions : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": "Find two digits that add up to ${sum}, where one digit is ${diff} smaller than the other.",
           "finalAnswer": "${num}",
           "solutionSteps": "Ones digit is ${onesDigit}, tens digit is ${tensDigit}. ${tensDigit} + ${onesDigit} = ${sum}. The number is ${num}."
@@ -95,6 +120,16 @@ export const advancedVariants = {
     if (!options.includes(num)) options.push(num);
     while (options.length < 4) options.push(Math.floor(Math.random() * 89) + 10);
 
+    let mcqOptions = type === 'MCQ' ? JSON.stringify(options.map(String).sort(() => Math.random() - 0.5)) : 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      let defectMapObj = {
+        [String((onesDigit * 10) + tensDigit)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== num && !defectMapObj[String(opt)]) defectMapObj[String(opt)] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating an advanced_mystery_number_bounds question. NO addition or subtraction stories.
         MATH CONSTRAINTS:
@@ -107,7 +142,8 @@ export const advancedVariants = {
         OUTPUT FORMAT (Return ONLY a single valid JSON object):
         {
           "questionText": ${JSON.stringify(getQText(`I am a number between ${lowerBound} and ${upperBound}. My tens digit is 1 more than my ones digit. What number am I?`, `Number between ${lowerBound} and ${upperBound}: Tens digit is 1 more than ones?`))},
-          "options": ${type === 'MCQ' ? JSON.stringify(options) : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`If I am between ${lowerBound} and ${upperBound}, my tens digit must be ${tensDigit}. Now find the ones digit.`, `Tens digit is ${tensDigit}.`))},
           "finalAnswer": "${num}",
           "solutionSteps": ${JSON.stringify(getQText(`The tens digit must be ${tensDigit}. So the ones digit is ${onesDigit}. The number is ${num}.`, `tens=${tensDigit}, ones=${tensDigit}-1=${onesDigit}`))},
@@ -131,6 +167,16 @@ export const advancedVariants = {
     if (!options.includes(diff)) options.push(diff);
     while (options.length < 4) options.push(Math.floor(Math.random() * 89) + 10);
 
+    let mcqOptions = type === 'MCQ' ? JSON.stringify(options.map(String).sort(() => Math.random() - 0.5)) : 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      let defectMapObj = {
+        [String(startNum + swappedNum)]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== diff && !defectMapObj[String(opt)]) defectMapObj[String(opt)] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating an advanced_digit_swap question. NO addition or subtraction stories.
         MATH CONSTRAINTS:
@@ -143,7 +189,8 @@ export const advancedVariants = {
         OUTPUT FORMAT (Return ONLY a single valid JSON object):
         {
           "questionText": ${JSON.stringify(getQText(`If I swap the digits of ${startNum}, by how much does the number change?`, `How much does ${startNum} change if you swap its digits?`))},
-          "options": ${type === 'MCQ' ? JSON.stringify(options) : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`First, find the new number by swapping the tens and ones. Then find the difference between the numbers.`, `Swap digits and subtract.`))},
           "finalAnswer": "${diff}",
           "solutionSteps": ${JSON.stringify(getQText(`Swapping ${startNum} gives ${swappedNum}. The difference is ${Math.max(startNum, swappedNum)} - ${Math.min(startNum, swappedNum)} = ${diff}.`, `${Math.max(startNum, swappedNum)} - ${Math.min(startNum, swappedNum)} = ${diff}`))},
@@ -167,6 +214,16 @@ export const advancedVariants = {
     if (!options.includes(onesB)) options.push(onesB);
     while (options.length < 4) options.push(Math.floor(Math.random() * 20) + 1);
 
+    let mcqOptions = type === 'MCQ' ? JSON.stringify(options.map(String).sort(() => Math.random() - 0.5)) : 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      let defectMapObj = {
+        [String(tensA * 10 + onesA)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== onesB && !defectMapObj[String(opt)]) defectMapObj[String(opt)] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating an advanced_balance_equation question. NO addition or subtraction stories.
         MATH CONSTRAINTS:
@@ -178,7 +235,8 @@ export const advancedVariants = {
         OUTPUT FORMAT (Return ONLY a single valid JSON object):
         {
           "questionText": ${JSON.stringify(getQText(`Balance the equation: ${tensA} tens ${onesA} ones = ${tensB} tens ____ ones.`, `${tensA} tens ${onesA} ones = ${tensB} tens ? ones`))},
-          "options": ${type === 'MCQ' ? JSON.stringify(options) : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Calculate the total value on the left side first. Then subtract the value of ${tensB} tens.`, `Find total, then subtract ${tensB * 10}.`))},
           "finalAnswer": "${onesB}",
           "solutionSteps": ${JSON.stringify(getQText(`${tensA} tens ${onesA} ones is ${numA}. ${tensB} tens is ${tensB * 10}. ${numA} - ${tensB * 10} = ${onesB}.`, `${numA} - ${tensB * 10} = ${onesB}`))},
@@ -200,6 +258,16 @@ export const advancedVariants = {
     if (!options.includes(num)) options.push(num);
     while (options.length < 4) options.push(Math.floor(Math.random() * 89) + 10);
 
+    let mcqOptions = type === 'MCQ' ? JSON.stringify(options.map(String).sort(() => Math.random() - 0.5)) : 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      let defectMapObj = {
+        [String((onesDigit * 10) + tensDigit)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== num && !defectMapObj[String(opt)]) defectMapObj[String(opt)] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating an advanced_consecutive_digits question. NO addition or subtraction stories.
         MATH CONSTRAINTS:
@@ -212,7 +280,8 @@ export const advancedVariants = {
         OUTPUT FORMAT (Return ONLY a single valid JSON object):
         {
           "questionText": ${JSON.stringify(getQText(`The digits of a number are consecutive. Their sum is ${sum}. What is the 2-digit number?`, `2-digit number with consecutive digits that sum to ${sum}?`))},
-          "options": ${type === 'MCQ' ? JSON.stringify(options) : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Consecutive numbers are like 1 and 2, or 3 and 4. Which two next-door numbers add up to ${sum}?`, `Try pairs like (1,2), (2,3)...`))},
           "finalAnswer": "${num}",
           "solutionSteps": ${JSON.stringify(getQText(`The digits ${tensDigit} and ${onesDigit} are consecutive and sum to ${sum}. The number is ${num}.`, `${tensDigit}+${onesDigit}=${sum}`))},
@@ -233,6 +302,16 @@ export const advancedVariants = {
     if (!options.includes(num)) options.push(num);
     while (options.length < 4) options.push(Math.floor(Math.random() * 89) + 10);
 
+    let mcqOptions = type === 'MCQ' ? JSON.stringify(options.map(String).sort(() => Math.random() - 0.5)) : 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      let defectMapObj = {
+        [String((digit + 1) * 10 + (digit + 1))]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== num && !defectMapObj[String(opt)]) defectMapObj[String(opt)] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating an advanced_same_digits question. NO addition or subtraction stories.
         MATH CONSTRAINTS:
@@ -245,7 +324,8 @@ export const advancedVariants = {
         OUTPUT FORMAT (Return ONLY a single valid JSON object):
         {
           "questionText": ${JSON.stringify(getQText(`My tens digit and ones digit are the same. Their sum is ${sum}. What number am I?`, `2-digit number where tens and ones digits are the same and sum to ${sum}?`))},
-          "options": ${type === 'MCQ' ? JSON.stringify(options) : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`If the digits are the same, divide ${sum} by 2 to find the digit.`, `Half of ${sum} is the digit.`))},
           "finalAnswer": "${num}",
           "solutionSteps": ${JSON.stringify(getQText(`The digits must be ${digit} and ${digit} because ${digit} + ${digit} = ${sum}.`, `${digit}+${digit}=${sum}`))},
@@ -268,6 +348,16 @@ export const advancedVariants = {
     if (!options.includes(num)) options.push(num);
     while (options.length < 4) options.push(Math.floor(Math.random() * 89) + 10);
 
+    let mcqOptions = type === 'MCQ' ? JSON.stringify(options.map(String).sort(() => Math.random() - 0.5)) : 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      let defectMapObj = {
+        [String((onesDigit * 10) + tensDigit)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== num && !defectMapObj[String(opt)]) defectMapObj[String(opt)] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating an advanced_value_deduction question. NO addition or subtraction stories.
         MATH CONSTRAINTS:
@@ -280,7 +370,8 @@ export const advancedVariants = {
         OUTPUT FORMAT (Return ONLY a single valid JSON object):
         {
           "questionText": ${JSON.stringify(getQText(`The value of my tens digit is ${tensValue}. The sum of my digits is ${sum}. What number am I?`, `2-digit number: Tens value is ${tensValue}, sum of digits is ${sum}?`))},
-          "options": ${type === 'MCQ' ? JSON.stringify(options) : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`If the tens value is ${tensValue}, the tens digit is ${tensDigit}. Now find what ones digit adds to ${tensDigit} to make ${sum}.`, `Tens digit is ${tensDigit}.`))},
           "finalAnswer": "${num}",
           "solutionSteps": ${JSON.stringify(getQText(`Tens digit is ${tensDigit}. ${tensDigit} + ones digit = ${sum}, so ones digit is ${onesDigit}. The number is ${num}.`, `${tensValue}=${tensDigit} tens, ${tensDigit}+${onesDigit}=${sum}`))},
@@ -303,6 +394,16 @@ export const advancedVariants = {
     if (!options.includes(tens)) options.push(tens);
     while (options.length < 4) options.push(Math.floor(Math.random() * 8) + 1);
 
+    let mcqOptions = type === 'MCQ' ? JSON.stringify(options.map(String).sort(() => Math.random() - 0.5)) : 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      let defectMapObj = {
+        [String(Math.floor(num / 10))]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== tens && !defectMapObj[String(opt)]) defectMapObj[String(opt)] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating an advanced_missing_regrouped_tens question. NO addition or subtraction stories.
         MATH CONSTRAINTS:
@@ -314,7 +415,8 @@ export const advancedVariants = {
         OUTPUT FORMAT (Return ONLY a single valid JSON object):
         {
           "questionText": ${JSON.stringify(getQText(`Fill in the blank: ____ tens ${ones} ones = ${num}`, `____ tens ${ones} ones = ${num}`))},
-          "options": ${type === 'MCQ' ? JSON.stringify(options) : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Subtract the ${ones} ones from ${num}. The result is the value of the missing tens.`, `${num} - ${ones} = ?`))},
           "finalAnswer": "${tens}",
           "solutionSteps": ${JSON.stringify(getQText(`${num} - ${ones} = ${tens * 10}. ${tens * 10} is ${tens} tens.`, `${num} - ${ones} = ${tens * 10}`))},
@@ -337,6 +439,14 @@ export const advancedVariants = {
     if (!options.includes(answer)) options.push(answer);
     while (options.length < 4) options.push(Math.random() > 0.5 ? `${Math.floor(Math.random() * 8) + 1} tens` : `${(Math.floor(Math.random() * 8) + 1) * 10} ones`);
 
+    let mcqOptions = type === 'MCQ' ? JSON.stringify(options.map(String).sort(() => Math.random() - 0.5)) : 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[String(opt)]) defectMapObj[String(opt)] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating an advanced_extreme_ones_comparison question. NO addition or subtraction stories.
         MATH CONSTRAINTS:
@@ -348,7 +458,8 @@ export const advancedVariants = {
         OUTPUT FORMAT (Return ONLY a single valid JSON object):
         {
           "questionText": ${JSON.stringify(getQText(`Which is smaller: ${tens} tens or ${numOnes} ones?`, `Which is smaller: ${tens} tens or ${numOnes} ones?`))},
-          "options": ${type === 'MCQ' ? JSON.stringify(options) : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Convert ${tens} tens into a single number. Then compare it to ${numOnes}.`, `${tens} tens = ?`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`${tens} tens is ${numTens}. ${numOnes} ones is also ${numOnes}. They are ${answer === "They are equal" ? "the same" : (numTens < numOnes ? "90" : "9 tens")}.`, `${tens}*10=${numTens}, ${numOnes}*1=${numOnes}`))},

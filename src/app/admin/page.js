@@ -29,7 +29,6 @@ export default async function AdminDashboard() {
     : '0';
 
   // 4. Top Defect Code
-  // Extracting top defect code by grouping
   const defectGroups = await prisma.attemptLog.groupBy({
     by: ['defectCode'],
     _count: {
@@ -52,11 +51,19 @@ export default async function AdminDashboard() {
     ? defectGroups[0].defectCode.replace(/_/g, ' ') 
     : 'None Tracked';
 
+  // 5. Open Support Tickets
+  const openSupportTickets = await prisma.supportTicket.count({
+    where: {
+      status: 'OPEN',
+    },
+  });
+
   const kpis = [
     { label: "Workout Reps Today", value: totalRepsToday.toString(), change: "Live" },
     { label: "Active Athletes", value: activeAthletes.toString(), change: "Live" },
     { label: "Avg. Synapse Strength", value: avgSynapseStrength, change: "Live" },
     { label: "Top Defect Code", value: topDefectCode, change: "Intervene" },
+    { label: "Open Support Tickets", value: openSupportTickets.toString(), change: openSupportTickets > 0 ? "Action Required" : "Inbox Zero" },
   ];
 
   // Fetch Pending Workout Content
@@ -75,19 +82,19 @@ export default async function AdminDashboard() {
     <div className="space-y-12">
       <header className="flex justify-between items-end">
         <div>
-          <h2 className="text-4xl font-black text-slate-900 tracking-tight uppercase">Command Center</h2>
-          <p className="text-slate-500 font-bold uppercase text-xs tracking-widest mt-2">Real-time Learn Reps Operations</p>
+          <h2 className="text-4xl font-black text-white tracking-tight uppercase">Command Center</h2>
+          <p className="text-slate-400 font-bold uppercase text-xs tracking-widest mt-2">Real-time Learn Reps Operations</p>
         </div>
       </header>
 
       {/* KPI Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         {kpis.map((kpi, i) => (
-          <div key={i} className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-between min-h-[140px]">
+          <div key={i} className="bg-slate-700 p-6 rounded-3xl border border-slate-600 shadow-sm flex flex-col justify-between min-h-[140px]">
             <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest break-words leading-tight">{kpi.label}</p>
             <div>
-              <p className="text-3xl font-black text-slate-900 mt-2 truncate" title={kpi.value}>{kpi.value}</p>
-              <p className={`text-xs font-bold mt-2 ${kpi.change === 'Intervene' ? 'text-rose-500' : 'text-blue-500'}`}>
+              <p className="text-3xl font-black text-white mt-2 truncate" title={kpi.value}>{kpi.value}</p>
+              <p className={`text-xs font-bold mt-2 ${kpi.change === 'Intervene' || kpi.change === 'Action Required' ? 'text-red-400' : 'text-blue-400'}`}>
                 {kpi.change}
               </p>
             </div>
@@ -96,9 +103,9 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Pending Question Approval Table */}
-      <section className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm">
-        <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-          <h3 className="font-black text-slate-900 uppercase tracking-tighter">Pending Workout Content</h3>
+      <section className="bg-slate-700 rounded-[2rem] border border-slate-600 overflow-hidden shadow-sm">
+        <div className="px-8 py-6 border-b border-slate-600 flex justify-between items-center bg-slate-800">
+          <h3 className="font-black text-white uppercase tracking-tighter">Pending Workout Content</h3>
           <Link href="/admin/questions/review" className="text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full transition-colors">
             VIEW ALL
           </Link>
@@ -110,7 +117,7 @@ export default async function AdminDashboard() {
           </div>
         ) : (
           <table className="w-full text-left">
-            <thead className="text-[10px] font-black uppercase text-slate-400 tracking-widest bg-white border-b border-slate-100">
+            <thead className="text-[10px] font-black uppercase text-slate-400 tracking-widest bg-slate-700 border-b border-slate-600">
               <tr>
                 <th className="px-8 py-4">Topic</th>
                 <th className="px-8 py-4">Level</th>
@@ -118,22 +125,22 @@ export default async function AdminDashboard() {
                 <th className="px-8 py-4 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="text-sm font-bold text-slate-600 divide-y divide-slate-50">
+            <tbody className="text-sm font-bold text-slate-300 divide-y divide-slate-600/50">
               {pendingQuestions.map((q) => (
-                <tr key={q.id} className="hover:bg-slate-50 transition-colors">
+                <tr key={q.id} className="hover:bg-slate-800/50 transition-colors">
                   <td className="px-8 py-4">
-                    <div className="truncate max-w-[200px] md:max-w-[300px]" title={q.topic}>
+                    <div className="truncate max-w-[200px] md:max-w-[300px] text-white" title={q.topic}>
                       {q.topic}
                     </div>
                   </td>
-                  <td className="px-8 py-4 font-mono text-slate-500">{q.level}</td>
+                  <td className="px-8 py-4 font-mono text-slate-400">{q.level}</td>
                   <td className="px-8 py-4">
-                    <span className="bg-slate-100 text-slate-500 px-2 py-1 rounded text-xs">
+                    <span className="bg-slate-800 text-slate-300 border border-slate-600 px-2 py-1 rounded text-xs">
                       {q.type.toUpperCase()}
                     </span>
                   </td>
                   <td className="px-8 py-4 text-right">
-                    <Link href={`/admin/questions/review`} className="text-blue-600 hover:text-blue-800 hover:underline">
+                    <Link href={`/admin/questions/review`} className="text-blue-400 hover:text-blue-300 hover:underline">
                       Review
                     </Link>
                   </td>

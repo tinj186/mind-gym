@@ -31,17 +31,28 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const answer = String(sequence[missingIdx]);
     const items = sequence.map((val, idx) => idx === missingIdx ? "?" : String(val));
     
-    // Generate 3 unique distractors within bounds that are not in the sequence
-    const distractorsSet = new Set();
-    while (distractorsSet.size < 3) {
-      const offset = (Math.floor(Math.random() * 10) + 1) * (Math.random() > 0.5 ? 1 : -1);
-      // Ensure candidate is not already in the sequence
-      const candidate = parseInt(answer) + offset;
-      if (candidate >= 0 && candidate <= 100 && !sequence.includes(candidate)) {
-        distractorsSet.add(String(candidate));
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      const wrongDirection = parseInt(answer) + (isForward ? -stepValue : stepValue);
+      const distractorsSet = new Set();
+      if (!sequence.includes(wrongDirection)) {
+        distractorsSet.add(String(wrongDirection));
       }
+      while (distractorsSet.size < 3) {
+        const offset = (Math.floor(Math.random() * 10) + 1) * (Math.random() > 0.5 ? 1 : -1);
+        const candidate = parseInt(answer) + offset;
+        if (candidate >= 0 && candidate <= 100 && !sequence.includes(candidate)) {
+          distractorsSet.add(String(candidate));
+        }
+      }
+      options = [answer, ...Array.from(distractorsSet).slice(0, 3)].sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(wrongDirection)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
     }
-    const options = isMCQ ? [answer, ...Array.from(distractorsSet)].sort(() => Math.random() - 0.5) : null;
 
     // Construct the explanation logic
     const isStart = missingIdx === 0;
@@ -60,6 +71,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "content": {
           "questionText": ${JSON.stringify("[STORY] " + questionTextTemplate)},
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
+          "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
           "hint": "Check the jump between the numbers you can see.",
           "finalAnswer": "${answer}",
           "solutionSteps": "${solutionSteps}"

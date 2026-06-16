@@ -10,11 +10,20 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const sequence = [start, start + step, start + 2 * step, start + 3 * step];
     const answer = String(start + 4 * step);
     
-    const distractors = isForward 
-      ? [String(start + 3 * step), String(start + 5 * step), String(start + 14)]
-      : [String(start - 5), String(start - 3), String(start - 14)];
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      const distractors = isForward 
+        ? [String(start + 3 * step), String(start + 5 * step), String(start + 14)]
+        : [String(start - 5), String(start - 3), String(start - 14)];
+      options = [answer, ...distractors].sort(() => Math.random() - 0.5);
       
-    const options = isMCQ ? [answer, ...distractors].sort(() => Math.random() - 0.5) : null;
+      defectMap = {
+        [isForward ? String(start + 3 * step) : String(start - 3)]: "CONCEPTUAL_ERROR",
+        [isForward ? String(start + 5 * step) : String(start - 5)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
     const sequenceItems = [...sequence.map(String), "?"];
     const hideVisual = false;
     const questionTextTemplate = getQText(`What is the next number in this pattern?`, `What is the next number: ${sequence.join(', ')}, ?`);
@@ -29,6 +38,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         "content": {
           "questionText": ${JSON.stringify("[STORY] " + questionTextTemplate)},
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
+          "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
           "hint": "Check if the numbers are getting bigger or smaller by 1 each time.",
           "finalAnswer": "${answer}",
           "solutionSteps": "1. The pattern is counting ${isForward ? 'on' : 'back'} by 1.\\n2. ${sequence[3]} ${isForward ? '+' : '-'} 1 = ${answer}."
@@ -49,8 +59,17 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const step = isForward ? 1 : -1;
     const sequence = [start, start + step, start + 2 * step, start + 3 * step, start + 4 * step];
     const answer = String(sequence[2]);
-    
-    const options = isMCQ ? [answer, String(sequence[2] - 2), String(sequence[2] + 1), String(sequence[2] + 2)].sort(() => Math.random() - 0.5) : null;
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = [answer, String(sequence[2] - 2), String(sequence[2] + 1), String(sequence[2] + 2)].sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(sequence[2] + 1)]: "CONCEPTUAL_ERROR",
+        [String(sequence[2] - 2)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
     const sequenceItems = [String(sequence[0]), String(sequence[1]), "?", String(sequence[3]), String(sequence[4])];
     const hideVisual = false;
     const questionTextTemplate = getQText(`What is the missing number in the middle?`, `What is the missing number? ${sequenceItems.join(', ')}`);
@@ -65,6 +84,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         "content": {
           "questionText": ${JSON.stringify("[STORY] " + questionTextTemplate)},
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
+          "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
           "hint": "What number comes exactly after ${sequence[1]}?",
           "finalAnswer": "${answer}",
           "solutionSteps": "1. The pattern is counting ${isForward ? 'on' : 'back'} by 1.\\n2. ${sequence[1]} ${isForward ? '+' : '-'} 1 = ${answer}."
@@ -83,8 +103,17 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const start = Math.floor(Math.random() * 80) + 10;
     const sequence = [start, start + 1, start + 2, start + 3];
     const answer = String(start);
-    
-    const options = isMCQ ? [answer, String(start - 1), String(start + 4), String(start + 2)].sort(() => Math.random() - 0.5) : null;
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = [answer, String(start - 1), String(start + 4), String(start + 2)].sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(start - 1)]: "CONCEPTUAL_ERROR",
+        [String(start + 4)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
     const sequenceItems = ["?", String(sequence[1]), String(sequence[2]), String(sequence[3])];
     const hideVisual = false;
     const questionTextTemplate = getQText(`What is the first number in the pattern?`, `What is the missing number? ${sequenceItems.join(', ')}`);
@@ -99,6 +128,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         "content": {
           "questionText": ${JSON.stringify("[STORY] " + questionTextTemplate)},
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
+          "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
           "hint": "Try counting backward by 1 from ${sequence[1]} to find the start.",
           "finalAnswer": "${answer}",
           "solutionSteps": "1. The pattern is counting on by 1.\\n2. To find the first number, we count back by 1 from ${sequence[1]}.\\n3. ${sequence[1]} - 1 = ${answer}."

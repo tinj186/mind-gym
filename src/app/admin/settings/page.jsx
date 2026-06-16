@@ -91,15 +91,15 @@ export default function AdminSettingsPage() {
   const isDesynced = backupStatus?.dbCount !== backupStatus?.backupCount;
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8">
+    <div>
       <div className="max-w-5xl mx-auto space-y-8">
         <header className="border-b-8 border-slate-900 pb-6 flex justify-between items-end">
           <div>
             <Link href="/admin/questions" className="text-blue-600 font-bold text-xs uppercase tracking-[0.2em] hover:underline mb-4 block">
               ← Return to Command Center
             </Link>
-            <h1 className="text-5xl font-black italic tracking-tighter uppercase">Engine Room</h1>
-            <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Data Persistence // Disaster Recovery</p>
+            <h1 className="text-5xl font-black italic tracking-tighter uppercase text-white">Engine Room</h1>
+            <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Data Persistence // Disaster Recovery</p>
           </div>
 
           {backupStatus?.dbCount === 0 && (
@@ -111,12 +111,12 @@ export default function AdminSettingsPage() {
 
         <div className="grid grid-cols-1 gap-8">
           {/* Module: Infrastructure Health */}
-          <section className="bg-white rounded-3xl shadow-xl p-8 border border-slate-100">
-            <h2 className="text-2xl font-bold text-slate-800 mb-6">Infrastructure Health</h2>
-            <div className="flex items-center gap-4 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+          <section className="bg-slate-700 rounded-3xl shadow-sm p-8 border border-slate-600">
+            <h2 className="text-2xl font-bold text-white mb-6">Infrastructure Health</h2>
+            <div className="flex items-center gap-4 p-6 bg-slate-800 rounded-2xl border border-slate-600">
               <div className={`w-3 h-3 rounded-full ${dbStatus === 'online' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : dbStatus === 'checking' ? 'bg-slate-300 animate-pulse' : 'bg-red-500 animate-pulse'}`} />
               <div>
-                <p className="font-bold text-slate-900">PostgreSQL Database (Supabase Cloud)</p>
+                <p className="font-bold text-white">PostgreSQL Database (Supabase Cloud)</p>
                 <p className="text-xs font-black text-slate-400 uppercase tracking-widest">{dbStatus}</p>
                 {dbError && <p className="text-[10px] text-red-500 font-mono mt-1 max-w-md break-words">{dbError}</p>}
               </div>
@@ -124,11 +124,11 @@ export default function AdminSettingsPage() {
           </section>
 
           {/* Module: Data Fortress (Replacing AI Hint Backfill) */}
-          <section className="bg-white rounded-[3rem] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-10 border-4 border-slate-900 space-y-8">
+          <section className="bg-slate-700 rounded-[2rem] shadow-sm p-10 border border-slate-600 space-y-8">
             <div className="flex justify-between items-start">
               <div>
-                <h2 className="text-3xl font-black italic">DATA_FORTRESS</h2>
-                <p className="text-slate-500 font-medium">Single-file JSON sync for Question Bank integrity.</p>
+                <h2 className="text-3xl font-black italic text-white">DATA_FORTRESS</h2>
+                <p className="text-slate-400 font-medium">Single-file JSON sync for Question Bank integrity.</p>
               </div>
               
               <div className="flex gap-4">
@@ -143,7 +143,7 @@ export default function AdminSettingsPage() {
                 <button 
                   onClick={handleRestore}
                   disabled={backupLoading || !backupStatus?.exists}
-                  className="bg-rose-600 text-white px-8 py-4 rounded-2xl font-black hover:bg-rose-700 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] disabled:opacity-50 disabled:grayscale"
+                  className="bg-rose-600 text-white px-8 py-4 rounded-2xl font-black hover:bg-rose-700 transition-all active:translate-y-[2px] disabled:opacity-50 disabled:grayscale"
                 >
                   EMERGENCY RESTORE
                 </button>
@@ -191,10 +191,10 @@ export default function AdminSettingsPage() {
           </section>
 
           {/* Module: AI Performance & Benchmarks */}
-          <section className="bg-white rounded-3xl shadow-xl p-8 border border-slate-100">
+          <section className="bg-slate-700 rounded-3xl shadow-sm p-8 border border-slate-600">
             <div className="flex justify-between items-center mb-8">
               <div>
-                <h2 className="text-2xl font-bold text-slate-800">AI Performance Module</h2>
+                <h2 className="text-2xl font-bold text-white">AI Performance Module</h2>
                 <p className="text-slate-400 text-sm">Automated model routing based on real-time speed tests.</p>
               </div>
               <button
@@ -209,9 +209,9 @@ export default function AdminSettingsPage() {
               </button>
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-slate-100">
-              <table className="min-w-full divide-y divide-slate-100">
-                <thead className="bg-slate-50">
+            <div className="overflow-hidden rounded-2xl border border-slate-600">
+              <table className="min-w-full divide-y divide-slate-600">
+                <thead className="bg-slate-800">
                   <tr>
                     <th className="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Model ID</th>
                     <th className="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Latency</th>
@@ -219,11 +219,11 @@ export default function AdminSettingsPage() {
                     <th className="px-6 py-4 text-right"></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-600">
                   {results.map((row, idx) => (
-                    <tr key={row.modelId} className={`hover:bg-slate-50/50 transition-colors ${row.role !== 'UNRANKED' && row.status === 'online' ? 'bg-blue-50/20' : ''}`}>
-                      <td className="px-6 py-5 font-bold text-slate-900">{row.modelId}</td>
-                      <td className="px-6 py-5 font-mono text-sm text-slate-600">
+                    <tr key={row.modelId} className={`hover:bg-slate-600/50 transition-colors ${row.role !== 'UNRANKED' && row.status === 'online' ? 'bg-blue-900/20' : ''}`}>
+                      <td className="px-6 py-5 font-bold text-white">{row.modelId}</td>
+                      <td className="px-6 py-5 font-mono text-sm text-slate-300">
                         {row.latency === 99999 ? '—' : `${row.latency}ms`}
                       </td>
                       <td className="px-6 py-5">
@@ -255,9 +255,9 @@ export default function AdminSettingsPage() {
   );
 }
 
-function StatusCard({ label, value, sub, highlight, color = "text-slate-900" }) {
+function StatusCard({ label, value, sub, highlight, color = "text-white" }) {
   return (
-    <div className={`p-8 rounded-[2rem] border-4 ${highlight ? 'border-amber-400 bg-amber-50' : 'border-slate-900 bg-slate-50'}`}>
+    <div className={`p-8 rounded-[2rem] border ${highlight ? 'border-amber-400 bg-amber-900/30' : 'border-slate-600 bg-slate-800 shadow-sm'}`}>
       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">{label}</p>
       <p className={`text-5xl font-black tracking-tighter ${color}`}>{value}</p>
       {sub && <p className="text-xs font-bold text-slate-500 mt-1 uppercase">{sub}</p>}

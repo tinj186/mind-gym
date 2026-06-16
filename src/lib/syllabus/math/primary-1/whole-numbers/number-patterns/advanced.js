@@ -19,7 +19,16 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     ];
     const answer = String(sequence[4]);
 
-    const options = [answer, String(sequence[4] + growth), String(sequence[4] - initialJump), String(sequence[4] + 1)].sort(() => Math.random() - 0.5);
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = [answer, String(sequence[4] + growth), String(sequence[4] - initialJump), String(sequence[4] + 1)].sort(() => Math.random() - 0.5);
+      defectMap = {
+        [String(sequence[4] + growth)]: "CONCEPTUAL_ERROR",
+        [String(sequence[4] - initialJump)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions} 
@@ -30,7 +39,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": "[Generate the full 1-2 sentence story problem here asking for the missing number]",
-          "options": ${JSON.stringify(options)},
+          "options": ${isMCQ ? JSON.stringify(options) : 'null'},
+          "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
           "hint": "The jumps between numbers are getting larger each time.",
           "finalAnswer": "${answer}",
           "solutionSteps": "1. The first jump is +${initialJump}.\\n2. The next jump is +${initialJump + growth}.\\n3. The next jump is +${initialJump + 2 * growth}.\\n4. The last jump should be +${initialJump + 3 * growth}. So, ${sequence[3]} + ${initialJump + 3 * growth} = ${answer}."
@@ -58,7 +68,15 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const items = [String(sequence[0]), String(sequence[1]), String(sequence[2]), String(sequence[3]), String(sequence[4]), String(sequence[5])];
     items[missingIdx] = "?";
 
-    const options = [answer, String(parseInt(answer) + 1), String(parseInt(answer) - 2), String(startA + startB)].sort(() => Math.random() - 0.5);
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = [answer, String(parseInt(answer) + 1), String(parseInt(answer) - 2), String(startA + startB)].sort(() => Math.random() - 0.5);
+      defectMap = {
+        [String(startA + startB)]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
     const solutionSteps = `1. This sequence has two patterns mixed together.\\n2. Pattern 1 (1st, 3rd, 5th numbers) counts by ${stepA}.\\n3. Pattern 2 (2nd, 4th, 6th numbers) counts by ${stepB}.\\n4. The missing number follows ${missingIdx === 4 ? `Pattern 1: ${sequence[2]} + ${stepA} = ${answer}` : `Pattern 2: ${sequence[3]} + ${stepB} = ${answer}`}.`;
 
     return {
@@ -70,7 +88,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": "[Generate the full 1-2 sentence story problem here asking for the missing number]",
-          "options": ${JSON.stringify(options)},
+          "options": ${isMCQ ? JSON.stringify(options) : 'null'},
+          "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
           "hint": "Try looking at every second number to see if you can find two patterns.",
           "finalAnswer": "${answer}",
           "solutionSteps": "${solutionSteps}"
@@ -100,7 +119,16 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     ];
     const answer = String(sequence[4]);
 
-    const options = [answer, String(sequence[4] - growth), String(sequence[4] + initialJump), String(sequence[4] - 1)].sort(() => Math.random() - 0.5);
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = [answer, String(sequence[4] - growth), String(sequence[4] + initialJump), String(sequence[4] - 1)].sort(() => Math.random() - 0.5);
+      defectMap = {
+        [String(sequence[4] - growth)]: "CONCEPTUAL_ERROR",
+        [String(sequence[4] + initialJump)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
@@ -111,7 +139,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": "[Generate the full 1-2 sentence story problem here asking for the missing number]",
-          "options": ${JSON.stringify(options)},
+          "options": ${isMCQ ? JSON.stringify(options) : 'null'},
+          "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
           "hint": "The jumps between numbers are getting larger, but the numbers are getting smaller.",
           "finalAnswer": "${answer}",
           "solutionSteps": "1. The first jump is -${initialJump}.\\n2. The next jump is -${initialJump + growth}.\\n3. The next jump is -${initialJump + 2 * growth}.\\n4. The last jump should be -${initialJump + 3 * growth}. So, ${sequence[3]} - ${initialJump + 3 * growth} = ${answer}."
@@ -133,7 +162,15 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const sequence = [start, start + step, start + 2 * step, start + 3 * step, start + 4 * step];
     const answer = String(sequence[2]); // Missing middle
 
-    const options = [answer, String(sequence[2] + 1), String(sequence[2] - 1), String(sequence[1] + 10)].sort(() => Math.random() - 0.5);
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = [answer, String(sequence[2] + 1), String(sequence[2] - 1), String(sequence[1] + 10)].sort(() => Math.random() - 0.5);
+      defectMap = {
+        [String(sequence[1] + 10)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
@@ -144,7 +181,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": "[STORY] What number is missing in this pattern?",
-          "options": ${JSON.stringify(options)},
+          "options": ${isMCQ ? JSON.stringify(options) : 'null'},
+          "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
           "hint": "Check the difference between the first two numbers.",
           "finalAnswer": "${answer}",
           "solutionSteps": "1. The numbers increase by ${step} every time.\\n2. To find the missing number, add ${step} to ${sequence[1]}.\\n3. ${sequence[1]} + ${step} = ${answer}."
@@ -171,7 +209,16 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const answer = String(sequence[3]); // Missing 4th
     const displaySeq = [String(sequence[0]), String(sequence[1]), String(sequence[2]), "?", String(sequence[4])];
 
-    const options = [answer, String(sequence[3] + Math.abs(j2)), String(sequence[3] - Math.abs(j2)), String(sequence[3] + 1)].sort(() => Math.random() - 0.5);
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = [answer, String(sequence[3] + Math.abs(j2)), String(sequence[3] - Math.abs(j2)), String(sequence[3] + 1)].sort(() => Math.random() - 0.5);
+      defectMap = {
+        [String(sequence[3] + Math.abs(j2))]: "CONCEPTUAL_ERROR",
+        [String(sequence[3] - Math.abs(j2))]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
@@ -182,7 +229,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": "Find the missing number in the pattern: ${displaySeq.join(', ')}",
-          "options": ${JSON.stringify(options)},
+          "options": ${isMCQ ? JSON.stringify(options) : 'null'},
+          "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
           "hint": "The pattern adds a number, then subtracts a number.",
           "finalAnswer": "${answer}",
           "solutionSteps": "1. The rule is to add ${j1}, then subtract ${Math.abs(j2)}.\\n2. We just subtracted ${Math.abs(j2)} to get ${sequence[2]}.\\n3. Now we must add ${j1} to get the next number.\\n4. ${sequence[2]} + ${j1} = ${answer}."
@@ -227,15 +275,20 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const answer = String(sequence[missingIdx]);
     const items = sequence.map((val, idx) => (idx === missingIdx) ? "?" : String(val));
 
-    // Generate distractors that are not directly part of the sequence or simple +/- step
-    let distractors = [];
-    while (distractors.length < 3) {
-      let d = Math.floor(Math.random() * 10) + (parseInt(answer) - 5);
-      if (d !== parseInt(answer) && !sequence.includes(d) && !distractors.includes(d) && d > 0) {
-        distractors.push(String(d));
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      let distractors = [];
+      while (distractors.length < 3) {
+        let d = Math.floor(Math.random() * 10) + (parseInt(answer) - 5);
+        if (d !== parseInt(answer) && !sequence.includes(d) && !distractors.includes(d) && d > 0) {
+          distractors.push(String(d));
+        }
       }
+      options = [answer, ...distractors].sort(() => Math.random() - 0.5);
+      defectMap = {};
+      options.forEach(opt => { if (opt !== answer) defectMap[opt] = "CARELESS_CALCULATION"; });
     }
-    const options = isMCQ ? [answer, ...distractors].sort(() => Math.random() - 0.5) : null;
 
     // Generate dynamic explanation based on missing position
     let solutionExplanation;
@@ -258,6 +311,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "content": {
           "questionText": "[Generate a clear and varied mathematical question text based on the instructions above]",
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
+          "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
           "hint": "This pattern has two different jumps that take turns.",
           "finalAnswer": "${answer}",
           "solutionSteps": "${solutionExplanation}"

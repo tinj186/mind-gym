@@ -4,6 +4,7 @@ import ProficiencyHeatmap from '@/components/parent/math/ProficiencyHeatmap';
 import VariantAnalysis from '@/components/parent/math/VariantAnalysis';
 import AssessmentReadinessMap from '@/components/parent/math/AssessmentReadinessMap';
 import { getCurrentStudentId } from '@/lib/auth-utils';
+import AnalyticsTour from '@/components/parent/math/AnalyticsTour';
 
 export default async function MathAnalyticsDashboard() {
   const studentId = await getCurrentStudentId() || "default-student";
@@ -11,6 +12,7 @@ export default async function MathAnalyticsDashboard() {
 
   return (
     <div className="min-h-screen bg-indigo-50/50">
+      <AnalyticsTour />
       <header className="px-6 py-12 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 mb-12">
           <div>
@@ -28,7 +30,7 @@ export default async function MathAnalyticsDashboard() {
         </div>
 
         {/* Top-level Vital Signs */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+        <section id="tour-vital-signs" className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
           <div className="p-8 rounded-[2.5rem] border shadow-sm bg-white border-indigo-100 flex flex-col justify-center">
             <span className="text-[10px] font-black uppercase tracking-widest text-indigo-900/60 block mb-2">Student Name</span>
             <div className="text-3xl font-black text-indigo-950">
@@ -53,13 +55,19 @@ export default async function MathAnalyticsDashboard() {
       <main className="max-w-7xl mx-auto px-6 pb-16 space-y-24">
 
         {/* 01: Proficiency Heatmap */}
-        <ProficiencyHeatmap data={stats.mastery} />
+        <div id="tour-proficiency-heatmap">
+          <ProficiencyHeatmap data={stats.mastery} />
+        </div>
 
         {/* 02: Variant Bottlenecks */}
-        <VariantAnalysis data={stats.mastery} />
+        <div id="tour-variant-analysis">
+          <VariantAnalysis data={stats.mastery} />
+        </div>
 
         {/* 03: Assessment Audit Board */}
-        <AssessmentReadinessMap masteryData={stats.mastery} examData={stats.examResults} />
+        <div id="tour-assessment-readiness">
+          <AssessmentReadinessMap masteryData={stats.mastery} examData={stats.examResults} />
+        </div>
       </main>
     </div>
   );

@@ -18,7 +18,19 @@ export const standardVariants = {
       options.push(String(Math.floor(Math.random() * 90) + 1));
       options = [...new Set(options)];
     }
-    const mcqOptions = JSON.stringify(options.sort(() => Math.random() - 0.5));
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (isMCQ) {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [String(tensVal)]: "CONCEPTUAL_ERROR",
+        [String(num)]: "CONCEPTUAL_ERROR",
+        [String(Math.floor(num / 10))]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_partition question. DO NOT modify the mathematical structure or the final answer.
@@ -30,7 +42,8 @@ export const standardVariants = {
         OUTPUT FORMAT (Return ONLY valid JSON):
         {
           "questionText": ${JSON.stringify(getQText(`Fill in the missing number: ${num} = ${tensVal} + ____`, `${num} = ${tensVal} + ?`))},
-          "options": ${isMCQ ? mcqOptions : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Think of the number ${num}. It is made up of ${tensVal} and another part. Subtract ${tensVal} from ${num} to find it.`, `What is ${num} minus ${tensVal}?`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`${num} is made of ${tensVal} and ${onesVal}.`, `${num} - ${tensVal} = ${answer}`))},          
@@ -53,7 +66,19 @@ export const standardVariants = {
       options.push(String(Math.floor(Math.random() * 90) + 1));
       options = [...new Set(options)];
     }
-    const mcqOptions = JSON.stringify(options.sort(() => Math.random() - 0.5));
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (isMCQ) {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [String(tens + ones)]: "CONFUSED_OPERATION",
+        [String((tens * 10) + (ones % 10))]: "CONCEPTUAL_ERROR",
+        [String(num + 10)]: "CARELESS_CALCULATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_basic_regrouping question. DO NOT modify the mathematical structure or the final answer.
@@ -64,7 +89,8 @@ export const standardVariants = {
         OUTPUT FORMAT (Return ONLY valid JSON):
         {
           "questionText": ${JSON.stringify(getQText(`What number is the same as ${tens} tens and ${ones} ones?`, `${tens} tens + ${ones} ones = ?`))},
-          "options": ${isMCQ ? mcqOptions : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Change the ${tens} tens into a number first. Then add the ${ones} ones to it.`, `${tens * 10} + ${ones} = ?`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`${tens} tens is ${tens * 10}. ${tens * 10} + ${ones} = ${num}.`, `${tens * 10} + ${ones} = ${num}`))},          
@@ -87,7 +113,19 @@ export const standardVariants = {
       options.push(String(Math.floor(Math.random() * 9) * 10 + 10));
       options = [...new Set(options)];
     }
-    const mcqOptions = JSON.stringify(options.sort(() => Math.random() - 0.5));
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (isMCQ) {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [String(onesVal)]: "CONCEPTUAL_ERROR",
+        [String(num)]: "CONCEPTUAL_ERROR",
+        [String(num - 10)]: "CARELESS_CALCULATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_partition_tens question. DO NOT modify the mathematical structure or the final answer.
@@ -99,7 +137,8 @@ export const standardVariants = {
         OUTPUT FORMAT (Return ONLY valid JSON):
         {
           "questionText": ${JSON.stringify(getQText(`What is the missing value? ${num} = ____ + ${onesVal}`, `${num} = ? + ${onesVal}`))},
-          "options": ${isMCQ ? mcqOptions : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`If you take away the ${onesVal} ones from ${num}, how many tens value are you left with?`, `${num} - ${onesVal} = ?`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`${num} is ${tensVal} and ${onesVal}. The missing part is ${tensVal}.`, `${num} - ${onesVal} = ${answer}`))},          
@@ -124,7 +163,19 @@ export const standardVariants = {
       options.push(String(Math.floor(Math.random() * 9) + 1));
       options = [...new Set(options)];
     }
-    const mcqOptions = JSON.stringify(options.sort(() => Math.random() - 0.5));
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (isMCQ) {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [String(tens + ones)]: "CONFUSED_OPERATION",
+        [String(ones)]: "CONCEPTUAL_ERROR",
+        [String(num)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_word_problem_groups question. DO NOT modify the mathematical structure or the final answer. Use the name ${sName}.
@@ -136,7 +187,8 @@ export const standardVariants = {
         OUTPUT FORMAT (Return ONLY valid JSON):
         {
           "questionText": ${JSON.stringify(getQText(`${sName} has ${num} ${sItem}. If he puts them in groups of 10, how many groups will he have?`, `${num} = ? groups of 10 + ${ones} left`))},
-          "options": ${isMCQ ? mcqOptions : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Try circling groups of 10 items. How many groups can you circle?`, `Count how many tens are in ${num}.`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`${num} has ${tens} tens, so he can make ${tens} groups of 10.`, `${num} = ${tens} tens and ${ones} ones`))},          
@@ -173,7 +225,16 @@ export const standardVariants = {
       options.push(`${rTens} tens ${Math.floor(Math.random() * 9)} ones`);
       options = [...new Set(options)];
     }
-    const mcqOptions = JSON.stringify(options.sort(() => Math.random() - 0.5));
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (isMCQ) {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      distractors.forEach(d => defectMapObj[d] = "CONCEPTUAL_ERROR");
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator.
@@ -186,7 +247,8 @@ export const standardVariants = {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(getQText(`Which is ${targetWord}: ${n1_tens} tens ${n1_ones} ones or ${n2_tens} tens ${n2_ones} ones?`, `Which is ${targetWord}: ${n1_tens} tens ${n1_ones} ones or ${n2_tens} tens ${n2_ones} ones?`))},
-          "options": ${isMCQ ? mcqOptions : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": "Convert both sets into numbers first. For example, ${n1_tens} tens and ${n1_ones} ones is ${num1}.",
           "finalAnswer": "${answer}",
           "solutionSteps": "${n1_tens} tens ${n1_ones} ones is ${num1}. ${n2_tens} tens ${n2_ones} ones is ${num2}. Since ${num1 > num2 ? num1 : num2} is bigger than ${num1 < num2 ? num1 : num2}, the ${targetWord} value is ${answer}."
@@ -207,7 +269,18 @@ export const standardVariants = {
       options.push(String(Math.floor(Math.random() * 90) + 1));
       options = [...new Set(options)];
     }
-    const mcqOptions = JSON.stringify(options.sort(() => Math.random() - 0.5));
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (isMCQ) {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [String(start + addTens)]: "CONCEPTUAL_ERROR",
+        [String(start)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_add_tens_concept question. DO NOT modify the mathematical structure or the final answer.
@@ -219,7 +292,8 @@ export const standardVariants = {
         OUTPUT FORMAT (Return ONLY valid JSON):
         {
           "questionText": ${JSON.stringify(getQText(`Add ${addTens} tens to ${start}. What is the new number?`, `${start} + ${addTens} tens = ?`))},
-          "options": ${isMCQ ? mcqOptions : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Look at the tens digit. If you add ${addTens} tens, only the tens digit will change.`, `Only the tens digit increases by ${addTens}.`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`${addTens} tens is ${addTens * 10}. ${start} + ${addTens * 10} = ${answer}.`, `${start} + ${addTens * 10} = ${answer}`))},          
@@ -241,7 +315,18 @@ export const standardVariants = {
       options.push(String(Math.floor(Math.random() * 90) + 1));
       options = [...new Set(options)];
     }
-    const mcqOptions = JSON.stringify(options.sort(() => Math.random() - 0.5));
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (isMCQ) {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [String(start - subTens)]: "CONCEPTUAL_ERROR",
+        [String(start)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_subtract_tens_concept question. DO NOT modify the mathematical structure or the final answer.
@@ -253,7 +338,8 @@ export const standardVariants = {
         OUTPUT FORMAT (Return ONLY valid JSON):
         {
           "questionText": ${JSON.stringify(getQText(`Subtract ${subTens} tens from ${start}. What is the new number?`, `${start} - ${subTens} tens = ?`))},
-          "options": ${isMCQ ? mcqOptions : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Look at the tens digit. If you subtract ${subTens} tens, only the tens digit will decrease.`, `Only the tens digit decreases by ${subTens}.`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`${subTens} tens is ${subTens * 10}. ${start} - ${subTens * 10} = ${answer}.`, `${start} - ${subTens * 10} = ${answer}`))},          
@@ -275,7 +361,19 @@ export const standardVariants = {
       options.push(String(Math.floor(Math.random() * 90) + 10));
       options = [...new Set(options)];
     }
-    const mcqOptions = JSON.stringify(options.sort(() => Math.random() - 0.5));
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (isMCQ) {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [String((o * 10) + t)]: "CONCEPTUAL_ERROR",
+        [String(t + o)]: "CONFUSED_OPERATION",
+        [String(t * 10)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator.
@@ -288,7 +386,8 @@ export const standardVariants = {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(getQText(`I am a 2-digit number. My tens digit is ${t} and my ones digit is ${o}. What number am I?`, `2-digit number: Tens digit is ${t}, ones digit is ${o}?`))},
-          "options": ${isMCQ ? mcqOptions : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": "The digit on the left is tens and the digit on the right is ones.",
           "finalAnswer": "${answer}",
           "solutionSteps": "Combining ${t} tens and ${o} ones gives ${answer}."
@@ -310,7 +409,18 @@ export const standardVariants = {
       options.push(`${Math.floor(Math.random() * 9) * 10} + ${Math.floor(Math.random() * 9)}`);
       options = [...new Set(options)];
     }
-    const mcqOptions = JSON.stringify(options.sort(() => Math.random() - 0.5));
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (isMCQ) {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [`${o} + ${t}`]: "CONCEPTUAL_ERROR",
+        [String(num)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator.
@@ -323,7 +433,8 @@ export const standardVariants = {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(getQText(`Write ${num} in expanded form.`, `Expanded form of ${num} = ?`))},
-          "options": ${isMCQ ? mcqOptions : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": "How many tens are in ${num}? What is their value?",
           "finalAnswer": "${answer}",
           "solutionSteps": "${num} is ${t} plus ${o}."
@@ -343,7 +454,18 @@ export const standardVariants = {
       options.push(String(Math.floor(Math.random() * 9) * 10));
       options = [...new Set(options)];
     }
-    const mcqOptions = JSON.stringify(options.sort(() => Math.random() - 0.5));
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (isMCQ) {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [String(tens)]: "CONCEPTUAL_ERROR",
+        [String(tens * 100)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_equivalent_ones question. DO NOT modify the mathematical structure or the final answer.
@@ -354,7 +476,8 @@ export const standardVariants = {
         OUTPUT FORMAT (Return ONLY valid JSON):
         {
           "questionText": ${JSON.stringify(getQText(`${tens} tens is the same as ____ ones.`, `${tens} tens = ? ones`))},
-          "options": ${isMCQ ? mcqOptions : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Each ten is equal to 10 ones. Count by tens for each bar you see.`, `1 ten = 10 ones.`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`1 ten is 10 ones, so ${tens} tens is ${answer} ones.`, `${tens} * 10 = ${answer}`))},          
@@ -390,6 +513,13 @@ export const standardVariants = {
     
     const mcqOptions = JSON.stringify(items);
     
+    let defectMapStr = 'null';
+    if (isMCQ) {
+      let defectMapObj = {};
+      items.forEach(opt => { if (opt !== finalAnswerStr) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+    
     let questionTextStr;
     let finalAnswerStr;
     
@@ -412,6 +542,7 @@ export const standardVariants = {
           "content": {
             "questionText": ${JSON.stringify(getQText(questionTextStr, questionTextStr))},
             "options": ${isMCQ ? mcqOptions : 'null'},
+            "defectMap": ${defectMapStr},
             "hint": ${JSON.stringify(getQText(`Read each option carefully. Three of them are correct ways to write ${target_number}. One is wrong.`, `Check each form.`))},
             "finalAnswer": "${finalAnswerStr}",
             "solutionSteps": ${JSON.stringify(getQText(`The wrong representation is ${distractor}. ${target_number} is correctly written as ${valid2}, ${valid1}, or '${valid3}'.`, `${distractor} is incorrect.`))}

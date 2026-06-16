@@ -1,292 +1,539 @@
-/**
- * Advanced: Operational logic with non-standard units.
- * PATH: src/lib/syllabus/math/primary-1/measurement/length/advanced.js
- */
-export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic) {
-  const commonMeta = { level, topic, subtopic: 'Length', type: zodType, difficulty: zodDiff, strand: 'Measurement and Geometry', subject: 'Math', gradeLevel: 'P1', heuristic: 'Indirect Operational Logic' };
-  const inputType = isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT';
+import { getRandomContext } from '@/lib/utils/localization';
 
-  const itemsPool = ["Cutter", "Highlighter", "Pen", "Pencil", "Usbdrive"];
-  const units = [
-    { name: "paperclips", icon: "paperclip.svg" },
-    { name: "paperpins", icon: "paperpin.svg" },
-  ];
+const itemsPool = ["cutter", "highlighter", "pen", "pencil", "usbdrive"];
+const units = [{ name: "paperclips", icon: "paperclip.svg" }, { name: "paperpins", icon: "paperpin.svg" }];
+const getShuffledOptions = (correct, distractors) => [correct, ...distractors].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4);
+const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
-  const selectedUnit = units[Math.floor(Math.random() * units.length)];
-  let componentData = { items: [], unitIcon: selectedUnit.icon };
-  let promptObject = { meta: commonMeta, content: {}, visualEngine: { componentToRender: "MEASUREMENT_UNIT" }, inputRequirement: { inputType } };
-  let seedInstructions = "";
+export const advancedVariants = {
+  advanced_indirect_comparison: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const shuffledItems = [...itemsPool].sort(() => Math.random() - 0.5).map(capitalize);
+    const item1 = shuffledItems[0];
+    const item2 = shuffledItems[1];
+    const item3 = shuffledItems[2];
+    const lenA = 9;
+    const lenB = 6;
+    const lenC = 4;
+    const selectedUnit = units[Math.floor(Math.random() * units.length)];
 
-  // Shuffle tool utility for dynamic option placement
-  const getShuffledOptions = (correct, distractors) => {
-    return [correct, ...distractors]
-      .filter((v, i, a) => a.indexOf(v) === i)
-      .sort(() => Math.random() - 0.5);
-  };
+    const componentData = { items: [{ label: item1, length: lenA }, { label: item2, length: lenB }, { label: item3, length: lenC }].sort(() => Math.random() - 0.5), unitIcon: selectedUnit.icon };
+    const findShortest = Math.random() > 0.5;
+    const answer = findShortest ? item3 : item1;
+    const distractors = itemsPool.map(capitalize).filter(i => ![item1, item2, item3].includes(i)).slice(0, 1);
 
-  // 🎛️ ADVANCED VARIANT ROUTING SWITCH ENGINE
-  switch (activeVariant) {
-    case 'advanced_indirect_comparison': {
-      commonMeta.heuristic = 'Transitive Deduction';
-      const shuffledItems = [...itemsPool].sort(() => Math.random() - 0.5);
-      const item1 = shuffledItems[0];
-      const item2 = shuffledItems[1];
-      const item3 = shuffledItems[2];
+    const questionTextTemplate = getQText(`Object ${item1} is longer than ${item2}. Object ${item2} is longer than ${item3}. Which object is the ${findShortest ? 'shortest' : 'longest'}?`, `${item1} > ${item2}. ${item2} > ${item3}. ${findShortest ? 'Shortest' : 'Longest'} object = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
 
-      const lenA = 9;
-      const lenB = 6;
-      const lenC = 4;
-
-      componentData.items = [
-        { label: item1, length: lenA },
-        { label: item2, length: lenB },
-        { label: item3, length: lenC }
-      ].sort(() => Math.random() - 0.5);
-
-      const findShortest = Math.random() > 0.5;
-      const finalAnswer = findShortest ? item3 : item1;
-
-      const distractors = itemsPool.filter(i => ![item1, item2, item3].includes(i)).slice(0, 1);
-
-      promptObject.content = {
-        questionText: `[Narrate Transitive Comparison: Object ${item1} is longer than ${item2}. Object ${item2} is longer than ${item3}. Which object is the ${findShortest ? 'shortest' : 'longest'}?]`,
-        finalAnswer,
-        options: isMCQ ? getShuffledOptions(finalAnswer, [item1, item2, item3, ...distractors]) : null,
-        solutionSteps: `Comparing the sequence dimensions: ${item1} (${lenA} units) > ${item2} (${lenB} units) > ${item3} (${lenC} units). The target is ${finalAnswer}.`,
-        hint: "Draw a simple line for each object using the clues to help you see the order!"
-      };
-      seedInstructions = `Target objects to use: ${item1}, ${item2}, ${item3}. Deduce sequence hierarchy. Target: ${findShortest ? 'SHORTEST' : 'LONGEST'}. Correct Answer: ${finalAnswer}.`;
-      break;
+    let options = [answer, ...[item1, item2, item3, ...distractors].filter(i => i !== answer)];
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    case 'advanced_misaligned_start': {
-      commonMeta.heuristic = 'Interval Offset Reading';
-      const targetObj = itemsPool[Math.floor(Math.random() * itemsPool.length)];
-      const startOffset = Math.floor(Math.random() * 3) + 2; // Starts at 2, 3, or 4
-      const trueLength = Math.floor(Math.random() * 4) + 4;  // Length between 4 and 7
-      const endPoint = startOffset + trueLength;
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      componentData.items = [{ label: targetObj, length: trueLength, startOffset }];
-      componentData.showFullRuler = true;
-      
-      promptObject.content = {
-        questionText: `[Formulate Baseline Offset Question: The ${targetObj} starts at the ${startOffset} unit line and ends at the ${endPoint} unit line. What is its true length in ${selectedUnit.name}?]`,
-        finalAnswer: String(trueLength),
-        options: isMCQ ? getShuffledOptions(String(trueLength), [String(endPoint), String(startOffset), String(trueLength + 1)]) : null,
-        solutionSteps: `Subtract the starting line mark from the ending line mark: ${endPoint} - ${startOffset} = ${trueLength} ${selectedUnit.name}.`,
-        hint: "Count the units between the start mark and the end mark carefully!"
-      };
-      seedInstructions = `Target object: ${targetObj}. Object starts layout shifted at interval marker ${startOffset} and ends at marker ${endPoint}. True length is ${trueLength}.`;
-      break;
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Draw a simple line for each object using the clues to help you see the order!`, `Use transitive logic.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`Comparing the sequence dimensions: ${item1} (${lenA} units) > ${item2} (${lenB} units) > ${item3} (${lenC} units). The target is ${answer}.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "MEASUREMENT_UNIT",
+          "componentData": ${JSON.stringify(componentData)}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'advanced', steps: 2, logic: "indirect_comparison", hideVisual: false }
+    };
+  },
+
+  advanced_misaligned_start: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const targetObj = capitalize(itemsPool[Math.floor(Math.random() * itemsPool.length)]);
+    const startOffset = Math.floor(Math.random() * 3) + 2; 
+    const trueLength = Math.floor(Math.random() * 4) + 4;  
+    const endPoint = startOffset + trueLength;
+    const selectedUnit = units[Math.floor(Math.random() * units.length)];
+
+    const componentData = { items: [{ label: targetObj, length: trueLength, startOffset }], showFullRuler: true, unitIcon: selectedUnit.icon };
+    const answer = String(trueLength);
+
+    const questionTextTemplate = getQText(`The ${targetObj} starts at the ${startOffset} unit line and ends at the ${endPoint} unit line. What is its true length in ${selectedUnit.name}?`, `Length of ${targetObj} from ${startOffset} to ${endPoint} = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, String(endPoint), String(startOffset), String(trueLength + 1)];
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    case 'advanced_unit_size_inverse': {
-      commonMeta.heuristic = 'Inverse Proportional Logic';
-      const targetObj = itemsPool[Math.floor(Math.random() * itemsPool.length)];
-      const baseCount = Math.floor(Math.random() * 3) + 5; // 5 to 7
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      componentData.items = [{ label: targetObj, length: baseCount }];
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Count the units between the start mark and the end mark carefully!`, `Subtract start from end.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`Subtract the starting line mark from the ending line mark: ${endPoint} - ${startOffset} = ${trueLength} ${selectedUnit.name}.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "MEASUREMENT_UNIT",
+          "componentData": ${JSON.stringify(componentData)}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'advanced', steps: 2, logic: "misaligned_start", hideVisual: false }
+    };
+  },
 
-      promptObject.content = {
-        questionText: `[Formulate Inverse Unit Comparison: Measuring a ${targetObj} takes ${baseCount} small ${selectedUnit.name}. If we switch to a longer unit, will the total count needed be more, fewer, or the same?]`,
-        finalAnswer: 'Fewer',
-        options: ['More', 'Fewer', 'The same', 'Cannot tell'],
-        solutionSteps: `Larger units cover more space individually, meaning fewer of them are required to measure the exact same object length.`,
-        hint: "Think! If a block is big, will you need many or just a few to measure the object?"
-      };
-      seedInstructions = `Target object: ${targetObj}. Evaluate scaling sizes conceptually. Correct selection outcome option string is strictly 'Fewer'.`;
-      break;
+  advanced_unit_size_inverse: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const targetObj = capitalize(itemsPool[Math.floor(Math.random() * itemsPool.length)]);
+    const baseCount = Math.floor(Math.random() * 3) + 5; 
+    const selectedUnit = units[Math.floor(Math.random() * units.length)];
+    const componentData = { items: [{ label: targetObj, length: baseCount }], unitIcon: selectedUnit.icon };
+    const answer = 'Fewer';
+
+    const questionTextTemplate = getQText(`Measuring a ${targetObj} takes ${baseCount} small ${selectedUnit.name}. If we switch to a longer unit, will the total count needed be more, fewer, or the same?`, `If unit is longer, will count be More, Fewer, or Same?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, 'More', 'The same', 'Cannot tell'];
+    if (!options.includes(answer)) { options[0] = answer; }
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    case 'advanced_combined_total': {
-      commonMeta.heuristic = 'Additive Composition';
-      const shuffledItems = [...itemsPool].sort(() => Math.random() - 0.5);
-      const lenA = Math.floor(Math.random() * 3) + 4;
-      const lenB = Math.floor(Math.random() * 3) + 3;
-      const combinedTotal = lenA + lenB;
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      componentData.items = [
-        { label: shuffledItems[0], length: lenA },
-        { label: shuffledItems[1], length: lenB }
-      ];
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Think! If a block is big, will you need many or just a few to measure the object?`, `Larger units cover more space.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`Larger units cover more space individually, meaning fewer of them are required to measure the exact same object length.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "MEASUREMENT_UNIT",
+          "componentData": ${JSON.stringify(componentData)}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'advanced', steps: 2, logic: "unit_size_inverse", hideVisual: false }
+    };
+  },
 
-      promptObject.content = {
-        questionText: `[Formulate Composite Total Question: If the ${shuffledItems[0].toLowerCase()} and the ${shuffledItems[1].toLowerCase()} are placed end-to-end, what is their combined total length in ${selectedUnit.name}?]`,
-        finalAnswer: String(combinedTotal),
-        options: isMCQ ? getShuffledOptions(String(combinedTotal), [String(combinedTotal - 1), String(combinedTotal + 2), String(lenA)]) : null,
-        solutionSteps: `Add both component item metrics together: ${lenA} + ${lenB} = ${combinedTotal} ${selectedUnit.name}.`,
-        hint: "Add the number of units for the first object to the number of units for the second object!"
-      };
-      seedInstructions = `Target objects: ${shuffledItems[0]}, ${shuffledItems[1]}. Find sum length of compound structural layout tracker elements: ${lenA} + ${lenB} = ${combinedTotal}.`;
-      break;
+  advanced_combined_total: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const shuffledItems = [...itemsPool].sort(() => Math.random() - 0.5).map(capitalize);
+    const lenA = Math.floor(Math.random() * 3) + 4;
+    const lenB = Math.floor(Math.random() * 3) + 3;
+    const combinedTotal = lenA + lenB;
+    const selectedUnit = units[Math.floor(Math.random() * units.length)];
+
+    const componentData = { items: [{ label: shuffledItems[0], length: lenA }, { label: shuffledItems[1], length: lenB }], unitIcon: selectedUnit.icon };
+    const answer = String(combinedTotal);
+
+    const questionTextTemplate = getQText(`If the ${shuffledItems[0].toLowerCase()} and the ${shuffledItems[1].toLowerCase()} are placed end-to-end, what is their combined total length in ${selectedUnit.name}?`, `Total length of ${shuffledItems[0].toLowerCase()} and ${shuffledItems[1].toLowerCase()} = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, String(combinedTotal - 1), String(combinedTotal + 2), String(lenA)];
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    case 'advanced_overlap_deduction': {
-      commonMeta.heuristic = 'Nested Overlap Math';
-      const shuffledItems = [...itemsPool].sort(() => Math.random() - 0.5);
-      const lenA = 8;
-      const lenB = 6;
-      const overlap = Math.floor(Math.random() * 2) + 2; // Overlap of 2 or 3
-      const visibleTotal = lenA + lenB - overlap;
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      componentData.items = [
-        { label: shuffledItems[0], length: lenA },
-        { label: shuffledItems[1], length: lenB }
-      ];
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Add the number of units for the first object to the number of units for the second object!`, `Add both lengths.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`Add both component item metrics together: ${lenA} + ${lenB} = ${combinedTotal} ${selectedUnit.name}.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "MEASUREMENT_UNIT",
+          "componentData": ${JSON.stringify(componentData)}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'advanced', steps: 2, logic: "combined_total", hideVisual: false }
+    };
+  },
 
-      promptObject.content = {
-        questionText: `[Formulate Overlap Deduction Narrative: A ${shuffledItems[0].toLowerCase()} is ${lenA} ${selectedUnit.name} long and a ${shuffledItems[1].toLowerCase()} is ${lenB} ${selectedUnit.name} long. They overlap when joined. If the total combined length is ${visibleTotal} ${selectedUnit.name}, how long is the overlapping section?]`,
-        finalAnswer: String(overlap),
-        options: isMCQ ? getShuffledOptions(String(overlap), [String(overlap + 1), String(overlap - 1), '4']) : null,
-        solutionSteps: `Sum individual lengths (${lenA} + ${lenB} = ${lenA + lenB}) then subtract total visible covered length (${lenA + lenB} - ${visibleTotal} = ${overlap} units).`,
-        hint: "Try adding the two lengths together and see how much bigger that is than the total shown!"
-      };
-      seedInstructions = `Target objects: ${shuffledItems[0]}, ${shuffledItems[1]}. Calculate segment overlap boundary intersection dimensions. True answer value evaluated is ${overlap}.`;
-      break;
+  advanced_overlap_deduction: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const shuffledItems = [...itemsPool].sort(() => Math.random() - 0.5).map(capitalize);
+    const lenA = 8;
+    const lenB = 6;
+    const overlap = Math.floor(Math.random() * 2) + 2; 
+    const visibleTotal = lenA + lenB - overlap;
+    const selectedUnit = units[Math.floor(Math.random() * units.length)];
+
+    const componentData = { items: [{ label: shuffledItems[0], length: lenA }, { label: shuffledItems[1], length: lenB }], unitIcon: selectedUnit.icon };
+    const answer = String(overlap);
+
+    const questionTextTemplate = getQText(`A ${shuffledItems[0].toLowerCase()} is ${lenA} ${selectedUnit.name} long and a ${shuffledItems[1].toLowerCase()} is ${lenB} ${selectedUnit.name} long. They overlap when joined. If the total combined length is ${visibleTotal} ${selectedUnit.name}, how long is the overlapping section?`, `Overlapping length = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, String(overlap + 1), String(overlap - 1), '4'];
+    if (!options.includes(answer)) { options[0] = answer; }
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    case 'advanced_multi_step_word_problems': {
-      commonMeta.heuristic = 'Sequential Transformation Logic';
-      const targetObj = itemsPool[Math.floor(Math.random() * itemsPool.length)];
-      const baseLen = 10;
-      const subtractAmt = 3;
-      const additionAmt = 4;
-      const currentNetLength = baseLen - subtractAmt + additionAmt;
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      componentData.items = [{ label: targetObj, length: currentNetLength }];
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Try adding the two lengths together and see how much bigger that is than the total shown!`, `Subtract visible from sum.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`Sum individual lengths (${lenA} + ${lenB} = ${lenA + lenB}) then subtract total visible covered length (${lenA + lenB} - ${visibleTotal} = ${overlap} units).`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "MEASUREMENT_UNIT",
+          "componentData": ${JSON.stringify(componentData)}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'advanced', steps: 3, logic: "overlap_deduction", hideVisual: false }
+    };
+  },
 
-      promptObject.content = {
-        questionText: `[Formulate Multi-Step Story Problem: A ${targetObj.toLowerCase()} was originally ${baseLen} ${selectedUnit.name} long. ${subtractAmt} ${selectedUnit.name} were cut off, and then an extension piece of ${additionAmt} ${selectedUnit.name} was added. How long is the ${targetObj.toLowerCase()} now?]`,
-        finalAnswer: String(currentNetLength),
-        options: isMCQ ? getShuffledOptions(String(currentNetLength), [String(baseLen), String(baseLen - subtractAmt), String(currentNetLength - 2)]) : null,
-        solutionSteps: `Execute multi-part calculations: First subtract cut segment (${baseLen} - ${subtractAmt} = ${baseLen - subtractAmt}), then aggregate extension (${baseLen - subtractAmt} + ${additionAmt} = ${currentNetLength} ${selectedUnit.name}).`,
-        hint: "First find out the length after cutting, then add the new piece!"
-      };
-      seedInstructions = `Target object: ${targetObj}. Process sequence conversions sequentially: ${baseLen} minus ${subtractAmt} plus ${additionAmt} = ${currentNetLength}.`;
-      break;
+  advanced_multi_step_word_problems: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const targetObj = capitalize(itemsPool[Math.floor(Math.random() * itemsPool.length)]);
+    const baseLen = 10;
+    const subtractAmt = 3;
+    const additionAmt = 4;
+    const currentNetLength = baseLen - subtractAmt + additionAmt;
+    const selectedUnit = units[Math.floor(Math.random() * units.length)];
+
+    const componentData = { items: [{ label: targetObj, length: currentNetLength }], unitIcon: selectedUnit.icon };
+    const answer = String(currentNetLength);
+
+    const questionTextTemplate = getQText(`A ${targetObj.toLowerCase()} was originally ${baseLen} ${selectedUnit.name} long. ${subtractAmt} ${selectedUnit.name} were cut off, and then an extension piece of ${additionAmt} ${selectedUnit.name} was added. How long is the ${targetObj.toLowerCase()} now?`, `Net length of ${targetObj.toLowerCase()} = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, String(baseLen), String(baseLen - subtractAmt), String(currentNetLength - 2)];
+    if (!options.includes(answer)) { options[0] = answer; }
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    case 'advanced_part_whole_missing': {
-      commonMeta.heuristic = 'Subtractive Decomposition';
-      const shuffledItems = [...itemsPool].sort(() => Math.random() - 0.5);
-      const completeWhole = 12;
-      const partA = Math.floor(Math.random() * 3) + 4; // 4 to 6
-      const partB = completeWhole - partA;
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      componentData.items = [
-        { label: `${shuffledItems[0]} (Whole)`, length: completeWhole },
-        { label: `${shuffledItems[1]} (Part 1)`, length: partA }
-      ];
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`First find out the length after cutting, then add the new piece!`, `Subtract then add.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`Execute multi-part calculations: First subtract cut segment (${baseLen} - ${subtractAmt} = ${baseLen - subtractAmt}), then aggregate extension (${baseLen - subtractAmt} + ${additionAmt} = ${currentNetLength} ${selectedUnit.name}).`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "MEASUREMENT_UNIT",
+          "componentData": ${JSON.stringify(componentData)}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'advanced', steps: 3, logic: "multi_step_word", hideVisual: false }
+    };
+  },
 
-      promptObject.content = {
-        questionText: `[Formulate Part-Whole Missing Segment Question: The total combined length of two objects is ${completeWhole} ${selectedUnit.name}. If one object measures ${partA} ${selectedUnit.name}, what is the length of the other object?]`,
-        finalAnswer: String(partB),
-        options: isMCQ ? getShuffledOptions(String(partB), [String(partB + 2), String(partB - 1), String(partA)]) : null,
-        solutionSteps: `Isolate missing compound structural component: Total (${completeWhole}) - Given Part (${partA}) = ${partB} ${selectedUnit.name}.`,
-        hint: "Take away the units we know from the total length to find the missing part!"
-      };
-      seedInstructions = `Target objects: ${shuffledItems[0]}, ${shuffledItems[1]}. Subtract minor structural part matrix from master total: ${completeWhole} - ${partA} = ${partB}.`;
-      break;
+  advanced_part_whole_missing: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const shuffledItems = [...itemsPool].sort(() => Math.random() - 0.5).map(capitalize);
+    const completeWhole = 12;
+    const partA = Math.floor(Math.random() * 3) + 4; 
+    const partB = completeWhole - partA;
+    const selectedUnit = units[Math.floor(Math.random() * units.length)];
+
+    const componentData = { items: [{ label: `${shuffledItems[0]} (Whole)`, length: completeWhole }, { label: `${shuffledItems[1]} (Part 1)`, length: partA }], unitIcon: selectedUnit.icon };
+    const answer = String(partB);
+
+    const questionTextTemplate = getQText(`The total combined length of two objects is ${completeWhole} ${selectedUnit.name}. If one object measures ${partA} ${selectedUnit.name}, what is the length of the other object?`, `Missing part length = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, String(partB + 2), String(partB - 1), String(partA)];
+    if (!options.includes(answer)) { options[0] = answer; }
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    case 'advanced_excess_comparison': {
-      commonMeta.heuristic = 'Deficit Target Benchmarking';
-      const shuffledItems = [...itemsPool].sort(() => Math.random() - 0.5);
-      const currentLength = Math.floor(Math.random() * 3) + 4; // 4 to 6
-      const targetThreshold = 10;
-      const missingDeficit = targetThreshold - currentLength;
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      componentData.items = [
-        { label: shuffledItems[0], length: currentLength },
-        { label: "Target Marker", length: targetThreshold }
-      ];
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Take away the units we know from the total length to find the missing part!`, `Subtract known part from whole.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`Isolate missing compound structural component: Total (${completeWhole}) - Given Part (${partA}) = ${partB} ${selectedUnit.name}.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "MEASUREMENT_UNIT",
+          "componentData": ${JSON.stringify(componentData)}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'advanced', steps: 2, logic: "part_whole_missing", hideVisual: false }
+    };
+  },
 
-      promptObject.content = {
-        questionText: `[Formulate Capacity Deficit Question: The ${shuffledItems[0].toLowerCase()} is currently ${currentLength} ${selectedUnit.name} long. How many more ${selectedUnit.name} must be added to make it exactly ${targetThreshold} ${selectedUnit.name} long?]`,
-        finalAnswer: String(missingDeficit),
-        options: isMCQ ? getShuffledOptions(String(missingDeficit), [String(missingDeficit + 1), String(currentLength), String(targetThreshold)]) : null,
-        solutionSteps: `Calculate the space gap delta to hit the benchmark: ${targetThreshold} - ${currentLength} = ${missingDeficit} ${selectedUnit.name} required.`,
-        hint: "Count how many more blocks you need to reach the target line!"
-      };
-      seedInstructions = `Target object: ${shuffledItems[0]}. Evaluate dimensional capacity requirements needed to match target limits: ${targetThreshold} - ${currentLength} = ${missingDeficit}.`;
-      break;
+  advanced_excess_comparison: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const shuffledItems = [...itemsPool].sort(() => Math.random() - 0.5).map(capitalize);
+    const currentLength = Math.floor(Math.random() * 3) + 4; 
+    const targetThreshold = 10;
+    const missingDeficit = targetThreshold - currentLength;
+    const selectedUnit = units[Math.floor(Math.random() * units.length)];
+
+    const componentData = { items: [{ label: shuffledItems[0], length: currentLength }, { label: "Target Marker", length: targetThreshold }], unitIcon: selectedUnit.icon };
+    const answer = String(missingDeficit);
+
+    const questionTextTemplate = getQText(`The ${shuffledItems[0].toLowerCase()} is currently ${currentLength} ${selectedUnit.name} long. How many more ${selectedUnit.name} must be added to make it exactly ${targetThreshold} ${selectedUnit.name} long?`, `Missing units to reach ${targetThreshold} = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, String(missingDeficit + 1), String(currentLength), String(targetThreshold)];
+    if (!options.includes(answer)) { options[0] = answer; }
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    case 'advanced_perimeter_units': {
-      commonMeta.heuristic = 'Open Boundary Path Accumulation';
-      const targetShape = "Grid Frame Path";
-      const numSides = Math.floor(Math.random() * 3) + 2; // 2 to 4
-      const sides = [];
-      for(let i=0; i<numSides; i++) {
-        sides.push(Math.floor(Math.random() * 3) + 2); // 2 to 4 length
-      }
-      const cumulativePerimeter = sides.reduce((a, b) => a + b, 0);
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      componentData.items = [{ label: targetShape, length: cumulativePerimeter }];
-      componentData.isPerimeter = true;
-      componentData.sides = sides;
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Count how many more blocks you need to reach the target line!`, `Subtract current from target.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`Calculate the space gap delta to hit the benchmark: ${targetThreshold} - ${currentLength} = ${missingDeficit} ${selectedUnit.name} required.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "MEASUREMENT_UNIT",
+          "componentData": ${JSON.stringify(componentData)}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'advanced', steps: 2, logic: "excess_comparison", hideVisual: false }
+    };
+  },
 
-      const sidesText = sides.length === 2 ? `${sides[0]} and ${sides[1]}` : sides.slice(0, -1).join(', ') + ', and ' + sides[sides.length - 1];
+  advanced_perimeter_units: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const targetShape = "Grid Frame Path";
+    const numSides = Math.floor(Math.random() * 3) + 2; 
+    const sides = [];
+    for(let i=0; i<numSides; i++) {
+      sides.push(Math.floor(Math.random() * 3) + 2); 
+    }
+    const cumulativePerimeter = sides.reduce((a, b) => a + b, 0);
+    const selectedUnit = units[Math.floor(Math.random() * units.length)];
 
-      promptObject.content = {
-        questionText: `[Formulate Open Border Perimeter Question: Find the cumulative length around this ${numSides}-sided track frame map if the segments measure ${sidesText} ${selectedUnit.name} respectively.]`,
-        finalAnswer: String(cumulativePerimeter),
-        options: isMCQ ? getShuffledOptions(String(cumulativePerimeter), [String(cumulativePerimeter - 1), String(cumulativePerimeter + 2), '12']) : null,
-        solutionSteps: `Accumulate the composite vector sides around boundary paths: ${sides.join(' + ')} = ${cumulativePerimeter} units.`,
-        hint: "Trace your finger around the outside edges and count every unit!"
-      };
-      seedInstructions = `Target context: A shape or path. Total perimeter accumulation along multi-sided open grids equal to: ${cumulativePerimeter}.`;
-      break;
+    const componentData = { items: [{ label: targetShape, length: cumulativePerimeter }], isPerimeter: true, sides: sides, unitIcon: selectedUnit.icon };
+    const sidesText = sides.length === 2 ? `${sides[0]} and ${sides[1]}` : sides.slice(0, -1).join(', ') + ', and ' + sides[sides.length - 1];
+    const answer = String(cumulativePerimeter);
+
+    const questionTextTemplate = getQText(`Find the cumulative length around this ${numSides}-sided track frame map if the segments measure ${sidesText} ${selectedUnit.name} respectively.`, `Total length of sides ${sidesText} = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, String(cumulativePerimeter - 1), String(cumulativePerimeter + 2), '12'];
+    if (!options.includes(answer)) { options[0] = answer; }
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    default: // advanced_indirect_difference (Original Baseline)
-      commonMeta.heuristic = 'Indirect Operational Logic';
-      const lengthA = Math.floor(Math.random() * 4) + 6; 
-      const difference = Math.floor(Math.random() * 3) + 2; 
-      const isShorter = Math.random() > 0.5;
-      const lengthB = isShorter ? (lengthA - difference) : (lengthA + difference);
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      const items = [...itemsPool].sort(() => Math.random() - 0.5).map((name, i) => `${name} ${String.fromCharCode(65 + i)}`);
-      const item1 = items[0];
-      const item2 = items[1];
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Trace your finger around the outside edges and count every unit!`, `Add all sides.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`Accumulate the composite vector sides around boundary paths: ${sides.join(' + ')} = ${cumulativePerimeter} units.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "MEASUREMENT_UNIT",
+          "componentData": ${JSON.stringify(componentData)}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'advanced', steps: 2, logic: "perimeter_units", hideVisual: false }
+    };
+  },
 
-      componentData.items = [
-        { label: item1, length: lengthA },
-        { label: item2, length: lengthB }
-      ];
+  advanced_indirect_difference: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const lengthA = Math.floor(Math.random() * 4) + 6; 
+    const difference = Math.floor(Math.random() * 3) + 2; 
+    const isShorter = Math.random() > 0.5;
+    const lengthB = isShorter ? (lengthA - difference) : (lengthA + difference);
+    const items = [...itemsPool].sort(() => Math.random() - 0.5).map((name, i) => `${capitalize(name)} ${String.fromCharCode(65 + i)}`);
+    const item1 = items[0];
+    const item2 = items[1];
+    const selectedUnit = units[Math.floor(Math.random() * units.length)];
 
-      promptObject.content = {
-        questionText: `[Insert structured word problem: ${item1} is ${lengthA} ${selectedUnit.name} long. ${item2} is ${difference} ${selectedUnit.name} ${isShorter ? 'shorter' : 'longer'} than ${item1}. How many ${selectedUnit.name} long is ${item2}?]`,
-        finalAnswer: String(lengthB),
-        options: isMCQ ? getShuffledOptions(String(lengthB), [String(lengthA), String(lengthA + difference), String(Math.max(1, lengthB - 2))]) : null,
-        solutionSteps: `[Provide child-friendly breakdown: ${lengthA} ${isShorter ? '-' : '+'} ${difference} = ${lengthB} ${selectedUnit.name}]`,
-        hint: "Start with the units for the first object and then add or subtract based on the clue!"
-      };
-      seedInstructions = `Target objects: ${item1}, ${item2}. Calculate missing relative distance dimensions. True answer: ${lengthB}.`;
-      break;
+    const componentData = { items: [{ label: item1, length: lengthA }, { label: item2, length: lengthB }], unitIcon: selectedUnit.icon };
+    const answer = String(lengthB);
+
+    const questionTextTemplate = getQText(`${item1} is ${lengthA} ${selectedUnit.name} long. ${item2} is ${difference} ${selectedUnit.name} ${isShorter ? 'shorter' : 'longer'} than ${item1}. How many ${selectedUnit.name} long is ${item2}?`, `Length of ${item2} = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, String(lengthA), String(lengthA + difference), String(Math.max(1, lengthB - 2))];
+    if (!options.includes(answer)) { options[0] = answer; }
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Start with the units for the first object and then add or subtract based on the clue!`, `Add or subtract difference.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`${lengthA} ${isShorter ? '-' : '+'} ${difference} = ${lengthB} ${selectedUnit.name}`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "MEASUREMENT_UNIT",
+          "componentData": ${JSON.stringify(componentData)}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'advanced', steps: 2, logic: "indirect_difference", hideVisual: false }
+    };
   }
+};
 
-  // Assign generated payload properties globally
-  promptObject.visualEngine.componentData = componentData;
-
-  const constitution = isShort 
-    ? "SHORT QUESTION MANDATE: Pure mathematical logic only. Keep questionText extremely direct (e.g., 'Item A is 6 units. Item B is 2 units longer. How long is Item B?'). NO character names or fluff." 
-    : "STANDARD MANDATE: Use localized story elements for a 6-year-old. Keep sentences short. Use ONLY the specific objects and non-standard units provided in the seed instructions. Do NOT use legacy objects like ribbons, strings, toy trains, or any other items not mentioned in seeds.";
-
-  const instructions = `
-    TASK: Generate an advanced Primary 1 structured word problem tracking compound positional lengths using non-standard units.
-    VARIANT: ${activeVariant}
-    
-    CRITICAL PROMPT SEED CONSTRAINTS:
-    - Your output JSON object MUST include the 'content.hint' parameter string. It cannot be null or empty.
-    - ${seedInstructions}
-    - The structural data inside visualEngine.componentData (including items, isPerimeter, and sides) MUST remain exactly as seeded. Do NOT remove or modify any JSON keys.
-    - Ensure your question narrative text and finalAnswer perfectly synchronize with these calculation numbers.
-    - ${constitution}
-    
-    Return ONLY clean, valid JSON format.
-    ${JSON.stringify(promptObject)}
-  `.trim();
-
-  return { aiPrompt: instructions, parseResponse: (json) => json };
-}
+export const advancedLogic = (activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  if (advancedVariants[activeVariant]) {
+    return advancedVariants[activeVariant](config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
+  }
+};

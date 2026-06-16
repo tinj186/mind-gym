@@ -2,6 +2,7 @@
  * Blueprint for Primary 1: Measurement - Time
  * PATH: src/lib/syllabus/math/primary-1/measurement/time.js
  */
+import { getRandomContext } from '@/lib/utils/localization';
 import { foundationLogic } from './time/foundation';
 import { standardLogic } from './time/standard';
 import { advancedLogic } from './time/advanced';
@@ -58,44 +59,61 @@ export const timeBlueprint = {
     advanced_half_hour_hand_drift: "Analyzing challenging conceptual scenarios regarding exactly where the short hour hand is pointing when the long minute hand is at 6.",
     advanced_split_schedule_total: "Adding up two separate blocks of time dedicated to the same task to find the total structural duration (e.g., reading for 1 hour in the morning and half an hour at night).",
     advanced_earlier_later_clue_parsing: "Solving multi-step story problems matching descriptive vocabulary clues like 'too early' or 'too late' to adjust a clock state to its correct intended target."
+  },
+
+  generate: (difficulty = 'foundation', variant = 'foundation_to_hour', type = 'MCQ') => {
+    const safeType = String(type).toLowerCase();
+    const isShort = safeType.includes('short');
+    const isStructure = safeType.includes('structure') || safeType.includes('structured');
+    const isMCQ = safeType.includes('mcq');
+
+    let finalDifficulty = difficulty;
+    let finalVariant = variant;
+
+    if (typeof difficulty === 'string' && difficulty.includes('_')) {
+      finalVariant = difficulty;
+      finalDifficulty = variant || 'standard';
+    }
+
+    let activeVariant = finalVariant;
+    if (!timeBlueprint.variants[finalVariant]) {
+      const validVariants = Object.keys(timeBlueprint.variants).filter(k => k.startsWith(finalDifficulty));
+      if (validVariants.length > 0) {
+        activeVariant = validVariants[Math.floor(Math.random() * validVariants.length)];
+      } else {
+        activeVariant = 'foundation_to_hour'; 
+      }
+    }
+
+    const config = timeBlueprint.difficultyLevels[finalDifficulty] || timeBlueprint.difficultyLevels.foundation;
+    const zodType = isMCQ ? 'MCQ' : isShort ? 'SHORT_QUESTION' : 'STRUCTURED';
+    const zodDiff = finalDifficulty.charAt(0).toUpperCase() + finalDifficulty.slice(1);
+    const level = 'Primary 1';
+    const topic = 'Measurement';
+
+    const getQText = (words, equation) => isShort ? equation : words;
+    const levelNum = parseInt(level.replace('Primary ', ''));
+    const tier = levelNum <= 2 ? 'LOWER_BLOCK' : (levelNum <= 4 ? 'MIDDLE_BLOCK' : 'UPPER_BLOCK');
+    const context = getRandomContext('GENERAL', tier);
+
+    const hintProtocol = `\nCRITICAL HINT PROTOCOL: You MUST provide a conceptual "hint" field in your JSON. Focus on reading clock hands correctly.`;
+
+    let formatInstructions = isMCQ 
+      ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}` 
+      : `Format as Short Answer. The "options" field in your JSON should be null.${hintProtocol}`;
+
+    if (activeVariant.startsWith('foundation_')) {
+      return foundationLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
+    }
+
+    if (activeVariant.startsWith('standard_')) {
+      return standardLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
+    }
+
+    if (activeVariant.startsWith('advanced_')) {
+      return advancedLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
+    }
+
+    throw new Error(`Variant '${finalVariant}' not valid.`);
   }
 };
-
-/**
- * Orchestrator for Time Generation
- */
-export default function timeSyllabusEntry(variant, difficulty, type) {
-  let activeVariant = variant || '';
-
-  const validVariants = Object.keys(timeBlueprint.variants);
-
-  // Gracefully handle missing or legacy variants by selecting a default for the requested tier
-  if (!activeVariant || !validVariants.includes(activeVariant)) {
-    if (difficulty?.toLowerCase() === 'standard') {
-      activeVariant = 'standard_to_half_hour';
-    } else if (difficulty?.toLowerCase() === 'advanced') {
-      activeVariant = 'advanced_one_hour_shift';
-    } else {
-      activeVariant = 'foundation_to_hour';
-    }
-  }
-
-  const normType = type?.toUpperCase()?.replace(/\s/g, '_') || 'SHORT_QUESTION';
-  const isMCQ = normType === 'MCQ' || normType === 'MCQ_BUTTONS';
-  const isShort = normType === 'SHORT_QUESTION';
-  const isStructure = normType === 'STRUCTURED';
-
-  const zodType = normType;
-  const zodDiff = (difficulty || 'foundation').toUpperCase();
-  const level = "Primary 1";
-  const topic = "Measurement";
-
-  // Pass parameters down to difficulty-specific logic handlers
-  if (activeVariant.startsWith('foundation_')) return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic);
-  if (activeVariant.startsWith('standard_')) return standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic);
-  if (activeVariant.startsWith('advanced_')) return advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic);
-
-  throw new Error(`Variant '${activeVariant}' not supported inside Time engine.`);
-}
-
-timeBlueprint.generate = (difficulty, variant, type) => timeSyllabusEntry(variant, difficulty, type);

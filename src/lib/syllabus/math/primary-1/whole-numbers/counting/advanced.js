@@ -15,6 +15,25 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const questionTextTemplate = getQText(`What is the number if I have ${tens} tens and ${extraOnes} ones?`, `${tens} tens ${extraOnes} ones = ?`);
     const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story (e.g., Siti at the MRT station).`;
 
+    let optionsJSON = 'null';
+    let defectMapJSON = 'null';
+    if (isMCQ) {
+      const option1 = String((tens * 10) + (extraOnes % 10)); // CARELESS_CALCULATION
+      const option2 = String(tens + extraOnes); // CONCEPTUAL_ERROR
+      const option3 = String(total + 10); // CONCEPTUAL_ERROR
+      let options = Array.from(new Set([option1, option2, String(total), option3])).slice(0, 4);
+      while(options.length < 4) { options.push(String(total + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      const defectMap = {
+        [option2]: "CONCEPTUAL_ERROR",
+        [option3]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== String(total) && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+      defectMapJSON = JSON.stringify(defectMap);
+      optionsJSON = JSON.stringify(options);
+    }
+
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
@@ -27,7 +46,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
-          "options": ${isMCQ ? JSON.stringify([String((tens * 10) + (extraOnes % 10)), String(tens + extraOnes), String(total), String(total + 10)]) : 'null'},
+          "options": ${optionsJSON},
+          "defectMap": ${defectMapJSON},
           "hint": "Group 10 ones together to form 1 ten.",
           "finalAnswer": "${total}",
           "solutionSteps": "${tens} tens is ${tens * 10}. ${extraOnes} ones is ${extraOnes}. ${tens * 10} + ${extraOnes} = ${total}."
@@ -54,6 +74,23 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const questionTextTemplate = getQText(`What is the number if it is between ${lowerBound} and ${upperBound}, and the ones digit is ${onesDigit}?`, `Mystery number clues: ${lowerBound} < ? < ${upperBound}, ones = ${onesDigit}`);
     const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story.`;
 
+    let optionsJSON = 'null';
+    let defectMapJSON = 'null';
+    if (isMCQ) {
+      let options = Array.from(new Set([String(total - 10), String(total), String(total + 1), String(total + 10)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(total + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      const defectMap = {
+        [String(total - 10)]: "CONCEPTUAL_ERROR",
+        [String(total + 10)]: "CONCEPTUAL_ERROR",
+        [String(total + 1)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== String(total) && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+      defectMapJSON = JSON.stringify(defectMap);
+      optionsJSON = JSON.stringify(options);
+    }
+
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
@@ -66,7 +103,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
-          "options": ${isMCQ ? JSON.stringify([String(total - 10), String(total), String(total + 1), String(total + 10)]) : 'null'},
+          "options": ${optionsJSON},
+          "defectMap": ${defectMapJSON},
           "hint": "Identify the range of numbers first, then look for the one with the correct ones digit.",
           "finalAnswer": "${total}",
           "solutionSteps": "The numbers between ${lowerBound} and ${upperBound} start with ${tensDigit} tens. If the ones digit is ${onesDigit}, the number is ${total}."
@@ -90,6 +128,21 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const questionTextTemplate = getQText(`What is the number if I have ${tens} tens and ${ones} ones?`, `${tens} tens ${ones} ones = ?`);
     const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story.`;
 
+    let optionsJSON = 'null';
+    let defectMapJSON = 'null';
+    if (isMCQ) {
+      let options = Array.from(new Set([String(tens + ones), String(total - 10), String(total), String(total + 10)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(total + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      const defectMap = {
+        [String(tens + ones)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== String(total) && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+      defectMapJSON = JSON.stringify(defectMap);
+      optionsJSON = JSON.stringify(options);
+    }
+
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
@@ -102,7 +155,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
-          "options": ${isMCQ ? JSON.stringify([String(tens + ones), String(total - 10), String(total), String(total + 10)]) : 'null'},
+          "options": ${optionsJSON},
+          "defectMap": ${defectMapJSON},
           "hint": "Trade your ones for tens whenever you reach ten ones. 10 ones = 1 ten.",
           "finalAnswer": "${total}",
           "solutionSteps": "${tens} ten is ${tens * 10}. ${tens * 10} + ${ones} = ${total}."
@@ -127,6 +181,21 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const questionTextTemplate = getQText(`What is the 2-digit number if its tens digit is ${tensDigit} and the sum of its digits is ${sum}?`, `Tens=${tensDigit}, Sum=${sum} -> ?`);
     const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story.`;
 
+    let optionsJSON = 'null';
+    let defectMapJSON = 'null';
+    if (isMCQ) {
+      let options = Array.from(new Set([String(total - 10), String((onesDigit * 10) + tensDigit), String(total), String(total + 1)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(total + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      const defectMap = {
+        [String((onesDigit * 10) + tensDigit)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== String(total) && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+      defectMapJSON = JSON.stringify(defectMap);
+      optionsJSON = JSON.stringify(options);
+    }
+
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
@@ -139,7 +208,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
-          "options": ${isMCQ ? JSON.stringify([String(total - 10), String((onesDigit * 10) + tensDigit), String(total), String(total + 1)]) : 'null'},
+          "options": ${optionsJSON},
+          "defectMap": ${defectMapJSON},
           "hint": "Add the tens digit and a mystery ones digit to get the sum.",
           "finalAnswer": "${total}",
           "solutionSteps": "Since the tens digit is ${tensDigit}, we need a ones digit that makes the sum ${sum}. ${tensDigit} + ${onesDigit} = ${sum}, so the number is ${total}."
@@ -166,6 +236,21 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const questionTextTemplate = getQText(`What is the number between ${lowerBound} and ${upperBound} if its ones digit is ${diff} more than its tens digit?`, `${lowerBound} < ? < ${upperBound}, ones=tens+${diff} -> ?`);
     const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story.`;
 
+    let optionsJSON = 'null';
+    let defectMapJSON = 'null';
+    if (isMCQ) {
+      let options = Array.from(new Set([String(total - diff), String(total), String((onesDigit * 10) + tensDigit), String(total + 10)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(total + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      const defectMap = {
+        [String((onesDigit * 10) + tensDigit)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== String(total) && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+      defectMapJSON = JSON.stringify(defectMap);
+      optionsJSON = JSON.stringify(options);
+    }
+
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
@@ -178,7 +263,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
-          "options": ${isMCQ ? JSON.stringify([String(total - diff), String(total), String((onesDigit * 10) + tensDigit), String(total + 10)]) : 'null'},
+          "options": ${optionsJSON},
+          "defectMap": ${defectMapJSON},
           "hint": "The digit on the right is larger than the digit on the left.",
           "finalAnswer": "${total}",
           "solutionSteps": "The number is in the ${tensDigit}0s, so the tens digit is ${tensDigit}. The ones digit is ${tensDigit} + ${diff} = ${onesDigit}. The number is ${total}."
@@ -204,6 +290,22 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const questionTextTemplate = getQText(`What is the number between ${lower} and ${upper} that has a ${onesDigit} in its ones place?`, `${lower} < ? < ${upper}, ones=${onesDigit} -> ?`);
     const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story.`;
 
+    let optionsJSON = 'null';
+    let defectMapJSON = 'null';
+    if (isMCQ) {
+      let options = Array.from(new Set([String(lower - 1), String(total - 10), String(total), String(upper + 1)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(total + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      const defectMap = {
+        [String(lower - 1)]: "CONCEPTUAL_ERROR",
+        [String(upper + 1)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== String(total) && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+      defectMapJSON = JSON.stringify(defectMap);
+      optionsJSON = JSON.stringify(options);
+    }
+
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
@@ -216,7 +318,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
-          "options": ${isMCQ ? JSON.stringify([String(lower - 1), String(total - 10), String(total), String(upper + 1)]) : 'null'},
+          "options": ${optionsJSON},
+          "defectMap": ${defectMapJSON},
           "hint": "Check which number in the given range ends with the target digit.",
           "finalAnswer": "${total}",
           "solutionSteps": "The only number between ${lower} and ${upper} ending in ${onesDigit} is ${total}."
@@ -240,6 +343,21 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const questionTextTemplate = getQText(`What is the total number if there are ${boxes} boxes of 10 and ${singles} single items?`, `${boxes} groups of 10 + ${singles} = ?`);
     const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story.`;
 
+    let optionsJSON = 'null';
+    let defectMapJSON = 'null';
+    if (isMCQ) {
+      let options = Array.from(new Set([String((boxes * 10) + (singles % 10)), String(boxes + singles), String(total), String(total + 10)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(total + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      const defectMap = {
+        [String(boxes + singles)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== String(total) && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+      defectMapJSON = JSON.stringify(defectMap);
+      optionsJSON = JSON.stringify(options);
+    }
+
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
@@ -252,7 +370,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
-          "options": ${isMCQ ? JSON.stringify([String((boxes * 10) + (singles % 10)), String(boxes + singles), String(total), String(total + 10)]) : 'null'},
+          "options": ${optionsJSON},
+          "defectMap": ${defectMapJSON},
           "hint": "Total = (number of boxes × 10) + single items.",
           "finalAnswer": "${total}",
           "solutionSteps": "Calculate total from groups of 10 and singles: (${boxes} x 10) + ${singles} = ${total}."
@@ -277,6 +396,23 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const questionTextTemplate = getQText(`What is the value of the digit ${tens} in the number ${total}?`, `${total}: digit ${tens} value = ?`);
     const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story.`;
 
+    let optionsJSON = 'null';
+    let defectMapJSON = 'null';
+    if (isMCQ) {
+      let options = Array.from(new Set([String(tens), String(ones), String(answer), String(total)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      const defectMap = {
+        [String(tens)]: "CONCEPTUAL_ERROR",
+        [String(ones)]: "CONCEPTUAL_ERROR",
+        [String(total)]: "CONSTANT_VIOLATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+      defectMapJSON = JSON.stringify(defectMap);
+      optionsJSON = JSON.stringify(options);
+    }
+
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
@@ -289,7 +425,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
-          "options": ${isMCQ ? JSON.stringify([String(tens), String(ones), String(answer), String(total)]) : 'null'},
+          "options": ${optionsJSON},
+          "defectMap": ${defectMapJSON},
           "hint": "Place value determines the 'worth' of the digit based on its position.",
           "finalAnswer": "${answer}",
           "solutionSteps": "The digit ${tens} is in the tens place, so it stands for ${tens} tens, which is ${answer}."
@@ -313,6 +450,19 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const questionTextTemplate = getQText(`What is the number you land on if you start at ${start} and count on by 10s ${jumps} times?`, `${start} + (${jumps} x 10) = ?`);
     const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story.`;
 
+    let optionsJSON = 'null';
+    let defectMapJSON = 'null';
+    if (isMCQ) {
+      let options = Array.from(new Set([String(total - 10), String(total), String(total + 1), String(total + 10)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(total + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      const defectMap = {};
+      options.forEach(opt => { if (opt !== String(total)) defectMap[opt] = "CARELESS_CALCULATION"; });
+      defectMapJSON = JSON.stringify(defectMap);
+      optionsJSON = JSON.stringify(options);
+    }
+
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
@@ -325,7 +475,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
-          "options": ${isMCQ ? JSON.stringify([String(total - 10), String(total), String(total + 1), String(total + 10)]) : 'null'},
+          "options": ${optionsJSON},
+          "defectMap": ${defectMapJSON},
           "hint": "Each jump of 10 increases the tens digit by 1.",
           "finalAnswer": "${total}",
           "solutionSteps": "Starting at ${start} and making ${jumps} jumps of 10: ${start + 10}, ${start + 20}... you land on ${total}."
@@ -351,6 +502,21 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const questionTextTemplate = getQText(`Look at this number pattern: ${seq.join(", ")}. What is the SECOND missing number?`, seq.join(", "));
     const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story.`;
 
+    let optionsJSON = 'null';
+    let defectMapJSON = 'null';
+    if (isMCQ) {
+      let options = Array.from(new Set([String(parseInt(answer) - step), String(start + (step * 2)), String(answer), String(parseInt(answer) + step)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      const defectMap = {
+        [String(start + (step * 2))]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+      defectMapJSON = JSON.stringify(defectMap);
+      optionsJSON = JSON.stringify(options);
+    }
+
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
@@ -363,7 +529,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
-          "options": ${isMCQ ? JSON.stringify([String(parseInt(answer) - step), String(start + (step * 2)), String(answer), String(parseInt(answer) + step)]) : 'null'},
+          "options": ${optionsJSON},
+          "defectMap": ${defectMapJSON},
           "hint": "First find the pattern by looking at the first two numbers.",
           "finalAnswer": "${answer}",
           "solutionSteps": "The pattern increases by ${step}. The first missing number is ${start + (step * 2)}. The second missing number is ${start + (step * 3)} + ${step} = ${answer}."

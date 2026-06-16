@@ -3,6 +3,7 @@
  * FOCUS: Non-standard unit estimation, baseline comparison matrices, and logical length differences.
  * PATH: src/lib/syllabus/math/primary-1/measurement/length.js
  */
+import { getRandomContext } from '@/lib/utils/localization';
 import { foundationLogic } from './length/foundation';
 import { standardLogic } from './length/standard';
 import { advancedLogic } from './length/advanced';
@@ -61,51 +62,61 @@ export const lengthBlueprint = {
     advanced_part_whole_missing: "Finding the length of a missing segment when provided with the total structural length and one known constituent object.",
     advanced_excess_comparison: "Calculating exactly how many more or fewer units an object requires to match a target reference length.",
     advanced_perimeter_units: "Counting non-standard units around a multi-sided basic shape grid or open path framework."
-  }
-};
+  },
 
-/**
- * Orchestrator for Length Generation
- * Attached to the blueprint for the global generator to find.
- */
-lengthBlueprint.generate = function (difficulty, variant, type) {
-  let activeVariant = variant || '';
+  generate: (difficulty = 'foundation', variant = 'foundation_unit_counting', type = 'MCQ') => {
+    const safeType = String(type).toLowerCase();
+    const isShort = safeType.includes('short');
+    const isStructure = safeType.includes('structure') || safeType.includes('structured');
+    const isMCQ = safeType.includes('mcq');
 
-  // 🛡️ THE FIX: Extract all valid variants registered in this blueprint
-  const validVariants = Object.keys(lengthBlueprint.variants);
+    let finalDifficulty = difficulty;
+    let finalVariant = variant;
 
-  // 🛡️ THE FIX: If the frontend sends an empty variant, or a legacy variant 
-  // (like 'visual_line' from another topic), gracefully overwrite it!
-  if (!activeVariant || !validVariants.includes(activeVariant)) {
-    if (difficulty?.toLowerCase() === 'standard') {
-      activeVariant = 'standard_baseline_comparison';
-    } else if (difficulty?.toLowerCase() === 'advanced') {
-      activeVariant = 'advanced_indirect_difference';
-    } else {
-      activeVariant = 'foundation_unit_counting';
+    if (typeof difficulty === 'string' && difficulty.includes('_')) {
+      finalVariant = difficulty;
+      finalDifficulty = variant || 'standard';
     }
-  }
 
-  const normType = type?.toUpperCase()?.replace(/\s/g, '_') || 'SHORT_QUESTION';
-  const isMCQ = normType === 'MCQ' || normType === 'MCQ_BUTTONS';
-  const isShort = normType === 'SHORT_QUESTION';
-  const isStructure = normType === 'STRUCTURED';
+    let activeVariant = finalVariant;
+    if (!lengthBlueprint.variants[finalVariant]) {
+      const validVariants = Object.keys(lengthBlueprint.variants).filter(k => k.startsWith(finalDifficulty));
+      if (validVariants.length > 0) {
+        activeVariant = validVariants[Math.floor(Math.random() * validVariants.length)];
+      } else {
+        activeVariant = 'foundation_unit_counting'; 
+      }
+    }
 
-  const zodType = normType;
-  const zodDiff = (difficulty || 'foundation').toUpperCase();
-  const level = "Primary 1";
-  const topic = "Measurement";
+    const config = lengthBlueprint.difficultyLevels[finalDifficulty] || lengthBlueprint.difficultyLevels.foundation;
+    const zodType = isMCQ ? 'MCQ' : isShort ? 'SHORT_QUESTION' : 'STRUCTURED';
+    const zodDiff = finalDifficulty.charAt(0).toUpperCase() + finalDifficulty.slice(1);
+    const level = 'Primary 1';
+    const topic = 'Measurement';
 
-  if (activeVariant.startsWith('foundation_')) {
-    return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic);
-  }
-  if (activeVariant.startsWith('standard_')) {
-    return standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic);
-  }
-  if (activeVariant.startsWith('advanced_')) {
-    return advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic);
-  }
+    const getQText = (words, equation) => isShort ? equation : words;
+    const levelNum = parseInt(level.replace('Primary ', ''));
+    const tier = levelNum <= 2 ? 'LOWER_BLOCK' : (levelNum <= 4 ? 'MIDDLE_BLOCK' : 'UPPER_BLOCK');
+    const context = getRandomContext('GENERAL', tier);
 
-  // This fallback error will theoretically never be hit now, but remains for safety
-  throw new Error(`Variant '${activeVariant}' not supported inside Length engine.`);
+    const hintProtocol = `\nCRITICAL HINT PROTOCOL: You MUST provide a conceptual "hint" field in your JSON. Focus on comparing lengths correctly.`;
+
+    let formatInstructions = isMCQ 
+      ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}` 
+      : `Format as Short Answer. The "options" field in your JSON should be null.${hintProtocol}`;
+
+    if (activeVariant.startsWith('foundation_')) {
+      return foundationLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
+    }
+
+    if (activeVariant.startsWith('standard_')) {
+      return standardLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
+    }
+
+    if (activeVariant.startsWith('advanced_')) {
+      return advancedLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
+    }
+
+    throw new Error(`Variant '${finalVariant}' not valid.`);
+  }
 };

@@ -43,6 +43,26 @@ export const advancedVariants = {
       };
     });
 
+    let options = [String(total - 1), String(total), String(total + 1), String(total + 2)];
+    options = [...new Set(options)];
+    while(options.length < 4) {
+      options.push(String(Math.floor(Math.random() * 15) + 3));
+      options = [...new Set(options)];
+    }
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [String(total - 1)]: "CARELESS_CALCULATION",
+        [String(total + 1)]: "CARELESS_CALCULATION",
+        [String(total + 2)]: "CARELESS_CALCULATION"
+      };
+      options.forEach(opt => { if (opt !== String(total) && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
@@ -53,7 +73,8 @@ export const advancedVariants = {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
-          "options": ${type === 'MCQ' ? JSON.stringify([String(total - 1), String(total), String(total + 1), String(total + 2)]) : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Identify how many items are in each of the two containers mentioned and add them together.`, `Add the quantities in the ${target1} and ${target2} spots.`))},
           "finalAnswer": "${total}",
           "solutionSteps": ${JSON.stringify(getQText(`The ${target1} container has ${count1} and the ${target2} container has ${count2}. ${count1} + ${count2} = ${total}.`, `${count1} + ${count2} = ${total}`))}
@@ -81,6 +102,26 @@ export const advancedVariants = {
     const questionTextTemplate = getQText(`${sName} is ${ORDINAL_SYMBOLS[startPos - 1]} in a line. A friend is ${gap} positions behind. What is the friend's position?`, `Position: ${ORDINAL_SYMBOLS[startPos - 1]}. Friend is ${gap} positions behind. Friend's position = ?`);
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
 
+    let options = [answer, ORDINAL_SYMBOLS[Math.max(0, targetPos - 2)], ORDINAL_SYMBOLS[Math.min(11, targetPos)], ORDINAL_SYMBOLS[Math.min(11, targetPos + 1)]];
+    options = [...new Set(options)];
+    while(options.length < 4) {
+      options.push(ORDINAL_SYMBOLS[Math.floor(Math.random() * 12)]);
+      options = [...new Set(options)];
+    }
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [ORDINAL_SYMBOLS[Math.max(0, targetPos - 2)]]: "CONCEPTUAL_ERROR",
+        [ORDINAL_SYMBOLS[Math.min(11, targetPos)]]: "CONCEPTUAL_ERROR",
+        [ORDINAL_SYMBOLS[Math.min(11, targetPos + 1)]]: "CARELESS_CALCULATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
@@ -91,7 +132,8 @@ export const advancedVariants = {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
-          "options": ${type === 'MCQ' ? JSON.stringify([ORDINAL_SYMBOLS[targetPos - 2], answer, ORDINAL_SYMBOLS[targetPos], ORDINAL_SYMBOLS[targetPos + 1]]) : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`If someone is "behind" you in a line, will their position number be smaller or larger than yours?`, `Behind someone means adding to their position number.`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`${startPos} + ${gap} = ${targetPos}. The position is ${answer}.`, `${startPos} + ${gap} = ${targetPos}`))}
@@ -111,6 +153,25 @@ export const advancedVariants = {
     const questionTextTemplate = getQText(`An item is ${ORDINAL_WORDS[leftPos - 1]} from the left and ${ORDINAL_WORDS[rightPos - 1]} from the right. How many items are there in total?`, `An item is ${ORDINAL_SYMBOLS[leftPos - 1]} from the left and ${ORDINAL_SYMBOLS[rightPos - 1]} from the right. Total items = ?`);
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
 
+    let options = [answer, String(total - 2), String(total - 1), String(total + 1)];
+    options = [...new Set(options)];
+    while(options.length < 4) {
+      options.push(String(Math.floor(Math.random() * 15) + 3));
+      options = [...new Set(options)];
+    }
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [String(total - 1)]: "CARELESS_CALCULATION",
+        [String(total + 1)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
@@ -121,7 +182,8 @@ export const advancedVariants = {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
-          "options": ${type === 'MCQ' ? JSON.stringify([String(total - 2), String(total - 1), answer, String(total + 1)]) : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Think about how many items are to the left and right of the target item. Don't forget that you are counting the target item twice if you just add the numbers!`, `Total = Left + Right - 1.`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`${leftPos} + ${rightPos} - 1 = ${total}.`, `${leftPos} + ${rightPos} - 1 = ${total}`))}
@@ -142,6 +204,25 @@ export const advancedVariants = {
     const questionTextTemplate = getQText(`${sName} is ${ORDINAL_WORDS[startPos - 1]} in line. If ${leaves} people ahead of ${sName} leave, what is ${sName}'s new position?`, `Position: ${ORDINAL_SYMBOLS[startPos - 1]}. ${leaves} people ahead leave. New position = ?`);
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
 
+    let options = [answer, ORDINAL_WORDS[Math.max(0, newPos - 2)], ORDINAL_WORDS[Math.min(11, newPos)], ORDINAL_WORDS[Math.max(0, startPos - 1)]];
+    options = [...new Set(options)];
+    while(options.length < 4) {
+      options.push(ORDINAL_WORDS[Math.floor(Math.random() * 12)]);
+      options = [...new Set(options)];
+    }
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [ORDINAL_WORDS[Math.min(11, newPos)]]: "CONCEPTUAL_ERROR",
+        [ORDINAL_WORDS[Math.max(0, startPos - 1)]]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
@@ -152,7 +233,8 @@ export const advancedVariants = {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
-          "options": ${type === 'MCQ' ? JSON.stringify([ORDINAL_WORDS[newPos - 2], answer, ORDINAL_WORDS[newPos], ORDINAL_WORDS[startPos - 1]]) : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`If people in front of you leave, does your position move closer to the front or further away?`, `Leaving from the front makes your number smaller.`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`${startPos} - ${leaves} = ${newPos}. The new position is ${answer}.`, `${startPos} - ${leaves} = ${newPos}`))}
@@ -172,6 +254,25 @@ export const advancedVariants = {
     const questionTextTemplate = getQText(`A runner is in the ${ORDINAL_WORDS[startPos - 1]} position and moves forward by ${shift} places. What is the new position?`, `Position: ${ORDINAL_SYMBOLS[startPos - 1]}. Move forward ${shift} places. New position = ?`);
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
 
+    let options = [answer, ORDINAL_WORDS[Math.max(0, newPos - 2)], ORDINAL_WORDS[Math.min(11, newPos)], ORDINAL_WORDS[Math.max(0, startPos - 1)]];
+    options = [...new Set(options)];
+    while(options.length < 4) {
+      options.push(ORDINAL_WORDS[Math.floor(Math.random() * 12)]);
+      options = [...new Set(options)];
+    }
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [ORDINAL_WORDS[Math.min(11, newPos)]]: "CONCEPTUAL_ERROR",
+        [ORDINAL_WORDS[Math.max(0, startPos - 1)]]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
@@ -182,7 +283,8 @@ export const advancedVariants = {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
-          "options": ${type === 'MCQ' ? JSON.stringify([ORDINAL_WORDS[newPos - 2], answer, ORDINAL_WORDS[newPos], ORDINAL_WORDS[startPos - 1]]) : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Moving forward means you are getting closer to the first place.`, `Forward = Subtract from current position.`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`${startPos} - ${shift} = ${newPos}.`, `${startPos} - ${shift} = ${newPos}`))}
@@ -202,6 +304,25 @@ export const advancedVariants = {
     const questionTextTemplate = getQText(`How many people are there between the ${ORDINAL_WORDS[posA - 1]} and ${ORDINAL_WORDS[posB - 1]} person in a row?`, `How many people are between the ${ORDINAL_SYMBOLS[posA - 1]} and ${ORDINAL_SYMBOLS[posB - 1]} positions?`);
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
 
+    let options = [answer, String(gap - 1), String(gap + 1), String(gap + 2)];
+    options = [...new Set(options)];
+    while(options.length < 4) {
+      options.push(String(Math.floor(Math.random() * 10)));
+      options = [...new Set(options)];
+    }
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [String(gap + 1)]: "CONCEPTUAL_ERROR",
+        [String(gap + 2)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
@@ -212,7 +333,8 @@ export const advancedVariants = {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
-          "options": ${type === 'MCQ' ? JSON.stringify([String(gap - 1), answer, String(gap + 1), String(gap + 2)]) : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Think about the numbers that come after ${ORDINAL_SYMBOLS[posA - 1]} but before ${ORDINAL_SYMBOLS[posB - 1]}.`, `Difference between positions minus 1.`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`${posB} - ${posA} - 1 = ${gap}.`, `${posB} - ${posA} - 1 = ${gap}`))}
@@ -232,6 +354,25 @@ export const advancedVariants = {
     const questionTextTemplate = getQText(`A runner is in the ${ORDINAL_WORDS[startPos - 1]} position. After overtaking ${overtakeCount} runners, what is the new position?`, `Position: ${ORDINAL_SYMBOLS[startPos - 1]}. Overtake ${overtakeCount} runners. New position = ?`);
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
 
+    let options = [answer, ORDINAL_WORDS[Math.max(0, newPos - 2)], ORDINAL_WORDS[Math.min(11, newPos)], ORDINAL_WORDS[Math.max(0, startPos - 1)]];
+    options = [...new Set(options)];
+    while(options.length < 4) {
+      options.push(ORDINAL_WORDS[Math.floor(Math.random() * 12)]);
+      options = [...new Set(options)];
+    }
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [ORDINAL_WORDS[Math.min(11, newPos)]]: "CONCEPTUAL_ERROR",
+        [ORDINAL_WORDS[Math.max(0, startPos - 1)]]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
@@ -242,7 +383,8 @@ export const advancedVariants = {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
-          "options": ${type === 'MCQ' ? JSON.stringify([ORDINAL_WORDS[newPos - 2], answer, ORDINAL_WORDS[newPos], ORDINAL_WORDS[startPos - 1]]) : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Overtaking someone means you move one spot ahead of them.`, `Overtake = Subtract from current position.`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`${startPos} - ${overtakeCount} = ${newPos}.`, `${startPos} - ${overtakeCount} = ${newPos}`))}
@@ -262,6 +404,25 @@ export const advancedVariants = {
     const questionTextTemplate = getQText(`If Siti is ${ORDINAL_WORDS[posA - 1]}, and Aminah is just behind her, and Bala is just behind Aminah, what position is Bala in?`, `Siti is ${ORDINAL_SYMBOLS[posA - 1]}. Aminah is just behind Siti. Bala is just behind Aminah. Bala's position = ?`);
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
 
+    let options = [answer, ORDINAL_WORDS[posA - 1], ORDINAL_WORDS[posB - 1], ORDINAL_WORDS[posC]];
+    options = [...new Set(options)];
+    while(options.length < 4) {
+      options.push(ORDINAL_WORDS[Math.floor(Math.random() * 12)]);
+      options = [...new Set(options)];
+    }
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [ORDINAL_WORDS[posA - 1]]: "CONCEPTUAL_ERROR",
+        [ORDINAL_WORDS[posB - 1]]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
@@ -272,7 +433,8 @@ export const advancedVariants = {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
-          "options": ${type === 'MCQ' ? JSON.stringify([ORDINAL_WORDS[posA - 1], ORDINAL_WORDS[posB - 1], answer, ORDINAL_WORDS[posC]]) : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`"Just behind" means the very next person in line.`, `Add 1 for every "behind" step.`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`Siti is ${posA}. Aminah is ${posB}. Bala is ${posC}, which is ${answer}.`, `${posA} + 1 + 1 = ${posC}`))}
@@ -294,6 +456,25 @@ export const advancedVariants = {
     const questionTextTemplate = getQText(`Muthu is ${ORDINAL_WORDS[startPos - 1]} in line. If 2 people join the front and 1 person at the very front leaves, what is Muthu's new position?`, `Position: ${ORDINAL_SYMBOLS[startPos - 1]}. 2 people join front, 1 at front leaves. New position = ?`);
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
 
+    let options = [answer, ORDINAL_WORDS[Math.max(0, startPos - 2)], ORDINAL_WORDS[startPos - 1], ORDINAL_WORDS[Math.min(11, newPos)]];
+    options = [...new Set(options)];
+    while(options.length < 4) {
+      options.push(ORDINAL_WORDS[Math.floor(Math.random() * 12)]);
+      options = [...new Set(options)];
+    }
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [ORDINAL_WORDS[Math.max(0, startPos - 2)]]: "CONCEPTUAL_ERROR",
+        [ORDINAL_WORDS[startPos - 1]]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
@@ -304,7 +485,8 @@ export const advancedVariants = {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
-          "options": ${type === 'MCQ' ? JSON.stringify([ORDINAL_WORDS[startPos - 2], ORDINAL_WORDS[startPos - 1], answer, ORDINAL_WORDS[newPos]]) : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Work it out step by step: What happens when 2 people join? What happens when 1 person leaves?`, `Initial + Join - Leave.`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`Net change is ${joins} - ${leaves} = 1 spot back. ${ORDINAL_WORDS[startPos - 1]} becomes ${answer}.`, `${startPos} + ${joins} - ${leaves} = ${newPos}`))}
@@ -324,6 +506,26 @@ export const advancedVariants = {
     const questionTextTemplate = getQText(`How many places must a person in the ${ORDINAL_WORDS[currentPos - 1]} position move up to reach the ${ORDINAL_WORDS[targetPos - 1]} position?`, `Move from ${ORDINAL_SYMBOLS[currentPos - 1]} up to ${ORDINAL_SYMBOLS[targetPos - 1]}. Places to move = ?`);
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
 
+    let options = [answer, String(movesNeeded - 1), String(movesNeeded + 1), String(currentPos)];
+    options = [...new Set(options)];
+    while(options.length < 4) {
+      options.push(String(Math.floor(Math.random() * 10) + 1));
+      options = [...new Set(options)];
+    }
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {
+        [String(movesNeeded - 1)]: "CARELESS_CALCULATION",
+        [String(movesNeeded + 1)]: "CARELESS_CALCULATION",
+        [String(currentPos)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMapObj[opt]) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
@@ -334,7 +536,8 @@ export const advancedVariants = {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
-          "options": ${type === 'MCQ' ? JSON.stringify([String(movesNeeded - 1), answer, String(movesNeeded + 1), String(currentPos)]) : 'null'},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Find the difference between the two positions.`, `Current position - Target position.`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`${currentPos} - ${targetPos} = ${movesNeeded}.`, `${currentPos} - ${targetPos} = ${movesNeeded}`))}

@@ -46,13 +46,26 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
 
     const operator = isAdd ? '+' : '-';
-    const options = isMCQ ? [answer, String(parseInt(answer) + 10), String(parseInt(answer) - 10), String(parseInt(answer) + 2)].sort(() => Math.random() - 0.5) : null;
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      const wrongOpAnswer = isAdd ? String(num1 - num2) : String(num1 + num2);
+      options = Array.from(new Set([answer, wrongOpAnswer, String(parseInt(answer) + 10), String(parseInt(answer) - 10)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [wrongOpAnswer]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && opt !== wrongOpAnswer) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many items does ${context.name} have ${isAdd ? 'in total' : 'left'}?`, `${num1} ${operator} ${num2} = ?`),
         options: options,
+        defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
         solutionSteps: isAdd 
@@ -109,13 +122,26 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
 
     const operator = isAdd ? '+' : '-';
-    const options = isMCQ ? [answer, String(parseInt(answer) + 1), String(parseInt(answer) - 5), String(parseInt(answer) + 10)].sort(() => Math.random() - 0.5) : null;
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      const wrongOpAnswer = isAdd ? String(num1 - num2) : String(num1 + num2);
+      options = Array.from(new Set([answer, wrongOpAnswer, String(parseInt(answer) + 1), String(parseInt(answer) - 5)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [wrongOpAnswer]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && opt !== wrongOpAnswer) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many does ${context.name} have ${isAdd ? 'altogether' : 'left'}?`, `${num1} ${operator} ${num2} = ?`),
         options: options,
+        defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
         solutionSteps: `1. ${num1} ${operator} ${num2} = ${answer}.`
@@ -153,11 +179,26 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const n3 = Math.floor(Math.random() * 4) + 1;
     const answer = String(n1 + n2 + n3);
 
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      const addedAnswer = String(n1 + n2);
+      options = Array.from(new Set([answer, addedAnswer, String(parseInt(answer) + 2), String(parseInt(answer) - 1)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [addedAnswer]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && opt !== addedAnswer) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
+
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many are there in total?`, `${n1} + ${n2} + ${n3} = ?`),
-        options: isMCQ ? [answer, String(n1 + n2), String(parseInt(answer) + 2), String(parseInt(answer) - 1)].sort(() => Math.random() - 0.5) : null,
+        options: options,
+        defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
         solutionSteps: `1. ${n1} + ${n2} = ${n1 + n2}.\n2. ${n1 + n2} + ${n3} = ${answer}.`
@@ -193,11 +234,26 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     
     const equation = isAdd ? `${part1} + ? = ${whole}` : `${whole} - ? = ${part1}`;
 
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      const wrongAnswer = String(part1);
+      options = Array.from(new Set([answer, String(part2 + 10), String(part2 + 1), wrongAnswer])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [wrongAnswer]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && opt !== wrongAnswer) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
+
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] What is the missing number?`, `Find the missing number: ${equation}`),
-        options: isMCQ ? [answer, String(part2 + 10), String(part2 + 1), String(part1)].sort(() => Math.random() - 0.5) : null,
+        options: options,
+        defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
         solutionSteps: `1. ${whole} - ${part1} = ${answer}.`
@@ -230,11 +286,26 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const whole = part1 + part2;
     const answer = String(part1);
 
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      options = Array.from(new Set([answer, String(part2), String(whole), String(part1 + 10)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(part2)]: "CONCEPTUAL_ERROR",
+        [String(whole)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
+
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] If ${part1} + ${part2} = ${whole}, what is ${whole} - ${part2}?`, `If ${part1} + ${part2} = ${whole}, then ${whole} - ${part2} = ?`),
-        options: isMCQ ? [answer, String(part2), String(whole), String(part1 + 10)].sort(() => Math.random() - 0.5) : null,
+        options: options,
+        defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
         solutionSteps: `1. Since ${part1} + ${part2} = ${whole}, we know that ${whole} - ${part2} must be the other part.\n2. The other part is ${part1}.`
@@ -269,11 +340,27 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const answer = String(val2);
     const equation = isMore ? `${val1} + ${diff} = ?` : `${val1} - ${diff} = ?`;
 
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      const wrongOpAnswer = isMore ? String(val1 - diff) : String(val1 + diff);
+      options = Array.from(new Set([answer, String(val1), String(val1 + 10), wrongOpAnswer])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(val1)]: "CONSTANT_VIOLATION",
+        [wrongOpAnswer]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
+
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many ${itemLabel} does the other person have?`, equation),
-        options: isMCQ ? [answer, String(val1), String(val1 + 10), String(val2 + 1)].sort(() => Math.random() - 0.5) : null,
+        options: options,
+        defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
         solutionSteps: `1. ${val1} ${isMore ? '+' : '-'} ${diff} = ${answer}.`
@@ -327,11 +414,27 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       visualData = { whole: String(whole), parts: [String(part1), "?"], hideVisual: false };
     }
 
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      const wrongOpAnswer = missingPos === 0 ? String(part1) : String(whole + (missingPos === 1 ? part2 : part1));
+      options = Array.from(new Set([answer, String(parseInt(answer) + 10), wrongOpAnswer, String(missingPos === 0 ? part1 : whole)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(missingPos === 0 ? part1 : whole)]: "CONSTANT_VIOLATION",
+        [wrongOpAnswer]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
+
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] ${qTextSuffix}`, missingPos === 0 ? "Complete the number bond." : `Complete the number bond for ${whole}.`),
-        options: isMCQ ? [answer, String(parseInt(answer) + 10), String(parseInt(answer) + 1), String(missingPos === 0 ? part1 : whole)].sort(() => Math.random() - 0.5) : null,
+        options: options,
+        defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
         solutionSteps: solutionSteps
@@ -400,11 +503,15 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     const options = [correctEq, ...distractors].sort(() => Math.random() - 0.5);
 
+    let defectMap = {};
+    distractors.forEach(d => defectMap[d] = "CONCEPTUAL_ERROR");
+
     const promptObject = {
       meta: { level, topic, type: finalZodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`Which of the following equations has the same answer as ${targetEq}?`, `Which of the following equations has the same answer as ${targetEq}?`),
         options: options,
+        defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
         finalAnswer: correctEq,
         solutionSteps: `1. ${targetEq} = ${targetSum}.\n2. Only ${correctEq} gives the same total of ${targetSum}.`
@@ -450,13 +557,20 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
 
     const items = [String(part1), String(part2), String(whole)].sort(() => Math.random() - 0.5);
-    const options = isMCQ ? [answer, ...distractors].sort(() => Math.random() - 0.5) : null;
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      options = [answer, ...distractors].slice(0, 4).sort(() => Math.random() - 0.5);
+      defectMap = {};
+      distractors.forEach(d => defectMap[d] = "CONCEPTUAL_ERROR");
+    }
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: `Use all the number cards to form a correct ${operatorWord} equation.`,
         options: options,
+        defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
         solutionSteps: `1. The correct ${operatorWord} equation is ${answer}.`

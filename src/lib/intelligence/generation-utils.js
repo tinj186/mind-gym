@@ -191,6 +191,9 @@ export function processAiQuestion(q, context) {
       isApproved: false,
       finalAnswer: validatedData.content.finalAnswer,
       options: validatedData.content.options || [],
+      question: validatedData.content.questionText,
+      solution: validatedData.content.solutionSteps,
+      hint: validatedData.content.hint || null,
       modelData: {
         ...safeData,
         type: validatedData.visualEngine.componentToRender,
@@ -199,11 +202,9 @@ export function processAiQuestion(q, context) {
           : validatedData.visualEngine.componentToRender === 'NONE',
         inputRequirement: validatedData.inputRequirement.inputType,
         finalAnswer: validatedData.content.finalAnswer,
-        items: Array.isArray(safeData?.items) ? safeData.items : []
-      },
-      question: validatedData.content.questionText,
-      solution: validatedData.content.solutionSteps,
-      hint: validatedData.content.hint || null
+        items: Array.isArray(safeData?.items) ? safeData.items : [],
+        defectMap: validatedData.content.defectMap || null
+      }
     };
   } catch (zodError) {
     // Fallback manual mapping to prevent crash on slight Zod mismatches

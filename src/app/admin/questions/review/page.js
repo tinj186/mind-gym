@@ -65,7 +65,7 @@ export default async function QuestionReviewPage({ searchParams }) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8">
+    <div>
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col lg:flex-row gap-8">
           <main className="flex-1">
@@ -76,11 +76,11 @@ export default async function QuestionReviewPage({ searchParams }) {
                     pathname: "/admin/questions",
                     query: { level, strand, topic, subtopic, type, difficulty }
                   }}
-                  className="text-blue-600 font-bold text-sm uppercase tracking-widest hover:underline mb-2 block"
+                  className="text-blue-400 font-bold text-sm uppercase tracking-widest hover:underline mb-2 block"
                 >
                   ← Back to Inventory
                 </Link>
-                <h1 className="text-4xl font-extrabold text-slate-900 uppercase tracking-tighter">
+                <h1 className="text-4xl font-extrabold text-white uppercase tracking-tighter">
                   {isApprovedFilter ? 'Approved Content' : 'Pending Review'}
                 </h1>
                 <p className="text-slate-400 font-medium">

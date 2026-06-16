@@ -38,13 +38,26 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
 
     const operator = isAdd ? '+' : '-';
-    const options = isMCQ ? [answer, String(parseInt(answer) - 1), String(parseInt(answer) + 10), String(num1 + 2)].sort(() => Math.random() - 0.5) : null;
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      const wrongOpAnswer = isAdd ? String(num1 - num2) : String(num1 + num2);
+      options = Array.from(new Set([answer, wrongOpAnswer, String(parseInt(answer) - 1), String(parseInt(answer) + 10)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [wrongOpAnswer]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && opt !== wrongOpAnswer) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many items does ${context.name} have ${isAdd ? 'now' : 'left'}?`, `${num1} ${operator} ${num2} = ?`),
         options: options,
+        defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
         solutionSteps: isAdd 
@@ -83,13 +96,27 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const num2 = Math.floor(Math.random() * 20) + 10; // "More than" value
     const answer = String(num1 + num2);
     
-    const options = isMCQ ? [answer, String(num1 - num2), String(num1 + 10), String(num1)].sort(() => Math.random() - 0.5) : null;
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      const wrongOpAnswer = String(num1 - num2);
+      options = Array.from(new Set([answer, wrongOpAnswer, String(num1 + 10), String(num1)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(num1)]: "CONSTANT_VIOLATION",
+        [wrongOpAnswer]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many items does the second person have?`, `What is ${num2} more than ${num1}?`),
         options: options,
+        defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
         solutionSteps: `1. To find "more than", we add the numbers.\n2. ${num1} + ${num2} = ${answer}.`
@@ -121,13 +148,27 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const num2 = Math.floor(Math.random() * 20) + 5; // "Less than" value
     const answer = String(num1 - num2);
     
-    const options = isMCQ ? [answer, String(num1 + num2), String(num1 - 10), String(num1)].sort(() => Math.random() - 0.5) : null;
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      const wrongOpAnswer = String(num1 + num2);
+      options = Array.from(new Set([answer, wrongOpAnswer, String(num1 - 10), String(num1)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(num1)]: "CONSTANT_VIOLATION",
+        [wrongOpAnswer]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many items does the second person have?`, `What is ${num2} less than ${num1}?`),
         options: options,
+        defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
         solutionSteps: `1. To find "less than", we subtract.\n2. ${num1} - ${num2} = ${answer}.`
@@ -160,13 +201,26 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const totalPeople = inFront + behind + 1;
     const answer = String(totalPeople);
     
-    const options = isMCQ ? [answer, String(inFront + behind), String(inFront + behind - 1), String(inFront + 1)].sort(() => Math.random() - 0.5) : null;
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      const wrongAnswer = String(inFront + behind);
+      options = Array.from(new Set([answer, wrongAnswer, String(inFront + behind - 1), String(inFront + 1)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [wrongAnswer]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many people are there in the queue altogether?`, `There are ${inFront} people in front of ${extract(context.name)} and ${behind} people behind. How many people are in the queue?`),
         options: options,
+        defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
         solutionSteps: `1. Add the people in front: ${inFront}.\n2. Add ${extract(context.name)} themselves: 1.\n3. Add the people behind: ${behind}.\n4. Total: ${inFront} + 1 + ${behind} = ${answer}.`
@@ -198,13 +252,25 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const left2 = Math.floor(Math.random() * 10) + 5;
     const sum = left1 + left2;
     const right1 = Math.floor(Math.random() * 10) + sum - 15; // Ensure right1 is smaller than sum
-    const answer = String(sum - right1);
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      options = Array.from(new Set([answer, String(sum), String(parseInt(answer) + 10), String(parseInt(answer) - 2)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(sum)]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many more must be added to the second group to make them equal?`, `${left1} + ${left2} = ${right1} + ?`),
-        options: isMCQ ? [answer, String(sum), String(parseInt(answer) + 10), String(parseInt(answer) - 2)].sort(() => Math.random() - 0.5) : null,
+        options: options,
+        defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
         solutionSteps: `1. Find the total of the first group: ${left1} + ${left2} = ${sum}.\n2. To make the other side equal ${sum}, we subtract the known amount: ${sum} - ${right1} = ${answer}.`
@@ -237,7 +303,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many did ${extract(context.name)} have at first?`, `? - ${change1} + ${change2} = ${finalAmount}. Find the starting number.`),
-        options: isMCQ ? [answer, String(finalAmount + change1 + change2), String(finalAmount), String(start - 10)].sort(() => Math.random() - 0.5) : null,
+        options: options,
+        defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
         solutionSteps: `1. Work backwards from the final amount: ${finalAmount}.\n2. Reverse the last change: ${finalAmount} - ${change2} = ${finalAmount - change2}.\n3. Reverse the first change: ${finalAmount - change2} + ${change1} = ${answer}.`
@@ -270,7 +337,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] How many do they have altogether?`, `[Person 1] has ${aAmount} ${itemLabel}. [Person 2] has ${diff} more than [Person 1]. How many do they have in total?`),
-        options: isMCQ ? [answer, String(bAmount), String(total + 10), String(aAmount + diff)].sort(() => Math.random() - 0.5) : null,
+        options: options,
+        defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
         solutionSteps: `1. Find how many items the second person has: ${aAmount} + ${diff} = ${bAmount}.\n2. Find the total by adding both amounts: ${aAmount} + ${bAmount} = ${answer}.`
@@ -303,7 +371,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] Find the value of the circle.`, `▲ + ▲ = ${eq1Sum}. ▲ + ● = ${eq2Sum}. What is ●?`),
-        options: isMCQ ? [answer, String(shape1Val), String(eq2Sum), String(shape2Val + 2)].sort(() => Math.random() - 0.5) : null,
+        options: options,
+        defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
         solutionSteps: `1. ▲ + ▲ = ${eq1Sum}, so ▲ is ${shape1Val}.\n2. Substitute into the second equation: ${shape1Val} + ● = ${eq2Sum}.\n3. Therefore, ● = ${eq2Sum} - ${shape1Val} = ${answer}.`
@@ -336,7 +405,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`[STORY] The sum is ${sum}. What is the missing digit in the first number?`, `${tens1}? + ${num2} = ${sum}.`),
-        options: isMCQ ? [answer, String(ones1 - 1), String(tens1), "1"].sort(() => Math.random() - 0.5) : null,
+        options: options,
+        defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
         solutionSteps: `1. To find the whole first number, do ${sum} - ${num2} = ${tens1 * 10 + ones1}.\n2. The missing ones digit is ${answer}.`
@@ -412,12 +482,15 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const distractor3 = `${d3_sum + 14} - 14`;
 
     const options = [correctEq, distractor1, distractor2, distractor3].sort(() => Math.random() - 0.5);
+    let defectMap = {};
+    [distractor1, distractor2, distractor3].forEach(d => defectMap[d] = "CONCEPTUAL_ERROR");
 
     const promptObject = {
       meta: { level, topic, type: finalZodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`Which of the following equations has the same answer as ${targetEq}?`, `Which of the following equations has the same answer as ${targetEq}?`),
         options: options,
+        defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
         finalAnswer: correctEq,
         solutionSteps: `1. ${targetEq} = ${targetSum}.\n2. Only ${correctEq} gives the same answer of ${targetSum}.`

@@ -24,13 +24,26 @@ export async function POST(req) {
     // Tier 2/3: AI Logic Grader
     let isLogicCorrect = isCorrect;
     let hint = "";
+    let defectCode = null;
+
+    if (!isCorrect && question.type === 'MCQ' && question.modelData?.defectMap) {
+      // 🚀 Fast-path: Hardcoded MCQ Defect Map
+      defectCode = question.modelData.defectMap[studentAnswer] || 'UNKNOWN';
+    }
 
     if (!isCorrect || question.type === 'Structured') {
       const selectedModelId = getBestModel();
       try {
         const model = genAI.getGenerativeModel({ model: selectedModelId }, { apiVersion: 'v1beta' });
-        const prompt = `Grade this math answer. Question: ${question.question}. Correct Answer: ${question.finalAnswer}. Student Answer: ${studentAnswer}. Bar Model Logic: ${modelDescription}. 
-        Return JSON: { "isLogicCorrect": boolean, "hint": "string", "explanation": "string" }`;
+        const prompt = `Grade this math answer. 
+        Question: ${question.question}. 
+        Correct Answer: ${question.finalAnswer}. 
+        Student Answer: ${studentAnswer}. 
+        Bar Model Logic: ${modelDescription}. 
+        
+        If the student is incorrect, assign a defectCode from the following list: ['CARELESS_CALCULATION', 'CONCEPTUAL_ERROR', 'CONFUSED_OPERATION', 'MISREAD_QUESTION', 'CONSTANT_VIOLATION', 'UNKNOWN']. If the student is correct, return null.
+
+        Return JSON: { "isLogicCorrect": boolean, "hint": "string", "explanation": "string", "defectCode": "string" | null }`;
 
         const aiResult = await Promise.race([
           model.generateContent(prompt),
@@ -40,6 +53,9 @@ export async function POST(req) {
         const result = JSON.parse(aiResult.response.text().match(/\{[\s\S]*\}/)[0]);
         isLogicCorrect = result.isLogicCorrect;
         hint = result.hint;
+        if (!defectCode && result.defectCode) {
+          defectCode = result.defectCode;
+        }
       } catch (err) {
         console.warn("AI Grading failed, falling back to Tier 1");
       }
@@ -51,6 +67,7 @@ export async function POST(req) {
         studentAnswer,
         isCorrect,
         isLogicCorrect,
+        defectCode,
         modelDescription,
         timeSpentSecs,
         gradingTier: isCorrect ? 1 : 2

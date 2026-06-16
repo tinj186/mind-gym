@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { normalizeQuestionData, deriveVisualProps } from '@/lib/intelligence/workout-utils';
 import VisualRenderer from '@/components/math/VisualRenderer';
+import { motion } from 'framer-motion';
+import { playClickSound, playSuccessChime } from '@/lib/audio';
+import ContactForm from '@/components/support/ContactForm';
 
 export default function PublicLandingPage() {
   const router = useRouter();
@@ -17,6 +20,7 @@ export default function PublicLandingPage() {
   
   const handleGenerate = async (e) => {
     e.preventDefault();
+    playClickSound();
     setIsGenerating(true);
     setError('');
     setWorksheet(null);
@@ -33,6 +37,7 @@ export default function PublicLandingPage() {
       if (!res.ok) throw new Error(data.error || 'Failed to generate');
       
       setWorksheet(data.questions);
+      playSuccessChime();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -113,15 +118,38 @@ export default function PublicLandingPage() {
               disabled={isGenerating}
               className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-blue-700 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isGenerating ? "Generating..." : "Generate Now"}
+              Generate Now
             </button>
           </form>
 
           {error && <div className="mt-6 p-4 bg-red-50 text-red-600 text-sm font-bold rounded-xl">{error}</div>}
 
+          {/* Skeleton Loader */}
+          {isGenerating && (
+            <div className="mt-10 pt-10 border-t border-slate-100 animate-pulse">
+              <div className="flex justify-between items-center mb-6">
+                <div className="h-8 bg-slate-200 rounded w-1/3"></div>
+                <div className="h-6 bg-slate-200 rounded-full w-24"></div>
+              </div>
+              <div className="space-y-8 bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                <div className="h-6 bg-slate-200 rounded w-1/4 mb-6"></div>
+                <div className="space-y-4">
+                  <div className="h-4 bg-slate-200 rounded w-3/4"></div>
+                  <div className="h-4 bg-slate-200 rounded w-1/2"></div>
+                  <div className="h-32 bg-slate-200 rounded-xl w-full mt-6"></div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Worksheet Results */}
-          {worksheet && (
-            <div className="mt-10 pt-10 border-t border-slate-100 animate-fade-in">
+          {worksheet && !isGenerating && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mt-10 pt-10 border-t border-slate-100"
+            >
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xl font-black text-slate-800">Your Generated Worksheet</h3>
                 <div className="flex gap-2">
@@ -247,10 +275,12 @@ export default function PublicLandingPage() {
                   <p className="text-xs text-slate-500 font-bold mt-4 tracking-wide uppercase">30-Day Money-Back Guarantee</p>
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
         </div>
       </main>
+
+      <ContactForm />
     </div>
   );
 }

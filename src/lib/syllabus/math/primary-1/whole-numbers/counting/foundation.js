@@ -17,10 +17,19 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const askForWord = Math.random() > 0.5;
     
     const expectedAnswer = askForWord ? numberToWords(total) : String(total);
-    const optionValues = [total - 10, total - 1, total, total + 1];
-    const formattedOptions = askForWord 
-      ? optionValues.map(v => numberToWords(v)) 
-      : optionValues.map(v => String(v));
+    let formattedOptions = 'null';
+    let defectMapJSON = 'null';
+    if (isMCQ) {
+      const optionValues = [total - 10, total - 1, total, total + 1];
+      let options = askForWord ? optionValues.map(v => numberToWords(v)) : optionValues.map(v => String(v));
+      const wrongOp1 = askForWord ? numberToWords(total - 10) : String(total - 10);
+      const defectMap = {
+        [wrongOp1]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== expectedAnswer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+      defectMapJSON = JSON.stringify(defectMap);
+      formattedOptions = JSON.stringify(options.sort(() => Math.random() - 0.5));
+    }
 
     const promptInstruction = askForWord 
       ? "Ask the student to count the items and write the number in WORDS (e.g., 'thirty-four')." 
@@ -31,7 +40,8 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(getQText('[Insert full localized Singaporean word problem here]', `Count the ${selectedContextItem}s. Write the total amount ${askForWord ? 'in words' : 'in numerals'}.`))},
-          "options": ${isMCQ ? JSON.stringify(formattedOptions) : 'null'},
+          "options": ${formattedOptions},
+          "defectMap": ${defectMapJSON},
           "hint": "[Insert conceptual hint here]",
           "finalAnswer": "${expectedAnswer}",
           "solutionSteps": ${JSON.stringify(`There are ${tens} groups of ten (${tens * 10}) and ${ones} ones. Total is ${total}.`)}
@@ -60,6 +70,16 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const sequence = [start, start + step, start + (step * 2), "___"];
     const answer = String(start + (step * 3));
     
+    let optionsJSON = 'null';
+    let defectMapJSON = 'null';
+    if (isMCQ) {
+      let options = [parseInt(answer) - 2, parseInt(answer) - 1, parseInt(answer), parseInt(answer) + 1].map(String);
+      const defectMap = {};
+      options.forEach(opt => { if (opt !== answer) defectMap[opt] = "CARELESS_CALCULATION"; });
+      defectMapJSON = JSON.stringify(defectMap);
+      optionsJSON = JSON.stringify(options.sort(() => Math.random() - 0.5));
+    }
+    
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a ${activeVariant} question. DO NOT modify the mathematical structure or the final answer.\nYou are an expert Primary 1 math question generator.\n MATH CONSTRAINTS:\n - Topic: Counting to 100 (Foundation Level - Number Sequence)
       - Sequence: ${sequence.join(", ")}
@@ -71,7 +91,8 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(getQText('Look at the numbers: ' + sequence.join(", ") + '. What number comes next?', sequence.slice(0, 3).join(", ") + ", ?"))},
-          "options": ${isMCQ ? JSON.stringify([parseInt(answer) - 2, parseInt(answer) - 1, parseInt(answer), parseInt(answer) + 1].map(String)) : 'null'},
+          "options": ${optionsJSON},
+          "defectMap": ${defectMapJSON},
           "hint": "[Insert conceptual hint here]",
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(`The numbers are counting ${isForward ? 'on' : 'back'} by 1. After ${sequence[2]}, the next number is ${answer}.`)}
@@ -101,6 +122,18 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       ? `Write the number ${number} in words.` 
       : `Write the number word "${chosenWord}" as a numeral.`;
     const finalAnswer = isToWord ? chosenWord : String(number);
+    
+    let optionsJSON = 'null';
+    let defectMapJSON = 'null';
+    if (isMCQ) {
+      const optionsValues = [number - 1, number, number + 1, number + 2].map(n => isToWord ? numberWords[n] || numberWords[20] : String(n));
+      let options = Array.from(new Set(optionsValues)).slice(0, 4);
+      while(options.length < 4) { options.push(isToWord ? numberWords[Math.floor(Math.random() * 20)] : String(Math.floor(Math.random() * 20))); options = Array.from(new Set(options)); }
+      const defectMap = {};
+      options.forEach(opt => { if (opt !== finalAnswer) defectMap[opt] = "CARELESS_CALCULATION"; });
+      defectMapJSON = JSON.stringify(defectMap);
+      optionsJSON = JSON.stringify(options.sort(() => Math.random() - 0.5));
+    }
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a foundation_number_words question.
@@ -115,7 +148,8 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
           "content": {
             "questionText": ${JSON.stringify(getQText(questionPrompt, isToWord ? `${number} = ? (words)` : `"${chosenWord}" = ? (numeral)`))},
             "hint": ${JSON.stringify(getQText(isToWord ? "Spell out the number carefully." : "Write down the digits for this number word.", "Check the spelling or digits."))},
-            "options": null,
+            "options": ${optionsJSON},
+            "defectMap": ${defectMapJSON},
             "finalAnswer": "${finalAnswer}",
             "solutionSteps": ${JSON.stringify(getQText(isToWord ? `The number ${number} is written as "${chosenWord}".` : `The number word "${chosenWord}" is written as the numeral ${number}.`, "Match complete."))}
           },
@@ -132,6 +166,22 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const isMore = Math.random() > 0.5;
     const answer = isMore ? baseNumber + 1 : baseNumber - 1;
     const dynamicOperator = isMore ? "1 more than" : "1 less than";
+    
+    let optionsJSON = 'null';
+    let defectMapJSON = 'null';
+    if (isMCQ) {
+      const wrongAnswer = String(isMore ? baseNumber - 1 : baseNumber + 1);
+      let options = Array.from(new Set([String(answer), wrongAnswer, String(answer + 1), String(answer - 1)])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      const defectMap = {
+        [wrongAnswer]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== String(answer) && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+      defectMapJSON = JSON.stringify(defectMap);
+      optionsJSON = JSON.stringify(options);
+    }
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a foundation_one_more_less question.
@@ -146,7 +196,8 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
           "content": {
             "questionText": ${JSON.stringify(getQText(`What is ${dynamicOperator} ${baseNumber}?`, `${dynamicOperator} ${baseNumber} = ?`))},
             "hint": ${JSON.stringify(getQText(isMore ? "Count forward by 1 step." : "Count backward by 1 step.", "Count 1 step."))},
-            "options": null,
+            "options": ${optionsJSON},
+            "defectMap": ${defectMapJSON},
             "finalAnswer": "${answer}",
             "solutionSteps": ${JSON.stringify(getQText(`Counting ${isMore ? 'forward' : 'backward'} 1 step from ${baseNumber} gives us ${answer}.`, `Result = ${answer}`))}
           },
@@ -168,8 +219,21 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     
     const isGreatest = Math.random() > 0.5;
     const sorted = [...nums].sort((a, b) => a - b);
-    const answer = isGreatest ? sorted[2] : sorted[0];
+    const answer = String(isGreatest ? sorted[2] : sorted[0]);
     const targetLabel = isGreatest ? "greatest" : "smallest";
+    
+    let optionsJSON = 'null';
+    let defectMapJSON = 'null';
+    if (isMCQ) {
+      let options = Array.from(new Set(nums.map(String))).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      const defectMap = {};
+      options.forEach(opt => { if (opt !== String(answer)) defectMap[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapJSON = JSON.stringify(defectMap);
+      optionsJSON = JSON.stringify(options);
+    }
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a foundation_order_compare question.
@@ -184,7 +248,8 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
           "content": {
             "questionText": ${JSON.stringify(getQText(`Look at these numbers: ${nums.join(', ')}. Which number is the ${targetLabel}?`, `Find ${targetLabel}: ${nums.join(', ')}`))},
             "hint": ${JSON.stringify(getQText(`Compare the value of the numbers. Which one is the ${isGreatest ? 'biggest' : 'least'}?`, "Compare the numbers."))},
-            "options": null,
+            "options": ${optionsJSON},
+            "defectMap": ${defectMapJSON},
             "finalAnswer": "${answer}",
             "solutionSteps": ${JSON.stringify(getQText(`Comparing ${nums.join(', ')}, the ${targetLabel} number is ${answer}.`, `${targetLabel} = ${answer}`))}
           },
@@ -212,6 +277,11 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       uniqueDistractors.push(numberToWords(Math.floor(Math.random() * 20) + 1));
     }
     const options = isMCQ ? [target_word_string, ...uniqueDistractors.slice(0,3)].sort(() => Math.random() - 0.5) : null;
+    let defectMap = null;
+    if (isMCQ) {
+      defectMap = {};
+      options.forEach(opt => { if (opt !== target_word_string) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
 
     const itemPlural = context.items ? context.items[0]?.plural || selectedContextItem + 's' : 'items';
 
@@ -220,6 +290,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       content: {
         questionText: getQText(`Count and write the number of ${itemPlural} in words.`, `Count and write the number of items in words.`),
         options: options,
+        defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
         finalAnswer: target_word_string,
         solutionSteps: `1. There are ${visual_count} items.\n2. The number ${visual_count} in words is '${target_word_string}'.`
@@ -262,12 +333,19 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
 
     const itemPlural = context.items ? context.items[0]?.plural || selectedContextItem + 's' : 'items';
     const options = isMCQ ? ['Set A', 'Set B'] : null;
+    let defectMap = null;
+    if (isMCQ) {
+      defectMap = {
+        [answer === 'Set A' ? 'Set B' : 'Set A']: "CONCEPTUAL_ERROR"
+      };
+    }
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
         questionText: getQText(`Look at the pictures. Which set has ${targetLabel} ${itemPlural}?`, `Which set has ${targetLabel} items?`),
         options: options,
+        defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
         finalAnswer: answer,
         solutionSteps: `1. Set A has ${set_a_count} items.\n2. Set B has ${set_b_count} items.\n3. Therefore, ${answer} has ${targetLabel} items.`

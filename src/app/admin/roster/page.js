@@ -33,7 +33,7 @@ function StudentExhaustionCard({ student }) {
   return (
     <div className="flex flex-col gap-1 bg-slate-50 border border-slate-200 p-2 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors" onClick={handleToggle}>
       <div className="flex justify-between items-center">
-        <span className="text-sm font-bold text-slate-700">{student.name}</span>
+        <span className="text-sm font-bold text-white">{student.name}</span>
         <span className={`text-[10px] font-black ${student.exhaustionPercent >= 95 ? 'text-red-600' : 'text-slate-500'}`}>
           {student.exhaustionPercent}% Vault
         </span>
@@ -140,18 +140,18 @@ export default function UserRosterPage() {
     <div className="max-w-7xl mx-auto animate-fade-in">
       <div className="flex justify-between items-end mb-8">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tighter uppercase mb-2">User Roster</h1>
-          <p className="text-slate-500 font-medium">Manage parent accounts, subscription status, and access.</p>
+          <h1 className="text-3xl font-black text-white tracking-tighter uppercase mb-2">User Roster</h1>
+          <p className="text-slate-400 font-medium">Manage parent accounts, subscription status, and access.</p>
         </div>
-        <div className="bg-slate-100 px-4 py-2 rounded-lg text-sm font-bold text-slate-600">
+        <div className="bg-slate-700 px-4 py-2 rounded-lg text-sm font-bold text-slate-300">
           Total Users: {users.length}
         </div>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-slate-700 border border-slate-600 rounded-3xl shadow-sm overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-200">
+            <tr className="bg-slate-800 border-b border-slate-600">
               <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">User</th>
               <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Role</th>
               <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Subscription</th>
@@ -161,16 +161,16 @@ export default function UserRosterPage() {
           </thead>
           <tbody className="divide-y divide-slate-100">
             {users.map(user => (
-              <tr key={user.id} className="hover:bg-slate-50/50 transition-colors">
+              <tr key={user.id} className="hover:bg-slate-600/50 transition-colors">
                 <td className="p-4">
-                  <div className="font-bold text-slate-900">{user.name || "Unknown"}</div>
-                  <div className="text-sm text-slate-500">{user.email || "No email"}</div>
+                  <div className="font-bold text-white">{user.name || "Unknown"}</div>
+                  <div className="text-sm text-slate-400">{user.email || "No email"}</div>
                   <div className="text-xs text-slate-400 mt-1 font-mono">{user.id}</div>
                 </td>
                 
                 <td className="p-4">
                   <span className={`px-2 py-1 text-xs font-bold rounded-md ${
-                    user.role === 'ADMIN' ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-600'
+                    user.role === 'ADMIN' ? 'bg-purple-900/50 text-purple-300' : 'bg-slate-800 text-slate-300'
                   }`}>
                     {user.role}
                   </span>
@@ -182,8 +182,8 @@ export default function UserRosterPage() {
                     onChange={(e) => handleUpdateStatus(user.id, e.target.value)}
                     className={`text-sm font-bold p-2 border rounded-lg cursor-pointer outline-none ${
                       user.subscriptionStatus === 'ACTIVE' 
-                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                        : 'bg-slate-50 border-slate-200 text-slate-600'
+                        ? 'bg-emerald-900/30 border-emerald-800 text-emerald-400'
+                        : 'bg-slate-800 border-slate-600 text-slate-300'
                     }`}
                   >
                     <option value="INACTIVE">INACTIVE</option>
@@ -208,7 +208,7 @@ export default function UserRosterPage() {
                 <td className="p-4 text-right">
                   <button 
                     onClick={() => handleDelete(user.id)}
-                    className="text-red-500 hover:text-red-700 text-sm font-bold px-3 py-1 bg-red-50 hover:bg-red-100 rounded transition-colors"
+                    className="text-red-400 hover:text-red-300 text-sm font-bold px-3 py-1 bg-red-950/30 hover:bg-red-900/50 rounded transition-colors"
                   >
                     Delete
                   </button>

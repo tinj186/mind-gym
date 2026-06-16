@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getStudentStatsAction } from '@/app/actions/statsActions';
 import { getCurrentStudentId } from '@/lib/auth-utils';
+import ParentTour from '@/components/parent/ParentTour';
 
 export default async function ParentHub() {
   const studentId = await getCurrentStudentId() || "default-student";
@@ -14,7 +15,7 @@ export default async function ParentHub() {
 
   return (
     <div className="min-h-screen bg-indigo-50/50">
-
+      <ParentTour />
 
       <main className="max-w-7xl mx-auto px-6 py-12">
         {/* Welcome Section */}
@@ -25,7 +26,7 @@ export default async function ParentHub() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Active Subject: Math */}
-          <div className="group relative p-8 rounded-[2.5rem] border shadow-sm transition-all bg-white border-indigo-100 hover:border-indigo-300 hover:shadow-xl cursor-pointer">
+          <div id="tour-active-subject" className="group relative p-8 rounded-[2.5rem] border shadow-sm transition-all bg-white border-indigo-100 hover:border-indigo-300 hover:shadow-xl cursor-pointer">
             <div className="flex justify-between items-start mb-6">
               <div className="text-4xl w-16 h-16 flex items-center justify-center rounded-2xl transition-colors bg-indigo-50 group-hover:bg-indigo-100">
                 📐
@@ -41,7 +42,7 @@ export default async function ParentHub() {
             </p>
 
             <div className="space-y-3">
-              <div className="flex justify-between items-end">
+              <div id="tour-synapse-confidence" className="flex justify-between items-end">
                 <span className="text-xs font-bold uppercase opacity-60 text-indigo-950">Synapse Confidence</span>
                 <span className="text-lg font-black text-violet-600">{progressScore}%</span>
               </div>
@@ -52,7 +53,7 @@ export default async function ParentHub() {
                 />
               </div>
               <Link href="/parent/math" className="block mt-6">
-                <button className="w-full py-4 rounded-2xl font-bold transition-all cursor-pointer bg-indigo-900 text-white hover:bg-indigo-700 hover:shadow-lg">
+                <button id="tour-open-analytics" className="w-full py-4 rounded-2xl font-bold transition-all cursor-pointer bg-indigo-900 text-white hover:bg-indigo-700 hover:shadow-lg">
                   Open Analytics →
                 </button>
               </Link>

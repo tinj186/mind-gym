@@ -1,256 +1,489 @@
-/**
- * Standard Tier: Telling time to the half-hour and analog-digital conversion.
- * PATH: src/lib/syllabus/math/primary-1/measurement/time/standard.js
- */
-export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic) {
-  const commonMeta = { level, topic, subtopic: 'Time', type: zodType, difficulty: zodDiff, strand: 'Measurement and Geometry', subject: 'Math', gradeLevel: 'P1' };
-  
-  const inputType = 'MCQ_BUTTONS'; 
-  let componentData = null;
-  let promptObject = { meta: commonMeta, content: {}, visualEngine: { componentToRender: "CLOCK_DISPLAY" }, inputRequirement: { inputType } };
-  let seedInstructions = "";
+import { getRandomContext } from '@/lib/utils/localization';
 
-  const getShuffledOptions = (correct, distractors) => {
-    return [correct, ...distractors]
-      .filter((v, i, a) => a.indexOf(v) === i)
-      .sort(() => Math.random() - 0.5);
-  };
+const getShuffledOptions = (correct, distractors) => [correct, ...distractors].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4);
 
-  switch (activeVariant) {
-    case 'standard_analog_digital': {
-      commonMeta.heuristic = 'Analog-Digital Matching';
-      const hour = Math.floor(Math.random() * 12) + 1;
-      const minute = 30; // Standard tier focus is half-hour marks
-      componentData = { hour, minute: 30, displayType: 'analog' };
-      
-      const digitalTime = `${hour}:30`;
-      const distractors = [
-        `${hour === 12 ? 1 : hour + 1}:30`,
-        `${hour}:00`,
-        `${hour === 1 ? 12 : hour - 1}:30`
-      ];
+export const standardVariants = {
+  standard_to_half_hour: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const hour = Math.floor(Math.random() * 12) + 1;
+    const answer = `half past ${hour}`;
+    const componentData = { hour, minute: 30, displayType: 'analog' };
 
-      const questionText = isMCQ 
-        ? "Which digital clock shows the same time as the clock face?"
-        : "Please write the time shown on the clock in digital format.";
+    const questionTextTemplate = getQText(`What time is shown on the clock?`, `Time on analog clock = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
 
-      promptObject.content = {
-        questionText,
-        options: getShuffledOptions(digitalTime, distractors),
-        finalAnswer: digitalTime,
-        solutionSteps: `The analog clock shows the long hand at 6 and the short hand past ${hour}. This is ${hour}:30.`,
-        hint: "Check the hour hand first, then see if the long hand is at 12 or 6!"
-      };
-      seedInstructions = `Visual analog clock shows ${hour}:30. Target output: "${digitalTime}".`;
-      break;
+    let options = [answer, `half past ${hour === 12 ? 1 : hour + 1}`, `${hour} o'clock`, `half past ${hour === 1 ? 12 : hour - 1}`];
+    options = getShuffledOptions(answer, options);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    case 'standard_digital_half_hour': {
-      commonMeta.heuristic = 'Digital-Textual Matching';
-      const hour = Math.floor(Math.random() * 12) + 1;
-      componentData = { hour, minute: 30, displayType: 'digital' };
-      
-      const finalAnswer = `half past ${hour}`;
-      const distractors = [`${hour} o'clock`, `half past ${hour === 12 ? 1 : hour + 1}`, `half past ${hour === 1 ? 12 : hour - 1}`];
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      promptObject.content = {
-        questionText: "Look at the digital clock. What is another way to say this time?",
-        options: getShuffledOptions(finalAnswer, distractors),
-        finalAnswer,
-        solutionSteps: `The clock shows ${hour}:30. The ':30' part means half of the hour has passed, so it is half past ${hour}.`,
-        hint: "When we see :30 on a clock, we say 'half past' the hour."
-      };
-      seedInstructions = `Digital clock shows ${hour}:30. Target phrase: "${finalAnswer}".`;
-      break;
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`If the long hand is at 6, it means 'half past' the hour!`, `Check the long hand.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`The long hand (minute hand) is at 6. The short hand (hour hand) is past ${hour}. This means it is ${answer}.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "CLOCK_DISPLAY",
+          "componentData": ${JSON.stringify(componentData)}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'standard', steps: 1, logic: "to_half_hour", hideVisual: false }
+    };
+  },
+
+  standard_analog_digital: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const hour = Math.floor(Math.random() * 12) + 1;
+    const answer = `${hour}:30`;
+    const componentData = { hour, minute: 30, displayType: 'analog' };
+
+    const questionTextTemplate = getQText(`Which digital clock shows the same time as the clock face?`, `Digital time = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, `${hour === 12 ? 1 : hour + 1}:30`, `${hour}:00`, `${hour === 1 ? 12 : hour - 1}:30`];
+    options = getShuffledOptions(answer, options);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    case 'standard_half_past_concept': {
-      commonMeta.heuristic = 'Conceptual Equivalence';
-      promptObject.visualEngine.componentToRender = null;
-      const hour = Math.floor(Math.random() * 12) + 1;
-      const digital = `${hour}:30`;
-      const phrase = `half past ${hour}`;
-      
-      promptObject.content = {
-        questionText: `Which of these is the same as ${phrase}?`,
-        options: getShuffledOptions(digital, [`${hour}:00`, `${hour === 12 ? 1 : hour + 1}:30`, `${hour}:06`]),
-        finalAnswer: digital,
-        solutionSteps: `The term 'half past' means 30 minutes have passed after the hour. So, ${phrase} is written as ${digital}.`,
-        hint: "Half of an hour is 30 minutes!"
-      };
-      seedInstructions = `Conceptual link between words and digital numbers for half-past ${hour}.`;
-      break;
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Check the hour hand first, then see if the long hand is at 12 or 6!`, `Match the hands.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`The analog clock shows the long hand at 6 and the short hand past ${hour}. This is ${answer}.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "CLOCK_DISPLAY",
+          "componentData": ${JSON.stringify(componentData)}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'standard', steps: 1, logic: "analog_digital", hideVisual: false }
+    };
+  },
+
+  standard_digital_half_hour: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const hour = Math.floor(Math.random() * 12) + 1;
+    const answer = `half past ${hour}`;
+    const componentData = { hour, minute: 30, displayType: 'digital' };
+
+    const questionTextTemplate = getQText(`Look at the digital clock. What is another way to say this time?`, `Time in words = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, `${hour} o'clock`, `half past ${hour === 12 ? 1 : hour + 1}`, `half past ${hour === 1 ? 12 : hour - 1}`];
+    options = getShuffledOptions(answer, options);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    case 'standard_hour_hand_placement': {
-      commonMeta.heuristic = 'Analog Anatomy Logic';
-      promptObject.visualEngine.componentToRender = null;
-      const hour = Math.floor(Math.random() * 11) + 1;
-      const nextHour = hour + 1;
-      const finalAnswer = `Between ${hour} and ${nextHour}`;
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      promptObject.content = {
-        questionText: `Where should the short hour hand point at half past ${hour}?`,
-        options: getShuffledOptions(finalAnswer, [`Exactly at ${hour}`, `Exactly at ${nextHour}`, `Between ${nextHour} and ${nextHour + 1}`]),
-        finalAnswer,
-        solutionSteps: `At half past ${hour}, the hour hand has moved halfway from ${hour} towards ${nextHour}.`,
-        hint: "The hour hand moves slowly as time goes by. At half past, it's right in the middle of two numbers!"
-      };
-      seedInstructions = `MCQ assessing hour hand position during half-hour increments for ${hour}:30.`;
-      break;
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`When we see :30 on a clock, we say 'half past' the hour.`, `Check the minutes.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`The clock shows ${hour}:30. The ':30' part means half of the hour has passed, so it is ${answer}.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "CLOCK_DISPLAY",
+          "componentData": ${JSON.stringify(componentData)}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'standard', steps: 1, logic: "digital_half_hour", hideVisual: false }
+    };
+  },
+
+  standard_half_past_concept: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const hour = Math.floor(Math.random() * 12) + 1;
+    const answer = `${hour}:30`;
+    const phrase = `half past ${hour}`;
+
+    const questionTextTemplate = getQText(`Which of these is the same as ${phrase}?`, `Digital time for ${phrase} = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, `${hour}:00`, `${hour === 12 ? 1 : hour + 1}:30`, `${hour}:06`];
+    options = getShuffledOptions(answer, options);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    case 'standard_duration_simple': {
-      commonMeta.heuristic = 'Duration Arithmetic';
-      promptObject.visualEngine.componentToRender = null;
-      const start = Math.floor(Math.random() * 4) + 7; // 7 to 10
-      const duration = Math.floor(Math.random() * 2) + 1; // 1 or 2 hours
-      const end = start + duration;
-      
-      const finalAnswer = `${duration} ${duration === 1 ? 'hour' : 'hours'}`;
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      promptObject.content = {
-        questionText: `Math class starts at ${start} o'clock and ends at ${end} o'clock. How long is the class?`,
-        options: getShuffledOptions(finalAnswer, ["3 hours", "half an hour", "5 hours"]),
-        finalAnswer,
-        solutionSteps: `We count the hours from ${start} to ${end}. ${end} minus ${start} is ${duration}.`,
-        hint: "Count how many big jumps the hour hand makes from the start time to the end time."
-      };
-      seedInstructions = `Duration word problem: ${start}:00 to ${end}:00. Result: ${finalAnswer}.`;
-      break;
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Half of an hour is 30 minutes!`, `30 minutes passed.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`The term 'half past' means 30 minutes have passed after the hour. So, ${phrase} is written as ${answer}.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "NONE",
+          "componentData": {}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'standard', steps: 1, logic: "half_past_concept", hideVisual: true }
+    };
+  },
+
+  standard_hour_hand_placement: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const hour = Math.floor(Math.random() * 11) + 1;
+    const nextHour = hour + 1;
+    const answer = `Between ${hour} and ${nextHour}`;
+
+    const questionTextTemplate = getQText(`Where should the short hour hand point at half past ${hour}?`, `Hour hand position at half past ${hour} = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, `Exactly at ${hour}`, `Exactly at ${nextHour}`, `Between ${nextHour} and ${nextHour + 1}`];
+    options = getShuffledOptions(answer, options);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    case 'standard_digital_to_analog': {
-      commonMeta.heuristic = 'Digital-Word Translation';
-      promptObject.visualEngine.componentToRender = null;
-      const hour = Math.floor(Math.random() * 12) + 1;
-      const digital = `${hour}:30`;
-      const finalAnswer = `half past ${hour}`;
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      promptObject.content = {
-        questionText: `If a digital clock shows ${digital}, what time is it in words?`,
-        options: getShuffledOptions(finalAnswer, [`${hour} o'clock`, `half past ${hour === 1 ? 12 : hour - 1}`, "6 o'clock"]),
-        finalAnswer,
-        solutionSteps: `The digits ${hour} show the hour, and :30 means half an hour has passed. That is half past ${hour}.`,
-        hint: "Digital clocks show the hour first, then the minutes."
-      };
-      seedInstructions = `Digital string ${digital} to target word selection "${finalAnswer}".`;
-      break;
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`The hour hand moves slowly as time goes by. At half past, it's right in the middle of two numbers!`, `Check the middle position.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`At half past ${hour}, the hour hand has moved halfway from ${hour} towards ${nextHour}.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "NONE",
+          "componentData": {}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'standard', steps: 1, logic: "hour_hand_placement", hideVisual: true }
+    };
+  },
+
+  standard_duration_simple: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const start = Math.floor(Math.random() * 4) + 7; 
+    const duration = Math.floor(Math.random() * 2) + 1; 
+    const end = start + duration;
+    const answer = `${duration} ${duration === 1 ? 'hour' : 'hours'}`;
+
+    const questionTextTemplate = getQText(`Math class starts at ${start} o'clock and ends at ${end} o'clock. How long is the class?`, `Duration from ${start} to ${end} = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, "3 hours", "half an hour", "5 hours"];
+    options = getShuffledOptions(answer, options);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CARELESS_CALCULATION"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    case 'standard_timeline_sequence': {
-      commonMeta.heuristic = 'Daily Timeline Sequencing';
-      promptObject.visualEngine.componentToRender = null;
-      const events = [
-        "Wake up (7:00)",
-        "Breakfast (7:30)",
-        "Recess (10:00)",
-        "Lunch (12:30)"
-      ];
-      const finalAnswer = events.join(" ➔ ");
-      const distractors = [
-        "Breakfast (7:30) ➔ Wake up (7:00) ➔ Recess (10:00) ➔ Lunch (12:30)",
-        "Lunch (12:30) ➔ Recess (10:00) ➔ Breakfast (7:30) ➔ Wake up (7:00)",
-        "Wake up (7:00) ➔ Recess (10:00) ➔ Breakfast (7:30) ➔ Lunch (12:30)"
-      ];
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      promptObject.content = {
-        questionText: "Arrange these school day events in the correct order from earliest to latest.",
-        options: getShuffledOptions(finalAnswer, distractors),
-        finalAnswer,
-        solutionSteps: "We follow the clock from morning to afternoon. 7:00 comes before 7:30, which comes before 10:00, and lunch is last at 12:30.",
-        hint: "Think about what happens at the start of your school day and what happens later!"
-      };
-      seedInstructions = `Ordering 4 chronological events involving whole and half hours.`;
-      break;
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Count how many big jumps the hour hand makes from the start time to the end time.`, `Subtract start from end.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`We count the hours from ${start} to ${end}. ${end} minus ${start} is ${duration}.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "NONE",
+          "componentData": {}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'standard', steps: 1, logic: "duration_simple", hideVisual: true }
+    };
+  },
+
+  standard_digital_to_analog: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const hour = Math.floor(Math.random() * 12) + 1;
+    const digital = `${hour}:30`;
+    const answer = `half past ${hour}`;
+
+    const questionTextTemplate = getQText(`If a digital clock shows ${digital}, what time is it in words?`, `Time in words for ${digital} = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, `${hour} o'clock`, `half past ${hour === 1 ? 12 : hour - 1}`, "6 o'clock"];
+    options = getShuffledOptions(answer, options);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    case 'standard_activity_duration_compare': {
-      commonMeta.heuristic = 'Duration Comparison';
-      promptObject.visualEngine.componentToRender = null;
-      
-      const names = ["Meiling", "John", "Siti", "Ahmad", "Ali", "Wei Ming"];
-      const shuffledNames = [...names].sort(() => Math.random() - 0.5);
-      const nameA = shuffledNames[0];
-      const nameB = shuffledNames[1];
-      const durA = Math.floor(Math.random() * 2) + 1; // 1 or 2
-      const durB = durA + 1; // Ensure durB is longer
-      
-      promptObject.content = {
-        questionText: `${nameA} reads for ${durA} hour. ${nameB} draws for ${durB} hours. Who spent more time on their activity?`,
-        options: [nameA, nameB, "They spent the same time", "Cannot tell"],
-        finalAnswer: nameB,
-        solutionSteps: `${durB} hours is a longer time than ${durA} hour. Therefore, ${nameB} spent more time.`,
-        hint: "Compare the number of hours. Which number is bigger?"
-      };
-      seedInstructions = `Comparing ${durA} hour vs ${durB} hours duration. Target: ${nameB}. Do NOT mention any clock times.`;
-      break;
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Digital clocks show the hour first, then the minutes.`, `Check the minutes.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`The digits ${hour} show the hour, and :30 means half an hour has passed. That is ${answer}.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "NONE",
+          "componentData": {}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'standard', steps: 1, logic: "digital_to_analog", hideVisual: true }
+    };
+  },
+
+  standard_timeline_sequence: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const events = ["Wake up (7:00)", "Breakfast (7:30)", "Recess (10:00)", "Lunch (12:30)"];
+    const answer = events.join(" ➔ ");
+    const distractors = [
+      "Breakfast (7:30) ➔ Wake up (7:00) ➔ Recess (10:00) ➔ Lunch (12:30)",
+      "Lunch (12:30) ➔ Recess (10:00) ➔ Breakfast (7:30) ➔ Wake up (7:00)",
+      "Wake up (7:00) ➔ Recess (10:00) ➔ Breakfast (7:30) ➔ Lunch (12:30)"
+    ];
+
+    const questionTextTemplate = getQText(`Arrange these school day events in the correct order from earliest to latest.`, `Order events earliest to latest = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = getShuffledOptions(answer, distractors);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    case 'standard_half_hour_later_earlier': {
-      commonMeta.heuristic = 'Temporal Offsets';
-      const hour = Math.floor(Math.random() * 10) + 1;
-      const isLater = Math.random() > 0.5;
-      componentData = { hour, minute: 0, displayType: 'analog' };
-      
-      const finalAnswer = isLater ? `half past ${hour}` : `half past ${hour === 1 ? 12 : hour - 1}`;
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      promptObject.content = {
-        questionText: `The clock shows ${hour} o'clock. What time will it be half an hour ${isLater ? 'later' : 'earlier'}?`,
-        options: getShuffledOptions(finalAnswer, [`${hour} o'clock`, `half past ${hour === 12 ? 1 : hour + 1}`, `${hour}:00`]),
-        finalAnswer,
-        solutionSteps: `Moving the minute hand half an hour ${isLater ? 'forward' : 'backward'} from the 12 brings it to the 6, which is 'half past'.`,
-        hint: "Half an hour is the time it takes for the long hand to move from 12 to 6."
-      };
-      seedInstructions = `Analog visual ${hour}:00. Calculate half-hour ${isLater ? 'later' : 'earlier'}. Target: "${finalAnswer}".`;
-      break;
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Think about what happens at the start of your school day and what happens later!`, `Sort by time.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`We follow the clock from morning to afternoon. 7:00 comes before 7:30, which comes before 10:00, and lunch is last at 12:30.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "NONE",
+          "componentData": {}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'standard', steps: 2, logic: "timeline_sequence", hideVisual: true }
+    };
+  },
+
+  standard_activity_duration_compare: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const names = ["Meiling", "John", "Siti", "Ahmad", "Ali", "Wei Ming"].sort(() => Math.random() - 0.5);
+    const nameA = names[0];
+    const nameB = names[1];
+    const durA = Math.floor(Math.random() * 2) + 1; 
+    const durB = durA + 1; 
+    const answer = nameB;
+
+    const questionTextTemplate = getQText(`${nameA} reads for ${durA} hour. ${nameB} draws for ${durB} hours. Who spent more time on their activity?`, `Who spent more time = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [nameA, nameB, "They spent the same time", "Cannot tell"];
+    options = getShuffledOptions(answer, options);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    default: // standard_to_half_hour
-      commonMeta.heuristic = 'Half-Hour Clock Reading';
-      const hour = Math.floor(Math.random() * 12) + 1;
-      componentData = { hour, minute: 30, displayType: 'analog' };
-      
-      const answer = `half past ${hour}`;
-      const distractors = [
-        `half past ${hour === 12 ? 1 : hour + 1}`,
-        `${hour} o'clock`,
-        `half past ${hour === 1 ? 12 : hour - 1}`
-      ];
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
 
-      promptObject.content = {
-        questionText: "What time is shown on the clock?",
-        options: getShuffledOptions(answer, distractors),
-        finalAnswer: answer,
-        solutionSteps: `The long hand (minute hand) is at 6. The short hand (hour hand) is past ${hour}. This means it is ${answer}.`,
-        hint: "If the long hand is at 6, it means 'half past' the hour!"
-      };
-      seedInstructions = `Analog clock is set to ${hour}:30. Correct seed answer is strictly the phrase "${answer}".`;
-      break;
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Compare the number of hours. Which number is bigger?`, `Check the hours.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`${durB} hours is a longer time than ${durA} hour. Therefore, ${nameB} spent more time.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "NONE",
+          "componentData": {}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'standard', steps: 1, logic: "activity_duration_compare", hideVisual: true }
+    };
+  },
+
+  standard_half_hour_later_earlier: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const hour = Math.floor(Math.random() * 10) + 1;
+    const isLater = Math.random() > 0.5;
+    const answer = isLater ? `half past ${hour}` : `half past ${hour === 1 ? 12 : hour - 1}`;
+    const componentData = { hour, minute: 0, displayType: 'analog' };
+
+    const questionTextTemplate = getQText(`The clock shows ${hour} o'clock. What time will it be half an hour ${isLater ? 'later' : 'earlier'}?`, `Time half an hour ${isLater ? 'later' : 'earlier'} = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+
+    let options = [answer, `${hour} o'clock`, `half past ${hour === 12 ? 1 : hour + 1}`, `${hour}:00`];
+    options = getShuffledOptions(answer, options);
+
+    let mcqOptions = 'null';
+    let defectMapStr = 'null';
+    if (type === 'MCQ') {
+      options = options.sort(() => Math.random() - 0.5);
+      mcqOptions = JSON.stringify(options);
+      let defectMapObj = {};
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
+    }
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. 
+      ${formatInstructions}
+      ${storyInstruction}
+
+      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
+      {
+        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "content": {
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "options": ${mcqOptions},
+          "defectMap": ${defectMapStr},
+          "hint": ${JSON.stringify(getQText(`Half an hour is the time it takes for the long hand to move from 12 to 6.`, `Move the hand.`))},
+          "finalAnswer": "${answer}",
+          "solutionSteps": ${JSON.stringify(getQText(`Moving the minute hand half an hour ${isLater ? 'forward' : 'backward'} from the 12 brings it to the 6, which is 'half past'.`, `Answer is ${answer}.`))}
+        },
+        "visualEngine": {
+          "componentToRender": "CLOCK_DISPLAY",
+          "componentData": ${JSON.stringify(componentData)}
+        },
+        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+      }`,
+      metadata: { difficulty: 'standard', steps: 1, logic: "half_hour_later_earlier", hideVisual: false }
+    };
   }
+};
 
-  if (promptObject.visualEngine.componentToRender) {
-    promptObject.visualEngine.componentData = componentData;
-  } else {
-    delete promptObject.visualEngine;
+export const standardLogic = (activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  if (standardVariants[activeVariant]) {
+    return standardVariants[activeVariant](config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
   }
-
-  const instructions = `
-    TASK: Generate a Primary 1 Standard Time question.
-    VARIANT: ${activeVariant}
-    PEDAGOGY: Use both digital strings (X:30) and 'half past' vocabulary. Half-hour increments only.
-    
-    CRITICAL PROMPT SEED CONSTRAINTS:
-    - Your output JSON object MUST include the 'content.hint' parameter string. It cannot be null or empty. // Corrected from hintText
-    - Your output JSON object MUST include 'content.solutionSteps' as a pure text explanation. DO NOT nest or repeat a visual layout element inside solutionSteps.
-    - ${!isMCQ ? "CRITICAL: DO NOT modify, shorten, or rewrite the provided `questionText` template." : ""}
-    - ${seedInstructions}
-    - Component visual state: ${JSON.stringify(componentData)}
-    - Ensure the questionText and finalAnswer are perfectly aligned with the clock state.
-    
-    OUTPUT MANDATE: Return ONLY valid JSON matching the structure provided. No conversational text.
-    ${JSON.stringify(promptObject)}
-  `;
-
-  return { aiPrompt: instructions, parseResponse: (json) => json };
-}
+};

@@ -71,15 +71,15 @@ export default async function AdminQuestionsPage({ searchParams }) {
   const distinctDifficulties = DEFAULT_DIFFICULTIES;
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8">
+    <div>
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-extrabold text-slate-900">Question Bank Admin</h1>
+          <h1 className="text-4xl font-extrabold text-white">Question Bank Admin</h1>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-slate-100">
+        <div className="bg-slate-700 rounded-3xl shadow-sm p-8 mb-8 border border-slate-600">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-slate-800">Filters</h2>
+            <h2 className="text-2xl font-bold text-white">Filters</h2>
             {(level || topic || subtopic || type || difficulty) && (
               <Link href="/admin/questions" className="text-[10px] font-black uppercase text-slate-400 hover:text-blue-600 transition-colors flex items-center gap-1">
                 ✕ Reset Defaults
@@ -96,9 +96,9 @@ export default async function AdminQuestionsPage({ searchParams }) {
           />
         </div>
 
-        <div className="bg-white rounded-3xl shadow-xl p-8 border border-slate-100">
+        <div className="bg-slate-700 rounded-3xl shadow-sm p-8 border border-slate-600">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-slate-800">Question Inventory</h2>
+            <h2 className="text-2xl font-bold text-white">Question Inventory</h2>
           </div>
           {error ? (
             <div className="text-red-500 text-center py-8">{error}</div>

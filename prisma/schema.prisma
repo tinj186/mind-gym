@@ -167,3 +167,14 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+
+model SupportTicket {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  message   String   @db.Text
+  type      String   // "GENERAL" or "SUBSCRIBER"
+  userId    String?  // Optional link to User
+  status    String   @default("OPEN") // OPEN, RESOLVED
+  createdAt DateTime @default(now())
+}
