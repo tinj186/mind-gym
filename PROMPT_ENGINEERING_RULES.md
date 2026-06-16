@@ -16,9 +16,9 @@ I. The Locked Object Pattern (Mathematical Integrity)
 
 To eliminate AI "hallucinations" and math errors:
 
-Law: The AI must NEVER generate mathematical logic, numbers, or distractors.
+Law: The AI must NEVER generate mathematical logic, numbers, or distractors dynamically.
 
-Execution: All math is pre-calculated in JavaScript within the sub-modules (foundation.js, standard.js, advanced.js). The AI receives a "Locked" JSON string and is permitted only to replace the [STORY] placeholder with localized context.
+Execution: All math is pre-calculated deterministically in JavaScript within the sub-modules (foundation.js, standard.js, advanced.js). The AI receives a "Locked" JSON blueprint and is permitted only to replace the [STORY] placeholder with localized context, adhering strictly to the schema structure, including passing the explicitly defined `defectMap` for distractors.
 
 II. Standardized JSON Structure
 
@@ -26,11 +26,11 @@ Every question produced by the engine must follow this 4-tier nested structure:
 
 meta: Topic, Level, Type (MCQ/Structured), and Difficulty.
 
-content: questionText, options, finalAnswer, and solutionSteps.
+content: questionText, options, finalAnswer, solutionSteps, hint, and defectMap (strictly mapping MCQ distractors to defect codes like "CARELESS_CALCULATION" or "CONCEPTUAL_ERROR").
 
-visualEngine: componentToRender (e.g., NUMBER_BOND, GROUPING_WORKSPACE) and componentData.
+visualEngine: componentToRender (e.g., NUMBER_BOND, GROUPING_WORKSPACE, SINGAPORE_MONEY, NONE) and componentData.
 
-inputRequirement: inputType (e.g., MCQ_BUTTONS, MATH_INPUT).
+inputRequirement: inputType (e.g., MCQ_BUTTONS, MATH_INPUT, STANDARD_TEXT).
 
 III. The Safe Schema Bridge (Data Flattening)
 
