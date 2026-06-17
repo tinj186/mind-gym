@@ -40,6 +40,14 @@ Law: The route.js controller must apply a Flattening Map before database inserti
 
 Execution: The engine renames questionText to question and solutionSteps to solution, and merges visual data into a single modelData column, ensuring Prisma compatibility without losing data depth.
 
+IV. The Equal Spread Protocol (Stateful LRU)
+
+To prevent variant "clumping" and ensure students are exposed to all mathematical variations evenly:
+
+Law: The engine must NOT rely on stateless pure randomness (\`Math.random()\`) for variant selection.
+
+Execution: The engine must utilize a Stateful Least-Recently-Used (LRU) system. It tracks generation counts for each variant within the \`SystemConfig\` Postgres table and purposefully selects the variant with the absolute lowest generation count. This guarantees an equal spread of exposure over time.
+
 ### 3.4 Cloud Neutrality & Vendor Lock-In Prevention
 To maintain the ability to smoothly migrate from Serverless (Vercel) to a containerized VPS (Docker/Render/DigitalOcean) in the future, strictly enforce the following architectural boundaries:
 
@@ -68,6 +76,10 @@ UPPER_BLOCK (P5-P6): Complex clauses. Abstract/Technical contexts (GST, Interest
 II. Zero-Footprint Personalization
 
 Protocol: Personalization must be "Invisible." The system uses user data to select themes (e.g., sports, food) but is strictly prohibited from using "Bridge Phrases" like "Since you like..." or "Based on your interest...".
+
+III. The Strict Localization Mandate (Anti-Hallucination)
+
+Protocol: When requesting a \`[STORY]\` context from the AI, the prompt MUST explicitly constrain the name generation (e.g., "Use a local name like Siti, Muthu, Ali instead of generic names like Sam"). If left unconstrained or if a local name is not explicitly passed as a variable, the AI generative models will default to generic English/Western names, violating the "Singapore Flavor" localization goal.
 
 6. System Architecture
 Frontend: Next.js 15 (React) with MathLive inputs and dynamic SVG Bar Models.
