@@ -25,7 +25,7 @@ export const standardVariants = {
     const componentData = { title: `Our ${capitalize(selectedTheme.name)}`, symbol: target.emoji, orientation, categories: baseCategories };
 
     const questionTextTemplate = getQText(`Look at the graph. How many ${target.label.toLowerCase()} are there?`, `Number of ${target.label.toLowerCase()} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, "2", "4", "5", "7"];
     let mcqOptions = 'null';
@@ -83,7 +83,7 @@ export const standardVariants = {
     const answer = target.label;
 
     const questionTextTemplate = getQText(`Which category has the ${askMost ? 'most' : 'least'} items?`, `Category with ${askMost ? 'most' : 'least'} items = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = baseCategories.map(c => c.label);
     let mcqOptions = 'null';
@@ -133,7 +133,7 @@ export const standardVariants = {
     const componentData = { title: `Our ${capitalize(selectedTheme.name)}`, orientation, categories: baseCategories };
 
     const questionTextTemplate = getQText(`How many more ${cat1.count > cat2.count ? cat1.label.toLowerCase() : cat2.label.toLowerCase()} are there than ${cat1.count > cat2.count ? cat2.label.toLowerCase() : cat1.label.toLowerCase()}?`, `Difference between ${cat1.label} and ${cat2.label} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, "1", "2", "3", "5"];
     let mcqOptions = 'null';
@@ -189,7 +189,7 @@ export const standardVariants = {
     const componentData = { title: `Our ${capitalize(selectedTheme.name)}`, orientation, categories: baseCategories };
 
     const questionTextTemplate = getQText(`If we combine the ${c1.label.toLowerCase()} and the ${c2.label.toLowerCase()}, are there more than the ${c3.label.toLowerCase()}?`, `Is ${c1.label} + ${c2.label} > ${c3.label}?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = ["Yes", "No", "Exactly the same"];
     let mcqOptions = 'null';
@@ -241,7 +241,7 @@ export const standardVariants = {
     const componentData = { title: `Our ${capitalize(selectedTheme.name)}`, orientation, categories: baseCategories };
 
     const questionTextTemplate = getQText(`How many categories have fewer than ${threshold} pictures?`, `Number of categories with fewer than ${threshold} pictures = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, "0", "1", "2", "3", "4"];
     let mcqOptions = 'null';
@@ -292,7 +292,7 @@ export const standardVariants = {
     const componentData = { title: `Our ${capitalize(selectedTheme.name)}`, orientation, categories: baseCategories };
 
     const questionTextTemplate = getQText(`Arrange these 3 categories from ${isMostToLeast ? 'most to least' : 'least to most'}: ${selection.map(c => c.label).join(", ")}.`, `Arrange ${isMostToLeast ? 'most to least' : 'least to most'}: ${selection.map(c => c.label).join(", ")}`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [finalAnswer, [...sorted].reverse().map(c => c.label).join(", "), [sorted[1], sorted[0], sorted[2]].map(c => c.label).join(", "), [sorted[0], sorted[2], sorted[1]].map(c => c.label).join(", ")];
     let mcqOptions = 'null';
@@ -346,7 +346,7 @@ export const standardVariants = {
 
     const answer = `${c1.label} and ${c2.label}`;
     const questionTextTemplate = getQText(`Which two categories have the same number of items?`, `Categories with equal items = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, `${categories[0].label} and ${categories[2].label}`, `${categories[1].label} and ${categories[3].label}`, "None of them"];
     let mcqOptions = 'null';
@@ -395,7 +395,7 @@ export const standardVariants = {
     const componentData = { title: `Our ${capitalize(selectedTheme.name)}`, orientation, categories: baseCategories };
 
     const questionTextTemplate = getQText(`If we add 1 more ${target.emoji} to the ${target.label} row, how many ${target.label.toLowerCase()} will there be in total?`, `Add 1 to ${target.label}. Total = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, String(target.count), String(target.count - 1), String(target.count + 2)];
     let mcqOptions = 'null';

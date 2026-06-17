@@ -34,23 +34,29 @@ export const standardVariants = {
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_partition question. DO NOT modify the mathematical structure or the final answer.
+        ${formatInstructions}
+        CRITICAL: Do NOT rewrite "questionText" as a word problem. Keep the exact text provided in the schema.
         MATH CONSTRAINTS:
         - Number: ${num}
         - Partition: ${num} = ${tensVal} + ?
         - Final Answer MUST strictly be: "${answer}"
         CRITICAL: If the question type is MCQ, the "options" array MUST be exactly: ${mcqOptions}. DO NOT modify its content or format.
-        OUTPUT FORMAT (Return ONLY valid JSON):
+        OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
         {
-          "questionText": ${JSON.stringify(getQText(`Fill in the missing number: ${num} = ${tensVal} + ____`, `${num} = ${tensVal} + ?`))},
-          "options": ${mcqOptions},
-          "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`Think of the number ${num}. It is made up of ${tensVal} and another part. Subtract ${tensVal} from ${num} to find it.`, `What is ${num} minus ${tensVal}?`))},
-          "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`${num} is made of ${tensVal} and ${onesVal}.`, `${num} - ${tensVal} = ${answer}`))},          
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": ${JSON.stringify(getQText(`Fill in the missing number: ${num} = ${tensVal} + ____`, `${num} = ${tensVal} + ?`))},
+            "options": ${mcqOptions},
+            "defectMap": ${defectMapStr},
+            "hint": ${JSON.stringify(getQText(`Think of the number ${num}. It is made up of ${tensVal} and another part. Subtract ${tensVal} from ${num} to find it.`, `What is ${num} minus ${tensVal}?`))},
+            "finalAnswer": "${answer}",
+            "solutionSteps": ${JSON.stringify(getQText(`${num} is made of ${tensVal} and ${onesVal}.`, `${num} - ${tensVal} = ${answer}`))}
+          },
           "visualEngine": { 
             "componentToRender": "BASE_TEN_BLOCKS", 
             "componentData": { "tens": ${Math.floor(num/10)}, "ones": ${onesVal} } 
-          }
+          },
+          "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
       metadata: { difficulty: 'standard', steps: 2, logic: "partition", hideVisual: false }
     };
@@ -82,22 +88,28 @@ export const standardVariants = {
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_basic_regrouping question. DO NOT modify the mathematical structure or the final answer.
+        ${formatInstructions}
+        CRITICAL: Do NOT rewrite "questionText" as a word problem. Keep the exact text provided in the schema.
         MATH CONSTRAINTS:
         - Input: ${tens} tens ${ones} ones.
         - Final Answer MUST strictly be: "${answer}"
         CRITICAL: If the question type is MCQ, the "options" array MUST be exactly: ${mcqOptions}. DO NOT modify its content or format.
-        OUTPUT FORMAT (Return ONLY valid JSON):
+        OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
         {
-          "questionText": ${JSON.stringify(getQText(`What number is the same as ${tens} tens and ${ones} ones?`, `${tens} tens + ${ones} ones = ?`))},
-          "options": ${mcqOptions},
-          "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`Change the ${tens} tens into a number first. Then add the ${ones} ones to it.`, `${tens * 10} + ${ones} = ?`))},
-          "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`${tens} tens is ${tens * 10}. ${tens * 10} + ${ones} = ${num}.`, `${tens * 10} + ${ones} = ${num}`))},          
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": ${JSON.stringify(getQText(`What number is the same as ${tens} tens and ${ones} ones?`, `${tens} tens + ${ones} ones = ?`))},
+            "options": ${mcqOptions},
+            "defectMap": ${defectMapStr},
+            "hint": ${JSON.stringify(getQText(`Change the ${tens} tens into a number first. Then add the ${ones} ones to it.`, `${tens * 10} + ${ones} = ?`))},
+            "finalAnswer": "${answer}",
+            "solutionSteps": ${JSON.stringify(getQText(`${tens} tens is ${tens * 10}. ${tens * 10} + ${ones} = ${num}.`, `${tens * 10} + ${ones} = ${num}`))}
+          },
           "visualEngine": { 
             "componentToRender": "BASE_TEN_BLOCKS", 
             "componentData": { "tens": ${tens}, "ones": ${ones} } 
-          }
+          },
+          "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
       metadata: { difficulty: 'standard', steps: 2, logic: "regrouping", hideVisual: false }
     };
@@ -129,23 +141,29 @@ export const standardVariants = {
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_partition_tens question. DO NOT modify the mathematical structure or the final answer.
+        ${formatInstructions}
+        CRITICAL: Do NOT rewrite "questionText" as a word problem. Keep the exact text provided in the schema.
         MATH CONSTRAINTS:
         - Number: ${num}
         - Partition: ${num} = ? + ${onesVal}
         - Final Answer MUST strictly be: "${answer}"
         CRITICAL: If the question type is MCQ, the "options" array MUST be exactly: ${mcqOptions}. DO NOT modify its content or format.
-        OUTPUT FORMAT (Return ONLY valid JSON):
+        OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
         {
-          "questionText": ${JSON.stringify(getQText(`What is the missing value? ${num} = ____ + ${onesVal}`, `${num} = ? + ${onesVal}`))},
-          "options": ${mcqOptions},
-          "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`If you take away the ${onesVal} ones from ${num}, how many tens value are you left with?`, `${num} - ${onesVal} = ?`))},
-          "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`${num} is ${tensVal} and ${onesVal}. The missing part is ${tensVal}.`, `${num} - ${onesVal} = ${answer}`))},          
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": ${JSON.stringify(getQText(`What is the missing value? ${num} = ____ + ${onesVal}`, `${num} = ? + ${onesVal}`))},
+            "options": ${mcqOptions},
+            "defectMap": ${defectMapStr},
+            "hint": ${JSON.stringify(getQText(`If you take away the ${onesVal} ones from ${num}, how many tens value are you left with?`, `${num} - ${onesVal} = ?`))},
+            "finalAnswer": "${answer}",
+            "solutionSteps": ${JSON.stringify(getQText(`${num} is ${tensVal} and ${onesVal}. The missing part is ${tensVal}.`, `${num} - ${onesVal} = ${answer}`))}
+          },
           "visualEngine": { 
             "componentToRender": "BASE_TEN_BLOCKS", 
             "componentData": { "tens": ${Math.floor(num/10)}, "ones": ${onesVal} } 
-          }
+          },
+          "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
       metadata: { difficulty: 'standard', steps: 2, logic: "partition_tens", hideVisual: false }
     };
@@ -184,18 +202,22 @@ export const standardVariants = {
         - Question: How many bundles of 10 can be made?
         - Final Answer MUST strictly be: "${answer}"
         CRITICAL: If the question type is MCQ, the "options" array MUST be exactly: ${mcqOptions}. DO NOT modify its content or format.
-        OUTPUT FORMAT (Return ONLY valid JSON):
+        OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
         {
-          "questionText": ${JSON.stringify(getQText(`${sName} has ${num} ${sItem}. If he puts them in groups of 10, how many groups will he have?`, `${num} = ? groups of 10 + ${ones} left`))},
-          "options": ${mcqOptions},
-          "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`Try circling groups of 10 items. How many groups can you circle?`, `Count how many tens are in ${num}.`))},
-          "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`${num} has ${tens} tens, so he can make ${tens} groups of 10.`, `${num} = ${tens} tens and ${ones} ones`))},          
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": ${JSON.stringify(getQText(`${sName} has ${num} ${sItem}. If he puts them in groups of 10, how many groups will he have?`, `${num} = ? groups of 10 + ${ones} left`))},
+            "options": ${mcqOptions},
+            "defectMap": ${defectMapStr},
+            "hint": ${JSON.stringify(getQText(`Try circling groups of 10 items. How many groups can you circle?`, `Count how many tens are in ${num}.`))},
+            "finalAnswer": "${answer}",
+            "solutionSteps": ${JSON.stringify(getQText(`${num} has ${tens} tens, so he can make ${tens} groups of 10.`, `${num} = ${tens} tens and ${ones} ones`))}
+          },
           "visualEngine": { 
             "componentToRender": "BASE_TEN_BLOCKS", 
             "componentData": { "tens": 0, "ones": ${num} } 
-          }
+          },
+          "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
       metadata: { difficulty: 'standard', steps: 2, logic: "grouping_word_problem", hideVisual: false }
     };
@@ -289,18 +311,22 @@ export const standardVariants = {
         - Add: ${addTens} tens
         - Final Answer MUST strictly be: "${answer}"
         CRITICAL: If the question type is MCQ, the "options" array MUST be exactly: ${mcqOptions}. DO NOT modify its content or format.
-        OUTPUT FORMAT (Return ONLY valid JSON):
+        OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
         {
-          "questionText": ${JSON.stringify(getQText(`Add ${addTens} tens to ${start}. What is the new number?`, `${start} + ${addTens} tens = ?`))},
-          "options": ${mcqOptions},
-          "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`Look at the tens digit. If you add ${addTens} tens, only the tens digit will change.`, `Only the tens digit increases by ${addTens}.`))},
-          "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`${addTens} tens is ${addTens * 10}. ${start} + ${addTens * 10} = ${answer}.`, `${start} + ${addTens * 10} = ${answer}`))},          
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": ${JSON.stringify(getQText(`Add ${addTens} tens to ${start}. What is the new number?`, `${start} + ${addTens} tens = ?`))},
+            "options": ${mcqOptions},
+            "defectMap": ${defectMapStr},
+            "hint": ${JSON.stringify(getQText(`Look at the tens digit. If you add ${addTens} tens, only the tens digit will change.`, `Only the tens digit increases by ${addTens}.`))},
+            "finalAnswer": "${answer}",
+            "solutionSteps": ${JSON.stringify(getQText(`${addTens} tens is ${addTens * 10}. ${start} + ${addTens * 10} = ${answer}.`, `${start} + ${addTens * 10} = ${answer}`))}
+          },
           "visualEngine": { 
             "componentToRender": "BASE_TEN_BLOCKS", 
             "componentData": { "tens": ${Math.floor(start/10)}, "ones": ${start%10} } 
-          }
+          },
+          "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
       metadata: { difficulty: 'standard', steps: 2, logic: "add_tens", hideVisual: false }
     };
@@ -335,18 +361,22 @@ export const standardVariants = {
         - Subtract: ${subTens} tens
         - Final Answer MUST strictly be: "${answer}"
         CRITICAL: If the question type is MCQ, the "options" array MUST be exactly: ${mcqOptions}. DO NOT modify its content or format.
-        OUTPUT FORMAT (Return ONLY valid JSON):
+        OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
         {
-          "questionText": ${JSON.stringify(getQText(`Subtract ${subTens} tens from ${start}. What is the new number?`, `${start} - ${subTens} tens = ?`))},
-          "options": ${mcqOptions},
-          "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`Look at the tens digit. If you subtract ${subTens} tens, only the tens digit will decrease.`, `Only the tens digit decreases by ${subTens}.`))},
-          "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`${subTens} tens is ${subTens * 10}. ${start} - ${subTens * 10} = ${answer}.`, `${start} - ${subTens * 10} = ${answer}`))},          
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": ${JSON.stringify(getQText(`Subtract ${subTens} tens from ${start}. What is the new number?`, `${start} - ${subTens} tens = ?`))},
+            "options": ${mcqOptions},
+            "defectMap": ${defectMapStr},
+            "hint": ${JSON.stringify(getQText(`Look at the tens digit. If you subtract ${subTens} tens, only the tens digit will decrease.`, `Only the tens digit decreases by ${subTens}.`))},
+            "finalAnswer": "${answer}",
+            "solutionSteps": ${JSON.stringify(getQText(`${subTens} tens is ${subTens * 10}. ${start} - ${subTens * 10} = ${answer}.`, `${start} - ${subTens * 10} = ${answer}`))}
+          },
           "visualEngine": { 
             "componentToRender": "BASE_TEN_BLOCKS", 
             "componentData": { "tens": ${Math.floor(start/10)}, "ones": ${start%10} } 
-          }
+          },
+          "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
       metadata: { difficulty: 'standard', steps: 2, logic: "sub_tens", hideVisual: false }
     };
@@ -473,18 +503,22 @@ export const standardVariants = {
         - Input: ${tens} tens
         - Final Answer MUST strictly be: "${answer}"
         CRITICAL: If the question type is MCQ, the "options" array MUST be exactly: ${mcqOptions}. DO NOT modify its content or format.
-        OUTPUT FORMAT (Return ONLY valid JSON):
+        OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
         {
-          "questionText": ${JSON.stringify(getQText(`${tens} tens is the same as ____ ones.`, `${tens} tens = ? ones`))},
-          "options": ${mcqOptions},
-          "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`Each ten is equal to 10 ones. Count by tens for each bar you see.`, `1 ten = 10 ones.`))},
-          "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`1 ten is 10 ones, so ${tens} tens is ${answer} ones.`, `${tens} * 10 = ${answer}`))},          
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": ${JSON.stringify(getQText(`${tens} tens is the same as ____ ones.`, `${tens} tens = ? ones`))},
+            "options": ${mcqOptions},
+            "defectMap": ${defectMapStr},
+            "hint": ${JSON.stringify(getQText(`Each ten is equal to 10 ones. Count by tens for each bar you see.`, `1 ten = 10 ones.`))},
+            "finalAnswer": "${answer}",
+            "solutionSteps": ${JSON.stringify(getQText(`1 ten is 10 ones, so ${tens} tens is ${answer} ones.`, `${tens} * 10 = ${answer}`))}
+          },
           "visualEngine": { 
             "componentToRender": "BASE_TEN_BLOCKS", 
             "componentData": { "tens": ${tens}, "ones": 0 } 
-          }
+          },
+          "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
       metadata: { difficulty: 'standard', steps: 2, logic: "equivalence", hideVisual: false }
     };
@@ -513,13 +547,6 @@ export const standardVariants = {
     
     const mcqOptions = JSON.stringify(items);
     
-    let defectMapStr = 'null';
-    if (isMCQ) {
-      let defectMapObj = {};
-      items.forEach(opt => { if (opt !== finalAnswerStr) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
-      defectMapStr = JSON.stringify(defectMapObj);
-    }
-    
     let questionTextStr;
     let finalAnswerStr;
     
@@ -529,6 +556,13 @@ export const standardVariants = {
     } else {
       questionTextStr = `Which of the following is NOT the same as ${target_number}?\n(A) ${items[0]}\n(B) ${items[1]}\n(C) ${items[2]}\n(D) ${items[3]}`;
       finalAnswerStr = distractorLetter;
+    }
+
+    let defectMapStr = 'null';
+    if (isMCQ) {
+      let defectMapObj = {};
+      items.forEach(opt => { if (opt !== finalAnswerStr) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      defectMapStr = JSON.stringify(defectMapObj);
     }
     
     return {

@@ -109,7 +109,7 @@ export default function ReviewCard({
                     {MAP_KEY(key)}
                   </p>
                   <p className="text-xs font-bold text-slate-700 truncate">
-                    {Array.isArray(val) ? val.join(', ') : String(val)}
+                    {typeof val === 'object' && val !== null && !Array.isArray(val) ? JSON.stringify(val) : Array.isArray(val) ? val.join(', ') : String(val)}
                   </p>
                 </div>
               ))}

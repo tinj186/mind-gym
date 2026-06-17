@@ -23,7 +23,7 @@ export const advancedVariants = {
 
     const answer = `${capitalize(sz1)} ${capitalize(s1)}`;
     const questionTextTemplate = getQText(`What comes next in the pattern?`, `Next shape = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, `${capitalize(sz2)} ${capitalize(s2)}`, `${capitalize(sz2)} ${capitalize(s1)}`, `${capitalize(sz1)} ${capitalize(s2)}`];
     let mcqOptions = 'null';
@@ -76,7 +76,7 @@ export const advancedVariants = {
     const answer = `Item ${target.label}`;
 
     const questionTextTemplate = getQText(`Which item is a ${s1} AND is colored ${colorNames[c1]}?`, `Find the ${colorNames[c1]} ${s1}.`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = ["Item A", "Item B", "Item C"];
     let mcqOptions = 'null';
@@ -126,7 +126,7 @@ export const advancedVariants = {
 
     const answer = `${capitalize(sz1)} ${colorNames[c1]} ${capitalize(s1)}`;
     const questionTextTemplate = getQText(`Which shape comes next in this complex pattern?`, `Next shape in pattern = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, `${capitalize(sz2)} ${colorNames[c2]} ${capitalize(s2)}`, `${capitalize(sz1)} ${colorNames[c2]} ${capitalize(s1)}`, `${capitalize(sz2)} ${colorNames[c1]} ${capitalize(s2)}`];
     let mcqOptions = 'null';
@@ -173,7 +173,7 @@ export const advancedVariants = {
 
     const answer = capitalize(s1);
     const questionTextTemplate = getQText(`Look at the pattern. What shape is missing at the start?`, `Missing first shape = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = shapeTypes.map(capitalize);
     if (!options.includes(answer)) { options[0] = answer; }
@@ -220,7 +220,7 @@ export const advancedVariants = {
     const answer = capitalize(s1);
 
     const questionTextTemplate = getQText(`I am NOT a ${s2}. I am NOT a ${s3}. I have exactly ${sides} straight sides. What shape am I?`, `Not ${s2}, not ${s3}, has ${sides} sides. Shape = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = shapeTypes.map(capitalize);
     if (!options.includes(answer)) { options[0] = answer; }
@@ -274,7 +274,7 @@ export const advancedVariants = {
 
     const answer = String(count);
     const questionTextTemplate = getQText(`How many ${targetShape}s are nested inside each other in this picture?`, `Nested ${targetShape}s count = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = ["2", "3", "4", "5"];
     if (!options.includes(answer)) { options[0] = answer; }
@@ -321,7 +321,7 @@ export const advancedVariants = {
     const componentData = { layout: "COMPOSITE_GENERATIVE", parts: [], name: sub };
 
     const questionTextTemplate = getQText(`Which list shows all the shapes used to build this ${sub}?`, `Inventory of shapes for ${sub} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
@@ -373,7 +373,7 @@ export const advancedVariants = {
     const answer = "Item 3";
 
     const questionTextTemplate = getQText(`Find the item that fits this rule: It must be a ${s2} AND it must be ${colorNames[c1]}.`, `Find the ${colorNames[c1]} ${s2}.`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = ["Item 1", "Item 2", "Item 3", "Item 4"];
     let mcqOptions = 'null';
@@ -419,7 +419,7 @@ export const advancedVariants = {
     const answer = capitalize(target);
 
     const questionTextTemplate = getQText(`Even though this shape is tilted, what shape is it?`, `Name this tilted shape.`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = shapeTypes.map(capitalize);
     if (!options.includes(answer)) { options[0] = answer; }
@@ -465,7 +465,7 @@ export const advancedVariants = {
     const answer = "Yes";
 
     const questionTextTemplate = getQText(`Ben has a large ${s1}. He cuts it into 4 smaller triangles. If he puts all the pieces back together perfectly, will they still be as big as the original ${s1}?`, `Will reassembled pieces equal the original size?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = ["Yes", "No", "It will be smaller", "It will be larger"];
     let mcqOptions = 'null';

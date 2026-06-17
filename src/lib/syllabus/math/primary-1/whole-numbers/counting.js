@@ -142,7 +142,7 @@ Example: "Try counting on from the bigger number. What comes after 7?" or "How m
     if (isMCQ) {
       formatInstructions = `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}${visualProtocol}`;
     } else if (isShort) {
-      formatInstructions = `Format as Short Answer. The "options" field in your JSON should be null.${hintProtocol}${visualProtocol}`;
+      formatInstructions = `Format as a purely mathematical Short Answer question. The "options" field in your JSON should be null. CRITICAL: Do NOT write a word problem or story. You MUST use the exact mathematical equation provided in "questionText".${hintProtocol}${visualProtocol}`;
     } else {
       formatInstructions = `Format as Structured Question. The "options" field in your JSON should be null. CRITICAL: For the "questionText" string, write a clear localized word problem.${hintProtocol}${visualProtocol}`;
     }

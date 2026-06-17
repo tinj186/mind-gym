@@ -78,7 +78,7 @@ export const foundationVariants = {
 
     const answer = "Group A";
     const questionTextTemplate = getQText(`Which group shows shapes that are ${targetValue}?`, `Which group is ${targetValue}?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = ["Group A", "Group B", "Group C"];
     let mcqOptions = 'null';
@@ -134,7 +134,7 @@ export const foundationVariants = {
 
     const answer = String(sideCount);
     const questionTextTemplate = getQText(`How many straight sides does this ${targetShape} have?`, `Number of straight sides = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, "1", "2", "5"];
     if (sideCount === 3) options.push("4");
@@ -193,7 +193,7 @@ export const foundationVariants = {
     const answer = targetItem.label;
 
     const questionTextTemplate = getQText(`Which ${targetShape} is the ${askSmallest ? 'smallest' : 'largest'}?`, `Identify the ${askSmallest ? 'smallest' : 'largest'} ${targetShape}.`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = ["Item A", "Item B", "Item C"];
     let mcqOptions = 'null';
@@ -248,7 +248,7 @@ export const foundationVariants = {
     const answer = target.shape;
 
     const questionTextTemplate = getQText(`A ${target.name} looks like a...`, `What shape is a ${target.name}?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = ["Circle", "Triangle", "Square", "Rectangle"];
     let mcqOptions = 'null';

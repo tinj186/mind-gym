@@ -36,10 +36,10 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       : "Ask the student to count the items and write the number in NUMERALS (e.g., '34').";
 
     return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are writing a ${activeVariant} story. You MUST use the name ${context.name} and the item ${selectedContextItem}. The setting should be ${context.setting}.\nYou are an expert Primary 1 math question generator.\n MATH CONSTRAINTS:\n - Topic: Counting to 100 (Foundation Level - Tens and Ones)\n - Setup: There are ${total} items in total.\n - Question: ${promptInstruction}\n - Final Answer MUST strictly be: "${expectedAnswer}"\n ${formatInstructions}\n CRITICAL VISUAL RULE: DO NOT modify the "visualEngine" block below. You MUST copy the "totalItems" number and the "items" array exactly as provided in the template. Do not change them to match the final answer.\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
+      aiPrompt: `STRICT VARIANT MANDATE: You are writing a ${activeVariant} story. You MUST use the name ${context.name} and the item ${selectedContextItem}. The setting should be ${context.setting}.\nYou are an expert Primary 1 math question generator.\n MATH CONSTRAINTS:\n - Topic: Counting to 100 (Foundation Level - Tens and Ones)\n - Target Total: ${total}. CRITICAL INSTRUCTION: DO NOT write the number ${total} anywhere in the "questionText" story! The student must count the items visually. You should introduce the character, the items, and ask the student to count them.\n - Question: ${promptInstruction}\n - Final Answer MUST strictly be: "${expectedAnswer}"\n ${formatInstructions}\n CRITICAL VISUAL RULE: DO NOT modify the "visualEngine" block below. You MUST copy the "totalItems" number and the "items" array exactly as provided in the template.\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema):\n {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
-          "questionText": ${JSON.stringify(getQText('[Insert full localized Singaporean word problem here]', `Count the ${selectedContextItem}s. Write the total amount ${askForWord ? 'in words' : 'in numerals'}.`))},
+          "questionText": ${JSON.stringify(getQText('[Insert full localized Singaporean word problem here]', `Count the ${selectedContextItem}. Write the total amount ${askForWord ? 'in words' : 'in numerals'}.`))},
           "options": ${formattedOptions},
           "defectMap": ${defectMapJSON},
           "hint": "[Insert conceptual hint here]",
@@ -283,7 +283,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       options.forEach(opt => { if (opt !== target_word_string) defectMap[opt] = "CARELESS_CALCULATION"; });
     }
 
-    const itemPlural = context.items ? context.items[0]?.plural || selectedContextItem + 's' : 'items';
+    const itemPlural = context.items ? context.items[0]?.plural || selectedContextItem : 'items';
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
@@ -304,11 +304,9 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
-      STRICT: Do not generate a story context. Output the exact question text provided.
+      CRITICAL INSTRUCTION: You MUST NOT invent your own question, story, or visual component. You MUST output the EXACT JSON provided below. The ONLY thing you are allowed to change is replacing "[AI: INJECT HINT]" with a real hint. Do not change the "componentToRender", do not change the "componentData", and do not change the "questionText".
       
-      CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
-      
-      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      EXACT OUTPUT REQUIRED:\n${JSON.stringify(promptObject)}`,
       metadata: { difficulty: 'foundation', logic: "visual_word_conversion", hideVisual: false }
     };
   }
@@ -331,7 +329,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       answer = set_a_count < set_b_count ? 'Set A' : 'Set B';
     }
 
-    const itemPlural = context.items ? context.items[0]?.plural || selectedContextItem + 's' : 'items';
+    const itemPlural = context.items ? context.items[0]?.plural || selectedContextItem : 'items';
     const options = isMCQ ? ['Set A', 'Set B'] : null;
     let defectMap = null;
     if (isMCQ) {
@@ -362,11 +360,9 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
-      STRICT: Do not generate a story context. Output the exact question text provided.
+      CRITICAL INSTRUCTION: You MUST NOT invent your own question, story, or visual component. You MUST output the EXACT JSON provided below. The ONLY thing you are allowed to change is replacing "[AI: INJECT HINT]" with a real hint. Do not change the "componentToRender", do not change the "componentData", and do not change the "questionText".
       
-      CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
-      
-      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      EXACT OUTPUT REQUIRED:\n${JSON.stringify(promptObject)}`,
       metadata: { difficulty: 'foundation', logic: "visual_set_comparison", hideVisual: false }
     };
   }

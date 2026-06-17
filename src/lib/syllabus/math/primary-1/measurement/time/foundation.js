@@ -9,7 +9,7 @@ export const foundationVariants = {
     const componentData = { hour: randomHour, minute: 0, displayType: 'analog' };
     
     const questionTextTemplate = getQText(`Look at the clock. What time is it?`, `Time on analog clock = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [`${randomHour === 12 ? 1 : randomHour + 1} o'clock`, `${randomHour === 1 ? 12 : randomHour - 1} o'clock`, "6 o'clock"];
     options = getShuffledOptions(answer, options);
@@ -56,7 +56,7 @@ export const foundationVariants = {
     const componentData = { hour: randomHour, minute: 0, displayType: 'digital' };
 
     const questionTextTemplate = getQText(`What time is shown on the digital clock?`, `Time on digital clock = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [`${randomHour === 12 ? 1 : randomHour + 1} o'clock`, "half past 12", "3 o'clock"];
     options = getShuffledOptions(answer, options);
@@ -132,7 +132,7 @@ export const foundationVariants = {
       solutionSteps = getQText(`At any exact 'o'clock', zero minutes have passed. This means the minute hand (the long hand) points straight up to the number 12.`, `Answer is ${answer}.`);
     }
 
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
     
     let mcqOptions = 'null';
     let defectMapStr = 'null';
@@ -186,7 +186,7 @@ export const foundationVariants = {
 
     let options = getShuffledOptions(answer, distractors);
 
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let mcqOptions = 'null';
     let defectMapStr = 'null';
@@ -245,7 +245,7 @@ export const foundationVariants = {
       
     let options = getShuffledOptions(answer, distractors);
     
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let mcqOptions = 'null';
     let defectMapStr = 'null';

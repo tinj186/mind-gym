@@ -23,6 +23,9 @@ export const UniversalQuestionSchema = z.object({
   visualEngine: z.object({
     componentToRender: z.enum([
       'COUNTING_OBJECTS',
+      'OBJECT_COUNTING',
+      'ICON_GRID',
+      'TWO_SET_COMPARISON',
       'NUMBER_CARDS',
       'SINGAPORE_MONEY',
       'NUMBER_PATTERN',

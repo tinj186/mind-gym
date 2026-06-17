@@ -12,8 +12,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const extraOnes = Math.floor(Math.random() * 8) + 12; // 12 to 19 ones (forces regrouping)
     const total = (tens * 10) + extraOnes;
 
-    const questionTextTemplate = getQText(`What is the number if I have ${tens} tens and ${extraOnes} ones?`, `${tens} tens ${extraOnes} ones = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story (e.g., Siti at the MRT station).`;
+    const questionTextTemplate = getQText(`What is the number if I have ${tens} tens and ${extraOnes} ones?`, `What number is ${tens} tens and ${extraOnes} ones?`);
+    const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story. You MUST use the name ${context.name} and the setting ${context.setting}.`;
 
     let optionsJSON = 'null';
     let defectMapJSON = 'null';
@@ -40,6 +40,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       ${storyInstruction}
 
       CRITICAL: This is a text-only question. Do NOT include any "modelData" or legacy keys like "modelVisualizer" or "modelDrawing". No icon rendering is allowed.
+      STRICT GUARDRAIL: You MUST NOT invent your own question, math values, or solution steps. You MUST output the EXACT JSON schema provided below. If a [STORY] placeholder is present, replace it with a 1-sentence math story using the provided context, but leave all other fields and values exactly as provided.
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
@@ -71,8 +72,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const lowerBound = (tensDigit * 10);
     const upperBound = (tensDigit * 10) + 10;
 
-    const questionTextTemplate = getQText(`What is the number if it is between ${lowerBound} and ${upperBound}, and the ones digit is ${onesDigit}?`, `Mystery number clues: ${lowerBound} < ? < ${upperBound}, ones = ${onesDigit}`);
-    const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story.`;
+    const questionTextTemplate = getQText(`What is the number if it is between ${lowerBound} and ${upperBound}, and the ones digit is ${onesDigit}?`, `I am between ${lowerBound} and ${upperBound}. My ones digit is ${onesDigit}. What number am I?`);
+    const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story. You MUST use the name ${context.name} and the setting ${context.setting}.`;
 
     let optionsJSON = 'null';
     let defectMapJSON = 'null';
@@ -97,6 +98,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       ${storyInstruction}
 
       CRITICAL: This is a text-only question. Do NOT include any "modelData" or legacy keys like "modelVisualizer" or "modelDrawing". No icon rendering is allowed.
+      STRICT GUARDRAIL: You MUST NOT invent your own question, math values, or solution steps. You MUST output the EXACT JSON schema provided below. If a [STORY] placeholder is present, replace it with a 1-sentence math story using the provided context, but leave all other fields and values exactly as provided.
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
@@ -125,8 +127,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const ones = Math.floor(Math.random() * 20) + 21; // 21 to 40 ones
     const total = (tens * 10) + ones;
 
-    const questionTextTemplate = getQText(`What is the number if I have ${tens} tens and ${ones} ones?`, `${tens} tens ${ones} ones = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story.`;
+    const questionTextTemplate = getQText(`What number is made of ${numberToWords(tens)} tens and ${numberToWords(ones)} ones?`, `If you have ${numberToWords(tens)} tens and ${numberToWords(ones)} ones, what number do you have?`);
+    const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story. You MUST use the name ${context.name} and the setting ${context.setting}.`;
 
     let optionsJSON = 'null';
     let defectMapJSON = 'null';
@@ -149,6 +151,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       ${storyInstruction}
 
       CRITICAL: This is a text-only question. Do NOT include any "modelData" or legacy keys like "modelVisualizer" or "modelDrawing". No icon rendering is allowed.
+      STRICT GUARDRAIL: You MUST NOT invent your own question, math values, or solution steps. You MUST output the EXACT JSON schema provided below. If a [STORY] placeholder is present, replace it with a 1-sentence math story using the provided context, but leave all other fields and values exactly as provided.
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
@@ -178,8 +181,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const sum = tensDigit + onesDigit;
     const total = (tensDigit * 10) + onesDigit;
 
-    const questionTextTemplate = getQText(`What is the 2-digit number if its tens digit is ${tensDigit} and the sum of its digits is ${sum}?`, `Tens=${tensDigit}, Sum=${sum} -> ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story.`;
+    const questionTextTemplate = getQText(`What is the 2-digit number if its tens digit is ${tensDigit} and the sum of its digits is ${sum}?`, `My tens digit is ${tensDigit}. The sum of my digits is ${sum}. What number am I?`);
+    const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story. You MUST use the name ${context.name} and the setting ${context.setting}.`;
 
     let optionsJSON = 'null';
     let defectMapJSON = 'null';
@@ -202,6 +205,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       ${storyInstruction}
 
       CRITICAL: This is a text-only question. Do NOT include any "modelData" or legacy keys like "modelVisualizer" or "modelDrawing". No icon rendering is allowed.
+      STRICT GUARDRAIL: You MUST NOT invent your own question, math values, or solution steps. You MUST output the EXACT JSON schema provided below. If a [STORY] placeholder is present, replace it with a 1-sentence math story using the provided context, but leave all other fields and values exactly as provided.
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
@@ -233,8 +237,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const lowerBound = tensDigit * 10;
     const upperBound = lowerBound + 10;
 
-    const questionTextTemplate = getQText(`What is the number between ${lowerBound} and ${upperBound} if its ones digit is ${diff} more than its tens digit?`, `${lowerBound} < ? < ${upperBound}, ones=tens+${diff} -> ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story.`;
+    const questionTextTemplate = getQText(`What is the number between ${lowerBound} and ${upperBound} if its ones digit is ${diff} more than its tens digit?`, `I am between ${lowerBound} and ${upperBound}. My ones digit is ${diff} more than my tens digit. What number am I?`);
+    const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story. You MUST use the name ${context.name} and the setting ${context.setting}.`;
 
     let optionsJSON = 'null';
     let defectMapJSON = 'null';
@@ -257,6 +261,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       ${storyInstruction}
 
       CRITICAL: This is a text-only question. Do NOT include any "modelData" or legacy keys like "modelVisualizer" or "modelDrawing". No icon rendering is allowed.
+      STRICT GUARDRAIL: You MUST NOT invent your own question, math values, or solution steps. You MUST output the EXACT JSON schema provided below. If a [STORY] placeholder is present, replace it with a 1-sentence math story using the provided context, but leave all other fields and values exactly as provided.
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
@@ -287,8 +292,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const lower = total - Math.floor(Math.random() * 2) - 1;
     const upper = total + Math.floor(Math.random() * 3) + 1;
 
-    const questionTextTemplate = getQText(`What is the number between ${lower} and ${upper} that has a ${onesDigit} in its ones place?`, `${lower} < ? < ${upper}, ones=${onesDigit} -> ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story.`;
+    const questionTextTemplate = getQText(`What is the number between ${lower} and ${upper} that has a ${onesDigit} in its ones place?`, `I am between ${lower} and ${upper}. My ones digit is ${onesDigit}. What number am I?`);
+    const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story. You MUST use the name ${context.name} and the setting ${context.setting}.`;
 
     let optionsJSON = 'null';
     let defectMapJSON = 'null';
@@ -312,6 +317,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       ${storyInstruction}
 
       CRITICAL: This is a text-only question. Do NOT include any "modelData" or legacy keys like "modelVisualizer" or "modelDrawing". No icon rendering is allowed.
+      STRICT GUARDRAIL: You MUST NOT invent your own question, math values, or solution steps. You MUST output the EXACT JSON schema provided below. If a [STORY] placeholder is present, replace it with a 1-sentence math story using the provided context, but leave all other fields and values exactly as provided.
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
@@ -340,8 +346,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const singles = Math.floor(Math.random() * 8) + 11; // 11 to 18 singles
     const total = (boxes * 10) + singles;
 
-    const questionTextTemplate = getQText(`What is the total number if there are ${boxes} boxes of 10 and ${singles} single items?`, `${boxes} groups of 10 + ${singles} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story.`;
+    const questionTextTemplate = getQText(`What is the total number if there are ${boxes} boxes of 10 and ${singles} single items?`, `${boxes} groups of 10 and ${singles} singles is what number?`);
+    const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story. You MUST use the name ${context.name} and the setting ${context.setting}.`;
 
     let optionsJSON = 'null';
     let defectMapJSON = 'null';
@@ -364,6 +370,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       ${storyInstruction}
 
       CRITICAL: This is a text-only question. Do NOT include any "modelData" or legacy keys like "modelVisualizer" or "modelDrawing". No icon rendering is allowed.
+      STRICT GUARDRAIL: You MUST NOT invent your own question, math values, or solution steps. You MUST output the EXACT JSON schema provided below. If a [STORY] placeholder is present, replace it with a 1-sentence math story using the provided context, but leave all other fields and values exactly as provided.
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
@@ -393,8 +400,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const total = (tens * 10) + ones;
     const answer = String(tens * 10);
 
-    const questionTextTemplate = getQText(`What is the value of the digit ${tens} in the number ${total}?`, `${total}: digit ${tens} value = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story.`;
+    const questionTextTemplate = getQText(`What is the value of the digit ${tens} in the number ${total}?`, `What is the value of the digit ${tens} in ${total}?`);
+    const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story. You MUST use the name ${context.name} and the setting ${context.setting}.`;
 
     let optionsJSON = 'null';
     let defectMapJSON = 'null';
@@ -419,6 +426,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       ${storyInstruction}
 
       CRITICAL: This is a text-only question. Do NOT include any "modelData" or legacy keys like "modelVisualizer" or "modelDrawing". No icon rendering is allowed.
+      STRICT GUARDRAIL: You MUST NOT invent your own question, math values, or solution steps. You MUST output the EXACT JSON schema provided below. If a [STORY] placeholder is present, replace it with a 1-sentence math story using the provided context, but leave all other fields and values exactly as provided.
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
@@ -447,8 +455,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const jumps = Math.floor(Math.random() * 3) + 3; // 3 to 5
     const total = start + (10 * jumps);
 
-    const questionTextTemplate = getQText(`What is the number you land on if you start at ${start} and count on by 10s ${jumps} times?`, `${start} + (${jumps} x 10) = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story.`;
+    const questionTextTemplate = getQText(`What is the number you land on if you start at ${start} and count on by 10s ${jumps} times?`, `Start at ${start}. Count on by 10s ${jumps} times. What number do you land on?`);
+    const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story. You MUST use the name ${context.name} and the setting ${context.setting}.`;
 
     let optionsJSON = 'null';
     let defectMapJSON = 'null';
@@ -469,6 +477,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       ${storyInstruction}
 
       CRITICAL: This is a text-only question. Do NOT include any "modelData" or legacy keys like "modelVisualizer" or "modelDrawing". No icon rendering is allowed.
+      STRICT GUARDRAIL: You MUST NOT invent your own question, math values, or solution steps. You MUST output the EXACT JSON schema provided below. If a [STORY] placeholder is present, replace it with a 1-sentence math story using the provided context, but leave all other fields and values exactly as provided.
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
@@ -500,7 +509,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const answer = String(start + (step * 4)); // Ensure answer is a string
 
     const questionTextTemplate = getQText(`Look at this number pattern: ${seq.join(", ")}. What is the SECOND missing number?`, seq.join(", "));
-    const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story.`;
+    const storyInstruction = isShort ? "" : `STRICT: Use the [STORY] placeholder in "questionText" to create a 1-sentence Singaporean math story. You MUST use the name ${context.name} and the setting ${context.setting}.`;
 
     let optionsJSON = 'null';
     let defectMapJSON = 'null';
@@ -523,6 +532,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       ${storyInstruction}
 
       CRITICAL: This is a text-only question. Do NOT include any "modelData" or legacy keys like "modelVisualizer" or "modelDrawing". No icon rendering is allowed.
+      STRICT GUARDRAIL: You MUST NOT invent your own question, math values, or solution steps. You MUST output the EXACT JSON schema provided below. If a [STORY] placeholder is present, replace it with a 1-sentence math story using the provided context, but leave all other fields and values exactly as provided.
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {

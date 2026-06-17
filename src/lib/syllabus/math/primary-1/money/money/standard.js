@@ -23,7 +23,7 @@ export const standardVariants = {
     const answer = String(count);
 
     const questionTextTemplate = getQText(`How many ${randomSubToken} coins/notes make ${randomParent}?`, `Exchange ${randomParent} to ${randomSubToken} = ? count`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, String(count + 1), String(Math.max(1, count - 1)), String(count + 2)];
     options = getShuffledOptions(answer, options);
@@ -74,7 +74,7 @@ export const standardVariants = {
     const answer = generateMoneyString(totalCents);
 
     const questionTextTemplate = getQText(`Item A costs ${item1Str} and Item B costs ${item2Str}. What is the total cost?`, `Total cost = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, generateMoneyString(totalCents + 100), generateMoneyString(Math.abs(item1Cents - item2Cents)), generateMoneyString(totalCents + 50)];
     options = getShuffledOptions(answer, options);
@@ -126,7 +126,7 @@ export const standardVariants = {
     const answer = generateMoneyString(changeCents);
 
     const questionTextTemplate = getQText(`An item costs ${priceStr}. You pay with a ${paidStr} note. How much change will you receive?`, `Change received = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, generateMoneyString(changeCents + 100), generateMoneyString(Math.max(50, changeCents - 50)), generateMoneyString(paidCents + priceCents)];
     options = getShuffledOptions(answer, options);
@@ -182,7 +182,7 @@ export const standardVariants = {
     const answer = generateMoneyString(shortfallCents);
 
     const questionTextTemplate = getQText(`An item costs ${targetPriceStr}. You only have ${haveStr}. How much more money do you need?`, `More money needed = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, generateMoneyString(shortfallCents + 100), generateMoneyString(Math.max(50, shortfallCents - 50)), generateMoneyString(targetPriceCents + haveCents)];
     options = getShuffledOptions(answer, options);
@@ -252,7 +252,7 @@ export const standardVariants = {
     const priceStrings = items.map(i => `${i.name}: ${generateMoneyString(i.price)}`).join(', ');
 
     const questionTextTemplate = getQText(`Here are some prices: ${priceStrings}. Which item costs the ${isMost ? 'most' : 'least'}?`, `${isMost ? 'Highest' : 'Lowest'} price item = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = items.map(i => i.name);
     options = getShuffledOptions(answer, options);
@@ -309,7 +309,7 @@ export const standardVariants = {
     const answer = generateMoneyString(changeCents);
 
     const questionTextTemplate = getQText(`You buy Item A for ${item1Str} and Item B for ${item2Str}. You pay with a ${paidStr} note. How much change will you receive?`, `Change received = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, generateMoneyString(changeCents + 100), generateMoneyString(paidCents - item1Cents), generateMoneyString(totalCents)];
     options = getShuffledOptions(answer, options);

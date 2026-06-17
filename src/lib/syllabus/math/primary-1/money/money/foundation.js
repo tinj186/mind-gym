@@ -22,7 +22,7 @@ export const foundationVariants = {
     const componentData = { items: generatedItems, total: displayTotal };
 
     const questionTextTemplate = getQText(`Count the total amount of money shown below.`, `Total amount = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, generateMoneyString(sumCents + 10), generateMoneyString(Math.max(10, sumCents - 10)), generateMoneyString(sumCents + 20)];
     options = getShuffledOptions(answer, options);
@@ -81,7 +81,7 @@ export const foundationVariants = {
     const componentData = { items: generatedItems, total: displayTotal };
 
     const questionTextTemplate = getQText(`Count the total amount of money shown below.`, `Total amount = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, generateMoneyString(sumCents + 100), generateMoneyString(Math.max(200, sumCents - 100)), generateMoneyString(sumCents + 200)];
     options = getShuffledOptions(answer, options);
@@ -140,7 +140,7 @@ export const foundationVariants = {
     const componentData = { items: generatedItems, total: displayTotal };
 
     const questionTextTemplate = getQText(`Count the total amount of money shown below.`, `Total amount = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, generateMoneyString(sumCents + 10), generateMoneyString(Math.max(50, sumCents - 10)), generateMoneyString(sumCents + 50)];
     options = getShuffledOptions(answer, options);
@@ -201,7 +201,7 @@ export const foundationVariants = {
     const componentData = { items: generatedItems, total: displayTotal };
 
     const questionTextTemplate = getQText(`An item costs ${targetPriceStr}. Is the amount of money shown enough to buy it?`, `Amount shown >= ${targetPriceStr}?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = ["Yes", "No"];
     options = getShuffledOptions(answer, options);
@@ -260,7 +260,7 @@ export const foundationVariants = {
     const componentData = { items: generatedItems, total: displayTotal };
 
     const questionTextTemplate = getQText(`Which amount matches the total money shown?`, `Total amount matches = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, generateMoneyString(sumCents + 10), generateMoneyString(Math.max(10, sumCents - 10)), generateMoneyString(sumCents + 50)];
     options = getShuffledOptions(answer, options);

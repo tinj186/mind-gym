@@ -29,24 +29,24 @@ export default function QuestionFilter({ levels, topics, subtopics, types, diffi
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
       <div>
-        <label htmlFor="level" className="block text-sm font-medium text-slate-700 mb-1">Level</label>
+        <label htmlFor="level" className="block text-sm font-medium text-slate-300 mb-1">Level</label>
         <select 
           id="level" 
           value={currentFilters.level || ''} 
           onChange={(e) => handleFilterChange('level', e.target.value)} 
-          className="w-full p-3 border border-slate-300 rounded-lg bg-white"
+          className="w-full p-3 border border-slate-300 rounded-lg bg-white text-slate-900"
         >
           <option value="">All Levels</option>
           {levels.map(level => <option key={level} value={level}>{level}</option>)}
         </select>
       </div>
       <div>
-        <label htmlFor="topic" className="block text-sm font-medium text-slate-700 mb-1">Topic</label>
+        <label htmlFor="topic" className="block text-sm font-medium text-slate-300 mb-1">Topic</label>
         <select 
           id="topic" 
           value={currentFilters.topic || ''} 
           onChange={(e) => handleFilterChange('topic', e.target.value)} 
-          className="w-full p-3 border border-slate-300 rounded-lg bg-white disabled:bg-slate-50 disabled:text-slate-400"
+          className="w-full p-3 border border-slate-300 rounded-lg bg-white text-slate-900 disabled:bg-slate-200 disabled:text-slate-400"
           disabled={!currentFilters.level}
         >
           <option value="">All Topics</option>
@@ -54,12 +54,12 @@ export default function QuestionFilter({ levels, topics, subtopics, types, diffi
         </select>
       </div>
       <div>
-        <label htmlFor="subtopic" className="block text-sm font-medium text-slate-700 mb-1">Sub-topic</label>
+        <label htmlFor="subtopic" className="block text-sm font-medium text-slate-300 mb-1">Sub-topic</label>
         <select 
           id="subtopic" 
           value={currentFilters.subtopic || ''} 
           onChange={(e) => handleFilterChange('subtopic', e.target.value)} 
-          className="w-full p-3 border border-slate-300 rounded-lg bg-white disabled:bg-slate-50 disabled:text-slate-400"
+          className="w-full p-3 border border-slate-300 rounded-lg bg-white text-slate-900 disabled:bg-slate-200 disabled:text-slate-400"
           disabled={!currentFilters.topic}
         >
           <option value="">All Sub-topics</option>
@@ -67,15 +67,15 @@ export default function QuestionFilter({ levels, topics, subtopics, types, diffi
         </select>
       </div>
       <div>
-        <label htmlFor="type" className="block text-sm font-medium text-slate-700 mb-1">Type</label>
-        <select id="type" value={currentFilters.type || ''} onChange={(e) => handleFilterChange('type', e.target.value)} className="w-full p-3 border border-slate-300 rounded-lg bg-white">
+        <label htmlFor="type" className="block text-sm font-medium text-slate-300 mb-1">Type</label>
+        <select id="type" value={currentFilters.type || ''} onChange={(e) => handleFilterChange('type', e.target.value)} className="w-full p-3 border border-slate-300 rounded-lg bg-white text-slate-900">
           <option value="">All Types</option>
           {types.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
       </div>
       <div>
-        <label htmlFor="difficulty" className="block text-sm font-medium text-slate-700 mb-1">Difficulty</label>
-        <select id="difficulty" value={currentFilters.difficulty || ''} onChange={(e) => handleFilterChange('difficulty', e.target.value)} className="w-full p-3 border border-slate-300 rounded-lg bg-white">
+        <label htmlFor="difficulty" className="block text-sm font-medium text-slate-300 mb-1">Difficulty</label>
+        <select id="difficulty" value={currentFilters.difficulty || ''} onChange={(e) => handleFilterChange('difficulty', e.target.value)} className="w-full p-3 border border-slate-300 rounded-lg bg-white text-slate-900">
           <option value="">All Difficulties</option>
           {difficulties.map(difficulty => <option key={difficulty} value={difficulty}>{difficulty}</option>)}
         </select>

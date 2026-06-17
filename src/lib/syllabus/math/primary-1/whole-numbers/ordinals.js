@@ -76,7 +76,7 @@ export const ordinalsBlueprint = {
 
   // 3. GENERATION ENGINE
   generate: (difficulty = 'foundation', variant = 'foundation_direct', type = 'MCQ') => {
-    
+
     // --- 🛡️ SELF-HEALING PARAMETER POSITION ADAPTER ---
     const safeType = String(type).toLowerCase();
     const isShort = safeType.includes('short');
@@ -98,7 +98,7 @@ export const ordinalsBlueprint = {
       if (validVariants.length > 0) {
         activeVariant = validVariants[Math.floor(Math.random() * validVariants.length)];
       } else {
-        activeVariant = 'foundation_direct'; 
+        activeVariant = 'foundation_direct';
       }
     }
     // --------------------------------------------------
@@ -121,8 +121,8 @@ export const ordinalsBlueprint = {
       ? `\nSTRICT VISUAL PROTOCOL: This variant REQUIRES a visual. You MUST provide the "visualEngine" block with "componentToRender": "ORDINAL_LINE".`
       : '';
 
-    let formatInstructions = isMCQ 
-      ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}${visualProtocol}` 
+    let formatInstructions = isMCQ
+      ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}${visualProtocol}`
       : `Format as Short Answer. The "options" field in your JSON should be null.${hintProtocol}${visualProtocol}`;
 
     if (activeVariant.startsWith('foundation_')) {

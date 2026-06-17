@@ -22,7 +22,7 @@ export const advancedVariants = {
     const distractors = itemsPool.map(capitalize).filter(i => ![item1, item2, item3].includes(i)).slice(0, 1);
 
     const questionTextTemplate = getQText(`Object ${item1} is longer than ${item2}. Object ${item2} is longer than ${item3}. Which object is the ${findShortest ? 'shortest' : 'longest'}?`, `${item1} > ${item2}. ${item2} > ${item3}. ${findShortest ? 'Shortest' : 'Longest'} object = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, ...[item1, item2, item3, ...distractors].filter(i => i !== answer)];
     let mcqOptions = 'null';
@@ -72,7 +72,7 @@ export const advancedVariants = {
     const answer = String(trueLength);
 
     const questionTextTemplate = getQText(`The ${targetObj} starts at the ${startOffset} unit line and ends at the ${endPoint} unit line. What is its true length in ${selectedUnit.name}?`, `Length of ${targetObj} from ${startOffset} to ${endPoint} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, String(endPoint), String(startOffset), String(trueLength + 1)];
     let mcqOptions = 'null';
@@ -119,7 +119,7 @@ export const advancedVariants = {
     const answer = 'Fewer';
 
     const questionTextTemplate = getQText(`Measuring a ${targetObj} takes ${baseCount} small ${selectedUnit.name}. If we switch to a longer unit, will the total count needed be more, fewer, or the same?`, `If unit is longer, will count be More, Fewer, or Same?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, 'More', 'The same', 'Cannot tell'];
     if (!options.includes(answer)) { options[0] = answer; }
@@ -171,7 +171,7 @@ export const advancedVariants = {
     const answer = String(combinedTotal);
 
     const questionTextTemplate = getQText(`If the ${shuffledItems[0].toLowerCase()} and the ${shuffledItems[1].toLowerCase()} are placed end-to-end, what is their combined total length in ${selectedUnit.name}?`, `Total length of ${shuffledItems[0].toLowerCase()} and ${shuffledItems[1].toLowerCase()} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, String(combinedTotal - 1), String(combinedTotal + 2), String(lenA)];
     let mcqOptions = 'null';
@@ -222,7 +222,7 @@ export const advancedVariants = {
     const answer = String(overlap);
 
     const questionTextTemplate = getQText(`A ${shuffledItems[0].toLowerCase()} is ${lenA} ${selectedUnit.name} long and a ${shuffledItems[1].toLowerCase()} is ${lenB} ${selectedUnit.name} long. They overlap when joined. If the total combined length is ${visibleTotal} ${selectedUnit.name}, how long is the overlapping section?`, `Overlapping length = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, String(overlap + 1), String(overlap - 1), '4'];
     if (!options.includes(answer)) { options[0] = answer; }
@@ -275,7 +275,7 @@ export const advancedVariants = {
     const answer = String(currentNetLength);
 
     const questionTextTemplate = getQText(`A ${targetObj.toLowerCase()} was originally ${baseLen} ${selectedUnit.name} long. ${subtractAmt} ${selectedUnit.name} were cut off, and then an extension piece of ${additionAmt} ${selectedUnit.name} was added. How long is the ${targetObj.toLowerCase()} now?`, `Net length of ${targetObj.toLowerCase()} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, String(baseLen), String(baseLen - subtractAmt), String(currentNetLength - 2)];
     if (!options.includes(answer)) { options[0] = answer; }
@@ -327,7 +327,7 @@ export const advancedVariants = {
     const answer = String(partB);
 
     const questionTextTemplate = getQText(`The total combined length of two objects is ${completeWhole} ${selectedUnit.name}. If one object measures ${partA} ${selectedUnit.name}, what is the length of the other object?`, `Missing part length = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, String(partB + 2), String(partB - 1), String(partA)];
     if (!options.includes(answer)) { options[0] = answer; }
@@ -379,7 +379,7 @@ export const advancedVariants = {
     const answer = String(missingDeficit);
 
     const questionTextTemplate = getQText(`The ${shuffledItems[0].toLowerCase()} is currently ${currentLength} ${selectedUnit.name} long. How many more ${selectedUnit.name} must be added to make it exactly ${targetThreshold} ${selectedUnit.name} long?`, `Missing units to reach ${targetThreshold} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, String(missingDeficit + 1), String(currentLength), String(targetThreshold)];
     if (!options.includes(answer)) { options[0] = answer; }
@@ -435,7 +435,7 @@ export const advancedVariants = {
     const answer = String(cumulativePerimeter);
 
     const questionTextTemplate = getQText(`Find the cumulative length around this ${numSides}-sided track frame map if the segments measure ${sidesText} ${selectedUnit.name} respectively.`, `Total length of sides ${sidesText} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, String(cumulativePerimeter - 1), String(cumulativePerimeter + 2), '12'];
     if (!options.includes(answer)) { options[0] = answer; }
@@ -490,7 +490,7 @@ export const advancedVariants = {
     const answer = String(lengthB);
 
     const questionTextTemplate = getQText(`${item1} is ${lengthA} ${selectedUnit.name} long. ${item2} is ${difference} ${selectedUnit.name} ${isShorter ? 'shorter' : 'longer'} than ${item1}. How many ${selectedUnit.name} long is ${item2}?`, `Length of ${item2} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, String(lengthA), String(lengthA + difference), String(Math.max(1, lengthB - 2))];
     if (!options.includes(answer)) { options[0] = answer; }

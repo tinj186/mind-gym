@@ -208,15 +208,22 @@ export function processAiQuestion(q, context) {
     };
   } catch (zodError) {
     // Fallback manual mapping to prevent crash on slight Zod mismatches
-    const { visualItems, modelData, questionText, solutionSteps, ...cleanQ } = q;
-    const hideVisualVal = stepResult?.metadata?.hideVisual ? true : !!modelData?.hideVisual;
-    const typeVal = blueprintMeta?.visualType === 'DYNAMIC' ? (modelData?.type || "NONE") : (blueprintMeta?.visualType || modelData?.type || "NONE");
+    const { visualItems, modelData, questionText, solutionSteps, meta, content, visualEngine, inputRequirement, defectMap, ...cleanQ } = q;
+    
+    // Safely extract from nested schema if present
+    const qContent = content || {};
+    const qVisual = visualEngine || {};
+    const safeModelData = modelData || qVisual.componentData || {};
+
+    const hideVisualVal = stepResult?.metadata?.hideVisual ? true : !!safeModelData?.hideVisual;
+    const typeVal = blueprintMeta?.visualType === 'DYNAMIC' ? (safeModelData?.type || qVisual.componentToRender || "NONE") : (blueprintMeta?.visualType || safeModelData?.type || qVisual.componentToRender || "NONE");
 
     const prismaModelData = {
-      ...(modelData || {}),
+      ...(safeModelData),
       type: typeVal,
-      items: (Array.isArray(visualItems) && visualItems.length > 0) ? visualItems : (modelData?.items || []),
+      items: (Array.isArray(visualItems) && visualItems.length > 0) ? visualItems : (safeModelData?.items || []),
       hideVisual: hideVisualVal,
+      defectMap: qContent.defectMap || safeModelData.defectMap || null
     };
     
     if (prismaModelData.type === undefined) delete prismaModelData.type;
@@ -230,12 +237,12 @@ export function processAiQuestion(q, context) {
       type: type === 'MCQ' ? 'MCQ' : (type.toLowerCase().includes('short') ? 'Short Question' : 'Structured'),
       strand: strand || blueprintMeta?.strand || "Number and Algebra",
       isApproved: false,
-      finalAnswer: typeof q.finalAnswer === 'object' ? JSON.stringify(q.finalAnswer) : String(q.finalAnswer || ""),
-      options: parseAiOptions(q.options),
+      finalAnswer: typeof (q.finalAnswer || qContent.finalAnswer) === 'object' ? JSON.stringify(q.finalAnswer || qContent.finalAnswer) : String(q.finalAnswer || qContent.finalAnswer || ""),
+      options: parseAiOptions(q.options || qContent.options),
       modelData: prismaModelData,
-      question: cleanQ.question || questionText || q.question || "Problem data missing",
-      solution: cleanQ.solution || solutionSteps || q.solution || "No solution provided",
-      hint: q.content?.hint || q.hint || q.conceptualHint || q.content?.conceptualHint || null
+      question: cleanQ.question || questionText || qContent.questionText || q.question || "Problem data missing",
+      solution: cleanQ.solution || solutionSteps || qContent.solutionSteps || q.solution || "No solution provided",
+      hint: qContent.hint || q.hint || q.conceptualHint || null
     };
   }
 }

@@ -18,7 +18,7 @@ export const standardVariants = {
 
     const answer = "{count}";
     const questionTextTemplate = getQText(`Look at the picture of the ${selectedSubject}. How many ${targetShape}s are used to build it?`, `How many ${targetShape}s in the ${selectedSubject}?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
@@ -73,7 +73,7 @@ export const standardVariants = {
     
     const answer = capitalize(selected.next);
     const questionTextTemplate = getQText(`What shape comes next in the pattern?`, `Next shape in pattern = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = getRandom(allShapes, 4).map(capitalize);
     if (!options.includes(answer)) {
@@ -122,7 +122,7 @@ export const standardVariants = {
     
     const answer = capitalize(sA);
     const questionTextTemplate = getQText(`Look at the pattern. What shape is missing in the box with the question mark?`, `Missing shape = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = getRandom(allShapes, 4).map(capitalize);
     if (!options.includes(answer)) {
@@ -175,7 +175,7 @@ export const standardVariants = {
     const answer = selected.ans;
 
     const questionTextTemplate = getQText(selected.text, selected.text);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = getRandom(["Squares", "Rectangles", "Triangles", "Circles"], 4);
     if (!options.includes(answer)) {
@@ -224,7 +224,7 @@ export const standardVariants = {
     const answer = selected.ans;
 
     const questionTextTemplate = getQText(selected.text, selected.text);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = getRandom(["Squares", "Triangles", "Circles", "Two half-circles"], 4);
     if (!options.includes(answer)) {
@@ -271,7 +271,7 @@ export const standardVariants = {
     const componentData = { layout: "COMPOSITE_GENERATIVE", parts: [], name: selectedSubject };
 
     const questionTextTemplate = getQText(`Look at the picture of the ${selectedSubject}. Which shape is used the ${askMostFrequent ? 'most' : 'least'} to build it?`, `${askMostFrequent ? 'Most' : 'Least'} frequent shape in the ${selectedSubject}?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
@@ -325,7 +325,7 @@ export const standardVariants = {
     const answer = selected.ans;
 
     const questionTextTemplate = getQText(selected.clue, selected.clue);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = ["Circle", "Triangle", "Square", "Rectangle"];
     let mcqOptions = 'null';
@@ -375,7 +375,7 @@ export const standardVariants = {
     const optionPool = seq.map((s, i) => `The ${positionLabels[i]} ${capitalize(s)}`);
 
     const questionTextTemplate = getQText(`Look at the pattern. Which shape is the mistake?`, `Which shape is incorrect?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = getShuffledOptions(answer, getRandom(optionPool.filter(o => o !== answer), 3));
     let mcqOptions = 'null';
@@ -427,7 +427,7 @@ export const standardVariants = {
     const answer = String(count);
 
     const questionTextTemplate = getQText(`How many ${target}s are in the grid?`, `Number of ${target}s = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = getShuffledOptions(answer, ["0", "1", "2", "3", "4", "5"].filter(x => x !== answer).slice(0, 3));
     let mcqOptions = 'null';
@@ -473,7 +473,7 @@ export const standardVariants = {
 
     const answer = "{inventory}";
     const questionTextTemplate = getQText(`Look at the picture of the ${selectedSubject}. Which list of shapes was used to build it?`, `Shapes used to build the ${selectedSubject} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 

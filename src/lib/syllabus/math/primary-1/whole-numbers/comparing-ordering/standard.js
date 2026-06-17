@@ -364,7 +364,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       defectMapJSON = JSON.stringify(defectMap);
     }
     const questionTextTemplate = getQText(`Which is ${targetWord}: ${amount} more than ${base} or ${compareVal}?`, `Which is ${targetWord}: ${amount} more than ${base} or ${compareVal}?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator.
@@ -418,7 +418,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       defectMapJSON = JSON.stringify(defectMap);
     }
     const questionTextTemplate = getQText(`Which is ${targetWord}: ${amount} less than ${base} or ${compareVal}?`, `Which is ${targetWord}: ${amount} less than ${base} or ${compareVal}?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator.

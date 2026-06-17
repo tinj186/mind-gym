@@ -31,7 +31,7 @@ export const foundationVariants = {
     };
 
     const questionTextTemplate = getQText(`Look at the picture graph. How many ${target.label.toLowerCase()} are there?`, `Number of ${target.label.toLowerCase()} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, "1", "0", String(counts[targetIdx] + 1)];
     let mcqOptions = 'null';
@@ -97,7 +97,7 @@ export const foundationVariants = {
     };
 
     const questionTextTemplate = getQText(`How many ${isAskingMore ? 'more' : 'fewer'} ${shuffledDisplay[isAskingMore ? 0 : 1].label.toLowerCase()} are there than ${shuffledDisplay[isAskingMore ? 1 : 0].label.toLowerCase()}?`, `Difference between ${shuffledDisplay[0].label} and ${shuffledDisplay[1].label} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, "1", "2", String(countA + countB)];
     let mcqOptions = 'null';
@@ -162,7 +162,7 @@ export const foundationVariants = {
     };
 
     const questionTextTemplate = getQText(`How many ${shuffledDisplay[0].label.toLowerCase()} and ${shuffledDisplay[1].label.toLowerCase()} are there altogether?`, `Total of ${shuffledDisplay[0].label} and ${shuffledDisplay[1].label} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, String(c1), String(c2), String(total + 1)];
     let mcqOptions = 'null';
@@ -225,7 +225,7 @@ export const foundationVariants = {
     };
 
     const questionTextTemplate = getQText(`Which category has the ${isAskingMost ? 'most' : 'least'} items?`, `Category with ${isAskingMost ? 'most' : 'least'} items = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = shuffledDisplay.map(i => i.label);
     let mcqOptions = 'null';
@@ -281,7 +281,7 @@ export const foundationVariants = {
     };
 
     const questionTextTemplate = getQText(`Which category has no items (zero items) in the picture graph?`, `Category with 0 items = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = shuffledDisplay.map(i => i.label);
     let mcqOptions = 'null';
@@ -339,7 +339,7 @@ export const foundationVariants = {
     };
 
     const questionTextTemplate = getQText(`Which category has exactly ${targetCount} items?`, `Category with ${targetCount} items = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = shuffledDisplay.map(i => i.label);
     let mcqOptions = 'null';

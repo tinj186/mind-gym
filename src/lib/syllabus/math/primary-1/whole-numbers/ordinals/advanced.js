@@ -30,7 +30,7 @@ export const advancedVariants = {
     const sName = extract(context.name);
 
     const questionTextTemplate = getQText(`How many ${icon} are there in the ${target1} and ${target2} containers altogether?`, `Total items in ${target1} and ${target2} containers combined = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. You MUST NOT leave the "[STORY]" tag in your response.`;
+    const storyInstruction = `STRICT: Replace the "[STORY]" placeholder in "questionText" with a ${isShort ? "short phrase" : "1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam"} using the name ${sName}. You MUST NOT leave the "[STORY]" tag in your response.`;
 
     const items = Array(numContainers).fill(null).map((_, i) => {
       let count;
@@ -99,8 +99,8 @@ export const advancedVariants = {
     const answer = ORDINAL_SYMBOLS[targetPos - 1];
     const sName = extract(context.name);
 
-    const questionTextTemplate = getQText(`${sName} is ${ORDINAL_SYMBOLS[startPos - 1]} in a line. A friend is ${gap} positions behind. What is the friend's position?`, `Position: ${ORDINAL_SYMBOLS[startPos - 1]}. Friend is ${gap} positions behind. Friend's position = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const questionTextTemplate = getQText(`${sName} is the ${ORDINAL_SYMBOLS[startPos - 1]} from the left. A friend is ${gap} positions to the right. What is the friend's position?`, `Position: ${ORDINAL_SYMBOLS[startPos - 1]}. Friend is ${gap} positions to the right. Friend's position = ?`);
+    const storyInstruction = `STRICT: Replace the "[STORY]" placeholder in "questionText" with a ${isShort ? "short phrase" : "1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam"} using the name ${sName}. You MUST NOT leave the "[STORY]" tag in your response.`;
 
     let options = [answer, ORDINAL_SYMBOLS[Math.max(0, targetPos - 2)], ORDINAL_SYMBOLS[Math.min(11, targetPos)], ORDINAL_SYMBOLS[Math.min(11, targetPos + 1)]];
     options = [...new Set(options)];
@@ -134,7 +134,7 @@ export const advancedVariants = {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
           "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`If someone is "behind" you in a line, will their position number be smaller or larger than yours?`, `Behind someone means adding to their position number.`))},
+          "hint": ${JSON.stringify(getQText(`If someone is "to the right" of you in a line, will their position number be smaller or larger than yours?`, `To the right of someone means adding to their position number.`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`${startPos} + ${gap} = ${targetPos}. The position is ${answer}.`, `${startPos} + ${gap} = ${targetPos}`))}
         },
@@ -146,12 +146,13 @@ export const advancedVariants = {
   },
 
   advanced_bidirectional_total: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const sName = extract(context.name);
     const leftPos = Math.floor(Math.random() * 4) + 2; 
     const rightPos = Math.floor(Math.random() * 4) + 2; 
     const total = leftPos + rightPos - 1;
     const answer = String(total);
     const questionTextTemplate = getQText(`An item is ${ORDINAL_WORDS[leftPos - 1]} from the left and ${ORDINAL_WORDS[rightPos - 1]} from the right. How many items are there in total?`, `An item is ${ORDINAL_SYMBOLS[leftPos - 1]} from the left and ${ORDINAL_SYMBOLS[rightPos - 1]} from the right. Total items = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = `STRICT: Replace the "[STORY]" placeholder in "questionText" with a ${isShort ? "short phrase" : "1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam"} using the name ${sName}. You MUST NOT leave the "[STORY]" tag in your response.`;
 
     let options = [answer, String(total - 2), String(total - 1), String(total + 1)];
     options = [...new Set(options)];
@@ -201,8 +202,8 @@ export const advancedVariants = {
     const newPos = startPos - leaves;
     const answer = ORDINAL_WORDS[newPos - 1];
     const sName = extract(context.name);
-    const questionTextTemplate = getQText(`${sName} is ${ORDINAL_WORDS[startPos - 1]} in line. If ${leaves} people ahead of ${sName} leave, what is ${sName}'s new position?`, `Position: ${ORDINAL_SYMBOLS[startPos - 1]}. ${leaves} people ahead leave. New position = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const questionTextTemplate = getQText(`${sName} is the ${ORDINAL_WORDS[startPos - 1]} from the left. If ${leaves} people to the left of ${sName} leave, what is ${sName}'s new position?`, `Position: ${ORDINAL_SYMBOLS[startPos - 1]}. ${leaves} people to the left leave. New position = ?`);
+    const storyInstruction = `STRICT: Replace the "[STORY]" placeholder in "questionText" with a ${isShort ? "short phrase" : "1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam"} using the name ${sName}. You MUST NOT leave the "[STORY]" tag in your response.`;
 
     let options = [answer, ORDINAL_WORDS[Math.max(0, newPos - 2)], ORDINAL_WORDS[Math.min(11, newPos)], ORDINAL_WORDS[Math.max(0, startPos - 1)]];
     options = [...new Set(options)];
@@ -235,7 +236,7 @@ export const advancedVariants = {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
           "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`If people in front of you leave, does your position move closer to the front or further away?`, `Leaving from the front makes your number smaller.`))},
+          "hint": ${JSON.stringify(getQText(`If people to the left of you leave, does your position move further left or right?`, `Leaving from the left makes your number smaller.`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`${startPos} - ${leaves} = ${newPos}. The new position is ${answer}.`, `${startPos} - ${leaves} = ${newPos}`))}
         },
@@ -247,12 +248,13 @@ export const advancedVariants = {
   },
 
   advanced_shift_position: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const sName = extract(context.name);
     const startPos = Math.floor(Math.random() * 4) + 6; 
     const shift = Math.floor(Math.random() * 3) + 2; 
     const newPos = startPos - shift;
     const answer = ORDINAL_WORDS[newPos - 1];
     const questionTextTemplate = getQText(`A runner is in the ${ORDINAL_WORDS[startPos - 1]} position and moves forward by ${shift} places. What is the new position?`, `Position: ${ORDINAL_SYMBOLS[startPos - 1]}. Move forward ${shift} places. New position = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = `STRICT: Replace the "[STORY]" placeholder in "questionText" with a ${isShort ? "short phrase" : "1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam"} using the name ${sName}. You MUST NOT leave the "[STORY]" tag in your response.`;
 
     let options = [answer, ORDINAL_WORDS[Math.max(0, newPos - 2)], ORDINAL_WORDS[Math.min(11, newPos)], ORDINAL_WORDS[Math.max(0, startPos - 1)]];
     options = [...new Set(options)];
@@ -297,12 +299,13 @@ export const advancedVariants = {
   },
 
   advanced_gap_calculation: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const sName = extract(context.name);
     const posA = Math.floor(Math.random() * 3) + 1; 
     const posB = posA + Math.floor(Math.random() * 4) + 3; 
     const gap = posB - posA - 1;
     const answer = String(gap);
     const questionTextTemplate = getQText(`How many people are there between the ${ORDINAL_WORDS[posA - 1]} and ${ORDINAL_WORDS[posB - 1]} person in a row?`, `How many people are between the ${ORDINAL_SYMBOLS[posA - 1]} and ${ORDINAL_SYMBOLS[posB - 1]} positions?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = `STRICT: Replace the "[STORY]" placeholder in "questionText" with a ${isShort ? "short phrase" : "1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam"} using the name ${sName}. You MUST NOT leave the "[STORY]" tag in your response.`;
 
     let options = [answer, String(gap - 1), String(gap + 1), String(gap + 2)];
     options = [...new Set(options)];
@@ -347,12 +350,13 @@ export const advancedVariants = {
   },
 
   advanced_overtake_race: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const sName = extract(context.name);
     const startPos = Math.floor(Math.random() * 4) + 4; 
     const overtakeCount = Math.floor(Math.random() * 2) + 1; 
     const newPos = startPos - overtakeCount;
     const answer = ORDINAL_WORDS[newPos - 1];
     const questionTextTemplate = getQText(`A runner is in the ${ORDINAL_WORDS[startPos - 1]} position. After overtaking ${overtakeCount} runners, what is the new position?`, `Position: ${ORDINAL_SYMBOLS[startPos - 1]}. Overtake ${overtakeCount} runners. New position = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = `STRICT: Replace the "[STORY]" placeholder in "questionText" with a ${isShort ? "short phrase" : "1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam"} using the name ${sName}. You MUST NOT leave the "[STORY]" tag in your response.`;
 
     let options = [answer, ORDINAL_WORDS[Math.max(0, newPos - 2)], ORDINAL_WORDS[Math.min(11, newPos)], ORDINAL_WORDS[Math.max(0, startPos - 1)]];
     options = [...new Set(options)];
@@ -385,7 +389,7 @@ export const advancedVariants = {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
           "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`Overtaking someone means you move one spot ahead of them.`, `Overtake = Subtract from current position.`))},
+          "hint": ${JSON.stringify(getQText(`Overtaking someone means you move one spot to their left.`, `Overtake = Subtract from current position.`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`${startPos} - ${overtakeCount} = ${newPos}.`, `${startPos} - ${overtakeCount} = ${newPos}`))}
         },
@@ -397,12 +401,13 @@ export const advancedVariants = {
   },
 
   advanced_ordinal_clues: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const sName = extract(context.name);
     const posA = Math.floor(Math.random() * 4) + 1; 
     const posB = posA + 1;
     const posC = posB + 1;
     const answer = ORDINAL_WORDS[posC - 1];
-    const questionTextTemplate = getQText(`If Siti is ${ORDINAL_WORDS[posA - 1]}, and Aminah is just behind her, and Bala is just behind Aminah, what position is Bala in?`, `Siti is ${ORDINAL_SYMBOLS[posA - 1]}. Aminah is just behind Siti. Bala is just behind Aminah. Bala's position = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const questionTextTemplate = getQText(`If Siti is ${ORDINAL_WORDS[posA - 1]}, and Aminah is just to her right, and Bala is just to Aminah's right, what position is Bala in?`, `Siti is ${ORDINAL_SYMBOLS[posA - 1]}. Aminah is just to Siti's right. Bala is just to Aminah's right. Bala's position = ?`);
+    const storyInstruction = `STRICT: Replace the "[STORY]" placeholder in "questionText" with a ${isShort ? "short phrase" : "1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam"} using the name ${sName}. You MUST NOT leave the "[STORY]" tag in your response.`;
 
     let options = [answer, ORDINAL_WORDS[posA - 1], ORDINAL_WORDS[posB - 1], ORDINAL_WORDS[posC]];
     options = [...new Set(options)];
@@ -435,7 +440,7 @@ export const advancedVariants = {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
           "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`"Just behind" means the very next person in line.`, `Add 1 for every "behind" step.`))},
+          "hint": ${JSON.stringify(getQText(`"Just to the right" means the very next person in line.`, `Add 1 for every step to the right.`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`Siti is ${posA}. Aminah is ${posB}. Bala is ${posC}, which is ${answer}.`, `${posA} + 1 + 1 = ${posC}`))}
         },
@@ -447,14 +452,15 @@ export const advancedVariants = {
   },
 
   advanced_net_queue_change: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const sName = extract(context.name);
     const startPos = Math.floor(Math.random() * 4) + 4; 
     const joins = 2; 
     const leaves = 1; 
     const netChange = joins - leaves; 
     const newPos = startPos + netChange;
     const answer = ORDINAL_WORDS[newPos - 1];
-    const questionTextTemplate = getQText(`Muthu is ${ORDINAL_WORDS[startPos - 1]} in line. If 2 people join the front and 1 person at the very front leaves, what is Muthu's new position?`, `Position: ${ORDINAL_SYMBOLS[startPos - 1]}. 2 people join front, 1 at front leaves. New position = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const questionTextTemplate = getQText(`Muthu is the ${ORDINAL_WORDS[startPos - 1]} from the left. If 2 people join the left side and 1 person at the very left leaves, what is Muthu's new position?`, `Position: ${ORDINAL_SYMBOLS[startPos - 1]}. 2 people join left, 1 at left leaves. New position = ?`);
+    const storyInstruction = `STRICT: Replace the "[STORY]" placeholder in "questionText" with a ${isShort ? "short phrase" : "1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam"} using the name ${sName}. You MUST NOT leave the "[STORY]" tag in your response.`;
 
     let options = [answer, ORDINAL_WORDS[Math.max(0, startPos - 2)], ORDINAL_WORDS[startPos - 1], ORDINAL_WORDS[Math.min(11, newPos)]];
     options = [...new Set(options)];
@@ -489,7 +495,7 @@ export const advancedVariants = {
           "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Work it out step by step: What happens when 2 people join? What happens when 1 person leaves?`, `Initial + Join - Leave.`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`Net change is ${joins} - ${leaves} = 1 spot back. ${ORDINAL_WORDS[startPos - 1]} becomes ${answer}.`, `${startPos} + ${joins} - ${leaves} = ${newPos}`))}
+          "solutionSteps": ${JSON.stringify(getQText(`Net change is ${joins} - ${leaves} = 1 spot further right. ${ORDINAL_WORDS[startPos - 1]} becomes ${answer}.`, `${startPos} + ${joins} - ${leaves} = ${newPos}`))}
         },
         "visualEngine": { "componentToRender": "NONE", "componentData": {} },
         "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
@@ -499,12 +505,13 @@ export const advancedVariants = {
   },
 
   advanced_relative_target: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const sName = extract(context.name);
     const targetPos = Math.floor(Math.random() * 3) + 1; 
     const currentPos = targetPos + Math.floor(Math.random() * 4) + 2; 
     const movesNeeded = currentPos - targetPos;
     const answer = String(movesNeeded);
     const questionTextTemplate = getQText(`How many places must a person in the ${ORDINAL_WORDS[currentPos - 1]} position move up to reach the ${ORDINAL_WORDS[targetPos - 1]} position?`, `Move from ${ORDINAL_SYMBOLS[currentPos - 1]} up to ${ORDINAL_SYMBOLS[targetPos - 1]}. Places to move = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = `STRICT: Replace the "[STORY]" placeholder in "questionText" with a ${isShort ? "short phrase" : "1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam"} using the name ${sName}. You MUST NOT leave the "[STORY]" tag in your response.`;
 
     let options = [answer, String(movesNeeded - 1), String(movesNeeded + 1), String(currentPos)];
     options = [...new Set(options)];

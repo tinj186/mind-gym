@@ -46,6 +46,8 @@ export const foundationVariants = {
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a foundation_identify question. DO NOT modify the mathematical structure or the final answer.
+        ${formatInstructions}
+        CRITICAL: Do NOT rewrite "questionText" as a word problem. Keep the exact text provided in the schema.
         MATH CONSTRAINTS:
         - Number: ${num}
         - Final Answer MUST strictly be: "${answer}"
@@ -57,18 +59,22 @@ export const foundationVariants = {
 
         CRITICAL: If the question type is MCQ, the "options" array MUST be exactly: ${mcqOptions}. DO NOT modify its content or format.
 
-        OUTPUT FORMAT (Return ONLY valid JSON):
+        OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
         {
-          "questionText": ${JSON.stringify(getQText(`How many tens and ones are there in the number ${num}?`, `${num} = ? tens ? ones`))},
-          "options": ${mcqOptions},
-          "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`The number on the left shows the tens. The number on the right shows the ones. Count the tens and ones blocks.`, `Count the ▮ (tens) and ▪ (ones).`))},
-          "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`${num} has ${tens} tens and ${ones} ones.`, `${num} = ${tens} tens + ${ones} ones`))},          
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": ${JSON.stringify(getQText(`How many tens and ones are there in the number ${num}?`, `${num} = ? tens ? ones`))},
+            "options": ${mcqOptions},
+            "defectMap": ${defectMapStr},
+            "hint": ${JSON.stringify(getQText(`The number on the left shows the tens. The number on the right shows the ones. Count the tens and ones blocks.`, `Count the ▮ (tens) and ▪ (ones).`))},
+            "finalAnswer": "${answer}",
+            "solutionSteps": ${JSON.stringify(getQText(`${num} has ${tens} tens and ${ones} ones.`, `${num} = ${tens} tens + ${ones} ones`))}
+          },
           "visualEngine": { 
             "componentToRender": "BASE_TEN_BLOCKS", 
             "componentData": { "tens": ${tens}, "ones": ${ones} } 
-          }
+          },
+          "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "identify", hideVisual: false }
     };
@@ -117,6 +123,8 @@ export const foundationVariants = {
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a foundation_value question. DO NOT modify the mathematical structure or the final answer.
+        ${formatInstructions}
+        CRITICAL: Do NOT rewrite "questionText" as a word problem. Keep the exact text provided in the schema.
         MATH CONSTRAINTS:
         - Number: ${num}
         - Digit to ask about: ${digit}
@@ -129,18 +137,22 @@ export const foundationVariants = {
 
         CRITICAL: If the question type is MCQ, the "options" array MUST be exactly: ${mcqOptions}. DO NOT modify its content or format.
 
-        OUTPUT FORMAT (Return ONLY valid JSON):
+        OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
         {
-          "questionText": ${JSON.stringify(getQText(`In the number ${num}, what is the value of the digit ${digit}?`, `Value of ${digit} in ${num} = ?`))},
-          "options": ${mcqOptions},
-          "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`Check the place where the digit ${digit} is sitting. If it is in the tens place, its value is ${digit} tens.`, `Which place is ${digit} in?`))},
-          "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`The digit ${digit} is in the ${place} place, so its value is ${answer}.`, `Digit ${digit} in ${place} place. Value = ${answer}`))},          
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": ${JSON.stringify(getQText(`In the number ${num}, what is the value of the digit ${digit}?`, `Value of ${digit} in ${num} = ?`))},
+            "options": ${mcqOptions},
+            "defectMap": ${defectMapStr},
+            "hint": ${JSON.stringify(getQText(`Check the place where the digit ${digit} is sitting. If it is in the tens place, its value is ${digit} tens.`, `Which place is ${digit} in?`))},
+            "finalAnswer": "${answer}",
+            "solutionSteps": ${JSON.stringify(getQText(`The digit ${digit} is in the ${place} place, so its value is ${answer}.`, `Digit ${digit} in ${place} place. Value = ${answer}`))}
+          },
           "visualEngine": { 
             "componentToRender": "BASE_TEN_BLOCKS", 
             "componentData": { "tens": ${tens}, "ones": ${ones} } 
-          }
+          },
+          "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "value", hideVisual: false }
     };
@@ -181,6 +193,8 @@ export const foundationVariants = {
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a foundation_compose question. DO NOT modify the mathematical structure or the final answer.
+        ${formatInstructions}
+        CRITICAL: Do NOT rewrite "questionText" as a word problem. Keep the exact text provided in the schema.
         MATH CONSTRAINTS:
         - Input: ${tens} tens and ${ones} ones.
         - Final Answer MUST strictly be: "${answer}"
@@ -192,18 +206,22 @@ export const foundationVariants = {
 
         CRITICAL: If the question type is MCQ, the "options" array MUST be exactly: ${mcqOptions}. DO NOT modify its content or format.
 
-        OUTPUT FORMAT (Return ONLY valid JSON):
+        OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
         {
-          "questionText": ${JSON.stringify(getQText(`What number is formed by ${tens} tens and ${ones} ones?`, `${tens} tens + ${ones} ones = ?`))},
-          "options": ${mcqOptions},
-          "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`${tens} tens is the same as ${tens * 10}. Now add the ${ones} ones to it.`, `${tens * 10} + ${ones} = ?`))},
-          "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`${tens} tens is ${tens * 10} and ${ones} ones is ${ones}. ${tens * 10} + ${ones} = ${num}.`, `${tens * 10} + ${ones} = ${num}`))},          
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": ${JSON.stringify(getQText(`What number is formed by ${tens} tens and ${ones} ones?`, `${tens} tens + ${ones} ones = ?`))},
+            "options": ${mcqOptions},
+            "defectMap": ${defectMapStr},
+            "hint": ${JSON.stringify(getQText(`${tens} tens is the same as ${tens * 10}. Now add the ${ones} ones to it.`, `${tens * 10} + ${ones} = ?`))},
+            "finalAnswer": "${answer}",
+            "solutionSteps": ${JSON.stringify(getQText(`${tens} tens is ${tens * 10} and ${ones} ones is ${ones}. ${tens * 10} + ${ones} = ${num}.`, `${tens * 10} + ${ones} = ${num}`))}
+          },
           "visualEngine": { 
             "componentToRender": "BASE_TEN_BLOCKS", 
             "componentData": { "tens": ${tens}, "ones": ${ones} } 
-          }
+          },
+          "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "compose", hideVisual: false }
     };
@@ -243,6 +261,8 @@ export const foundationVariants = {
     const defectMapStr = type === 'MCQ' ? JSON.stringify(defectMapObj) : 'null';
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a foundation_decompose_tens question. DO NOT modify the mathematical structure or the final answer.
+        ${formatInstructions}
+        CRITICAL: Do NOT rewrite "questionText" as a word problem. Keep the exact text provided in the schema.
         MATH CONSTRAINTS:
         - Number: ${num}
         - Missing part: number of tens.
@@ -255,18 +275,22 @@ export const foundationVariants = {
 
         CRITICAL: If the question type is MCQ, the "options" array MUST be exactly: ${mcqOptions}. DO NOT modify its content or format.
 
-        OUTPUT FORMAT (Return ONLY valid JSON):
+        OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
         {
-          "questionText": ${JSON.stringify(getQText(`Fill in the blank: ${num} = ____ tens ${ones} ones.`, `${num} = ? tens ${ones} ones`))},
-          "options": ${mcqOptions},
-          "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`How many groups of 10 blocks can you find in the number ${num}? Count the long bars.`, `Count the long bars (▮).`))},
-          "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`${num} has ${tens} tens and ${ones} ones.`, `${num} = ${tens} tens + ${ones} ones`))},          
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": ${JSON.stringify(getQText(`Fill in the blank: ${num} = ____ tens ${ones} ones.`, `${num} = ? tens ${ones} ones`))},
+            "options": ${mcqOptions},
+            "defectMap": ${defectMapStr},
+            "hint": ${JSON.stringify(getQText(`How many groups of 10 blocks can you find in the number ${num}? Count the long bars.`, `Count the long bars (▮).`))},
+            "finalAnswer": "${answer}",
+            "solutionSteps": ${JSON.stringify(getQText(`${num} has ${tens} tens and ${ones} ones.`, `${num} = ${tens} tens + ${ones} ones`))}
+          },
           "visualEngine": { 
             "componentToRender": "BASE_TEN_BLOCKS", 
             "componentData": { "tens": ${tens}, "ones": ${ones} } 
-          }
+          },
+          "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "decompose_tens", hideVisual: false }
     };
@@ -314,6 +338,8 @@ export const foundationVariants = {
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a foundation_digit_position question. DO NOT modify the mathematical structure or the final answer.
+        ${formatInstructions}
+        CRITICAL: Do NOT rewrite "questionText" as a word problem. Keep the exact text provided in the schema.
         MATH CONSTRAINTS:
         - Number: ${num}
         - Question: Which digit is in the ${place} place?
@@ -326,18 +352,22 @@ export const foundationVariants = {
 
         CRITICAL: If the question type is MCQ, the "options" array MUST be exactly: ${mcqOptions}. DO NOT modify its content or format.
 
-        OUTPUT FORMAT (Return ONLY valid JSON):
+        OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
         {
-          "questionText": ${JSON.stringify(getQText(`In the number ${num}, which digit is in the ${place} place?`, `Digit in ${place} place of ${num} = ?`))},
-          "options": ${mcqOptions},
-          "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`The first digit from the left is the tens place. The second digit is the ones place.`, `Look at ${num}. Which digit is for ${place}?`))},
-          "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`The number ${num} has ${tens} in the tens place and ${ones} in the ones place.`, `Tens: ${tens}, Ones: ${ones}`))},          
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": ${JSON.stringify(getQText(`In the number ${num}, which digit is in the ${place} place?`, `Digit in ${place} place of ${num} = ?`))},
+            "options": ${mcqOptions},
+            "defectMap": ${defectMapStr},
+            "hint": ${JSON.stringify(getQText(`The first digit from the left is the tens place. The second digit is the ones place.`, `Look at ${num}. Which digit is for ${place}?`))},
+            "finalAnswer": "${answer}",
+            "solutionSteps": ${JSON.stringify(getQText(`The number ${num} has ${tens} in the tens place and ${ones} in the ones place.`, `Tens: ${tens}, Ones: ${ones}`))}
+          },
           "visualEngine": { 
             "componentToRender": "NONE", 
             "componentData": {} 
-          }
+          },
+          "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "digit_position", hideVisual: true }
     };

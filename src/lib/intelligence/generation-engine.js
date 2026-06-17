@@ -4,6 +4,7 @@ import { getBaseSystemInstructions, parseAiResponse, processAiQuestion, getSylla
 import { getLevelStrategy } from '@/lib/intelligence/level-strategies';
 import { SYLLABUS_DATA } from '@/lib/syllabus';
 import { blueprintRegistry } from '@/lib/syllabus/index.js';
+import { prisma } from '@/lib/db';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const AI_TIMEOUT_MS = 25000;
@@ -43,6 +44,21 @@ export class GenerationEngine {
   async generateWithHybridBlueprint({ count, variant, safeDifficulty, type, blueprintMeta, baseSystemInstructions, context }) {
     let parsedQuestions = [];
     
+    // Stateful LRU setup
+    const blueprintId = `${context.level}-${context.topic}-${context.subtopic}`;
+    const usageKey = `variant_usage_${blueprintId.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+    let usageTracker = {};
+    
+    try {
+      const configRecord = await prisma.systemConfig.findUnique({ where: { key: usageKey } });
+      if (configRecord && configRecord.value) {
+        usageTracker = configRecord.value;
+      }
+    } catch (e) {
+      console.warn("Could not fetch variant usage tracker from SystemConfig", e);
+    }
+
+    
     for (let i = 0; i < count; i++) {
       let loopVariant = variant || 'visual_line';
       const isValidForTier = blueprintMeta?.variants?.hasOwnProperty(loopVariant) && loopVariant.startsWith(safeDifficulty);
@@ -50,7 +66,9 @@ export class GenerationEngine {
       if (!isValidForTier || loopVariant === 'visual_line') {
         const matchingVariants = Object.keys(blueprintMeta.variants || {}).filter(k => k.startsWith(safeDifficulty));
         if (matchingVariants.length > 0) {
-          loopVariant = matchingVariants[Math.floor(Math.random() * matchingVariants.length)];
+          // Stateful LRU Selection: sort by lowest usage count
+          matchingVariants.sort((a, b) => (usageTracker[a] || 0) - (usageTracker[b] || 0));
+          loopVariant = matchingVariants[0];
         }
       }
 
@@ -83,8 +101,11 @@ export class GenerationEngine {
         const aiBatch = Array.isArray(aiResponse) ? aiResponse : [aiResponse];
 
         for (const q of aiBatch) {
-          parsedQuestions.push(processAiQuestion(q, { ...context, blueprintMeta, stepResult }));
+          parsedQuestions.push(processAiQuestion(q, { ...context, blueprintMeta, stepResult, heuristic: loopVariant }));
         }
+        
+        // Successfully generated, increment usage count
+        usageTracker[loopVariant] = (usageTracker[loopVariant] || 0) + 1;
       }
       
       if (count > 1) {
@@ -92,6 +113,18 @@ export class GenerationEngine {
         await new Promise(r => setTimeout(r, stagger));
       }
     }
+
+    // Persist usage tracking
+    try {
+      await prisma.systemConfig.upsert({
+        where: { key: usageKey },
+        update: { value: usageTracker },
+        create: { key: usageKey, value: usageTracker }
+      });
+    } catch (e) {
+      console.warn("Could not save variant usage tracker to SystemConfig", e);
+    }
+
     return parsedQuestions;
   }
 

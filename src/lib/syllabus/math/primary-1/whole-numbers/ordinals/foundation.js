@@ -19,7 +19,7 @@ export const foundationVariants = {
     const targetOrdinal = ORDINAL_SYMBOLS[targetIdx];
     const sName = extract(context.name);
     const sItem = extract(context.items[0]);
-    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: You MUST generate an array of ${config.maxItems} UNIQUE objects for the "visualItems" field. Each object must have an "icon" (emoji) and a "label" (one-word name, e.g., "Apple"). Match these to your theme.`;
+    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: You MUST generate an array of ${config.maxItems} UNIQUE objects for the "componentData.items" field. Each object must have an "icon" (emoji) and a "label" (one-word name, e.g., "Apple"). The emojis MUST match the subject of your story (e.g., if the story is about children queuing, use people emojis like 👦, 👧, 👨, 👩. DO NOT default to fruits unless the story is explicitly about fruits!).`;
     
     let options = [targetOrdinal, ORDINAL_SYMBOLS[Math.max(0, targetIdx - 1)], ORDINAL_SYMBOLS[Math.min(9, targetIdx + 1)], ORDINAL_SYMBOLS[Math.min(9, targetIdx + 2)]];
     options = [...new Set(options)];
@@ -48,26 +48,31 @@ export const foundationVariants = {
         - Final Answer MUST strictly be: "${targetOrdinal}"
         
         CREATIVE INSTRUCTIONS:
-        - Generate an engaging word problem. You may use any fun or relatable theme (e.g., animals, space, toys, food, sports) that allows for a wide variety of colorful emojis.
-        - The visualItems array MUST contain exactly ${config.maxItems} unique objects {"icon": "...", "label": "..."}.
+        ${isShort ? "- Write a short, simple question (max 2 sentences). You MUST explicitly ask a question." : "- Generate an engaging word problem. You may use any fun or relatable theme (e.g., animals, space, toys, food, sports) that allows for a wide variety of colorful emojis."}
+        - CRITICAL: You MUST use the localized name ${sName} in your question to add Singaporean flavor.
+        - CRITICAL: The "items" array in "componentData" MUST contain exactly ${config.maxItems} unique objects formatted as {"icon": "<emoji>", "label": "<name>"}. DO NOT use placeholders like "emoji1" or "Name1". Generate varied, creative objects!
         - Identify the specific item name (label) you placed at the ${targetOrdinal} spot and ask for its position in the question text (e.g., "What is the position of the Lion?").
         - CRITICAL: DO NOT include the answer "${targetOrdinal}" in your question text.
         
-        OUTPUT FORMAT (Return ONLY valid JSON):
+        OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
         {
-          "questionText": "Look at the row of labeled items. What is the position of the [Item Label] from the left?",
-          "hint": "Start counting from the left side. Which position is the [Chosen Emoji] in?",
-          "options": ${mcqOptions},
-          "defectMap": ${defectMapStr},
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "Look at the row of labeled items. What is the position of the [Item Label] from the left?",
+            "hint": "Start counting from the left side. Which position is the [Chosen Emoji] in?",
+            "options": ${mcqOptions},
+            "defectMap": ${defectMapStr},
+            "finalAnswer": "${targetOrdinal}",
+            "solutionSteps": "Start counting from the left. The [Item Label] is at the ${targetOrdinal} position."
+          },
           "visualEngine": {
             "componentToRender": "ORDINAL_LINE",
             "componentData": {
-              "items": [{"icon": "emoji1", "label": "Name1"}, {"icon": "emoji2", "label": "Name2"}, "..."],
+              "items": [{"icon": "[Theme Emoji]", "label": "[Theme Word]"}, {"icon": "[Theme Emoji 2]", "label": "[Theme Word 2]"}], 
               "direction": "left"
             }
           },
-          "finalAnswer": "${targetOrdinal}",
-          "solutionSteps": "Start counting from the left. The [Item Label] is at the ${targetOrdinal} position."
+          "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "direct_id", hideVisual: false }
     };
@@ -78,7 +83,7 @@ export const foundationVariants = {
     const targetIndex = Math.floor(Math.random() * totalItems);
     const askForSymbol = Math.random() > 0.5;
     const sItem = extract(context.items[0]);
-    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: You MUST generate an array of ${totalItems} UNIQUE objects {"icon": "...", "label": "..."} for the "visualItems" field. Match these to your theme.`;
+    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: You MUST generate an array of ${totalItems} UNIQUE objects {"icon": "...", "label": "..."} for the "componentData.items" field. The emojis MUST match the subject of your story (e.g., if the story is about children queuing, use people emojis like 👦, 👧, 👨, 👩. DO NOT default to fruits unless the story is explicitly about fruits!).`;
     
     const answer = askForSymbol ? ORDINAL_SYMBOLS[targetIndex] : ORDINAL_WORDS[targetIndex];
     const distractors = askForSymbol 
@@ -108,22 +113,30 @@ export const foundationVariants = {
         - Final Answer MUST be: "${answer}"
         
         CREATIVE INSTRUCTIONS:
-        - Generate an engaging word problem. You may use any fun theme (e.g., jungle, ocean, bakery).
-        - The visualItems array MUST contain exactly ${totalItems} unique objects {"icon": "...", "label": "..."}.
+        ${isShort ? "- Write a short, simple question (max 2 sentences). You MUST explicitly ask a question." : "- Generate an engaging word problem using any fun theme."}
+        - CRITICAL: You MUST use the localized name ${sName} in your question to add Singaporean flavor.
+        - CRITICAL: The "items" array in "componentData" MUST contain exactly ${totalItems} unique objects formatted as {"icon": "<emoji>", "label": "<name>"}. DO NOT use placeholders like "emoji1" or "Name1". Generate varied, creative objects!
         - Identify the specific item name (label) you placed at index ${targetIndex} and ask what position it is in.
         
-        OUTPUT FORMAT (Return ONLY valid JSON):
+        OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
         { 
-          "questionText": "Look at the row of labeled items. Counting from the left, what is the position of the [Target Label]?", 
-          "hint": "Start counting from the left. Which position is the [Target Label]?",
-          "options": ${mcqOptions}, 
-          "defectMap": ${defectMapStr},
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "Look at the row of labeled items. Counting from the left, what is the position of the [Target Label]?", 
+            "hint": "Start counting from the left. Which position is the [Target Label]?",
+            "options": ${mcqOptions}, 
+            "defectMap": ${defectMapStr},
+            "finalAnswer": "${answer}", 
+            "solutionSteps": "Counting from the left, the [Target Label] is in the ${answer} position."
+          },
           "visualEngine": {
             "componentToRender": "ORDINAL_LINE",
-            "componentData": { "items": [{"icon": "emoji1", "label": "Name1"}, "..."], "direction": "left" }
+            "componentData": { 
+              "items": [{"icon": "[Theme Emoji]", "label": "[Theme Word]"}, {"icon": "[Theme Emoji 2]", "label": "[Theme Word 2]"}], 
+              "direction": "left" 
+            }
           },
-          "finalAnswer": "${answer}", 
-          "solutionSteps": "Counting from the left, the [Target Label] is in the ${answer} position."
+          "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "item_to_position", hideVisual: false }
     };
@@ -135,7 +148,7 @@ export const foundationVariants = {
     const askForSymbol = Math.random() > 0.5;
     const targetPosition = askForSymbol ? ORDINAL_SYMBOLS[targetIndex] : ORDINAL_WORDS[targetIndex];
     const sItem = extract(context.items[0]);
-    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: You MUST generate an array of ${totalItems} UNIQUE objects {"icon": "...", "label": "..."} for the "visualItems" field. Match these to your theme.`;
+    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: You MUST generate an array of ${totalItems} UNIQUE objects {"icon": "...", "label": "..."} for the "componentData.items" field. Match these to your theme.`;
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a foundation_position_to_item question. DO NOT modify the mathematical structure or the final answer.${visualProtocol}
@@ -151,18 +164,22 @@ export const foundationVariants = {
         - The finalAnswer MUST be the NAME of the item at position index ${targetIndex} (e.g., "Apple"), not the emoji.
         - For MCQ, the "options" array must contain the correct name and 3 other unique names from your list.
 
-        OUTPUT FORMAT (Return ONLY valid JSON):
+        OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
         { 
-          "questionText": "Look at the labeled items. Which item is in the ${targetPosition} position?", 
-          "hint": "Count from the left until you reach the ${targetPosition}. Which item do you see?",
-          "options": ${type === 'MCQ' ? `["[Correct Name]", "[Wrong Name 1]", "[Wrong Name 2]", "[Wrong Name 3]"]` : 'null'}, 
-          "defectMap": ${type === 'MCQ' ? `{"[Wrong Name 1]": "CONCEPTUAL_ERROR", "[Wrong Name 2]": "CONCEPTUAL_ERROR", "[Wrong Name 3]": "CONCEPTUAL_ERROR"}` : 'null'},
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "Look at the labeled items. Which item is in the ${targetPosition} position?", 
+            "hint": "Count from the left until you reach the ${targetPosition}. Which item do you see?",
+            "options": ${type === 'MCQ' ? `["[Correct Name]", "[Wrong Name 1]", "[Wrong Name 2]", "[Wrong Name 3]"]` : 'null'}, 
+            "defectMap": ${type === 'MCQ' ? `{"[Wrong Name 1]": "CONCEPTUAL_ERROR", "[Wrong Name 2]": "CONCEPTUAL_ERROR", "[Wrong Name 3]": "CONCEPTUAL_ERROR"}` : 'null'},
+            "finalAnswer": "[Name of the item at index ${targetIndex}]",
+            "solutionSteps": "Counting from the left, the ${targetPosition} item is the [Name]."
+          },
           "visualEngine": {
             "componentToRender": "ORDINAL_LINE",
-            "componentData": { "items": [{"icon": "emoji1", "label": "Name1"}, "..."], "direction": "left" }
+            "componentData": { "items": [{"icon": "[Theme Emoji]", "label": "[Theme Word]"}, {"icon": "[Theme Emoji 2]", "label": "[Theme Word 2]"}], "direction": "left" }
           },
-          "finalAnswer": "[Name of the item at index ${targetIndex}]",
-          "solutionSteps": "Counting from the left, the ${targetPosition} item is the [Name]."
+          "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
          }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "position_to_item", hideVisual: false }
     };
@@ -172,7 +189,7 @@ export const foundationVariants = {
     const targetIndex = Math.floor(Math.random() * 5) + 2; // 2nd to 6th
     const askNext = Math.random() > 0.5;
     const clueIndex = askNext ? targetIndex - 1 : targetIndex + 1;
-    const clueWord = askNext ? "just behind" : "just in front of";
+    const clueWord = askNext ? "just to the right of" : "just to the left of";
     const sName = extract(context.name);
     
     const cluePosition = ORDINAL_WORDS[clueIndex];
@@ -194,23 +211,30 @@ export const foundationVariants = {
     }
 
     return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating a foundation_next_position question. DO NOT modify the mathematical structure or the final answer. CRITICAL: This is a text-only conceptual question. No visual rendering or "visualItems" should be provided.
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a foundation_next_position question. DO NOT modify the mathematical structure or the final answer. CRITICAL: This is a text-only conceptual question. No visual rendering or "items" should be provided.
         MATH CONSTRAINTS:
         - Topic: Next/Previous Position
         - Final Answer MUST be: "${answer}"
         
         CREATIVE INSTRUCTIONS:
-        - Generate an engaging word problem using any relatable theme (e.g., family, classroom, animals).
+        ${isShort ? "- Write a short, simple question (max 2 sentences). You MUST explicitly ask a question." : "- Generate an engaging word problem using any fun theme."}
+        - CRITICAL: You MUST use the localized name ${sName} in your question to add Singaporean flavor.
+        - CRITICAL: The "items" array in "componentData" MUST contain exactly 0 unique objects since this is text-only.
+        - Ask what item is placed at the ${answer} position.
         
-        OUTPUT FORMAT (Return ONLY valid JSON):
+        OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
         { 
-          "questionText": "If [Name] is in the ${cluePosition} position, what position is just ${clueWord} [Name] in the line?", 
-          "hint": ${JSON.stringify(getQText(`If someone is "just behind" you, their position number is one greater. If "just in front", it's one less.`, `Think: +1 for behind, -1 for in front.`))},
-          "options": ${mcqOptions}, 
-          "defectMap": ${defectMapStr},
-          "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`The position ${clueWord} ${cluePosition} is ${answer}.`, `${ORDINAL_SYMBOLS[clueIndex]} ${askNext ? '+ 1' : '- 1'} = ${ORDINAL_WORDS[targetIndex]}`))},
-          "visualEngine": { "componentToRender": "NONE", "componentData": {} }
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": "If [Name] is in the ${cluePosition} position, what position is just ${clueWord} [Name] in the line?", 
+            "hint": ${JSON.stringify(getQText(`If someone is "just to the right of" you, their position number is one greater. If "just to the left of", it's one less.`, `Think: +1 for right, -1 for left.`))},
+            "options": ${mcqOptions}, 
+            "defectMap": ${defectMapStr},
+            "finalAnswer": "${answer}",
+            "solutionSteps": ${JSON.stringify(getQText(`The position ${clueWord} ${cluePosition} is ${answer}.`, `${ORDINAL_SYMBOLS[clueIndex]} ${askNext ? '+ 1' : '- 1'} = ${ORDINAL_WORDS[targetIndex]}`))}
+          },
+          "visualEngine": { "componentToRender": "NONE", "componentData": {} },
+          "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "relative_position", hideVisual: true }
     };
@@ -249,15 +273,19 @@ export const foundationVariants = {
         CREATIVE INSTRUCTIONS:
         - Generate an engaging word problem using any relatable theme.
         
-        OUTPUT FORMAT (Return ONLY valid JSON):
+        OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
         { 
-          "questionText": ${JSON.stringify(getQText(`In a row of ${numberToWords(totalItems)} items, what is the position of the last item?`, `Last of ${totalItems} = ?`))}, 
-          "hint": ${JSON.stringify(getQText(`The last position in a line of items is the same as the total number of items.`, `Last position = Total items.`))},
-          "options": ${mcqOptions}, 
-          "defectMap": ${defectMapStr},
-          "finalAnswer": "${answer}", 
-          "solutionSteps": ${JSON.stringify(getQText(`Since there are ${totalItems} items, the last one is in the ${answer} position.`, `Last = ${answer}`))},
-          "visualEngine": { "componentToRender": "NONE", "componentData": {} }
+          "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+          "content": {
+            "questionText": ${JSON.stringify(getQText(`In a row of ${numberToWords(totalItems)} items, what is the position of the last item?`, `Last of ${totalItems} = ?`))}, 
+            "hint": ${JSON.stringify(getQText(`The last position in a line of items is the same as the total number of items.`, `Last position = Total items.`))},
+            "options": ${mcqOptions}, 
+            "defectMap": ${defectMapStr},
+            "finalAnswer": "${answer}", 
+            "solutionSteps": ${JSON.stringify(getQText(`Since there are ${totalItems} items, the last one is in the ${answer} position.`, `Last = ${answer}`))}
+          },
+          "visualEngine": { "componentToRender": "NONE", "componentData": {} },
+          "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
         }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "last_position", hideVisual: true }
     };
@@ -266,6 +294,6 @@ export const foundationVariants = {
 
 export const foundationLogic = (activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
   if (foundationVariants[activeVariant]) {
-    return foundationVariantsactiveVariant;
+    return foundationVariants[activeVariant](config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
   }
 };

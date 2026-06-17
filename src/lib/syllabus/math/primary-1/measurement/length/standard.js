@@ -17,7 +17,7 @@ export const standardVariants = {
 
     const answer = longestObject;
     const questionTextTemplate = getQText(`Look at the items aligned to the wall line. Which object is the longest?`, `Longest object = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = selection.map(capitalize);
     if (!options.includes(answer)) { options[0] = answer; }
@@ -67,7 +67,7 @@ export const standardVariants = {
 
     const answer = shortestItem;
     const questionTextTemplate = getQText(`Look at the items. Which object is the shortest?`, `Shortest object = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = selection.map(capitalize);
     if (!options.includes(answer)) { options[0] = answer; }
@@ -123,7 +123,7 @@ export const standardVariants = {
 
     const answer = targetItem.label;
     const questionTextTemplate = getQText(`Look at the pictures standing on the ground floor. Which one is the ${isAskingTallest ? 'tallest' : 'shortest'}?`, `${isAskingTallest ? 'Tallest' : 'Shortest'} object = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [...items.map(i => i.label), `Tall ${distractor.name}`];
     if (!options.includes(answer)) { options[0] = answer; }
@@ -174,7 +174,7 @@ export const standardVariants = {
     
     const answer = ascendingOrder.join(" ➔ ");
     const questionTextTemplate = getQText(`Arrange the objects in order from shortest to longest.`, `Order objects shortest to longest.`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [
       answer,
@@ -230,7 +230,7 @@ export const standardVariants = {
     
     const answer = descendingOrder.join(" ➔ ");
     const questionTextTemplate = getQText(`Arrange the objects in order from longest to shortest.`, `Order objects longest to shortest.`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [
       answer,
@@ -286,7 +286,7 @@ export const standardVariants = {
     const answer = askLongest ? labels[0] : labels[2];
 
     const questionTextTemplate = getQText(`Read carefully:\n- ${labels[0]} is longer than ${labels[1]}.\n- ${labels[1]} is longer than ${labels[2]}.\n\nWhich object is the ${askLongest ? 'longest' : 'shortest'}?`, `If ${labels[0]} > ${labels[1]} and ${labels[1]} > ${labels[2]}, find ${askLongest ? 'longest' : 'shortest'}.`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [...labels, distractor];
     if (!options.includes(answer)) { options[0] = answer; }
@@ -337,7 +337,7 @@ export const standardVariants = {
 
     const answer = "No, because they do not start at the same baseline.";
     const questionTextTemplate = getQText(`Look closely at the image alignment. Can we say ${selection[1]} B is longer than ${selection[0]} A simply because its right edge sticks out further?`, `Is B longer because its tip is further right?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [
       "No, because they do not start at the same baseline.",
@@ -401,7 +401,7 @@ export const standardVariants = {
     
     const answer = matchingTwin.label;
     const questionTextTemplate = getQText(`Look at the ${referenceItem.label}. Which object is as long as the ${referenceItem.label}?`, `Which object has same length as ${referenceItem.label}?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = Array.from(optionsSet);
     if (!options.includes(answer)) { options[0] = answer; }
@@ -452,7 +452,7 @@ export const standardVariants = {
     
     const answer = String(diff);
     const questionTextTemplate = getQText(`How many ${selectedUnit.name} longer is the ${selection[0]} than the ${selection[1]}?`, `Length difference = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, String(len1), String(len2), String(len1 + len2)];
     if (!options.includes(answer)) { options[0] = answer; }
@@ -503,7 +503,7 @@ export const standardVariants = {
     
     const answer = String(actualLength);
     const questionTextTemplate = getQText(`Look at the ${selectedItem.toLowerCase()}. It starts at the ${startMarker} unit marker and ends at the ${endMarker} unit marker. How many units long is the ${selectedItem.toLowerCase()}?`, `Length of ${selectedItem.toLowerCase()} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     let options = [answer, String(endMarker), String(startMarker), String(endMarker + 1)];
     if (!options.includes(answer)) { options[0] = answer; }
