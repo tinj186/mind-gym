@@ -17,7 +17,7 @@ export class GenerationEngine {
     
     // 1. Get Level Specific Strategy
     const levelStrategy = getLevelStrategy(level, type);
-    const baseSystemInstructions = getBaseSystemInstructions(level) + "\n\nLEVEL CONSTRAINTS:\n" + levelStrategy + "\n\nCRITICAL RULE FOR MULTI_STEP_INPUT: If asked to inject an array of steps, do NOT just ask the student to regurgitate the numbers from the story (e.g. 'Start with', 'Take away'). Instead, require them to formulate the mathematical working! Step labels should be like 'Working' or 'Equation' (e.g. expectedAnswer: '17-6=11') and 'Final Answer' (e.g. expectedAnswer: '11'). Break down complex problems into multiple working steps. ALWAYS output a valid JSON array of objects! IMPORTANT: You MUST also append a clear instruction to the 'question' text asking the student to provide their working (e.g., 'How many altogether? Write your working and the final answer.').";
+    const baseSystemInstructions = getBaseSystemInstructions(level) + "\n\nLEVEL CONSTRAINTS:\n" + levelStrategy + "\n\nCRITICAL RULE FOR MULTI_STEP_INPUT: If asked to inject an array of steps, do NOT just ask the student to regurgitate the numbers from the story (e.g. 'Start with', 'Take away'). Instead, require them to formulate the mathematical working! Step labels should be like 'Working' or 'Equation' (e.g. expectedAnswer: '17-6=11') and 'Final Answer' (e.g. expectedAnswer: '11'). Break down complex problems into multiple working steps. ALWAYS output a valid JSON array of objects!";
 
     // 2. Resolve Blueprint
     const blueprintId = `${level}-${topic}-${subtopic}`;
