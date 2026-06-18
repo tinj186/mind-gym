@@ -180,8 +180,9 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
       const steps = normalizedQuestion.inputRequirement?.steps || [];
       isCorrect = true;
       for (let i = 0; i < steps.length; i++) {
-        const studentVal = submittedAnswer[i] || '';
-        if (String(studentVal).trim().toLowerCase() !== String(steps[i].expectedAnswer).trim().toLowerCase()) {
+        const studentVal = String(submittedAnswer[i] || '').replace(/\s+/g, '').toLowerCase();
+        const expectedVal = String(steps[i].expectedAnswer).replace(/\s+/g, '').toLowerCase();
+        if (studentVal !== expectedVal) {
           isCorrect = false;
           break;
         }
