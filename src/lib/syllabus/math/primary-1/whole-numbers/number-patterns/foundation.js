@@ -27,16 +27,18 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const sequenceItems = [...sequence.map(String), "?"];
     const hideVisual = false;
     const questionTextTemplate = getQText(`What is the next number in this pattern?`, `What is the next number: ${sequence.join(', ')}, ?`);
+    const localName = ['Wei Ling', 'Siti', 'Ahmad', 'Muthu', 'Bala', 'Kumar', 'Mei Hua', 'Fatimah'][Math.floor(Math.random() * 8)];
+    const storyInstruction = isShort ? "" : `${storyInstruction} Use the name ${localName}.`;
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
-      STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. DO NOT mention the number 1 in your story.
+      ${storyInstruction}
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
-          "questionText": ${JSON.stringify("[STORY] " + questionTextTemplate)},
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
           "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
           "hint": "Check if the numbers are getting bigger or smaller by 1 each time.",
@@ -73,16 +75,18 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const sequenceItems = [String(sequence[0]), String(sequence[1]), "?", String(sequence[3]), String(sequence[4])];
     const hideVisual = false;
     const questionTextTemplate = getQText(`What is the missing number in the middle?`, `What is the missing number? ${sequenceItems.join(', ')}`);
+    const localName = ['Wei Ling', 'Siti', 'Ahmad', 'Muthu', 'Bala', 'Kumar', 'Mei Hua', 'Fatimah'][Math.floor(Math.random() * 8)];
+    const storyInstruction = isShort ? "" : `${storyInstruction} Use the name ${localName}.`;
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
-      STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. DO NOT mention the number 1 in your story.
+      ${storyInstruction}
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
-          "questionText": ${JSON.stringify("[STORY] " + questionTextTemplate)},
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
           "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
           "hint": "What number comes exactly after ${sequence[1]}?",
@@ -117,16 +121,18 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const sequenceItems = ["?", String(sequence[1]), String(sequence[2]), String(sequence[3])];
     const hideVisual = false;
     const questionTextTemplate = getQText(`What is the first number in the pattern?`, `What is the missing number? ${sequenceItems.join(', ')}`);
+    const localName = ['Wei Ling', 'Siti', 'Ahmad', 'Muthu', 'Bala', 'Kumar', 'Mei Hua', 'Fatimah'][Math.floor(Math.random() * 8)];
+    const storyInstruction = isShort ? "" : `${storyInstruction} Use the name ${localName}.`;
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
-      STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. DO NOT mention the number 1 in your story.
+      ${storyInstruction}
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
-          "questionText": ${JSON.stringify("[STORY] " + questionTextTemplate)},
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
           "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
           "hint": "Try counting backward by 1 from ${sequence[1]} to find the start.",

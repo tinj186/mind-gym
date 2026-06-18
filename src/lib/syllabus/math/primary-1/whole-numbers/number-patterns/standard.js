@@ -60,16 +60,18 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const solutionSteps = `1. The pattern is counting ${isForward ? 'on' : 'back'} by ${stepValue}.\\n2. ${isStart ? `To find the first number, count ${isForward ? 'back' : 'on'} from ${prevNum}.` : `The number before the missing one is ${prevNum}.`}\\n3. ${prevNum} ${isStart ? (isForward ? '-' : '+') : (isForward ? '+' : '-')} ${stepValue} = ${answer}.`;
 
     const questionTextTemplate = getQText(`What is the missing number in the skip counting pattern?`, `What is the missing number? ${items.join(', ')}`);
+    const localName = ['Wei Ling', 'Siti', 'Ahmad', 'Muthu', 'Bala', 'Kumar', 'Mei Hua', 'Fatimah'][Math.floor(Math.random() * 8)];
+    const storyInstruction = isShort ? "" : `${storyInstruction} Use the name ${localName}.`;
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
-      STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. DO NOT reveal the specific number ${stepValue} in the story text.
+      ${storyInstruction}
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
-          "questionText": ${JSON.stringify("[STORY] " + questionTextTemplate)},
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
           "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
           "hint": "Check the jump between the numbers you can see.",
