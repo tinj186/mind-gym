@@ -81,10 +81,13 @@ export const additionSubtractionBlueprint = {
 
     // 1. Variant Filtering based on Type
     // Short questions are equations, Structured/MCQ are word problems
-    const isStrictWordProblem = activeVariant.includes('word_problem') || activeVariant.includes('comparative') || activeVariant.includes('ordinal') || activeVariant.includes('comparison');
-    const supportsEquation = !isStrictWordProblem; // add_20, missing_addend, number_bond, etc. all support equations
+    const checkIsStrictWordProblem = (v) => v.includes('word_problem') || v.includes('comparative') || v.includes('ordinal') || v.includes('comparison');
+    const checkIsAllowedForStructuredOrMCQ = (v) => checkIsStrictWordProblem(v) || v.includes('regroup') || v.includes('missing_addend') || v.includes('number_bond') || v.includes('add_20') || v.includes('sub_20') || v.includes('missing_subtrahend') || v.includes('balance_equations') || v.includes('working_backwards') || v.includes('two_step_total') || v.includes('shape_substitution') || v.includes('missing_digit_regrouping') || v.includes('visual_cross_out') || v.includes('fact_family_cards') || v.includes('equation_equivalence');
+
+    const isStrictWordProblem = checkIsStrictWordProblem(activeVariant);
+    const supportsEquation = !isStrictWordProblem; 
     const violatesShort = isShort && !supportsEquation;
-    const isAllowedForStructuredOrMCQ = isStrictWordProblem || activeVariant.includes('regrouping') || activeVariant.includes('missing_addend') || activeVariant.includes('number_bond') || activeVariant.includes('add_20') || activeVariant.includes('sub_20') || activeVariant.includes('missing_subtrahend') || activeVariant.includes('balance_equations') || activeVariant.includes('working_backwards') || activeVariant.includes('two_step_total') || activeVariant.includes('shape_substitution') || activeVariant.includes('missing_digit_regrouping') || activeVariant.includes('visual_cross_out') || activeVariant.includes('fact_family_cards') || activeVariant.includes('equation_equivalence');
+    const isAllowedForStructuredOrMCQ = checkIsAllowedForStructuredOrMCQ(activeVariant);
     const violatesStructuredOrMCQ = (isStructure || isMCQ) && !isAllowedForStructuredOrMCQ;
 
     if (!additionSubtractionBlueprint.variants[variant] || violatesShort || violatesStructuredOrMCQ) {
@@ -92,9 +95,9 @@ export const additionSubtractionBlueprint = {
       let validVariants = Object.keys(additionSubtractionBlueprint.variants).filter(k => k.startsWith(safeDiff));
 
       if (isShort) {
-        validVariants = validVariants.filter(k => !k.includes('word_problem') && !k.includes('comparative') && !k.includes('ordinal') && !k.includes('comparison'));
+        validVariants = validVariants.filter(k => !checkIsStrictWordProblem(k));
       } else if (isStructure || isMCQ) {
-        validVariants = validVariants.filter(k => isAllowedForStructuredOrMCQ); // Filter based on the new comprehensive allowance list
+        validVariants = validVariants.filter(k => checkIsAllowedForStructuredOrMCQ(k));
       }
 
       if (validVariants.length > 0) {
