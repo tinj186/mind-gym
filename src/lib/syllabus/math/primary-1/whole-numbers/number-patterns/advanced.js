@@ -30,15 +30,19 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
     }
 
+    const localName = ['Wei Ling', 'Siti', 'Ahmad', 'Muthu', 'Bala', 'Kumar', 'Mei Hua', 'Fatimah'][Math.floor(Math.random() * 8)];
+    const questionTextTemplate = getQText(`What is the missing number in this growing pattern?`, `Find the missing number: ${sequence[0]}, ${sequence[1]}, ${sequence[2]}, ${sequence[3]}, ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a short (2-sentence maximum), varied Singaporean math story context. Use the name ${localName}. Use themes of things getting larger, spreading further apart, or jumping higher (e.g., hopping on numbered lily pads, arranging queue tickets, stacking numbered blocks, or reading pages). End the story by asking the student to figure out the missing number. Do NOT mention the numbers or jump logic.`;
+
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol. ${formatInstructions} 
-      STRICT: Generate a short (2-sentence maximum), varied Singaporean math story context for the "questionText". Use themes of things getting larger, spreading further apart, or jumping higher (e.g., hopping on numbered lily pads, arranging queue tickets, stacking numbered blocks, or reading pages). End the story by asking the student to figure out the missing number. Do NOT mention the numbers or jump logic.
+      ${storyInstruction}
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
-          "questionText": "[Generate the full 1-2 sentence story problem here asking for the missing number]",
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
           "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
           "hint": "The jumps between numbers are getting larger each time.",
@@ -79,15 +83,19 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
     const solutionSteps = `1. This sequence has two patterns mixed together.\\n2. Pattern 1 (1st, 3rd, 5th numbers) counts by ${stepA}.\\n3. Pattern 2 (2nd, 4th, 6th numbers) counts by ${stepB}.\\n4. The missing number follows ${missingIdx === 4 ? `Pattern 1: ${sequence[2]} + ${stepA} = ${answer}` : `Pattern 2: ${sequence[3]} + ${stepB} = ${answer}`}.`;
 
+    const localName = ['Wei Ling', 'Siti', 'Ahmad', 'Muthu', 'Bala', 'Kumar', 'Mei Hua', 'Fatimah'][Math.floor(Math.random() * 8)];
+    const questionTextTemplate = getQText(`What is the missing number in these mixed patterns?`, `Find the missing number: ${items.join(', ')}`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a short (2-sentence maximum), varied Singaporean math story context. Use the name ${localName}. Use themes of two different things taking turns (e.g., alternating red and blue cards, or two friends taking turns). End the story by asking the student to figure out the missing number. Do NOT mention the dual patterns.`;
+
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol. ${formatInstructions}
-      STRICT: Generate a short (2-sentence maximum), varied Singaporean math story context for the "questionText". Use themes of two different things taking turns (e.g., alternating red and blue cards, or two friends taking turns). End the story by asking the student to figure out the missing number. Do NOT mention the dual patterns.
+      ${storyInstruction}
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
-          "questionText": "[Generate the full 1-2 sentence story problem here asking for the missing number]",
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
           "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
           "hint": "Try looking at every second number to see if you can find two patterns.",
@@ -130,15 +138,19 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
     }
 
+    const localName = ['Wei Ling', 'Siti', 'Ahmad', 'Muthu', 'Bala', 'Kumar', 'Mei Hua', 'Fatimah'][Math.floor(Math.random() * 8)];
+    const questionTextTemplate = getQText(`What is the missing number in this shrinking pattern?`, `Find the missing number: ${sequence[0]}, ${sequence[1]}, ${sequence[2]}, ${sequence[3]}, ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a short (2-sentence maximum), varied Singaporean math story context. Use the name ${localName}. Use themes of things getting smaller, dropping down, or running out. End the story by asking the student to figure out the missing number. Do NOT mention the numbers or jump logic.`;
+
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol. ${formatInstructions}
-      STRICT: Generate a short (2-sentence maximum), varied Singaporean math story context for the "questionText". Use themes of things getting smaller, dropping down, or running out. End the story by asking the student to figure out the missing number. Do NOT mention the numbers or jump logic.
+      ${storyInstruction}
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
-          "questionText": "[Generate the full 1-2 sentence story problem here asking for the missing number]",
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
           "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
           "hint": "The jumps between numbers are getting larger, but the numbers are getting smaller.",
