@@ -10,7 +10,10 @@ export async function POST(req) {
     const { studentAnswers, expectedSteps, questionText } = await req.json();
 
     const selectedModelId = getBestModel();
-    const model = genAI.getGenerativeModel({ model: selectedModelId }, { apiVersion: 'v1beta' });
+    const model = genAI.getGenerativeModel({ 
+      model: selectedModelId,
+      generationConfig: { temperature: 0, responseMimeType: "application/json" }
+    }, { apiVersion: 'v1beta' });
     
     const prompt = `You are a strict math grader for Primary 1.
 Question: ${questionText}
