@@ -184,6 +184,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
     // Handle array of answers from MultiStepInput
     if (typeof submittedAnswer === 'object' && submittedAnswer !== null && !Array.isArray(submittedAnswer)) {
       const steps = normalizedQuestion.inputRequirement?.steps || [];
+      // Fast-path strict matching
       isCorrect = true;
       for (let i = 0; i < steps.length; i++) {
         const studentVal = String(submittedAnswer[i] || '').replace(/\s+/g, '').toLowerCase();
@@ -193,6 +194,28 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
           break;
         }
       }
+
+      // If fast-path fails, call AI multi-step grader
+      if (!isCorrect) {
+        try {
+          const res = await fetch('/api/grade-multi-step', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              studentAnswers: submittedAnswer,
+              expectedSteps: steps,
+              questionText: normalizedQuestion.question
+            })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            isCorrect = data.isCorrect;
+          }
+        } catch (e) {
+          console.error("Multi-step AI grading failed", e);
+        }
+      }
+
       // Serialize answer for logs
       submittedAnswer = JSON.stringify(submittedAnswer);
     } else {
