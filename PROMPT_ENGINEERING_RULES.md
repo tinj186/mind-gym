@@ -46,7 +46,23 @@ To prevent variant "clumping" and ensure students are exposed to all mathematica
 
 Law: The engine must NOT rely on stateless pure randomness (\`Math.random()\`) for variant selection.
 
-Execution: The engine must utilize a Stateful Least-Recently-Used (LRU) system. It tracks generation counts for each variant within the \`SystemConfig\` Postgres table and purposefully selects the variant with the absolute lowest generation count. This guarantees an equal spread of exposure over time.
+Execution: The engine must utilize a Stateful Least-Recently-Used (LRU) system. It tracks generation counts for each variant within the `SystemConfig` Postgres table and purposefully selects the variant with the absolute lowest generation count. This guarantees an equal spread of exposure over time.
+
+V. AI Guardrails & Hallucination Prevention
+
+To ensure absolute UI stability and strict pedagogical grading, the generation engine enforces these hard guardrails:
+
+Law (Hallucinated Options Stripping): The AI must NEVER be allowed to accidentally transform a Short or Structured question into an MCQ question by hallucinating options.
+Execution: The Universal AI Parser (`generation-utils.js`) explicitly checks the locked `meta.type`. If the requested type is NOT an MCQ, the parser aggressively deletes any AI-generated `options` array before saving to the database. This guarantees the frontend renders standard text/multi-step inputs instead of MCQ buttons.
+
+Law (Negative Prompt Exclusion): Negative instructions must NOT be included in AI system prompts (e.g. "Do not write 'Start with'").
+Execution: Generative models frequently misinterpret negative string examples as positive instructions and hallucinate them into the JSON output (e.g. injecting them into `solutionSteps`). System prompts must explicitly command what the AI *should* do, omitting string examples of what it should avoid.
+
+Law (Variant Fallback Constraints): Variants that conceptually violate a requested question type must securely fallback or override.
+Execution: During generation, the engine filters variants. If a variant conceptually violates the requested type (e.g., trying to render a "Strict Word Problem" as a "Short Question" equation), the generator securely falls back to a valid variant. Conversely, variants that strictly rely on multiple-choice mechanics (e.g., Equation Equivalence) will explicitly override the user's type request to `MCQ`.
+
+Law (Multi-Step Associative Flexibility): While final answers must match deterministically, multi-step associative working (e.g., 3+2=5 vs 2+3=5) must be handled flexibly.
+Execution: The client-side `WorkoutSession` executes a strict string-matching "fast path". If strict matching fails for a multi-step input, it securely delegates the check to a deterministic, zero-temperature AI Grader API (`/api/grade-multi-step`) to mathematically evaluate logical equivalence before incorrectly failing the student.
 
 ### 3.4 Cloud Neutrality & Vendor Lock-In Prevention
 To maintain the ability to smoothly migrate from Serverless (Vercel) to a containerized VPS (Docker/Render/DigitalOcean) in the future, strictly enforce the following architectural boundaries:
