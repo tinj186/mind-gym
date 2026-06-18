@@ -38,8 +38,8 @@ export const numberPatternBlueprint = {
 
   // 2. STRICT VARIANTS
   variants: {
-    foundation_forward_1: "Find the next number in a +1 pattern.",
-    foundation_backward_1: "Find the next number in a -1 pattern.",
+    //    foundation_forward_1: "Find the next number in a +1 pattern.",
+    //    foundation_backward_1: "Find the next number in a -1 pattern.",
     foundation_missing_middle_1: "Find the missing middle number in a +1 pattern.",
     foundation_missing_middle_back_1: "Find the missing middle number in a -1 pattern.",
     foundation_missing_start_1: "Find the missing starting number in a +1 pattern.",
@@ -68,7 +68,7 @@ export const numberPatternBlueprint = {
 
   // 3. GENERATION ENGINE
   generate: (difficulty = 'foundation', variant = 'foundation_forward_1', type = 'MCQ') => {
-    
+
     // --- BULLETPROOF AUTO-RANDOMIZER ---
     const safeType = String(type).toLowerCase();
     const isShort = safeType.includes('short');
@@ -83,7 +83,7 @@ export const numberPatternBlueprint = {
     if (!numberPatternBlueprint.variants[variant] || violatesShort || violatesStructure) {
       const safeDiff = String(difficulty).toLowerCase();
       let validVariants = Object.keys(numberPatternBlueprint.variants).filter(k => k.startsWith(safeDiff));
-      
+
       if (isShort) {
         validVariants = validVariants.filter(k => !k.includes('word_problem') && !k.includes('interactive')); // Exclude word problems/interactive for short
       } else if (isStructure) {

@@ -61,7 +61,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     const questionTextTemplate = getQText(`What is the missing number in the skip counting pattern?`, `What is the missing number? ${items.join(', ')}`);
     const localName = ['Wei Ling', 'Siti', 'Ahmad', 'Muthu', 'Bala', 'Kumar', 'Mei Hua', 'Fatimah'][Math.floor(Math.random() * 8)];
-    const storyInstruction = isShort ? "" : `${storyInstruction} Use the name ${localName}.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. DO NOT reveal the specific number ${stepValue} in the story text. Use the name ${localName}.`;
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}

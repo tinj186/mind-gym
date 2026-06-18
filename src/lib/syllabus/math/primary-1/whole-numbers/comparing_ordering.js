@@ -56,15 +56,15 @@ export const comparingOrderingBlueprint = {
     standard_ten_more_compare: "Compare '10 more than X' with another number.",
     standard_ten_less_compare: "Compare '10 less than X' with another number.",
 
-    //    advanced_greatest_from_digits: "Form the greatest 2-digit number using given digits.", // Renamed
-    //    advanced_relative_logic: "Deduce the order of 3 amounts based on relative 'more than/less than' clues.",
-    //    advanced_sequence_skip_counting: "Identify a missing number in a skip-counting pattern (by 2s, 5s, or 10s).",
-    //    advanced_smallest_from_digits: "Form the smallest 2-digit number from given digits that is greater than a specific value.", // Renamed
+    advanced_greatest_from_digits: "Form the greatest 2-digit number using given digits.", // Renamed
+    advanced_relative_logic: "Deduce the order of 3 amounts based on relative 'more than/less than' clues.",
+    advanced_sequence_skip_counting: "Identify a missing number in a skip-counting pattern (by 2s, 5s, or 10s).",
+    advanced_smallest_from_digits: "Form the smallest 2-digit number from given digits that is greater than a specific value.", // Renamed
     advanced_swapped_digits_difference: "Find the difference between a number and the number formed by swapping its digits.",
     advanced_logic_puzzle_order: "Order 3 characters based on relative abstract clues (e.g., A is less than B).",
-    //    advanced_mystery_number_clues: "Deduce a mystery number using bounds and the sum of its digits.",
-    //    advanced_extreme_inequality: "Identify the greatest number that is smaller than a complex regrouped expression.",
-    //    advanced_net_value_comparison: "Determine the final value after a number undergoes a series of regrouped 'more than' and 'less than' changes (e.g., Start with 4 tens, add 15 ones, then take away 1 ten)."
+    advanced_mystery_number_clues: "Deduce a mystery number using bounds and the sum of its digits.",
+    advanced_extreme_inequality: "Identify the greatest number that is smaller than a complex regrouped expression.",
+    advanced_net_value_comparison: "Determine the final value after a number undergoes a series of regrouped 'more than' and 'less than' changes (e.g., Start with 4 tens, add 15 ones, then take away 1 ten)."
   },
 
   // 3. GENERATION ENGINE
