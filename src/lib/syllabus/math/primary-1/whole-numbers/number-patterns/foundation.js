@@ -31,7 +31,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. DO NOT mention the number 1 in your story. Use the name ${localName}.`;
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol. ${formatInstructions}
       ${storyInstruction}
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
@@ -79,7 +79,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. DO NOT mention the number 1 in your story. Use the name ${localName}.`;
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol. ${formatInstructions}
       ${storyInstruction}
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
@@ -125,7 +125,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. DO NOT mention the number 1 in your story. Use the name ${localName}.`;
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol. ${formatInstructions}
       ${storyInstruction}
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
