@@ -35,7 +35,12 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     if (isMCQ) {
       const wrongOpAnswer = isAdd ? String(num1 - num2) : String(num1 + num2);
       options = Array.from(new Set([answer, wrongOpAnswer, String(parseInt(answer) + 1), String(parseInt(answer) - 1)])).slice(0, 4);
-      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.filter(opt => parseInt(opt) >= 0);
+      while(options.length < 4) { 
+        let cand = parseInt(answer) + Math.floor(Math.random() * 10) - 3;
+        if (cand >= 0 && String(cand) !== answer) options.push(String(cand));
+        options = Array.from(new Set(options));
+      }
       options = options.sort(() => Math.random() - 0.5);
       
       defectMap = {
@@ -92,7 +97,12 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     if (isMCQ) {
       const addedAnswer = String(sum + part);
       options = Array.from(new Set([answer, String(sum), addedAnswer, String(parseInt(answer) + 1)])).slice(0, 4);
-      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.filter(opt => parseInt(opt) >= 0);
+      while(options.length < 4) { 
+        let cand = parseInt(answer) + Math.floor(Math.random() * 10) - 3;
+        if (cand >= 0 && String(cand) !== answer) options.push(String(cand));
+        options = Array.from(new Set(options));
+      }
       options = options.sort(() => Math.random() - 0.5);
       
       defectMap = {
@@ -170,7 +180,12 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     if (isMCQ) {
       const addedAnswer = missingPos === 0 ? String(part1 + part2 + 1) : String(whole + (missingPos === 1 ? part2 : part1)); // Wrong operation
       options = Array.from(new Set([answer, String(whole), addedAnswer, String(parseInt(answer) + 1)])).slice(0, 4);
-      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.filter(opt => parseInt(opt) >= 0);
+      while(options.length < 4) { 
+        let cand = parseInt(answer) + Math.floor(Math.random() * 10) - 3;
+        if (cand >= 0 && String(cand) !== answer) options.push(String(cand));
+        options = Array.from(new Set(options));
+      }
       options = options.sort(() => Math.random() - 0.5);
       
       defectMap = {
@@ -227,7 +242,12 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     if (isMCQ) {
       const addedAnswer = String(total_count + crossed_count);
       options = Array.from(new Set([answer, String(total_count), addedAnswer, String(remaining + 1)])).slice(0, 4);
-      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.filter(opt => parseInt(opt) >= 0);
+      while(options.length < 4) { 
+        let cand = parseInt(answer) + Math.floor(Math.random() * 10) - 3;
+        if (cand >= 0 && String(cand) !== answer) options.push(String(cand));
+        options = Array.from(new Set(options));
+      }
       options = options.sort(() => Math.random() - 0.5);
       
       defectMap = {

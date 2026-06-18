@@ -43,7 +43,12 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     if (isMCQ) {
       const wrongOpAnswer = isAdd ? String(num1 - num2) : String(num1 + num2);
       options = Array.from(new Set([answer, wrongOpAnswer, String(parseInt(answer) - 1), String(parseInt(answer) + 10)])).slice(0, 4);
-      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.filter(opt => parseInt(opt) >= 0);
+      while(options.length < 4) { 
+        let cand = parseInt(answer) + Math.floor(Math.random() * 10) - 3;
+        if (cand >= 0 && String(cand) !== answer) options.push(String(cand));
+        options = Array.from(new Set(options));
+      }
       options = options.sort(() => Math.random() - 0.5);
       
       defectMap = {
@@ -101,7 +106,12 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     if (isMCQ) {
       const wrongOpAnswer = String(num1 - num2);
       options = Array.from(new Set([answer, wrongOpAnswer, String(num1 + 10), String(num1)])).slice(0, 4);
-      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.filter(opt => parseInt(opt) >= 0);
+      while(options.length < 4) { 
+        let cand = parseInt(answer) + Math.floor(Math.random() * 10) - 3;
+        if (cand >= 0 && String(cand) !== answer) options.push(String(cand));
+        options = Array.from(new Set(options));
+      }
       options = options.sort(() => Math.random() - 0.5);
       
       defectMap = {
@@ -153,7 +163,12 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     if (isMCQ) {
       const wrongOpAnswer = String(num1 + num2);
       options = Array.from(new Set([answer, wrongOpAnswer, String(num1 - 10), String(num1)])).slice(0, 4);
-      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.filter(opt => parseInt(opt) >= 0);
+      while(options.length < 4) { 
+        let cand = parseInt(answer) + Math.floor(Math.random() * 10) - 3;
+        if (cand >= 0 && String(cand) !== answer) options.push(String(cand));
+        options = Array.from(new Set(options));
+      }
       options = options.sort(() => Math.random() - 0.5);
       
       defectMap = {
@@ -206,7 +221,12 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     if (isMCQ) {
       const wrongAnswer = String(inFront + behind);
       options = Array.from(new Set([answer, wrongAnswer, String(inFront + behind - 1), String(inFront + 1)])).slice(0, 4);
-      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.filter(opt => parseInt(opt) >= 0);
+      while(options.length < 4) { 
+        let cand = parseInt(answer) + Math.floor(Math.random() * 10) - 3;
+        if (cand >= 0 && String(cand) !== answer) options.push(String(cand));
+        options = Array.from(new Set(options));
+      }
       options = options.sort(() => Math.random() - 0.5);
       
       defectMap = {
@@ -256,7 +276,12 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     let defectMap = null;
     if (isMCQ) {
       options = Array.from(new Set([answer, String(sum), String(parseInt(answer) + 10), String(parseInt(answer) - 2)])).slice(0, 4);
-      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = options.filter(opt => parseInt(opt) >= 0);
+      while(options.length < 4) { 
+        let cand = parseInt(answer) + Math.floor(Math.random() * 10) - 3;
+        if (cand >= 0 && String(cand) !== answer) options.push(String(cand));
+        options = Array.from(new Set(options));
+      }
       options = options.sort(() => Math.random() - 0.5);
       
       defectMap = {
