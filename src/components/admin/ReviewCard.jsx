@@ -108,9 +108,21 @@ export default function ReviewCard({
                   <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">
                     {MAP_KEY(key)}
                   </p>
-                  <p className="text-xs font-bold text-slate-700 truncate">
-                    {typeof val === 'object' && val !== null && !Array.isArray(val) ? JSON.stringify(val) : Array.isArray(val) ? val.join(', ') : String(val)}
-                  </p>
+                  {key === 'inputRequirement' && typeof val === 'object' && val?.inputType === 'MULTI_STEP_INPUT' && val?.steps ? (
+                    <div className="text-xs font-bold text-slate-700 space-y-1 mt-2">
+                      <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-[10px] uppercase">Multi-Step</span>
+                      {val.steps.map((step, idx) => (
+                        <div key={idx} className="flex justify-between border-b border-slate-200 border-dashed pb-1">
+                          <span className="text-slate-500">{step.label}</span>
+                          <span className="text-blue-600 font-mono">{step.expectedAnswer}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs font-bold text-slate-700 truncate">
+                      {typeof val === 'object' && val !== null && !Array.isArray(val) ? JSON.stringify(val) : Array.isArray(val) ? val.join(', ') : String(val)}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>

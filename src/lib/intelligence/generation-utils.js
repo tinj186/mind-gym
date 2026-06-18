@@ -200,7 +200,7 @@ export function processAiQuestion(q, context) {
         hideVisual: safeData?.hideVisual !== undefined 
           ? safeData.hideVisual 
           : validatedData.visualEngine.componentToRender === 'NONE',
-        inputRequirement: validatedData.inputRequirement.inputType,
+        inputRequirement: validatedData.inputRequirement,
         finalAnswer: validatedData.content.finalAnswer,
         items: Array.isArray(safeData?.items) ? safeData.items : [],
         defectMap: validatedData.content.defectMap || null
@@ -223,7 +223,8 @@ export function processAiQuestion(q, context) {
       type: typeVal,
       items: (Array.isArray(visualItems) && visualItems.length > 0) ? visualItems : (safeModelData?.items || []),
       hideVisual: hideVisualVal,
-      defectMap: qContent.defectMap || safeModelData.defectMap || null
+      defectMap: qContent.defectMap || safeModelData.defectMap || null,
+      inputRequirement: inputRequirement || qVisual.inputRequirement || null
     };
     
     if (prismaModelData.type === undefined) delete prismaModelData.type;

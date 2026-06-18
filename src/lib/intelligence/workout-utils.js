@@ -33,6 +33,11 @@ export function normalizeQuestionData(raw) {
   const solutionText = modelData?.content?.solutionSteps || modelData?.content?.solution || modelData?.solutionSteps || modelData?.solution || raw.solution || "No solution provided"; // Corrected from solutionText
   const hintText = modelData?.content?.hint || modelData?.hint || raw.hint || "No hint provided"; // Corrected from hintText
 
+  const rawInputReq = modelData?.inputRequirement || raw.inputRequirement || { inputType: 'STANDARD_TEXT' };
+  const inputRequirement = typeof rawInputReq === 'string' 
+    ? { inputType: rawInputReq } 
+    : rawInputReq;
+
   return {
     ...raw,
     modelData,
@@ -40,7 +45,8 @@ export function normalizeQuestionData(raw) {
     questionText,
     question: questionText,
     solution: solutionText,
-    hint: hintText
+    hint: hintText,
+    inputRequirement
   };
 }
 
