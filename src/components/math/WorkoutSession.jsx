@@ -302,6 +302,9 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
           className="bg-white border-4 border-slate-50 rounded-[3rem] p-12 space-y-8 shadow-xl"
         >
           <h3 className="text-3xl font-black text-slate-900">{normalizedQuestion.question}</h3>
+          {normalizedQuestion.inputRequirement?.inputType === 'MULTI_STEP_INPUT' && (
+            <p className="text-slate-500 font-bold text-lg">✏️ Write your working and final answer below.</p>
+          )}
 
           {/* 
             DEBUG LOG: Keep this active if issues persist. 
