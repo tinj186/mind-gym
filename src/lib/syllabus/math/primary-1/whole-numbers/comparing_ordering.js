@@ -58,10 +58,10 @@ export const comparingOrderingBlueprint = {
 
     //    advanced_greatest_from_digits: "Form the greatest 2-digit number using given digits.", // Renamed
     //    advanced_relative_logic: "Deduce the order of 3 amounts based on relative 'more than/less than' clues.",
-    advanced_sequence_skip_counting: "Identify a missing number in a skip-counting pattern (by 2s, 5s, or 10s).",
-    advanced_smallest_from_digits: "Form the smallest 2-digit number from given digits that is greater than a specific value.", // Renamed
-    //    advanced_swapped_digits_difference: "Find the difference between a number and the number formed by swapping its digits.",
-    //    advanced_logic_puzzle_order: "Order 3 characters based on relative abstract clues (e.g., A is less than B).",
+    //    advanced_sequence_skip_counting: "Identify a missing number in a skip-counting pattern (by 2s, 5s, or 10s).",
+    //    advanced_smallest_from_digits: "Form the smallest 2-digit number from given digits that is greater than a specific value.", // Renamed
+    advanced_swapped_digits_difference: "Find the difference between a number and the number formed by swapping its digits.",
+    advanced_logic_puzzle_order: "Order 3 characters based on relative abstract clues (e.g., A is less than B).",
     //    advanced_mystery_number_clues: "Deduce a mystery number using bounds and the sum of its digits.",
     //    advanced_extreme_inequality: "Identify the greatest number that is smaller than a complex regrouped expression.",
     //    advanced_net_value_comparison: "Determine the final value after a number undergoes a series of regrouped 'more than' and 'less than' changes (e.g., Start with 4 tens, add 15 ones, then take away 1 ten)."
@@ -76,22 +76,10 @@ export const comparingOrderingBlueprint = {
     const isMCQ = safeType.includes('mcq');
     let activeVariant = variant;
 
-    // 1. Variant Filtering based on Type
-    const violatesShort = isShort && activeVariant && (activeVariant.includes('word') || activeVariant.includes('clue') || activeVariant.includes('logic'));
-    const violatesStructure = isStructure && activeVariant && (!activeVariant.includes('word') && !activeVariant.includes('clue') && !activeVariant.includes('logic'));
-
-    if (!comparingOrderingBlueprint.variants[variant] || violatesShort || violatesStructure) {
+    // 1. Ensure the variant exists (Fallback only if invalid)
+    if (!comparingOrderingBlueprint.variants[variant]) {
       const safeDiff = String(difficulty).toLowerCase();
       let validVariants = Object.keys(comparingOrderingBlueprint.variants).filter(k => k.startsWith(safeDiff));
-
-      if (isShort) {
-        // Short questions: ONLY notation-based comparisons
-        validVariants = validVariants.filter(k => !k.includes('word') && !k.includes('clue') && !k.includes('logic'));
-      } else if (isStructure) {
-        // Structured: ONLY stories/logic puzzles
-        validVariants = validVariants.filter(k => k.includes('word') || k.includes('clue') || k.includes('logic'));
-      }
-
       if (validVariants.length > 0) {
         activeVariant = validVariants[Math.floor(Math.random() * validVariants.length)];
       } else {
