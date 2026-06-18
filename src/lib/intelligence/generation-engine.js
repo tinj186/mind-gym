@@ -17,7 +17,7 @@ export class GenerationEngine {
     
     // 1. Get Level Specific Strategy
     const levelStrategy = getLevelStrategy(level, type);
-    const baseSystemInstructions = getBaseSystemInstructions(level) + "\n\nLEVEL CONSTRAINTS:\n" + levelStrategy;
+    const baseSystemInstructions = getBaseSystemInstructions(level) + "\n\nLEVEL CONSTRAINTS:\n" + levelStrategy + "\n\nCRITICAL RULE: If you are asked to INJECT AN ARRAY OF STEPS into inputRequirement.steps, you MUST output a valid JSON array of objects (e.g. [{\"label\": \"Step 1\", \"expectedAnswer\": \"10\"}]), NOT a string!";
 
     // 2. Resolve Blueprint
     const blueprintId = `${level}-${topic}-${subtopic}`;

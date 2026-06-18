@@ -9,7 +9,7 @@ const extract = (val) => {
 
 export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, displayName, getQText, selectedIcon, hideVisual) {
   const commonMeta = { level, topic, type: zodType, difficulty: zodDiff };
-  const inputType = isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT';
+  const inputType = isStructure ? 'MULTI_STEP_INPUT' : (isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT');
   const isShortQ = zodType === 'SHORT_QUESTION';
 
   const levelNum = parseInt(level.replace('Primary ', ''));
@@ -63,7 +63,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         componentToRender: isStructure ? "NONE" : "NUMBER_CARDS",
         componentData: isStructure ? {} : { items: [String(num1), operator, String(num2)] }
       },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -126,7 +126,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         componentToRender: isStructure ? "NONE" : "NUMBER_CARDS",
         componentData: isStructure ? {} : { items: isFirstMissing ? ["?", "+", String(part), "=", String(sum)] : [String(part), "+", "?", "=", String(sum)] }
       },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -209,7 +209,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         componentToRender: "NUMBER_BOND", // Always show number bonds for this variant
         componentData: { ...visualData, icon: selectedIcon }
       },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -271,7 +271,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         componentToRender: "CROSS_OUT_GROUP",
         componentData: { totalItems: total_count, crossedItems: crossed_count, icon: selectedIcon }
       },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {

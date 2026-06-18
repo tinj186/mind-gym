@@ -2,7 +2,7 @@ import { numberToWords } from '@/lib/utils/math-helpers';
 
 export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon) {
   const commonMeta = { level, topic, type: zodType, difficulty: zodDiff };
-  const inputType = isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT';
+  const inputType = isStructure ? 'MULTI_STEP_INPUT' : (isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT');
 
   // 1. GROWING PATTERN (Step-up Logic)
   if (activeVariant === 'advanced_growing_pattern') {

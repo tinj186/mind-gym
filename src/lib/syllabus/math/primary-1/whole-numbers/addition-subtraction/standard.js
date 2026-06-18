@@ -9,7 +9,7 @@ const extract = (val) => {
 
 export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, displayName, getQText, selectedIcon, hideVisual) {
   const commonMeta = { level, topic, type: zodType, difficulty: zodDiff };
-  const inputType = isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT';
+  const inputType = isStructure ? 'MULTI_STEP_INPUT' : (isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT');
   const isShortQ = zodType === 'SHORT_QUESTION';
 
   const levelNum = parseInt(level.replace('Primary ', ''));
@@ -81,7 +81,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
         componentData: isShortQ ? { items: [String(num1), operator, String(num2)] } : {}
       },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -160,7 +160,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
         componentData: isShortQ ? { items: [String(num1), operator, String(num2)] } : {}
       },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -222,7 +222,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
         componentData: isShortQ ? { items: [String(n1), "+", String(n2), "+", String(n3)] } : {}
       },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -282,7 +282,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
         componentData: isShortQ ? { items: isAdd ? [String(part1), "+", "?", "=", String(whole)] : [String(whole), "-", "?", "=", String(part1)] } : {}
       },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -339,7 +339,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         componentToRender: "NONE",
         componentData: {}
       },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -399,7 +399,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
         componentData: isShortQ ? { items: [String(val1), isMore ? "+" : "-", String(diff)] } : {}
       },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -478,7 +478,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         componentToRender: "NUMBER_BOND",
         componentData: { ...visualData, icon: selectedIcon }
       },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {

@@ -18,7 +18,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     gradeLevel: 'P1',
     heuristic: activeVariant.includes('multiplication') ? 'Multiplication' : 'Division'
   };
-  const inputType = isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT';
+  const inputType = isStructure ? 'MULTI_STEP_INPUT' : (isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT');
   const isShortQ = zodType === 'SHORT_QUESTION';
 
   const levelNum = parseInt(level.replace('Primary ', ''));
@@ -69,7 +69,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
           ? { items: isMult ? [String(groups), 'x', String(itemsPerGroup), '=', '?'] : [String(total), '÷', String(groups), '=', '?'] }
           : {}
       },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {

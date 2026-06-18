@@ -2,7 +2,7 @@ import { numberToWords } from '@/lib/utils/math-helpers';
 
 export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual) {
   const commonMeta = { level, topic, type: zodType, difficulty: zodDiff };
-  const inputType = isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT';
+  const inputType = isStructure ? 'MULTI_STEP_INPUT' : (isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT');
 
   if (activeVariant === 'foundation_compare_two') {
     const num1 = Math.floor(Math.random() * 80) + 10;

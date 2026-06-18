@@ -18,7 +18,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     gradeLevel: 'P1',
     heuristic: activeVariant.replace('standard_', '').split('_').join(' ')
   };
-  const inputType = isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT';
+  const inputType = isStructure ? 'MULTI_STEP_INPUT' : (isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT');
   const isShortQ = zodType === 'SHORT_QUESTION';
   const itemLabel = extract(selectedContextItem);
 
@@ -64,7 +64,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
         componentData: isShortQ ? { items: [additionStr, "=", "?", "x", String(num)] } : {}
       },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -113,7 +113,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
         componentData: isShortQ ? { items: [String(rows), "x", String(cols), "=", "?"] } : {}
       },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -163,7 +163,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
         componentData: isShortQ ? { items: [String(times), "x", String(startVal), "=", "?"] } : {}
       },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -212,7 +212,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
         componentData: isShortQ ? { items: [String(groups), "x", String(step), "=", "?"] } : {}
       },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -261,7 +261,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
         componentData: isShortQ ? { items: [String(qty), "x", `$${price}`] } : {}
       },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -312,7 +312,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
         componentData: isShortQ ? { items: [String(total), "÷", String(groups), "=", "?"] } : {}
       },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -363,7 +363,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
         componentData: isShortQ ? { items: [String(total), "÷", String(size), "=", "?"] } : {}
       },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -415,7 +415,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         componentToRender: "NONE",
         componentData: {}
       },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -516,7 +516,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         componentToRender: isShortQ ? "NUMBER_CARDS" : "NONE",
         componentData: isShortQ ? { items: [String(count), "x", String(scenario.per), "=", "?"] } : {}
       },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -591,7 +591,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           icon: selectedIcon
         }
       },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {

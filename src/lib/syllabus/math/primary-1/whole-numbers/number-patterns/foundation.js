@@ -1,7 +1,7 @@
 import { numberToWords } from '@/lib/utils/math-helpers';
 export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon) {
   const commonMeta = { level, topic, type: zodType, difficulty: zodDiff };
-  const inputType = isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT';
+  const inputType = isStructure ? 'MULTI_STEP_INPUT' : (isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT');
 
   if (activeVariant === 'foundation_forward_1' || activeVariant === 'foundation_backward_1') {
     const isForward = activeVariant === 'foundation_forward_1';

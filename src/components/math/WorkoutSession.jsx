@@ -7,6 +7,7 @@ import { finalizeWorkoutAction, updateWorkoutProgressAction, saveAttemptAction }
 import { normalizeQuestionData, deriveVisualProps } from '@/lib/intelligence/workout-utils';
 import VisualRenderer, { ESSENTIAL_VISUALS } from '@/components/math/VisualRenderer';
 import GroupingWorkspace from '@/components/tools/GroupingWorkspace'; // Import the interactive tool
+import MultiStepInput from '@/components/math/MultiStepInput'; // Multi-Step Input
 import confetti from 'canvas-confetti';
 
 import ExamReviewBoard from '@/components/math/ExamReviewBoard';
@@ -172,7 +173,24 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
   }, [currentIndex, answersLog, initialQuestions.length, studentId]);
 
   const handleAnswer = async (submittedAnswer) => {
-    const isCorrect = String(submittedAnswer).trim().toLowerCase() === String(normalizedQuestion.finalAnswer).trim().toLowerCase();
+    let isCorrect = false;
+
+    // Handle array of answers from MultiStepInput
+    if (typeof submittedAnswer === 'object' && submittedAnswer !== null && !Array.isArray(submittedAnswer)) {
+      const steps = normalizedQuestion.inputRequirement?.steps || [];
+      isCorrect = true;
+      for (let i = 0; i < steps.length; i++) {
+        const studentVal = submittedAnswer[i] || '';
+        if (String(studentVal).trim().toLowerCase() !== String(steps[i].expectedAnswer).trim().toLowerCase()) {
+          isCorrect = false;
+          break;
+        }
+      }
+      // Serialize answer for logs
+      submittedAnswer = JSON.stringify(submittedAnswer);
+    } else {
+      isCorrect = String(submittedAnswer).trim().toLowerCase() === String(normalizedQuestion.finalAnswer).trim().toLowerCase();
+    }
 
     if (isCorrect) {
       setFeedback('correct');
@@ -314,7 +332,13 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
           )}
 
           {feedback !== 'solution_revealed' ? (
-            normalizedQuestion.options && normalizedQuestion.options.length > 0 ? (
+            normalizedQuestion.inputRequirement?.inputType === 'MULTI_STEP_INPUT' && normalizedQuestion.inputRequirement?.steps ? (
+              <MultiStepInput 
+                steps={normalizedQuestion.inputRequirement.steps} 
+                onSubmit={handleAnswer} 
+                disabled={feedback === 'correct'}
+              />
+            ) : normalizedQuestion.options && normalizedQuestion.options.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
                 {normalizedQuestion.options.map((opt, idx) => (
                   <button

@@ -9,7 +9,7 @@ const extract = (val) => {
 
 export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, displayName, getQText, selectedIcon, hideVisual) {
   const commonMeta = { level, topic, type: zodType, difficulty: zodDiff };
-  const inputType = isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT';
+  const inputType = isStructure ? 'MULTI_STEP_INPUT' : (isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT');
   const isShortQ = zodType === 'SHORT_QUESTION';
 
   const levelNum = parseInt(level.replace('Primary ', ''));
@@ -73,7 +73,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         componentToRender: isStructure ? "NONE" : "NUMBER_CARDS",
         componentData: isStructure ? {} : { items: [String(num1), operator, String(num2)] }
       },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -132,7 +132,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         solutionSteps: `1. To find "more than", we add the numbers.\n2. ${num1} + ${num2} = ${answer}.`
       },
       visualEngine: { componentToRender: "NONE", componentData: {} },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -189,7 +189,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         solutionSteps: `1. To find "less than", we subtract.\n2. ${num1} - ${num2} = ${answer}.`
       },
       visualEngine: { componentToRender: "NONE", componentData: {} },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -246,7 +246,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         solutionSteps: `1. Add the people in front: ${inFront}.\n2. Add ${extract(context.name)} themselves: 1.\n3. Add the people behind: ${behind}.\n4. Total: ${inFront} + 1 + ${behind} = ${answer}.`
       },
       visualEngine: { componentToRender: "NONE", componentData: {} },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -301,7 +301,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         solutionSteps: `1. Find the total of the first group: ${left1} + ${left2} = ${sum}.\n2. To make the other side equal ${sum}, we subtract the known amount: ${sum} - ${right1} = ${answer}.`
       },
       visualEngine: { componentToRender: "NONE", componentData: {} },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -335,7 +335,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         solutionSteps: `1. Work backwards from the final amount: ${finalAmount}.\n2. Reverse the last change: ${finalAmount} - ${change2} = ${finalAmount - change2}.\n3. Reverse the first change: ${finalAmount - change2} + ${change1} = ${answer}.`
       },
       visualEngine: { componentToRender: "NONE", componentData: {} },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -369,7 +369,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         solutionSteps: `1. Find how many items the second person has: ${aAmount} + ${diff} = ${bAmount}.\n2. Find the total by adding both amounts: ${aAmount} + ${bAmount} = ${answer}.`
       },
       visualEngine: { componentToRender: "NONE", componentData: {} },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -403,7 +403,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         solutionSteps: `1. ▲ + ▲ = ${eq1Sum}, so ▲ is ${shape1Val}.\n2. Substitute into the second equation: ${shape1Val} + ● = ${eq2Sum}.\n3. Therefore, ● = ${eq2Sum} - ${shape1Val} = ${answer}.`
       },
       visualEngine: { componentToRender: "NONE", componentData: {} },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -440,7 +440,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         componentToRender: "NUMBER_CARDS",
         componentData: { items: [`${tens1}?`, "+", String(num2), "=", String(sum)], hideVisual: false }
       },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
