@@ -70,6 +70,10 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
   // 🛡️ Forward-Button & Deep-Link Guard
   useEffect(() => {
     if (hasValidatedToken.current) return;
+    if (isSandbox) {
+      hasValidatedToken.current = true;
+      return;
+    }
     
     if (sessionStorage.getItem('allow_workout') !== 'true') {
       console.warn("Unauthorized/Stale entry detected. Redirecting to dashboard.");
@@ -79,7 +83,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
     hasValidatedToken.current = true;
     // Consume the token immediately so a refresh/forward action kicks them out
     sessionStorage.removeItem('allow_workout');
-  }, []);
+  }, [isSandbox]);
 
   // Injecting Console Debugger
   useEffect(() => {
