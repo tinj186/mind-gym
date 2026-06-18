@@ -85,7 +85,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      aiPrompt: `You are an expert Primary 1 math generator. STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component, "solutionSteps", or "finalAnswer". Return exactly the provided JSON structure, modifying ONLY the hint and array placeholders to match the requirements. ${formatInstructions}
       ${isShortQ 
         ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
         : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence Singaporean word problem involving ${extract(context.name)} and ${itemLabel}. The story must naturally incorporate the numbers ${num1} and ${num2} in an ${isAdd ? 'addition' : 'subtraction'} context (e.g., buying, collecting, or losing items).`
@@ -164,7 +164,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      aiPrompt: `You are an expert Primary 1 math generator. STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component, "solutionSteps", or "finalAnswer". Return exactly the provided JSON structure, modifying ONLY the hint and array placeholders to match the requirements. ${formatInstructions}
       ${isShortQ 
         ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
         : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence Singaporean word problem involving ${extract(context.name)} and ${itemLabel}. The story must naturally incorporate the numbers ${num1} and ${num2} in an ${isAdd ? 'addition' : 'subtraction'} context (e.g., sharing, finding, or spending).`
@@ -226,7 +226,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      aiPrompt: `You are an expert Primary 1 math generator. STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component, "solutionSteps", or "finalAnswer". Return exactly the provided JSON structure, modifying ONLY the hint and array placeholders to match the requirements. ${formatInstructions}
       ${isShortQ 
         ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
         : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence Singaporean word problem about ${extract(context.name)} and their ${n1}, ${n2}, and ${n3} ${itemLabel}. The story should logically combine these three groups.`
@@ -286,7 +286,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      aiPrompt: `You are an expert Primary 1 math generator. STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component, "solutionSteps", or "finalAnswer". Return exactly the provided JSON structure, modifying ONLY the hint and array placeholders to match the requirements. ${formatInstructions}
       ${isShortQ 
         ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
         : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence Singaporean word problem involving ${extract(context.name)} and ${itemLabel}. The story should describe a situation where ${whole} is the total and ${part1} is one part, asking for the missing ${part2} ${itemLabel}.`
@@ -343,7 +343,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. ${readingMandate} ${formatInstructions}
+      aiPrompt: `You are an expert Primary 1 math generator. STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component, "solutionSteps", or "finalAnswer". Return exactly the provided JSON structure, modifying ONLY the hint and array placeholders to match the requirements. ${readingMandate} ${formatInstructions}
       ${isShortQ 
         ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
         : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence Singaporean word problem about related facts using ${extract(context.name)} and ${itemLabel}. (e.g., "If ${part1} ${itemLabel} and ${part2} ${itemLabel} make ${whole}...")`
@@ -403,7 +403,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. ${readingMandate} ${formatInstructions}
+      aiPrompt: `You are an expert Primary 1 math generator. STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component, "solutionSteps", or "finalAnswer". Return exactly the provided JSON structure, modifying ONLY the hint and array placeholders to match the requirements. ${readingMandate} ${formatInstructions}
       ${isShortQ 
         ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
         : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story: "${extract(context.name)} has ${val1} ${itemLabel}. Another person has ${diff} ${isMore ? 'more' : 'fewer'} than ${extract(context.name)}." You may use other localized objects (e.g. curry puffs, satay sticks) instead of ${itemLabel}.`
@@ -482,7 +482,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      aiPrompt: `You are an expert Primary 1 math generator. STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component, "solutionSteps", or "finalAnswer". Return exactly the provided JSON structure, modifying ONLY the hint and array placeholders to match the requirements. ${formatInstructions}
       ${isShortQ 
         ? 'STRICT: Provide a direct question about the number bond. NO story context or names.' 
         : `STRICT: Replace the "[STORY]" tag in "questionText" with a 1-sentence localized Singaporean story about ${missingPos === 0 ? `combining ${part1} and ${part2} ${itemLabel}` : `splitting ${whole} ${itemLabel} into two groups`}.`
@@ -559,7 +559,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      aiPrompt: `You are an expert Primary 1 math generator. STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component, "solutionSteps", or "finalAnswer". Return exactly the provided JSON structure, modifying ONLY the hint and array placeholders to match the requirements. ${formatInstructions}
       STRICT: This is an equation equivalence question. Do not generate a story. Keep the question strictly as provided.
       
       CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
@@ -618,7 +618,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      aiPrompt: `You are an expert Primary 1 math generator. STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component, "solutionSteps", or "finalAnswer". Return exactly the provided JSON structure, modifying ONLY the hint and array placeholders to match the requirements. ${formatInstructions}
       STRICT: Do not generate a story context. Output the exact question text provided.
       
       CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
