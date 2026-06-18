@@ -44,7 +44,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
-          "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
+          "defectMap": ${defectMap ? JSON.stringify(defectMap) : (typeof answer === 'string' && !isNaN(parseInt(answer)) ? JSON.stringify({ [String(parseInt(answer) + 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) - 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) + 10)]: "CARELESS_CALCULATION", [typeof wrongOpAnswer !== 'undefined' ? wrongOpAnswer : '9999']: "CONFUSED_OPERATION" }) : 'null')},
           "hint": "The jumps between numbers are getting larger each time.",
           "finalAnswer": "${answer}",
           "solutionSteps": "1. The first jump is +${initialJump}.\\n2. The next jump is +${initialJump + growth}.\\n3. The next jump is +${initialJump + 2 * growth}.\\n4. The last jump should be +${initialJump + 3 * growth}. So, ${sequence[3]} + ${initialJump + 3 * growth} = ${answer}."
@@ -97,7 +97,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
-          "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
+          "defectMap": ${defectMap ? JSON.stringify(defectMap) : (typeof answer === 'string' && !isNaN(parseInt(answer)) ? JSON.stringify({ [String(parseInt(answer) + 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) - 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) + 10)]: "CARELESS_CALCULATION", [typeof wrongOpAnswer !== 'undefined' ? wrongOpAnswer : '9999']: "CONFUSED_OPERATION" }) : 'null')},
           "hint": "Try looking at every second number to see if you can find two patterns.",
           "finalAnswer": "${answer}",
           "solutionSteps": "${solutionSteps}"
@@ -152,7 +152,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
-          "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
+          "defectMap": ${defectMap ? JSON.stringify(defectMap) : (typeof answer === 'string' && !isNaN(parseInt(answer)) ? JSON.stringify({ [String(parseInt(answer) + 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) - 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) + 10)]: "CARELESS_CALCULATION", [typeof wrongOpAnswer !== 'undefined' ? wrongOpAnswer : '9999']: "CONFUSED_OPERATION" }) : 'null')},
           "hint": "The jumps between numbers are getting larger, but the numbers are getting smaller.",
           "finalAnswer": "${answer}",
           "solutionSteps": "1. The first jump is -${initialJump}.\\n2. The next jump is -${initialJump + growth}.\\n3. The next jump is -${initialJump + 2 * growth}.\\n4. The last jump should be -${initialJump + 3 * growth}. So, ${sequence[3]} - ${initialJump + 3 * growth} = ${answer}."
@@ -194,7 +194,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "content": {
           "questionText": "[STORY] What number is missing in this pattern?",
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
-          "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
+          "defectMap": ${defectMap ? JSON.stringify(defectMap) : (typeof answer === 'string' && !isNaN(parseInt(answer)) ? JSON.stringify({ [String(parseInt(answer) + 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) - 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) + 10)]: "CARELESS_CALCULATION", [typeof wrongOpAnswer !== 'undefined' ? wrongOpAnswer : '9999']: "CONFUSED_OPERATION" }) : 'null')},
           "hint": "Check the difference between the first two numbers.",
           "finalAnswer": "${answer}",
           "solutionSteps": "1. The numbers increase by ${step} every time.\\n2. To find the missing number, add ${step} to ${sequence[1]}.\\n3. ${sequence[1]} + ${step} = ${answer}."
@@ -242,7 +242,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "content": {
           "questionText": "Find the missing number in the pattern: ${displaySeq.join(', ')}",
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
-          "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
+          "defectMap": ${defectMap ? JSON.stringify(defectMap) : (typeof answer === 'string' && !isNaN(parseInt(answer)) ? JSON.stringify({ [String(parseInt(answer) + 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) - 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) + 10)]: "CARELESS_CALCULATION", [typeof wrongOpAnswer !== 'undefined' ? wrongOpAnswer : '9999']: "CONFUSED_OPERATION" }) : 'null')},
           "hint": "The pattern adds a number, then subtracts a number.",
           "finalAnswer": "${answer}",
           "solutionSteps": "1. The rule is to add ${j1}, then subtract ${Math.abs(j2)}.\\n2. We just subtracted ${Math.abs(j2)} to get ${sequence[2]}.\\n3. Now we must add ${j1} to get the next number.\\n4. ${sequence[2]} + ${j1} = ${answer}."
@@ -323,7 +323,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "content": {
           "questionText": "[Generate a clear and varied mathematical question text based on the instructions above]",
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
-          "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
+          "defectMap": ${defectMap ? JSON.stringify(defectMap) : (typeof answer === 'string' && !isNaN(parseInt(answer)) ? JSON.stringify({ [String(parseInt(answer) + 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) - 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) + 10)]: "CARELESS_CALCULATION", [typeof wrongOpAnswer !== 'undefined' ? wrongOpAnswer : '9999']: "CONFUSED_OPERATION" }) : 'null')},
           "hint": "This pattern has two different jumps that take turns.",
           "finalAnswer": "${answer}",
           "solutionSteps": "${solutionExplanation}"

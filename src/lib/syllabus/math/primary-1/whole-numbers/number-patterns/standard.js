@@ -73,7 +73,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
-          "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
+          "defectMap": ${defectMap ? JSON.stringify(defectMap) : (typeof answer === 'string' && !isNaN(parseInt(answer)) ? JSON.stringify({ [String(parseInt(answer) + 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) - 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) + 10)]: "CARELESS_CALCULATION", [typeof wrongOpAnswer !== 'undefined' ? wrongOpAnswer : '9999']: "CONFUSED_OPERATION" }) : 'null')},
           "hint": "Check the jump between the numbers you can see.",
           "finalAnswer": "${answer}",
           "solutionSteps": "${solutionSteps}"

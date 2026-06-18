@@ -38,8 +38,8 @@ export const numberPatternBlueprint = {
 
   // 2. STRICT VARIANTS
   variants: {
-    //    foundation_forward_1: "Find the next number in a +1 pattern.",
-    //    foundation_backward_1: "Find the next number in a -1 pattern.",
+    foundation_forward_1: "Find the next number in a +1 pattern.",
+    foundation_backward_1: "Find the next number in a -1 pattern.",
     foundation_missing_middle_1: "Find the missing middle number in a +1 pattern.",
     foundation_missing_middle_back_1: "Find the missing middle number in a -1 pattern.",
     foundation_missing_start_1: "Find the missing starting number in a +1 pattern.",

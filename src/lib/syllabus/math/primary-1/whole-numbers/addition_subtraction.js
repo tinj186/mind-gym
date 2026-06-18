@@ -40,10 +40,10 @@ export const additionSubtractionBlueprint = {
   variants: {
     foundation_add_20: "Add two numbers within 20.",
     foundation_sub_20: "Subtract two numbers within 20.",
-    foundation_missing_addend: "Find the missing addend in an equation within 20.",
-    foundation_number_bond_logic: "Find the missing part in a number bond within 20.",
-    foundation_visual_cross_out: "Visual subtraction where a subset of rendered items are explicitly crossed out.",
-    foundation_fact_family_cards: "Construct an addition/subtraction equation using 3 visual number cards within 20.",
+    //    foundation_missing_addend: "Find the missing addend in an equation within 20.",
+    //    foundation_number_bond_logic: "Find the missing part in a number bond within 20.",
+    //    foundation_visual_cross_out: "Visual subtraction where a subset of rendered items are explicitly crossed out.",
+    //    foundation_fact_family_cards: "Construct an addition/subtraction equation using 3 visual number cards within 20.",
 
     standard_add_100_no_regroup: "Add two 2-digit numbers within 100 without regrouping.",
     standard_sub_100_no_regroup: "Subtract two 2-digit numbers within 100 without regrouping.",

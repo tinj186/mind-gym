@@ -40,7 +40,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
-          "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
+          "defectMap": ${defectMap ? JSON.stringify(defectMap) : (typeof answer === 'string' && !isNaN(parseInt(answer)) ? JSON.stringify({ [String(parseInt(answer) + 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) - 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) + 10)]: "CARELESS_CALCULATION", [typeof wrongOpAnswer !== 'undefined' ? wrongOpAnswer : '9999']: "CONFUSED_OPERATION" }) : 'null')},
           "hint": "Check if the numbers are getting bigger or smaller by 1 each time.",
           "finalAnswer": "${answer}",
           "solutionSteps": "1. The pattern is counting ${isForward ? 'on' : 'back'} by 1.\\n2. ${sequence[3]} ${isForward ? '+' : '-'} 1 = ${answer}."
@@ -88,7 +88,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
-          "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
+          "defectMap": ${defectMap ? JSON.stringify(defectMap) : (typeof answer === 'string' && !isNaN(parseInt(answer)) ? JSON.stringify({ [String(parseInt(answer) + 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) - 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) + 10)]: "CARELESS_CALCULATION", [typeof wrongOpAnswer !== 'undefined' ? wrongOpAnswer : '9999']: "CONFUSED_OPERATION" }) : 'null')},
           "hint": "What number comes exactly after ${sequence[1]}?",
           "finalAnswer": "${answer}",
           "solutionSteps": "1. The pattern is counting ${isForward ? 'on' : 'back'} by 1.\\n2. ${sequence[1]} ${isForward ? '+' : '-'} 1 = ${answer}."
@@ -134,7 +134,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
-          "defectMap": ${defectMap ? JSON.stringify(defectMap) : 'null'},
+          "defectMap": ${defectMap ? JSON.stringify(defectMap) : (typeof answer === 'string' && !isNaN(parseInt(answer)) ? JSON.stringify({ [String(parseInt(answer) + 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) - 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) + 10)]: "CARELESS_CALCULATION", [typeof wrongOpAnswer !== 'undefined' ? wrongOpAnswer : '9999']: "CONFUSED_OPERATION" }) : 'null')},
           "hint": "Try counting backward by 1 from ${sequence[1]} to find the start.",
           "finalAnswer": "${answer}",
           "solutionSteps": "1. The pattern is counting on by 1.\\n2. To find the first number, we count back by 1 from ${sequence[1]}.\\n3. ${sequence[1]} - 1 = ${answer}."
