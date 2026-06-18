@@ -31,7 +31,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.
       ${formatInstructions}
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
@@ -83,7 +83,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const storyInstruction = `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context where ${p1} has 60, ${p2} has 45, and ${p3} has 30 items. You MUST NOT leave the "[STORY]" tag.`;
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. 
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.
       ${formatInstructions}
       ${storyInstruction}
 
@@ -136,7 +136,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. 
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.
       ${formatInstructions}
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
@@ -188,7 +188,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. 
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.
       ${formatInstructions}
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
@@ -236,7 +236,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. 
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.
       ${formatInstructions}
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
@@ -289,7 +289,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context using names ${p1}, ${p2}, and ${p3}. You MUST NOT leave the "[STORY]" tag.`;
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.
       ${formatInstructions}
       ${storyInstruction}
 
@@ -337,7 +337,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. 
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.
       ${formatInstructions}
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
@@ -380,7 +380,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. 
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.
       ${formatInstructions}
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
@@ -427,7 +427,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const storyInstruction = `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context where a character has ${startTens} tens and ${regroupedOnes} ones, then ${isIncrease ? 'gets' : 'loses'} ${changeTens} tens. You MUST NOT leave the "[STORY]" tag.`;
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator. 
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.
       ${formatInstructions}
       ${storyInstruction}
 

@@ -40,7 +40,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const solutionSteps = getQText(`Comparing the tens and ones, the correct order from ${targetWord} is ${answer}.`, answer);
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Ordering Numbers\n - Numbers: ${nums.join(', ')}\n - Final Answer MUST be exactly: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_ordering question. DO NOT rewrite "questionText" into a story. Keep the exact questionText provided. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.\n\n MATH CONSTRAINTS:\n - Topic: Ordering Numbers\n - Numbers: ${nums.join(', ')}\n - Final Answer MUST be exactly: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):\n ${JSON.stringify({
         meta: commonMeta,
         content: {
           questionText: questionText,
@@ -92,7 +92,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const solutionSteps = getQText(explanation, `${lower} < ${answer} < ${upper}`);
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Number Bounds\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_between_bounds question. DO NOT rewrite "questionText" into a story. Keep the exact questionText provided. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.\n\n MATH CONSTRAINTS:\n - Topic: Number Bounds\n - Final Answer MUST strictly be: "${answer}"\n ${formatInstructions}\n\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):\n ${JSON.stringify({
         meta: commonMeta,
         content: {
           questionText: questionText,
@@ -133,7 +133,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       options.forEach(opt => { if (opt !== answer) defectMap[opt] = "CONCEPTUAL_ERROR"; });
     }
 
-    const promptStart = `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Compare Word Problem\n - Amounts: ${amounts.join(', ')}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n - Do NOT put emojis in the question text.`;
+    const promptStart = `STRICT VARIANT MANDATE: You are generating a compare word problem. DO NOT rewrite "questionText" into a story. Keep the exact questionText provided. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.\n MATH CONSTRAINTS:\n - Topic: Compare Word Problem\n - Amounts: ${amounts.join(', ')}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n CREATIVE INSTRUCTIONS:\n - Generate a Singapore-themed word problem. Use local names (e.g., Siti, Muthu, Wei Ling, Ahmad), local food/items (e.g., curry puffs, ang baos, satay, saga seeds), and local settings (e.g., hawker centre, HDB void deck, MRT station).\n - Do NOT put emojis in the question text.`;
     const solutionSteps = getQText(`Comparing the amounts, the ${targetWord} amount is ${answer}.`, `${answer} is the ${targetWord}.`);
 
     return {
@@ -184,7 +184,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const solutionSteps = getQText(`The numbers are increasing by 1. After ${sequence[missingIdx - 1]} comes ${answer}.`, `${sequence[missingIdx - 1]} + 1 = ${answer}`);
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Missing Number (Ascending)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a missing sequence question. DO NOT rewrite "questionText" into a story. Keep the exact questionText provided. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.\n\n MATH CONSTRAINTS:\n - Topic: Missing Number (Ascending)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):\n ${JSON.stringify({
         meta: commonMeta,
         content: {
           questionText: questionText,
@@ -231,7 +231,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const solutionSteps = getQText(`The numbers are decreasing by 1. Before ${sequence[missingIdx - 1]} comes ${answer}.`, `${sequence[missingIdx - 1]} - 1 = ${answer}`);
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Missing Number (Descending)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a missing sequence question. DO NOT rewrite "questionText" into a story. Keep the exact questionText provided. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.\n\n MATH CONSTRAINTS:\n - Topic: Missing Number (Descending)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):\n ${JSON.stringify({
         meta: commonMeta,
         content: {
           questionText: questionText,
@@ -274,7 +274,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const solutionSteps = getQText(`Comparing all four numbers, ${answer} has the highest value.`, `${answer} is the greatest.`);
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Greatest of Four\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a greatest_four question. DO NOT rewrite "questionText" into a story. Keep the exact questionText provided. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.\n\n MATH CONSTRAINTS:\n - Topic: Greatest of Four\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):\n ${JSON.stringify({
         meta: commonMeta,
         content: {
           questionText: questionText,
@@ -317,7 +317,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const solutionSteps = getQText(`Comparing all four numbers, ${answer} has the lowest value.`, `${answer} is the smallest.`);
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Smallest of Four\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a smallest_four question. DO NOT rewrite "questionText" into a story. Keep the exact questionText provided. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.\n\n MATH CONSTRAINTS:\n - Topic: Smallest of Four\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):\n ${JSON.stringify({
         meta: commonMeta,
         content: {
           questionText: questionText,
@@ -367,7 +367,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a compare question. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.
       ${formatInstructions}
       ${storyInstruction}
 
@@ -421,7 +421,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a compare question. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.
       ${formatInstructions}
       ${storyInstruction}
 

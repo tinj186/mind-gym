@@ -262,10 +262,15 @@ export const advancedVariants = {
     };
   },
   advanced_consecutive_digits: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const tensDigit = Math.floor(Math.random() * 4) + 1; // 1 to 4
-    const onesDigit = tensDigit + 1;
+    const smallerDigit = Math.floor(Math.random() * 8) + 1; // 1 to 8
+    const largerDigit = smallerDigit + 1;
+    const isTensGreater = Math.random() > 0.5;
+    
+    const tensDigit = isTensGreater ? largerDigit : smallerDigit;
+    const onesDigit = isTensGreater ? smallerDigit : largerDigit;
     const num = (tensDigit * 10) + onesDigit;
     const sum = tensDigit + onesDigit;
+    const condition = isTensGreater ? "The tens digit is greater than the ones digit." : "The ones digit is greater than the tens digit.";
 
     // Ensure options are distinct and include the correct answer
     const options = [num, num - 1, num + 1, (onesDigit * 10) + tensDigit].filter(
@@ -289,6 +294,7 @@ export const advancedVariants = {
         MATH CONSTRAINTS:
         - Number: ${num}
         - Clue: Digits are consecutive (next to each other), sum is ${sum}.
+        - Condition: ${condition}
         - Final Answer MUST strictly be: "${num}"
         ${formatInstructions}
         CRITICAL: If the question type is MCQ, the "options" array MUST be exactly: ${JSON.stringify(options)}. DO NOT modify its content or format.
@@ -297,12 +303,12 @@ export const advancedVariants = {
         {
           "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
           "content": {
-            "questionText": ${JSON.stringify(getQText(`The digits of a number are consecutive. Their sum is ${sum}. What is the 2-digit number?`, `2-digit number with consecutive digits that sum to ${sum}?`))},
+            "questionText": ${JSON.stringify(getQText(`The digits of a 2-digit number are consecutive. Their sum is ${sum}. ${condition} What is the number?`, `2-digit number with consecutive digits summing to ${sum}. ${condition} What is it?`))},
             "options": ${mcqOptions},
             "defectMap": ${defectMapStr},
-            "hint": ${JSON.stringify(getQText(`Consecutive numbers are like 1 and 2, or 3 and 4. Which two next-door numbers add up to ${sum}?`, `Try pairs like (1,2), (2,3)...`))},
+            "hint": ${JSON.stringify(getQText(`Consecutive numbers are like 1 and 2, or 3 and 4. Which two next-door numbers add up to ${sum}? Remember ${condition}`, `Try pairs like (1,2), (2,3)... Note: ${condition}`))},
             "finalAnswer": "${num}",
-            "solutionSteps": ${JSON.stringify(getQText(`The digits ${tensDigit} and ${onesDigit} are consecutive and sum to ${sum}. The number is ${num}.`, `${tensDigit}+${onesDigit}=${sum}`))}
+            "solutionSteps": ${JSON.stringify(getQText(`The digits ${smallerDigit} and ${largerDigit} are consecutive and sum to ${sum}. Since ${condition.toLowerCase()}, the number is ${num}.`, `${smallerDigit}+${largerDigit}=${sum}, ${condition} -> ${num}`))}
           },
           "visualEngine": { "componentToRender": "NONE", "componentData": {} },
           "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }

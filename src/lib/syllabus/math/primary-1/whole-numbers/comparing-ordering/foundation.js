@@ -31,7 +31,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const solutionSteps = getQText(`Comparing the tens and ones, ${answer} is the ${targetWord} number.`, `${answer} is the ${targetWord} number.`);
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Compare 2 Numbers\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.\n MATH CONSTRAINTS:\n - Topic: Compare 2 Numbers\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({
         meta: commonMeta,
         content: {
           questionText: questionText,
@@ -83,7 +83,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const solutionSteps = getQText(`Looking at the numbers ${nums.join(', ')}, the ${targetWord} one is ${answer}.`, `${answer} is the ${targetWord}.`);
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Identify ${targetWord}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.\n MATH CONSTRAINTS:\n - Topic: Identify ${targetWord}\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({
         meta: commonMeta,
         content: {
           questionText: questionText,
@@ -125,7 +125,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const solutionSteps = getQText(`The number that comes right after ${num} when counting is ${answer}.`, `${num} + 1 = ${answer}`);
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Number Sequence (After)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.\n MATH CONSTRAINTS:\n - Topic: Number Sequence (After)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({
         meta: commonMeta,
         content: {
           questionText: questionText,
@@ -167,7 +167,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const solutionSteps = getQText(`The number that comes right before ${num} when counting is ${answer}.`, `${num} - 1 = ${answer}`);
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.\n MATH CONSTRAINTS:\n - Topic: Number Sequence (Before)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.\n MATH CONSTRAINTS:\n - Topic: Number Sequence (Before)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON):\n ${JSON.stringify({
         meta: commonMeta,
         content: {
           questionText: questionText,
