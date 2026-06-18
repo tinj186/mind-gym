@@ -12,7 +12,7 @@ import confetti from 'canvas-confetti';
 
 import ExamReviewBoard from '@/components/math/ExamReviewBoard';
 
-export default function WorkoutSession({ studentId, level, initialQuestions = [], initialIndex = 0, initialLog = [], title = "Daily Training Sequence", mode = "daily", subtopicId }) {
+export default function WorkoutSession({ studentId, level, initialQuestions = [], initialIndex = 0, initialLog = [], title = "Daily Training Sequence", mode = "daily", subtopicId, isSandbox = false }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [answersLog, setAnswersLog] = useState(initialLog);
   const [lastSubmittedAnswer, setLastSubmittedAnswer] = useState("");
@@ -149,21 +149,23 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
     setFeedback(null);
 
     // Part 2: Real-Time Saving & Persistence
-    startTransition(async () => {
-      try {
-        await saveAttemptAction(studentId, result);
-        if (nextIndex < initialQuestions.length) {
-          await updateWorkoutProgressAction(studentId, { currentIndex: nextIndex, answersLog: newLog });
-          localStorage.setItem(`active_workout_${studentId}`, JSON.stringify({
-            initialQuestions,
-            currentIndex: nextIndex,
-            answersLog: newLog,
-            mode,
-            subtopicId
-          }));
-        }
-      } catch (e) { console.error("Real-time save failed:", e); }
-    });
+    if (!isSandbox) {
+      startTransition(async () => {
+        try {
+          await saveAttemptAction(studentId, result);
+          if (nextIndex < initialQuestions.length) {
+            await updateWorkoutProgressAction(studentId, { currentIndex: nextIndex, answersLog: newLog });
+            localStorage.setItem(`active_workout_${studentId}`, JSON.stringify({
+              initialQuestions,
+              currentIndex: nextIndex,
+              answersLog: newLog,
+              mode,
+              subtopicId
+            }));
+          }
+        } catch (e) { console.error("Real-time save failed:", e); }
+      });
+    }
 
     if (nextIndex < initialQuestions.length) {
       setCurrentIndex(nextIndex);
@@ -240,6 +242,10 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
   };
 
   const handleFinish = (finalLog) => {
+    if (isSandbox) {
+      setSummary({ averageGrowth: 0, rankUps: [] });
+      return;
+    }
     startTransition(async () => {
       const summaryData = await finalizeWorkoutAction(studentId, finalLog);
       // CLEAR SESSION: Remove the lock once complete

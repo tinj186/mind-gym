@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import VisualRenderer from '@/components/math/VisualRenderer';
 import { normalizeQuestionData, deriveVisualProps } from '@/lib/intelligence/workout-utils';
+import WorkoutSession from '@/components/math/WorkoutSession';
 
 /**
  * GymQuestionPreviewClient: Renders a specific question for admin preview or student workout.
@@ -57,29 +58,16 @@ export default function GymQuestionPreviewClient({ initialPreviewId: previewId }
   const visualProps = deriveVisualProps(question);
 
   return (
-    <div className="min-h-screen bg-white text-slate-900">
-      <main className="max-w-4xl mx-auto p-8 md:p-12 space-y-12">
-        <div className="space-y-4">
-          <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">The Problem</span>
-          <h1 className="text-3xl font-bold text-slate-900 leading-tight">
-            {question.questionText}
-          </h1>
-        </div>
-
-        {/* Visual Engine implementation */}
-        <div className="py-12 border-y border-slate-100">
-          <VisualRenderer
-            type={question.visualEngine?.componentToRender}
-            data={question.visualEngine?.componentData}
-            visualProps={visualProps}
-            setIsToolOpen={() => {}} // No-op fallback for simple preview mode
-            questionId={question.id}
-            difficulty={question.difficulty}
-            topic={question.topic}
-            attempts={0} // Force full fidelity rendering
-            isExam={false}
-          />
-        </div>
+    <div className="min-h-screen bg-slate-100 text-slate-900">
+      <main className="max-w-4xl mx-auto py-12">
+        <WorkoutSession 
+          studentId="admin-test"
+          level={question.level}
+          initialQuestions={[question]}
+          title="Sandbox Preview Inspector"
+          mode="sandbox"
+          isSandbox={true}
+        />
       </main>
     </div>
   );
