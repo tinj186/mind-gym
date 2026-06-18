@@ -45,14 +45,14 @@ export const additionSubtractionBlueprint = {
     foundation_visual_cross_out: "Visual subtraction where a subset of rendered items are explicitly crossed out.",
     foundation_fact_family_cards: "Construct an addition/subtraction equation using 3 visual number cards within 20.",
 
-    standard_add_100_no_regroup: "Add two 2-digit numbers within 100 without regrouping.",
-    standard_sub_100_no_regroup: "Subtract two 2-digit numbers within 100 without regrouping.",
+    //    standard_add_100_no_regroup: "Add two 2-digit numbers within 100 without regrouping.",
+    //    standard_sub_100_no_regroup: "Subtract two 2-digit numbers within 100 without regrouping.",
     //    standard_add_three_numbers: "Add three 1-digit numbers with sums up to 20.",
     //    standard_missing_addend_100: "Find the missing addend in a 2-digit equation (no regrouping).",
-    //   standard_missing_subtrahend_100: "Find the missing subtrahend in a 2-digit equation (no regrouping).",
-    //   standard_related_fact_families: "Use addition facts to solve related subtraction problems.",
-    //   standard_comparison_more_basic: "Solve 'How many more' problems within 40 (no regrouping).",
-    //   standard_comparison_fewer_basic: "Solve 'How many fewer' problems within 40 (no regrouping).",
+    //    standard_missing_subtrahend_100: "Find the missing subtrahend in a 2-digit equation (no regrouping).",
+    //    standard_related_fact_families: "Use addition facts to solve related subtraction problems.",
+    standard_comparison_more_basic: "Solve 'How many more' problems within 40 (no regrouping).",
+    standard_comparison_fewer_basic: "Solve 'How many fewer' problems within 40 (no regrouping).",
     //   standard_number_bond_multiples_10: "Complete a number bond within 100 (e.g., 85 = 50 + ?).",
     //   standard_equation_equivalence: "Evaluate multiple full equations to find the one that matches a target sum/difference (no regrouping).",
     //   standard_fact_family_cards: "Construct an equation using 3 visual number cards within 100.",
@@ -81,8 +81,8 @@ export const additionSubtractionBlueprint = {
 
     // 1. Variant Filtering based on Type
     // Short questions are equations, Structured/MCQ are word problems
-    const checkIsStrictWordProblem = (v) => v.includes('word_problem') || v.includes('comparative') || v.includes('ordinal') || v.includes('comparison');
-    const checkIsAllowedForStructuredOrMCQ = (v) => checkIsStrictWordProblem(v) || v.includes('regroup') || v.includes('missing_addend') || v.includes('number_bond') || v.includes('add_20') || v.includes('sub_20') || v.includes('missing_subtrahend') || v.includes('balance_equations') || v.includes('working_backwards') || v.includes('two_step_total') || v.includes('shape_substitution') || v.includes('missing_digit_regrouping') || v.includes('visual_cross_out') || v.includes('fact_family_cards') || v.includes('equation_equivalence') || v.includes('add_three_numbers');
+    const checkIsStrictWordProblem = (v) => v.includes('word_problem') || v.includes('ordinal');
+    const checkIsAllowedForStructuredOrMCQ = (v) => checkIsStrictWordProblem(v) || v.includes('regroup') || v.includes('missing_addend') || v.includes('number_bond') || v.includes('add_20') || v.includes('sub_20') || v.includes('missing_subtrahend') || v.includes('balance_equations') || v.includes('working_backwards') || v.includes('two_step_total') || v.includes('shape_substitution') || v.includes('missing_digit_regrouping') || v.includes('visual_cross_out') || v.includes('fact_family_cards') || v.includes('equation_equivalence') || v.includes('add_three_numbers') || v.includes('comparison') || v.includes('comparative');
 
     const isStrictWordProblem = checkIsStrictWordProblem(activeVariant);
     const supportsEquation = !isStrictWordProblem;
