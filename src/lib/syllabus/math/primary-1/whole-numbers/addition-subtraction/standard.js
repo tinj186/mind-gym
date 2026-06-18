@@ -29,17 +29,17 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     if (isAdd) {
       const t1 = Math.floor(Math.random() * 5) + 1; // 1-5 tens
-      const o1 = Math.floor(Math.random() * 5); // 0-4 ones
+      const o1 = Math.floor(Math.random() * 4) + 1; // 1-4 ones (non-zero)
       const t2 = Math.floor(Math.random() * 4) + 1; // 1-4 tens
-      const o2 = Math.floor(Math.random() * (9 - o1)); // ones that don't cause regrouping
+      const o2 = Math.floor(Math.random() * (8 - o1)) + 1; // 1 to (8-o1) ones (non-zero, no regrouping)
       num1 = (t1 * 10) + o1;
       num2 = (t2 * 10) + o2;
       answer = String(num1 + num2);
     } else {
       const t1 = Math.floor(Math.random() * 5) + 5; // 5-9 tens
-      const o1 = Math.floor(Math.random() * 5) + 4; // 4-8 ones
+      const o1 = Math.floor(Math.random() * 4) + 5; // 5-8 ones (non-zero)
       const t2 = Math.floor(Math.random() * 4) + 1; // 1-4 tens
-      const o2 = Math.floor(Math.random() * (o1 + 1)); // ones that don't cause regrouping
+      const o2 = Math.floor(Math.random() * (o1 - 1)) + 1; // 1 to (o1-1) ones (non-zero, no regrouping)
       num1 = (t1 * 10) + o1;
       num2 = (t2 * 10) + o2;
       answer = String(num1 - num2);
@@ -110,17 +110,17 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     if (isAdd) {
       const t1 = Math.floor(Math.random() * 5) + 1; 
-      const o1 = Math.floor(Math.random() * 5); 
+      const o1 = Math.floor(Math.random() * 4) + 1; 
       const t2 = Math.floor(Math.random() * 4) + 1;
-      const o2 = Math.floor(Math.random() * (9 - o1));
+      const o2 = Math.floor(Math.random() * (8 - o1)) + 1;
       num1 = (t1 * 10) + o1;
       num2 = (t2 * 10) + o2;
       answer = String(num1 + num2);
     } else {
       const t1 = Math.floor(Math.random() * 5) + 5; 
-      const o1 = Math.floor(Math.random() * 5) + 4; 
+      const o1 = Math.floor(Math.random() * 4) + 5; 
       const t2 = Math.floor(Math.random() * 4) + 1;
-      const o2 = Math.floor(Math.random() * (o1 + 1));
+      const o2 = Math.floor(Math.random() * (o1 - 1)) + 1;
       num1 = (t1 * 10) + o1;
       num2 = (t2 * 10) + o2;
       answer = String(num1 - num2);
@@ -503,9 +503,9 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     
     // Target equation (no regrouping)
     const t1 = Math.floor(Math.random() * 5) + 1; 
-    const o1 = Math.floor(Math.random() * 5); 
+    const o1 = Math.floor(Math.random() * 4) + 1; 
     const t2 = Math.floor(Math.random() * 4) + 1;
-    const o2 = Math.floor(Math.random() * (9 - o1));
+    const o2 = Math.floor(Math.random() * (8 - o1)) + 1;
     const num1 = (t1 * 10) + o1;
     const num2 = (t2 * 10) + o2;
     const targetSum = num1 + num2;
