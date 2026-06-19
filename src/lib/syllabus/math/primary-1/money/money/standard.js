@@ -1,7 +1,11 @@
 import { getRandomContext } from '@/lib/utils/localization';
 
 const getShuffledOptions = (correct, distractors) => [correct, ...distractors].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4);
-const generateMoneyString = (cents) => cents >= 100 ? `$${(cents / 100).toFixed(2)}` : `${cents}¢`;
+const generateMoneyString = (cents) => {
+  if (cents % 100 === 0) return `$${cents / 100}`;
+  if (cents > 100) return `$${Math.floor(cents / 100)} and ${cents % 100}¢`;
+  return `${cents}¢`;
+};
 
 export const standardVariants = {
   standard_value_exchange: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
@@ -22,8 +26,9 @@ export const standardVariants = {
     const count = parentVal / subVal;
     const answer = String(count);
 
-    const questionTextTemplate = getQText(`How many ${randomSubToken} coins/notes make ${randomParent}?`, `Exchange ${randomParent} to ${randomSubToken} = ? count`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const questionTextTemplate = getQText(`How many ${randomSubToken} coins/notes make ${randomParent}?`, `How many ${randomSubToken} makes ${randomParent}?`);
+    const randomName = ['Siti', 'Muthu', 'Ali', 'Wei Ming', 'Ravi', 'Nurul', 'Ahmad', 'Mei', 'Kumar'][Math.floor(Math.random() * 9)];
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use the name ${randomName}. IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = [answer, String(count + 1), String(Math.max(1, count - 1)), String(count + 2)];
     options = getShuffledOptions(answer, options);
@@ -58,23 +63,31 @@ export const standardVariants = {
           "componentToRender": "NONE",
           "componentData": {}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
       }`,
       metadata: { difficulty: 'standard', steps: 1, logic: "value_exchange", hideVisual: true }
     };
   },
 
   standard_two_item_total: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const item1Cents = Math.floor(Math.random() * 20) * 100 + (Math.random() > 0.5 ? 50 : 0);
-    const item2Cents = Math.floor(Math.random() * 20) * 100 + (Math.random() > 0.5 ? 50 : 0);
+    const isCentsMode = Math.random() > 0.5;
+    let item1Cents, item2Cents;
+    if (isCentsMode) {
+      item1Cents = Math.floor(Math.random() * 8 + 1) * 10;
+      item2Cents = Math.floor(Math.random() * (90 - item1Cents) / 10 + 1) * 10;
+    } else {
+      item1Cents = Math.floor(Math.random() * 20 + 1) * 100;
+      item2Cents = Math.floor(Math.random() * 20 + 1) * 100;
+    }
     const totalCents = item1Cents + item2Cents;
     
     const item1Str = generateMoneyString(item1Cents);
     const item2Str = generateMoneyString(item2Cents);
     const answer = generateMoneyString(totalCents);
 
-    const questionTextTemplate = getQText(`Item A costs ${item1Str} and Item B costs ${item2Str}. What is the total cost?`, `Total cost = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const questionTextTemplate = getQText(`Item A costs ${item1Str} and Item B costs ${item2Str}. What is the total cost?`, `Item A: ${item1Str}, Item B: ${item2Str}. Total cost = ?`);
+    const randomName = ['Siti', 'Muthu', 'Ali', 'Wei Ming', 'Ravi', 'Nurul', 'Ahmad', 'Mei', 'Kumar'][Math.floor(Math.random() * 9)];
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use the name ${randomName}. IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = [answer, generateMoneyString(totalCents + 100), generateMoneyString(Math.abs(item1Cents - item2Cents)), generateMoneyString(totalCents + 50)];
     options = getShuffledOptions(answer, options);
@@ -109,24 +122,33 @@ export const standardVariants = {
           "componentToRender": "NONE",
           "componentData": {}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
       }`,
       metadata: { difficulty: 'standard', steps: 1, logic: "two_item_total", hideVisual: true }
     };
   },
 
   standard_calculating_change: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const notePool = [500, 1000, 5000];
-    const paidCents = notePool[Math.floor(Math.random() * notePool.length)];
-    const priceCents = paidCents - (Math.floor(Math.random() * (paidCents / 100 - 1)) + 1) * 100 - (Math.random() > 0.5 ? 50 : 0);
+    const isCentsMode = Math.random() > 0.5;
+    let paidCents, priceCents;
+    if (isCentsMode) {
+      const coinPool = [20, 50, 100];
+      paidCents = coinPool[Math.floor(Math.random() * coinPool.length)];
+      priceCents = paidCents - Math.floor(Math.random() * (paidCents / 10 - 1) + 1) * 10;
+    } else {
+      const notePool = [500, 1000, 5000];
+      paidCents = notePool[Math.floor(Math.random() * notePool.length)];
+      priceCents = paidCents - Math.floor(Math.random() * (paidCents / 100 - 1) + 1) * 100;
+    }
     const changeCents = paidCents - priceCents;
     
     const paidStr = generateMoneyString(paidCents);
     const priceStr = generateMoneyString(priceCents);
     const answer = generateMoneyString(changeCents);
 
-    const questionTextTemplate = getQText(`An item costs ${priceStr}. You pay with a ${paidStr} note. How much change will you receive?`, `Change received = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const randomName = ['Siti', 'Muthu', 'Ali', 'Wei Ming', 'Ravi', 'Nurul', 'Ahmad', 'Mei', 'Kumar'][Math.floor(Math.random() * 9)];
+    const questionTextTemplate = getQText(`An item costs ${priceStr}. ${randomName} pays with a ${paidStr} note. How much change will ${randomName} receive?`, `Price: ${priceStr}. Paid: ${paidStr}. Change = ?`);
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use the name ${randomName}. IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = [answer, generateMoneyString(changeCents + 100), generateMoneyString(Math.max(50, changeCents - 50)), generateMoneyString(paidCents + priceCents)];
     options = getShuffledOptions(answer, options);
@@ -166,7 +188,7 @@ export const standardVariants = {
           "componentToRender": "NONE",
           "componentData": {}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
       }`,
       metadata: { difficulty: 'standard', steps: 1, logic: "calculating_change", hideVisual: true }
     };
@@ -181,8 +203,9 @@ export const standardVariants = {
     const haveStr = generateMoneyString(haveCents);
     const answer = generateMoneyString(shortfallCents);
 
-    const questionTextTemplate = getQText(`An item costs ${targetPriceStr}. You only have ${haveStr}. How much more money do you need?`, `More money needed = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const randomName = ['Siti', 'Muthu', 'Ali', 'Wei Ming', 'Ravi', 'Nurul', 'Ahmad', 'Mei', 'Kumar'][Math.floor(Math.random() * 9)];
+    const questionTextTemplate = getQText(`An item costs ${targetPriceStr}. ${randomName} only has ${haveStr}. How much more money does ${randomName} need?`, `Price: ${targetPriceStr}. You have: ${haveStr}. More money needed = ?`);
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use the name ${randomName}. IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = [answer, generateMoneyString(shortfallCents + 100), generateMoneyString(Math.max(50, shortfallCents - 50)), generateMoneyString(targetPriceCents + haveCents)];
     options = getShuffledOptions(answer, options);
@@ -222,7 +245,7 @@ export const standardVariants = {
           "componentToRender": "NONE",
           "componentData": {}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
       }`,
       metadata: { difficulty: 'standard', steps: 1, logic: "shortfall_needed", hideVisual: true }
     };
@@ -230,14 +253,15 @@ export const standardVariants = {
 
   standard_price_comparison: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const isMost = Math.random() > 0.5;
-    const items = [
-      { name: 'Item A', price: Math.floor(Math.random() * 10) * 100 + 50 },
-      { name: 'Item B', price: Math.floor(Math.random() * 10) * 100 + 100 },
-      { name: 'Item C', price: Math.floor(Math.random() * 10) * 100 + 150 }
+    const isCentsMode = Math.random() > 0.5;
+    let items = [
+      { name: 'Item A', price: isCentsMode ? Math.floor(Math.random() * 8 + 1) * 10 : Math.floor(Math.random() * 20 + 1) * 100 },
+      { name: 'Item B', price: isCentsMode ? Math.floor(Math.random() * 8 + 1) * 10 : Math.floor(Math.random() * 20 + 1) * 100 },
+      { name: 'Item C', price: isCentsMode ? Math.floor(Math.random() * 8 + 1) * 10 : Math.floor(Math.random() * 20 + 1) * 100 }
     ];
     // Ensure all prices are unique
     items.forEach((item, index) => {
-      item.price += index * 100;
+      item.price += index * (isCentsMode ? 10 : 100);
     });
     // Shuffle
     items.sort(() => Math.random() - 0.5);
@@ -251,8 +275,9 @@ export const standardVariants = {
     const answer = targetItem.name;
     const priceStrings = items.map(i => `${i.name}: ${generateMoneyString(i.price)}`).join(', ');
 
-    const questionTextTemplate = getQText(`Here are some prices: ${priceStrings}. Which item costs the ${isMost ? 'most' : 'least'}?`, `${isMost ? 'Highest' : 'Lowest'} price item = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const questionTextTemplate = getQText(`Here are some prices: ${priceStrings}. Which item costs the ${isMost ? 'most' : 'least'}?`, `${priceStrings}. Which costs the ${isMost ? 'most' : 'least'}?`);
+    const randomName = ['Siti', 'Muthu', 'Ali', 'Wei Ming', 'Ravi', 'Nurul', 'Ahmad', 'Mei', 'Kumar'][Math.floor(Math.random() * 9)];
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use the name ${randomName}. IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = items.map(i => i.name);
     options = getShuffledOptions(answer, options);
@@ -267,10 +292,13 @@ export const standardVariants = {
       defectMapStr = JSON.stringify(defectMapObj);
     }
 
+    const noSymbolsInstruction = isStructure ? "STRICT INSTRUCTION FOR STEPS: DO NOT use the '>' or '<' inequality symbols in your step labels. Primary 1 students have not learned these symbols yet. Use words like 'is more than' or 'is less than' instead." : "";
+
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
       ${storyInstruction}
+      ${noSymbolsInstruction}
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
@@ -287,19 +315,20 @@ export const standardVariants = {
           "componentToRender": "NONE",
           "componentData": {}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
       }`,
       metadata: { difficulty: 'standard', steps: 1, logic: "price_comparison", hideVisual: true }
     };
   },
 
   standard_multi_item_change: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const item1Cents = Math.floor(Math.random() * 10) * 100 + (Math.random() > 0.5 ? 50 : 0);
-    const item2Cents = Math.floor(Math.random() * 10) * 100 + (Math.random() > 0.5 ? 50 : 0);
+    const isCentsMode = Math.random() > 0.5;
+    const item1Cents = isCentsMode ? Math.floor(Math.random() * 5 + 1) * 10 : Math.floor(Math.random() * 5 + 1) * 100;
+    const item2Cents = isCentsMode ? Math.floor(Math.random() * 5 + 1) * 10 : Math.floor(Math.random() * 5 + 1) * 100;
     const totalCents = item1Cents + item2Cents;
     
-    const paidOptions = [2000, 5000];
-    const paidCents = paidOptions.find(p => p > totalCents) || 5000;
+    const paidOptions = isCentsMode ? [50, 100] : [1000, 2000, 5000];
+    const paidCents = paidOptions.find(p => p > totalCents) || (isCentsMode ? 100 : 5000);
     const changeCents = paidCents - totalCents;
     
     const item1Str = generateMoneyString(item1Cents);
@@ -308,8 +337,9 @@ export const standardVariants = {
     const totalStr = generateMoneyString(totalCents);
     const answer = generateMoneyString(changeCents);
 
-    const questionTextTemplate = getQText(`You buy Item A for ${item1Str} and Item B for ${item2Str}. You pay with a ${paidStr} note. How much change will you receive?`, `Change received = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const randomName = ['Siti', 'Muthu', 'Ali', 'Wei Ming', 'Ravi', 'Nurul', 'Ahmad', 'Mei', 'Kumar'][Math.floor(Math.random() * 9)];
+    const questionTextTemplate = getQText(`${randomName} buys Item A for ${item1Str} and Item B for ${item2Str}. ${randomName} pays with a ${paidStr} note. How much change will ${randomName} receive?`, `Item A: ${item1Str}. Item B: ${item2Str}. Paid: ${paidStr}. Change = ?`);
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use the name ${randomName}. IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = [answer, generateMoneyString(changeCents + 100), generateMoneyString(paidCents - item1Cents), generateMoneyString(totalCents)];
     options = getShuffledOptions(answer, options);
@@ -349,7 +379,7 @@ export const standardVariants = {
           "componentToRender": "NONE",
           "componentData": {}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
       }`,
       metadata: { difficulty: 'standard', steps: 2, logic: "multi_item_change", hideVisual: true }
     };

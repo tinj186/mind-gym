@@ -9,6 +9,9 @@ export default function SingaporeMoney({ data, attempts }) { // Added 'attempts'
 
     // Asset Dictionary
     const assetMap = {
+      '5¢':   { src: '/assets/money/sg-5c.png',   isCoin: true },
+      '0.05': { src: '/assets/money/sg-5c.png',   isCoin: true },
+      '$0.05':{ src: '/assets/money/sg-5c.png',   isCoin: true },
       '10¢':  { src: '/assets/money/sg-10c.png',  isCoin: true },
       '0.1':  { src: '/assets/money/sg-10c.png',  isCoin: true },
       '0.10': { src: '/assets/money/sg-10c.png',  isCoin: true },

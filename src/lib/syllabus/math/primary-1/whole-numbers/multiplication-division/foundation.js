@@ -119,7 +119,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
           hideVisual: false
         }
       },
-      inputRequirement: { inputType: 'STANDARD_TEXT' }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {

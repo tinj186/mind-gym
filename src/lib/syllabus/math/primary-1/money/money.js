@@ -11,7 +11,7 @@ export const moneyBlueprint = {
   id: 'p1-money-money',
   title: 'Money',
   strand: 'Measurement and Geometry',
-  visualType: 'DYNAMIC', 
+  visualType: 'DYNAMIC',
 
   difficultyLevels: {
     foundation: {
@@ -41,7 +41,7 @@ export const moneyBlueprint = {
     foundation_mixed_counting: "Counting mixed combinations of small notes and coins up to $20.",
     foundation_comparing_values: "Comparing a rendered set of coins/notes against a target price value within $20.",
     foundation_matching_exact_amount: "Identifying or matching a specific total value from a rendered set of currency assets up to $20.",
-    
+
     // Standard Tier
     standard_value_exchange: "Exchanging denominations (e.g., how many 20¢ coins make $1).",
     standard_two_item_total: "Calculating the total combined cost of purchasing two different items within a $50 budget.",
@@ -87,7 +87,7 @@ export const moneyBlueprint = {
       if (validVariants.length > 0) {
         activeVariant = validVariants[Math.floor(Math.random() * validVariants.length)];
       } else {
-        activeVariant = 'foundation_counting_coins'; 
+        activeVariant = 'foundation_counting_coins';
       }
     }
 
@@ -104,8 +104,8 @@ export const moneyBlueprint = {
 
     const hintProtocol = `\nCRITICAL HINT PROTOCOL: You MUST provide a conceptual "hint" field in your JSON. Focus on counting currency correctly.`;
 
-    let formatInstructions = isMCQ 
-      ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}` 
+    let formatInstructions = isMCQ
+      ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}`
       : `Format as Short Answer. The "options" field in your JSON should be null.${hintProtocol}`;
 
     if (activeVariant.startsWith('foundation_')) {

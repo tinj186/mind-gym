@@ -8,6 +8,7 @@ import { normalizeQuestionData, deriveVisualProps } from '@/lib/intelligence/wor
 import VisualRenderer, { ESSENTIAL_VISUALS } from '@/components/math/VisualRenderer';
 import GroupingWorkspace from '@/components/tools/GroupingWorkspace'; // Import the interactive tool
 import MultiStepInput from '@/components/math/MultiStepInput'; // Multi-Step Input
+import MathInput from '@/components/math/MathInput'; // Advanced Math Input
 import confetti from 'canvas-confetti';
 
 import ExamReviewBoard from '@/components/math/ExamReviewBoard';
@@ -26,6 +27,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
   const [feedback, setFeedback] = useState(null); // 'correct' | 'wrong'
   const [isPending, startTransition] = useTransition();
   const [summary, setSummary] = useState(null);
+  const [singleInputAnswer, setSingleInputAnswer] = useState("");
 
   const isP1 = level === "Primary 1";
   
@@ -151,6 +153,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
     setShowSolution(false);
     setShowBarModel(false);
     setFeedback(null);
+    setSingleInputAnswer("");
 
     // Part 2: Real-Time Saving & Persistence
     if (!isSandbox) {
@@ -390,14 +393,16 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
                 ))}
               </div>
             ) : (
-              <input 
-                key={`input-${currentIndex}-${attempts}`}
-                autoFocus
-                onKeyDown={(e) => e.key === 'Enter' && handleAnswer(e.target.value)}
-                className="w-full text-4xl font-black p-8 bg-slate-50 rounded-3xl outline-none text-center"
-                placeholder="?"
-                disabled={feedback === 'correct'}
-              />
+              <div className="w-full flex justify-center">
+                <MathInput
+                  key={`input-${currentIndex}-${attempts}`}
+                  autoFocus
+                  value={singleInputAnswer}
+                  onChange={setSingleInputAnswer}
+                  onEnter={() => handleAnswer(singleInputAnswer)}
+                  disabled={feedback === 'correct'}
+                />
+              </div>
             )
           ) : (
             <button

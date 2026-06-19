@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import MathInput from '@/components/math/MathInput';
 
 export default function MultiStepInput({ steps, onSubmit, disabled }) {
   const [answers, setAnswers] = useState({});
@@ -19,7 +20,9 @@ export default function MultiStepInput({ steps, onSubmit, disabled }) {
       } else {
         // focus next
         const nextInput = document.getElementById(`multi-step-${index + 1}`);
-        if (nextInput) nextInput.focus();
+        if (nextInput) {
+          nextInput.focus();
+        }
       }
     }
   };
@@ -37,14 +40,12 @@ export default function MultiStepInput({ steps, onSubmit, disabled }) {
           <label className="text-sm font-black text-slate-500 uppercase tracking-widest mb-4">
             {step.label}
           </label>
-          <input
+          <MathInput
             id={`multi-step-${index}`}
             value={answers[index] || ''}
-            onChange={(e) => handleChange(index, e.target.value)}
-            onKeyDown={(e) => handleKeyDown(e, index)}
+            onChange={(val) => handleChange(index, val)}
+            onEnter={() => handleKeyDown({ key: 'Enter' }, index)}
             disabled={disabled}
-            className="w-full text-3xl font-black p-4 bg-white rounded-2xl outline-none text-center border-2 border-slate-200 focus:border-blue-500 transition-colors"
-            placeholder="?"
             autoFocus={index === 0}
           />
         </div>

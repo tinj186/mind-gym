@@ -272,6 +272,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const left2 = Math.floor(Math.random() * 10) + 5;
     const sum = left1 + left2;
     const right1 = Math.floor(Math.random() * 10) + sum - 15; // Ensure right1 is smaller than sum
+    const answer = String(sum - right1);
     let options = null;
     let defectMap = null;
     if (isMCQ) {
@@ -293,7 +294,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
-        questionText: getQText(`[STORY] How many more must be added to the second group to make them equal?`, `${left1} + ${left2} = ${right1} + ?`),
+        questionText: getQText(`[STORY] ${left1} + ${left2} = ${right1} + ?. How many more must be added to the second group to make them equal?`, `${left1} + ${left2} = ${right1} + ?`),
         options: options,
         defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
@@ -308,7 +309,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       aiPrompt: `You are an expert Primary 1 math generator. STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component, "solutionSteps", or "finalAnswer". Return exactly the provided JSON structure, modifying ONLY the hint and array placeholders to match the requirements. ${formatInstructions}
       ${isShortQ 
         ? 'STRICT: Provide a direct mathematical equation (e.g. A + B = C + ?). NO story context or names.' 
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean story about balancing two groups of ${itemLabel}.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean story about balancing two groups of ${itemLabel}. DO NOT remove or change the equation.`
       }
 
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
@@ -323,11 +324,13 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const change2 = Math.floor(Math.random() * 10) + 2; // e.g., got 4
     const finalAmount = start - change1 + change2;
     const answer = String(start);
+    let options = null;
+    let defectMap = null;
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
-        questionText: getQText(`[STORY] How many did ${extract(context.name)} have at first?`, `? - ${change1} + ${change2} = ${finalAmount}. Find the starting number.`),
+        questionText: getQText(`[STORY] ? - ${change1} + ${change2} = ${finalAmount}. How many did ${extract(context.name)} have at first?`, `? - ${change1} + ${change2} = ${finalAmount}. Find the starting number.`),
         options: options,
         defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
@@ -342,7 +345,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       aiPrompt: `You are an expert Primary 1 math generator. STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component, "solutionSteps", or "finalAnswer". Return exactly the provided JSON structure, modifying ONLY the hint and array placeholders to match the requirements. ${formatInstructions}
       ${isShortQ 
         ? 'STRICT: Provide a direct mathematical equation involving a missing start (e.g. ? - X + Y = Z). NO story context or names.' 
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean word problem requiring the student to work backwards to find the starting number of ${itemLabel}.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean word problem requiring the student to work backwards to find the starting number of ${itemLabel}. DO NOT remove or change the equation.`
       }
 
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
@@ -357,6 +360,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const bAmount = aAmount + diff; // B has 'diff' more than A
     const total = aAmount + bAmount;
     const answer = String(total);
+    let options = null;
+    let defectMap = null;
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
@@ -391,11 +396,13 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const eq1Sum = shape1Val * 2;
     const eq2Sum = shape1Val + shape2Val;
     const answer = String(shape2Val);
+    let options = null;
+    let defectMap = null;
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
-        questionText: getQText(`[STORY] Find the value of the circle.`, `▲ + ▲ = ${eq1Sum}. ▲ + ● = ${eq2Sum}. What is ●?`),
+        questionText: getQText(`[STORY] ▲ + ▲ = ${eq1Sum}. ▲ + ● = ${eq2Sum}. Find the value of the circle (●).`, `▲ + ▲ = ${eq1Sum}. ▲ + ● = ${eq2Sum}. What is ●?`),
         options: options,
         defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
@@ -410,7 +417,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       aiPrompt: `You are an expert Primary 1 math generator. STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component, "solutionSteps", or "finalAnswer". Return exactly the provided JSON structure, modifying ONLY the hint and array placeholders to match the requirements. ${formatInstructions}
       ${isShortQ 
         ? 'STRICT: Provide a direct shape logic question. NO story context or names.' 
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized story involving objects being used as symbols/shapes.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized story involving objects being used as symbols/shapes. DO NOT remove or change the equations.`
       }
 
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
@@ -425,6 +432,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const num2 = Math.floor(Math.random() * 8) + 14; 
     const sum = (tens1 * 10 + ones1) + num2;
     const answer = String(ones1);
+    let options = null;
+    let defectMap = null;
 
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },

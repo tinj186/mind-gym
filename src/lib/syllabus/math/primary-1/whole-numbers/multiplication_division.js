@@ -48,7 +48,6 @@ export const multiplicationDivisionBlueprint = {
     standard_sharing_missing_each: "Find how many in each group (Sharing).",
     standard_grouping_missing_groups: "Find the number of groups (Grouping).",
     standard_inverse_fact_families: "Solve division using a related multiplication fact.",
-    standard_even_odd_sharing: "Identify if a number can be shared equally (Even/Odd logic).",
     standard_attribute_multiplication: "Count total attributes (e.g., wheels on 5 cars).",
     standard_multiplication_syntax_audit: "Vocabulary audit: Identify which expression does NOT represent the total number of items shown.",
 

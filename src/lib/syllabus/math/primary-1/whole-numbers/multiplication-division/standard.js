@@ -69,9 +69,9 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
-      IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
+      ${!isShortQ ? 'IMPORTANT: DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.' : ''}
       ${isShortQ 
-        ? `STRICT: Provide a direct mathematical question. NO story context or names.` 
+        ? `STRICT: DO NOT change or remove the mathematical equation in the questionText. Output it exactly as provided in the template. NO story context.` 
         : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative localized Singaporean story involving ${count} repeated groups of ${num} ${itemLabel} (visually represented by the emoji "${selectedIcon}").`
       }
 
@@ -118,9 +118,9 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
-      IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
+      ${!isShortQ ? 'IMPORTANT: DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.' : ''}
       ${isShortQ 
-        ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
+        ? 'STRICT: DO NOT change or remove the mathematical equation in the questionText. Output it exactly as provided in the template. NO story context.' 
         : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative localized Singaporean story involving ${rows} rows with ${cols} ${itemLabel} in each row (represented by the emoji "${selectedIcon}"). DO NOT use the words "array" or "columns".`
       }
 
@@ -168,9 +168,9 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
-      IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
+      ${!isShortQ ? 'IMPORTANT: DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.' : ''}
       ${isShortQ 
-        ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
+        ? 'STRICT: DO NOT change or remove the mathematical equation in the questionText. Output it exactly as provided in the template. NO story context.' 
         : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story where one person has ${startVal} ${itemLabel} (represented by the emoji "${selectedIcon}") and another has ${times} times as many.`
       }
 
@@ -217,9 +217,9 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
-      IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
+      ${!isShortQ ? 'IMPORTANT: DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.' : ''}
       ${isShortQ 
-        ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
+        ? 'STRICT: DO NOT change or remove the mathematical equation in the questionText. Output it exactly as provided in the template. NO story context.' 
         : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story involving ${groups} groups of ${itemLabel} (represented by the emoji "${selectedIcon}"), requiring skip-counting by ${step}.`
       }
 
@@ -266,9 +266,9 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
-      IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
+      ${!isShortQ ? 'IMPORTANT: DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.' : ''}
       ${isShortQ 
-        ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
+        ? 'STRICT: DO NOT change or remove the mathematical equation in the questionText. Output it exactly as provided in the template. NO story context.' 
         : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story where ${extract(context.name)} buys ${qty} ${extract(selectedContextItem)} at $${price} each.`
       }
 
@@ -317,9 +317,9 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
-      IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
+      ${!isShortQ ? 'IMPORTANT: DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.' : ''}
       ${isShortQ 
-        ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
+        ? 'STRICT: DO NOT change or remove the mathematical equation in the questionText. Output it exactly as provided in the template. NO story context.' 
         : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story where ${total} ${itemLabel} (represented by the emoji "${selectedIcon}") are shared equally among ${groups} people.`
       }
 
@@ -368,9 +368,9 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
-      IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
+      ${!isShortQ ? 'IMPORTANT: DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.' : ''}
       ${isShortQ 
-        ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
+        ? 'STRICT: DO NOT change or remove the mathematical equation in the questionText. Output it exactly as provided in the template. NO story context.' 
         : `STRICT: Replace the "[STORY]" tag in "questionText" with a unique localized Singaporean story where ${extract(context.name)} has ${total} ${itemLabel} (visually represented by "${selectedIcon}") and organizes them into groups of ${size}.`
       }
 
@@ -420,9 +420,9 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
-      IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
+      ${!isShortQ ? 'IMPORTANT: DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.' : ''}
       ${isShortQ 
-        ? 'STRICT: Provide a direct mathematical equation using fact families. NO story context or names.' 
+        ? 'STRICT: DO NOT change or remove the mathematical equation in the questionText. Output it exactly as provided in the template. NO story context.' 
         : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative localized Singaporean story about fact families involving ${itemLabel} (represented by "${selectedIcon}").`
       }
 
@@ -431,48 +431,6 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
   }
 
-  // 9. Even/Odd Sharing
-  if (activeVariant === 'standard_even_odd_sharing') {
-    const total = Math.floor(Math.random() * 15) + 5;
-    const isEven = total % 2 === 0;
-    const answer = isEven ? "Yes" : "No";
-
-    let defectMap = null;
-    if (isMCQ) {
-      defectMap = {
-        [answer === "Yes" ? "No" : "Yes"]: "CONCEPTUAL_ERROR"
-      };
-    }
-
-    const promptObject = {
-      meta: { level, topic, type: zodType, difficulty: zodDiff },
-      content: {
-        questionText: getQText(`[STORY] Can ${context.name} share these ${itemLabel} equally between 2 friends without any left over?`, `Can ${total} be shared equally into 2 groups?`, zodType),
-        options: ["Yes", "No"],
-        defectMap: defectMap,
-        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
-        finalAnswer: answer,
-        solutionSteps: `1. ${total} is an ${isEven ? 'even' : 'odd'} number.\n2. ${isEven ? 'Even numbers can be shared equally into 2 groups.' : 'Odd numbers will always have 1 left over when shared into 2 groups.'}`
-      },
-      visualEngine: {
-        componentToRender: "NONE",
-        componentData: {}
-      },
-      inputRequirement: { inputType: 'MCQ_BUTTONS' }
-    };
-
-    return {
-      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
-      IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
-      ${isShortQ 
-        ? 'STRICT: Provide a direct mathematical question. NO story context or names.' 
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a unique localized Singaporean story where ${extract(context.name)} tries to share ${total} ${itemLabel} (represented by "${selectedIcon}") equally with 2 friends.`
-      }
-
-      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
-      metadata: { difficulty: 'standard', logic: "even_odd", hideVisual: hideVisual }
-    };
-  }
 
   // 10. Attribute Multiplication
   if (activeVariant === 'standard_attribute_multiplication') {
@@ -521,9 +479,9 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
-      IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
+      ${!isShortQ ? 'IMPORTANT: DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.' : ''}
       ${isShortQ 
-        ? 'STRICT: Provide a direct mathematical equation. NO story context or names.' 
+        ? 'STRICT: DO NOT change or remove the mathematical equation in the questionText. Output it exactly as provided in the template. NO story context.' 
         : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story involving ${count} ${scenario.type} and their ${scenario.attr} (visually represented by the emoji "${selectedIcon}").`
       }
 

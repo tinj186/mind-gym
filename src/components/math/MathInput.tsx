@@ -17,13 +17,16 @@ declare global {
 }
 
 interface MathInputProps {
+  id?: string;
   name?: string;
   value: string;
   onChange: (value: string) => void;
   onEnter?: () => void;
+  disabled?: boolean;
+  autoFocus?: boolean;
 }
 
-export default function MathInput({ name, value, onChange, onEnter }: MathInputProps) {
+export default function MathInput({ id, name, value, onChange, onEnter, disabled = false, autoFocus = false }: MathInputProps) {
   const mfRef = useRef<any>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   
@@ -110,14 +113,14 @@ export default function MathInput({ name, value, onChange, onEnter }: MathInputP
             // Row 2: Numbers & Logic
             [
               { label: "7", key: "7" }, { label: "8", key: "8" }, { label: "9", key: "9" },
-              { label: "÷", key: "/" },
+              { label: "÷", latex: "\\div" },
               { label: "<", key: "<" },
               { label: ">", key: ">" }
             ],
             // Row 3: Numbers & Operations
             [
               { label: "4", key: "4" }, { label: "5", key: "5" }, { label: "6", key: "6" },
-              { label: "×", key: "*" },
+              { label: "×", latex: "\\times" },
               { label: "(", key: "(" },
               { label: ")", key: ")" }
             ],
@@ -126,13 +129,14 @@ export default function MathInput({ name, value, onChange, onEnter }: MathInputP
               { label: "1", key: "1" }, { label: "2", key: "2" }, { label: "3", key: "3" },
               { label: "+", key: "+" },
               { label: "−", key: "-" },
-              { label: "≠", latex: "\\neq" }
+              { label: "=", key: "=" }
             ],
             // Row 5: Zero & Enter
             [
               { label: "0", key: "0" }, 
               { label: ".", key: "." },
-              { label: "$", key: "$" }, // For Money questions
+              { label: "$", key: "$" }, // For Money (Dollars)
+              { label: "¢", key: "¢" }, // For Money (Cents)
               { label: "%", key: "%" }, // For Percentage (P5/P6)
               { label: "⏎", key: "Enter", class: "action w-20" }
             ]
@@ -145,7 +149,7 @@ export default function MathInput({ name, value, onChange, onEnter }: MathInputP
     currentMf.menuToggleVisibility = "hidden";
     currentMf.virtualKeyboardToggleVisibility = "visible";
 
-    currentMf.readOnly = false;
+    currentMf.readOnly = disabled;
     currentMf.letterShapeStyle = "iso";
     currentMf.smartFence = true;
     currentMf.macros = {
@@ -156,6 +160,16 @@ export default function MathInput({ name, value, onChange, onEnter }: MathInputP
       ml: '\\text{ml}',
       "m/s": '\\text{m/s}',
     };
+
+    // Override the default * shortcut which produces \cdot
+    if (currentMf.mathModeInlineShortcuts) {
+      currentMf.mathModeInlineShortcuts = {
+        ...currentMf.mathModeInlineShortcuts,
+        '*': '\\times',
+      };
+    } else {
+      currentMf.mathModeInlineShortcuts = { '*': '\\times' };
+    }
 
     if (currentMf.value !== value) {
       currentMf.value = value || "";
@@ -212,6 +226,14 @@ export default function MathInput({ name, value, onChange, onEnter }: MathInputP
     }
   }, [value, isLoaded]);
 
+  useEffect(() => {
+    if (isLoaded && autoFocus && mfRef.current) {
+      setTimeout(() => {
+        mfRef.current.focus();
+      }, 100);
+    }
+  }, [isLoaded, autoFocus]);
+
   return (
     <div className="w-full max-w-md mx-auto p-2">
       {/* Global override to ensure the UI buttons are hidden via CSS Parts */}
@@ -225,6 +247,7 @@ export default function MathInput({ name, value, onChange, onEnter }: MathInputP
         {isLoaded ? (
           // @ts-ignore - Custom element loaded dynamically via MathLive
           <math-field
+            id={id}
             ref={mfRef}
             tabIndex={0}
             menu-toggle-visibility="hidden"

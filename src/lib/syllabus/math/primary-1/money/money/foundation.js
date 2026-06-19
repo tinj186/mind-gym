@@ -1,28 +1,33 @@
 import { getRandomContext } from '@/lib/utils/localization';
 
 const getShuffledOptions = (correct, distractors) => [correct, ...distractors].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4);
-const generateMoneyString = (cents) => cents >= 100 ? `$${(cents / 100).toFixed(2)}` : `${cents}¢`;
+const generateMoneyString = (cents) => {
+  if (cents % 100 === 0) return `$${cents / 100}`;
+  if (cents > 100) return `$${Math.floor(cents / 100)} and ${cents % 100}¢`;
+  return `${cents}¢`;
+};
 
 export const foundationVariants = {
   foundation_counting_coins: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const pool = ['10¢', '20¢', '50¢', '$1'];
+    const pool = ['5¢', '10¢', '20¢', '50¢'];
     const itemCount = Math.floor(Math.random() * 3) + 3; 
     const generatedItems = [];
     let sumCents = 0;
 
     for (let i = 0; i < itemCount; i++) {
       const item = pool[Math.floor(Math.random() * pool.length)];
-      const valCents = item.endsWith('¢') ? parseInt(item.replace('¢', ''), 10) : parseInt(item.replace('$', ''), 10) * 100;
-      if (sumCents + valCents <= 2000) { generatedItems.push(item); sumCents += valCents; }
+      const valCents = parseInt(item.replace('¢', ''), 10);
+      if (sumCents + valCents <= 100) { generatedItems.push(item); sumCents += valCents; }
     }
-    if (generatedItems.length === 0) { generatedItems.push('$1', '50¢'); sumCents = 150; }
+    if (generatedItems.length === 0) { generatedItems.push('50¢', '20¢'); sumCents = 70; }
 
     const displayTotal = generateMoneyString(sumCents);
     const answer = displayTotal;
     const componentData = { items: generatedItems, total: displayTotal };
 
     const questionTextTemplate = getQText(`Count the total amount of money shown below.`, `Total amount = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const randomName = ['Siti', 'Muthu', 'Ali', 'Wei Ming', 'Ravi', 'Nurul', 'Ahmad', 'Mei', 'Kumar'][Math.floor(Math.random() * 9)];
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use the name ${randomName}. IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = [answer, generateMoneyString(sumCents + 10), generateMoneyString(Math.max(10, sumCents - 10)), generateMoneyString(sumCents + 20)];
     options = getShuffledOptions(answer, options);
@@ -57,7 +62,7 @@ export const foundationVariants = {
           "componentToRender": "SINGAPORE_MONEY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE COUNTING PROCESS (e.g., adding dollars first, then cents)]"' : ''} }
       }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "counting_coins", hideVisual: false }
     };
@@ -81,7 +86,8 @@ export const foundationVariants = {
     const componentData = { items: generatedItems, total: displayTotal };
 
     const questionTextTemplate = getQText(`Count the total amount of money shown below.`, `Total amount = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const randomName = ['Siti', 'Muthu', 'Ali', 'Wei Ming', 'Ravi', 'Nurul', 'Ahmad', 'Mei', 'Kumar'][Math.floor(Math.random() * 9)];
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use the name ${randomName}. IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = [answer, generateMoneyString(sumCents + 100), generateMoneyString(Math.max(200, sumCents - 100)), generateMoneyString(sumCents + 200)];
     options = getShuffledOptions(answer, options);
@@ -116,7 +122,7 @@ export const foundationVariants = {
           "componentToRender": "SINGAPORE_MONEY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE COUNTING PROCESS (e.g., adding dollars first, then cents)]"' : ''} }
       }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "identifying_notes", hideVisual: false }
     };
@@ -140,7 +146,8 @@ export const foundationVariants = {
     const componentData = { items: generatedItems, total: displayTotal };
 
     const questionTextTemplate = getQText(`Count the total amount of money shown below.`, `Total amount = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const randomName = ['Siti', 'Muthu', 'Ali', 'Wei Ming', 'Ravi', 'Nurul', 'Ahmad', 'Mei', 'Kumar'][Math.floor(Math.random() * 9)];
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use the name ${randomName}. IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = [answer, generateMoneyString(sumCents + 10), generateMoneyString(Math.max(50, sumCents - 10)), generateMoneyString(sumCents + 50)];
     options = getShuffledOptions(answer, options);
@@ -175,7 +182,7 @@ export const foundationVariants = {
           "componentToRender": "SINGAPORE_MONEY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE COUNTING PROCESS (e.g., adding dollars first, then cents)]"' : ''} }
       }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "mixed_counting", hideVisual: false }
     };
@@ -193,15 +200,16 @@ export const foundationVariants = {
       if (sumCents + valCents <= 2000) { generatedItems.push(item); sumCents += valCents; }
     }
     if (generatedItems.length === 0) { generatedItems.push('$2', '50¢'); sumCents = 250; }
-
+    
     const displayTotal = generateMoneyString(sumCents);
     const targetPriceCents = sumCents + (Math.random() > 0.5 ? 50 : -50);
     const targetPriceStr = generateMoneyString(targetPriceCents);
     const answer = sumCents >= targetPriceCents ? "Yes" : "No";
     const componentData = { items: generatedItems, total: displayTotal };
 
-    const questionTextTemplate = getQText(`An item costs ${targetPriceStr}. Is the amount of money shown enough to buy it?`, `Amount shown >= ${targetPriceStr}?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const questionTextTemplate = getQText(`An item costs ${targetPriceStr}. Is the amount of money shown enough to buy it?`, `Is amount shown enough for ${targetPriceStr}?`);
+    const randomName = ['Siti', 'Muthu', 'Ali', 'Wei Ming', 'Ravi', 'Nurul', 'Ahmad', 'Mei', 'Kumar'][Math.floor(Math.random() * 9)];
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use the name ${randomName}. IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = ["Yes", "No"];
     options = getShuffledOptions(answer, options);
@@ -236,7 +244,7 @@ export const foundationVariants = {
           "componentToRender": "SINGAPORE_MONEY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? `, "steps": [{"label": "How much money is shown in total?", "expectedAnswer": "${displayTotal}"}, {"label": "Is ${displayTotal} enough to buy the item that costs ${targetPriceStr}? (Type 'Yes' or 'No')", "expectedAnswer": "${answer}"}]` : ''} }
       }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "comparing_values", hideVisual: false }
     };
@@ -260,7 +268,8 @@ export const foundationVariants = {
     const componentData = { items: generatedItems, total: displayTotal };
 
     const questionTextTemplate = getQText(`Which amount matches the total money shown?`, `Total amount matches = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const randomName = ['Siti', 'Muthu', 'Ali', 'Wei Ming', 'Ravi', 'Nurul', 'Ahmad', 'Mei', 'Kumar'][Math.floor(Math.random() * 9)];
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use the name ${randomName}. IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = [answer, generateMoneyString(sumCents + 10), generateMoneyString(Math.max(10, sumCents - 10)), generateMoneyString(sumCents + 50)];
     options = getShuffledOptions(answer, options);
@@ -295,7 +304,7 @@ export const foundationVariants = {
           "componentToRender": "SINGAPORE_MONEY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE COUNTING PROCESS (e.g., adding dollars first, then cents). DO NOT add a redundant final step asking which amount matches the total.]"' : ''} }
       }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "matching_exact_amount", hideVisual: false }
     };
