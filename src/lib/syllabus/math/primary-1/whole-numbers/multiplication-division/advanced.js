@@ -37,7 +37,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const groupsTotal = groups * size;
     const answer = String(groupsTotal + extra);
     
-    const equationStr = `${groups} groups of ${size} and ${extra} more = ?`;
+    const equationStr = `${groups} groups of ${size}, plus ${extra} more = ?`;
 
     let defectMap = null;
     let options = null;
@@ -273,7 +273,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const needed = size;
     const answer = String(needed);
     
-    const equationStr = `Make ${targetGroups} groups of ${size} from ${currentItems}. How many more are needed?`;
+    const equationStr = `You have ${currentItems}. To make ${targetGroups} groups of ${size}, how many more do you need?`;
 
     let defectMap = null;
     let options = null;
@@ -335,7 +335,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const totalB = groupsB * sizeB;
     const answer = String(totalA + totalB);
     
-    const equationStr = `${groupsA} groups of ${sizeA} and ${groupsB} groups of ${sizeB} altogether = ?`;
+    const equationStr = `${groupsA} groups of ${sizeA}, plus ${groupsB} groups of ${sizeB} = ?`;
 
     let defectMap = null;
     let options = null;
@@ -658,13 +658,13 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const s1Correct = Math.random() > 0.5;
     const s1Sum = s1Correct ? totalLegs : totalLegs + 2;
     const s1 = `The animals have ${s1Sum} legs altogether.`;
-    const s1Ans = s1Correct ? 'T' : 'F';
+    const s1Ans = s1Correct ? 'True' : 'False';
 
     // S2
     const s2Correct = Math.random() > 0.5;
     const s2Count = s2Correct ? countB : countB + 1;
     const s2 = `There are ${s2Count} groups of 4 legs.`;
-    const s2Ans = s2Correct ? 'T' : 'F';
+    const s2Ans = s2Correct ? 'True' : 'False';
 
     // S3
     const s3Correct = Math.random() > 0.5;
@@ -677,13 +677,13 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       s3Num = nonDivisors.length > 0 ? nonDivisors[0] : 3;
     }
     const s3 = `They can be grouped equally so each group has ${s3Num} legs.`;
-    const s3Ans = totalLegs % s3Num === 0 ? 'T' : 'F';
+    const s3Ans = totalLegs % s3Num === 0 ? 'True' : 'False';
 
     const finalAnswer = `${s1Ans}, ${s2Ans}, ${s3Ans}`;
 
     let options = null;
     if (isMCQ) {
-      const possibleAnswers = ['T, T, T', 'T, T, F', 'T, F, T', 'T, F, F', 'F, T, T', 'F, T, F', 'F, F, T', 'F, F, F'];
+      const possibleAnswers = ['True, True, True', 'True, True, False', 'True, False, True', 'True, False, False', 'False, True, True', 'False, True, False', 'False, False, True', 'False, False, False'];
       let opts = [finalAnswer];
       while (opts.length < 4) {
         const rand = possibleAnswers[Math.floor(Math.random() * possibleAnswers.length)];
@@ -701,12 +701,12 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
-        questionText: getQText(`Look at the animals. Are the statements below True or False?`, `Look at the animals. Are the statements below True or False?`, zodType),
+        questionText: getQText(`Look at the animals. Are the statements below True or False? (Format: True, False, True)`, `Look at the animals. Are the statements below True or False? (Format: True, False, True)`, zodType),
         options: options,
         defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
         finalAnswer: finalAnswer,
-        solutionSteps: `1. There are ${countA} ${entityA.name} (${countA * 2} legs) and ${countB} ${entityB.name} (${countB * 4} legs).\\n2. Total legs = ${totalLegs}.\\n3. Statement 1 is ${s1Ans === 'T' ? 'True' : 'False'}.\\n4. Statement 2 is ${s2Ans === 'T' ? 'True' : 'False'}.\\n5. Statement 3 is ${s3Ans === 'T' ? 'True' : 'False'}.`
+        solutionSteps: `1. There are ${countA} ${entityA.name} (${countA * 2} legs) and ${countB} ${entityB.name} (${countB * 4} legs).\\n2. Total legs = ${totalLegs}.\\n3. Statement 1 is ${s1Ans}.\\n4. Statement 2 is ${s2Ans}.\\n5. Statement 3 is ${s3Ans}.`
       },
       visualEngine: {
         componentToRender: "TF_MATRIX_TABLE",
@@ -718,7 +718,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           ]
         }
       },
-      inputRequirement: { inputType: isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT' }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {

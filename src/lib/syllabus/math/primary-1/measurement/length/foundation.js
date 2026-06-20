@@ -14,7 +14,7 @@ export const foundationVariants = {
     const answer = String(lengthCount);
 
     const questionTextTemplate = getQText(`How many ${selectedUnit.name} long is the ${selectedTarget}?`, `Length of ${selectedTarget} in ${selectedUnit.name} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. 'Ali went to the store.'). DO NOT delete the math question! CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = [answer, String(lengthCount + 2), String(Math.max(1, lengthCount - 1)), String(lengthCount + 1)];
     let mcqOptions = 'null';
@@ -47,7 +47,7 @@ export const foundationVariants = {
           "componentToRender": "MEASUREMENT_UNIT",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
       }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "unit_counting", hideVisual: false }
     };
@@ -67,7 +67,7 @@ export const foundationVariants = {
     const answer = targetItem.label;
 
     const questionTextTemplate = getQText(`Which object is ${isAskingLonger ? 'longer' : 'shorter'}?`, `${isAskingLonger ? 'Longer' : 'Shorter'} object = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. 'Ali went to the store.'). DO NOT delete the math question! CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = getShuffledOptions(answer, [...shuffled.map(i => i.label).filter(l => l !== answer), ...distractors]);
     let mcqOptions = 'null';
@@ -100,7 +100,7 @@ export const foundationVariants = {
           "componentToRender": "MEASUREMENT_UNIT",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
       }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "compare_two", hideVisual: false }
     };
@@ -122,7 +122,7 @@ export const foundationVariants = {
     const answer = `${correctPair[0]} and ${correctPair[1]}`;
 
     const questionTextTemplate = getQText(`Which two objects have the same length?`, `Same length objects = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. 'Ali went to the store.'). DO NOT delete the math question! CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = [
       `${itemsArr[0].label} and ${itemsArr[1].label}`,
@@ -154,7 +154,7 @@ export const foundationVariants = {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
           "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`Try counting the blocks for each object. Do any have the same count?`, `Count units to find matching pair.`))},
+          "hint": ${JSON.stringify(getQText(`Try counting the units for each object. Do any have the same count?`, `Count units to find matching pair.`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`Both the ${correctPair[0]} and the ${correctPair[1]} are exactly ${targetLen} units long.`, `Answer is ${answer}.`))}
         },
@@ -162,7 +162,7 @@ export const foundationVariants = {
           "componentToRender": "MEASUREMENT_UNIT",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
       }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "find_same", hideVisual: false }
     };
@@ -179,7 +179,7 @@ export const foundationVariants = {
     const answer = targetItem.label;
 
     const questionTextTemplate = getQText(`Which object is exactly ${targetItem.length} ${selectedUnit.name} long?`, `Find object with length ${targetItem.length} ${selectedUnit.name}.`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. 'Ali went to the store.'). DO NOT delete the math question! CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = itemsArr.map(i => i.label);
     if (!options.includes(answer)) { options[0] = answer; }
@@ -214,7 +214,7 @@ export const foundationVariants = {
           "componentToRender": "MEASUREMENT_UNIT",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
       }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "identify_by_length", hideVisual: false }
     };
@@ -238,7 +238,7 @@ export const foundationVariants = {
     const componentData = { items: shuffled, unitIcon: selectedUnit.icon };
 
     const questionTextTemplate = getQText(`Look at the objects. Is this statement True or False?\n\n"${statement}"`, `Is "${statement}" True or False?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. 'Ali went to the store.'). DO NOT delete the math question! CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = ['True', 'False', 'They are the same length', 'Cannot tell'];
     if (!options.includes(answer)) { options[0] = answer; }
@@ -273,7 +273,7 @@ export const foundationVariants = {
           "componentToRender": "MEASUREMENT_UNIT",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
       }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "true_false", hideVisual: false }
     };

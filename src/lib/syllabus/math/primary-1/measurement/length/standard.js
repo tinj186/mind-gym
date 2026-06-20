@@ -17,7 +17,7 @@ export const standardVariants = {
 
     const answer = longestObject;
     const questionTextTemplate = getQText(`Look at the items aligned to the wall line. Which object is the longest?`, `Longest object = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. 'Ali went to the store.'). DO NOT delete the math question! CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = selection.map(capitalize);
     if (!options.includes(answer)) { options[0] = answer; }
@@ -46,13 +46,13 @@ export const standardVariants = {
           "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Look at the right side of the items. Which one reaches the furthest?`, `Check the right edges.`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`All objects share the exact same starting line on the left. Looking across to the right edge, the ${longestObject} measures ${lengths[maxIdx]} blocks long, making it the longest.`, `Answer is ${answer}.`))}
+          "solutionSteps": ${JSON.stringify(getQText(`All objects share the exact same starting line on the left. Looking across to the right edge, the ${longestObject} measures ${lengths[maxIdx]} ${selectedUnit.name} long, making it the longest.`, `Answer is ${answer}.`))}
         },
         "visualEngine": {
           "componentToRender": "MEASUREMENT_UNIT",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
       }`,
       metadata: { difficulty: 'standard', steps: 1, logic: "baseline_comparison", hideVisual: false }
     };
@@ -67,7 +67,7 @@ export const standardVariants = {
 
     const answer = shortestItem;
     const questionTextTemplate = getQText(`Look at the items. Which object is the shortest?`, `Shortest object = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. 'Ali went to the store.'). DO NOT delete the math question! CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = selection.map(capitalize);
     if (!options.includes(answer)) { options[0] = answer; }
@@ -102,7 +102,7 @@ export const standardVariants = {
           "componentToRender": "MEASUREMENT_UNIT",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
       }`,
       metadata: { difficulty: 'standard', steps: 1, logic: "find_shortest", hideVisual: false }
     };
@@ -123,7 +123,7 @@ export const standardVariants = {
 
     const answer = targetItem.label;
     const questionTextTemplate = getQText(`Look at the pictures standing on the ground floor. Which one is the ${isAskingTallest ? 'tallest' : 'shortest'}?`, `${isAskingTallest ? 'Tallest' : 'Shortest'} object = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. 'Ali went to the store.'). DO NOT delete the math question! CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = [...items.map(i => i.label), `Tall ${distractor.name}`];
     if (!options.includes(answer)) { options[0] = answer; }
@@ -158,7 +158,7 @@ export const standardVariants = {
           "componentToRender": "MEASUREMENT_UNIT",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
       }`,
       metadata: { difficulty: 'standard', steps: 1, logic: "vertical_baseline", hideVisual: false }
     };
@@ -172,15 +172,15 @@ export const standardVariants = {
     const selectedUnit = units[Math.floor(Math.random() * units.length)];
     const componentData = { items: itemsArr, unitIcon: selectedUnit.icon };
     
-    const answer = ascendingOrder.join(" ➔ ");
+    const answer = ascendingOrder.join(", ");
     const questionTextTemplate = getQText(`Arrange the objects in order from shortest to longest.`, `Order objects shortest to longest.`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. 'Ali went to the store.'). DO NOT delete the math question! CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = [
       answer,
-      [...ascendingOrder].reverse().join(" ➔ "),
-      `${ascendingOrder[1]} ➔ ${ascendingOrder[0]} ➔ ${ascendingOrder[2]}`,
-      `${ascendingOrder[0]} ➔ ${ascendingOrder[2]} ➔ ${ascendingOrder[1]}`
+      [...ascendingOrder].reverse().join(", "),
+      `${ascendingOrder[1]}, ${ascendingOrder[0]}, ${ascendingOrder[2]}`,
+      `${ascendingOrder[0]}, ${ascendingOrder[2]}, ${ascendingOrder[1]}`
     ];
     if (!options.includes(answer)) { options[0] = answer; }
 
@@ -206,15 +206,15 @@ export const standardVariants = {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
           "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`Count the blocks for each one first, then put them in order from smallest to biggest!`, `Sort lengths increasing.`))},
+          "hint": ${JSON.stringify(getQText(`Count the ${selectedUnit.name} for each one first, then put them in order from smallest to biggest!`, `Sort lengths increasing.`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`Let's count each object's blocks: ${itemsArr.map(i => `${i.label} is ${i.length} units`).join(', ')}. Putting them in order from shortest to longest gives: ${answer}.`, `Answer is ${answer}.`))}
+          "solutionSteps": ${JSON.stringify(getQText(`Let's count each object's units: ${itemsArr.map(i => `${i.label} is ${i.length} units`).join(', ')}. Putting them in order from shortest to longest gives: ${answer}.`, `Answer is ${answer}.`))}
         },
         "visualEngine": {
           "componentToRender": "MEASUREMENT_UNIT",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
       }`,
       metadata: { difficulty: 'standard', steps: 2, logic: "ordering_ascending", hideVisual: false }
     };
@@ -228,15 +228,15 @@ export const standardVariants = {
     const selectedUnit = units[Math.floor(Math.random() * units.length)];
     const componentData = { items: itemsArr, unitIcon: selectedUnit.icon };
     
-    const answer = descendingOrder.join(" ➔ ");
+    const answer = descendingOrder.join(", ");
     const questionTextTemplate = getQText(`Arrange the objects in order from longest to shortest.`, `Order objects longest to shortest.`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. 'Ali went to the store.'). DO NOT delete the math question! CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = [
       answer,
-      [...descendingOrder].reverse().join(" ➔ "),
-      `${descendingOrder[1]} ➔ ${descendingOrder[2]} ➔ ${descendingOrder[0]}`,
-      `${descendingOrder[2]} ➔ ${descendingOrder[1]} ➔ ${descendingOrder[0]}`
+      [...descendingOrder].reverse().join(", "),
+      `${descendingOrder[1]}, ${descendingOrder[2]}, ${descendingOrder[0]}`,
+      `${descendingOrder[2]}, ${descendingOrder[1]}, ${descendingOrder[0]}`
     ];
     if (!options.includes(answer)) { options[0] = answer; }
 
@@ -262,15 +262,15 @@ export const standardVariants = {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
           "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`Count the blocks for each one first, then put them in order from biggest to smallest!`, `Sort lengths decreasing.`))},
+          "hint": ${JSON.stringify(getQText(`Count the ${selectedUnit.name} for each one first, then put them in order from biggest to smallest!`, `Sort lengths decreasing.`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`Counting their blocks: ${itemsArr.map(i => `${i.label} is ${i.length} units`).join(', ')}. Sorting them from longest to shortest gives: ${answer}.`, `Answer is ${answer}.`))}
+          "solutionSteps": ${JSON.stringify(getQText(`Counting their units: ${itemsArr.map(i => `${i.label} is ${i.length} units`).join(', ')}. Sorting them from longest to shortest gives: ${answer}.`, `Answer is ${answer}.`))}
         },
         "visualEngine": {
           "componentToRender": "MEASUREMENT_UNIT",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
       }`,
       metadata: { difficulty: 'standard', steps: 2, logic: "ordering_descending", hideVisual: false }
     };
@@ -286,7 +286,7 @@ export const standardVariants = {
     const answer = askLongest ? labels[0] : labels[2];
 
     const questionTextTemplate = getQText(`Read carefully:\n- ${labels[0]} is longer than ${labels[1]}.\n- ${labels[1]} is longer than ${labels[2]}.\n\nWhich object is the ${askLongest ? 'longest' : 'shortest'}?`, `If ${labels[0]} > ${labels[1]} and ${labels[1]} > ${labels[2]}, find ${askLongest ? 'longest' : 'shortest'}.`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. 'Ali went to the store.'). DO NOT delete the math question! CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = [...labels, distractor];
     if (!options.includes(answer)) { options[0] = answer; }
@@ -321,7 +321,7 @@ export const standardVariants = {
           "componentToRender": "NONE",
           "componentData": {}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
       }`,
       metadata: { difficulty: 'standard', steps: 2, logic: "transitive_logic", hideVisual: true }
     };
@@ -337,12 +337,12 @@ export const standardVariants = {
 
     const answer = "No, because they do not start at the same baseline.";
     const questionTextTemplate = getQText(`Look closely at the image alignment. Can we say ${selection[1]} B is longer than ${selection[0]} A simply because its right edge sticks out further?`, `Is B longer because its tip is further right?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. 'Ali went to the store.'). DO NOT delete the math question! CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = [
       "No, because they do not start at the same baseline.",
       "Yes, because its tip is further to the right.",
-      "Yes, because it uses more blocks underneath.",
+      "Yes, because it uses more units underneath.",
       "Yes, because it is a different color."
     ];
     if (!options.includes(answer)) { options[0] = answer; }
@@ -377,7 +377,7 @@ export const standardVariants = {
           "componentToRender": "MEASUREMENT_UNIT",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
       }`,
       metadata: { difficulty: 'standard', steps: 1, logic: "baseline_error_check", hideVisual: false }
     };
@@ -401,7 +401,7 @@ export const standardVariants = {
     
     const answer = matchingTwin.label;
     const questionTextTemplate = getQText(`Look at the ${referenceItem.label}. Which object is as long as the ${referenceItem.label}?`, `Which object has same length as ${referenceItem.label}?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. 'Ali went to the store.'). DO NOT delete the math question! CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = Array.from(optionsSet);
     if (!options.includes(answer)) { options[0] = answer; }
@@ -428,7 +428,7 @@ export const standardVariants = {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
           "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`Count the blocks for the ${referenceItem.label} and see which other object has the same number.`, `Match lengths.`))},
+          "hint": ${JSON.stringify(getQText(`Count the ${selectedUnit.name} for the ${referenceItem.label} and see which other object has the same number.`, `Match lengths.`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`Objects that are 'as long as' each other must have the same number of units. Both the ${referenceItem.label} and the ${matchingTwin.label} are exactly ${baseLen} ${selectedUnit.name} long.`, `Answer is ${answer}.`))}
         },
@@ -436,7 +436,7 @@ export const standardVariants = {
           "componentToRender": "MEASUREMENT_UNIT",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
       }`,
       metadata: { difficulty: 'standard', steps: 1, logic: "as_long_as", hideVisual: false }
     };
@@ -452,7 +452,7 @@ export const standardVariants = {
     
     const answer = String(diff);
     const questionTextTemplate = getQText(`How many ${selectedUnit.name} longer is the ${selection[0]} than the ${selection[1]}?`, `Length difference = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. 'Ali went to the store.'). DO NOT delete the math question! CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = [answer, String(len1), String(len2), String(len1 + len2)];
     if (!options.includes(answer)) { options[0] = answer; }
@@ -487,7 +487,7 @@ export const standardVariants = {
           "componentToRender": "MEASUREMENT_UNIT",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
       }`,
       metadata: { difficulty: 'standard', steps: 1, logic: "unit_difference", hideVisual: false }
     };
@@ -503,7 +503,7 @@ export const standardVariants = {
     
     const answer = String(actualLength);
     const questionTextTemplate = getQText(`Look at the ${selectedItem.toLowerCase()}. It starts at the ${startMarker} unit marker and ends at the ${endMarker} unit marker. How many units long is the ${selectedItem.toLowerCase()}?`, `Length of ${selectedItem.toLowerCase()} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. 'Ali went to the store.'). DO NOT delete the math question! CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = [answer, String(endMarker), String(startMarker), String(endMarker + 1)];
     if (!options.includes(answer)) { options[0] = answer; }
@@ -530,7 +530,7 @@ export const standardVariants = {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
           "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`Count only the blocks that are actually under the object!`, `Subtract start from end.`))},
+          "hint": ${JSON.stringify(getQText(`Count only the units that are actually under the object!`, `Subtract start from end.`))},
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`When an object does not start at zero, calculate its true length by subtracting the starting marker position from the ending marker position: ${endMarker} - ${startMarker} = ${actualLength} ${selectedUnit.name}.`, `Answer is ${answer}.`))}
         },
@@ -538,7 +538,7 @@ export const standardVariants = {
           "componentToRender": "MEASUREMENT_UNIT",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
       }`,
       metadata: { difficulty: 'standard', steps: 1, logic: "mid_grid_alignment", hideVisual: false }
     };

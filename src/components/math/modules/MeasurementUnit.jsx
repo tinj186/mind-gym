@@ -12,13 +12,13 @@ const getHorizontalAsset = (label) => {
   return 'pen.svg'; 
 };
 
-// ASSET TUNING MATRIX - Adapts individual items for internal SVG canvas margins
+// ASSET TUNING MATRIX - Adapts individual items for internal SVG canvas margins and proportional scaling
 const ASSET_TUNING = {
-  'cutter.svg':       { scaleX: 1.00, translateX: 0 },
-  'highlighter.svg':  { scaleX: 1.00, translateX: 0 },
-  'pen.svg':          { scaleX: 1.00, translateX: 0 },
-  'pencil.svg':       { scaleX: 1.00, translateX: 0 },
-  'usbdrive.svg':     { scaleX: 1.00, translateX: 0 }
+  'cutter.svg':       { scaleX: 1.00, translateX: 0, baseLength: 4, stretchFactor: 0.15 },
+  'highlighter.svg':  { scaleX: 1.00, translateX: 0, baseLength: 4, stretchFactor: 0.15 },
+  'pen.svg':          { scaleX: 1.00, translateX: 0, baseLength: 5, stretchFactor: 0.12 },
+  'pencil.svg':       { scaleX: 1.00, translateX: 0, baseLength: 5, stretchFactor: 0.12 },
+  'usbdrive.svg':     { scaleX: 1.00, translateX: 0, baseLength: 4, stretchFactor: 0.20 }
 };
 
 export default function MeasurementUnit({ data, topic, difficulty, hideCardStyles = false }) {
@@ -111,7 +111,7 @@ export default function MeasurementUnit({ data, topic, difficulty, hideCardStyle
   if (isVerticalOrientation) {
     return (
       <div className={`${containerStyle} space-y-6`}>
-        <div className="flex items-end justify-center gap-16 pt-20 pb-2 border-b-4 border-slate-900 min-h-[340px] relative">
+        <div className="flex items-end justify-center gap-16 pt-20 pb-2 mb-10 border-b-4 border-slate-900 min-h-[340px] relative">
           {data.items?.map((mItem, idx) => {
             const emojiAsset = getVerticalEmoji(mItem.label);
             const targetedHeight = mItem.length * 24; 
@@ -130,6 +130,12 @@ export default function MeasurementUnit({ data, topic, difficulty, hideCardStyle
                       />
                     </div>
                   ))}
+                </div>
+                {/* Label for vertical objects */}
+                <div className="absolute -bottom-10 w-full flex justify-center whitespace-nowrap">
+                  <span className="text-xs font-black uppercase text-slate-500 tracking-wider">
+                    {mItem.label}
+                  </span>
                 </div>
               </div>
             );
@@ -159,7 +165,8 @@ export default function MeasurementUnit({ data, topic, difficulty, hideCardStyle
         const assetFile = getHorizontalAsset(mItem.label);
         const gridLengthCount = data.showFullRuler ? maxTotalUnits : mItem.length;
         const gridOffset = data.showFullRuler ? 0 : offsetLeftPadding;
-        const tuning = ASSET_TUNING[assetFile] || { scaleX: 1.0, translateX: 0 };
+        const tuning = ASSET_TUNING[assetFile] || { scaleX: 1.0, translateX: 0, baseLength: 4, stretchFactor: 0.15 };
+        const dynamicScaleY = Math.max(0.6, Math.min(2.0, 1 + (mItem.length - tuning.baseLength) * tuning.stretchFactor));
 
         return (
           <div key={idx} className="space-y-4 pb-6">
@@ -187,7 +194,7 @@ export default function MeasurementUnit({ data, topic, difficulty, hideCardStyle
                     objectFit: 'fill', 
                     display: 'block',
                     transformOrigin: 'left center',
-                    transform: `translateX(${tuning.translateX}px) scaleX(${tuning.scaleX})`
+                    transform: `translateX(${tuning.translateX}px) scaleX(${tuning.scaleX}) scaleY(${dynamicScaleY})`
                   }}
                 />
               </div>

@@ -27,7 +27,7 @@ export const foundationVariants = {
 
     const questionTextTemplate = getQText(`Count the total amount of money shown below.`, `Total amount = ?`);
     const randomName = ['Siti', 'Muthu', 'Ali', 'Wei Ming', 'Ravi', 'Nurul', 'Ahmad', 'Mei', 'Kumar'][Math.floor(Math.random() * 9)];
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use the name ${randomName}. IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. '${randomName} went to the shop.'). DO NOT delete the math question! IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = [answer, generateMoneyString(sumCents + 10), generateMoneyString(Math.max(10, sumCents - 10)), generateMoneyString(sumCents + 20)];
     options = getShuffledOptions(answer, options);
@@ -87,7 +87,7 @@ export const foundationVariants = {
 
     const questionTextTemplate = getQText(`Count the total amount of money shown below.`, `Total amount = ?`);
     const randomName = ['Siti', 'Muthu', 'Ali', 'Wei Ming', 'Ravi', 'Nurul', 'Ahmad', 'Mei', 'Kumar'][Math.floor(Math.random() * 9)];
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use the name ${randomName}. IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. '${randomName} went to the shop.'). DO NOT delete the math question! IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = [answer, generateMoneyString(sumCents + 100), generateMoneyString(Math.max(200, sumCents - 100)), generateMoneyString(sumCents + 200)];
     options = getShuffledOptions(answer, options);
@@ -147,7 +147,7 @@ export const foundationVariants = {
 
     const questionTextTemplate = getQText(`Count the total amount of money shown below.`, `Total amount = ?`);
     const randomName = ['Siti', 'Muthu', 'Ali', 'Wei Ming', 'Ravi', 'Nurul', 'Ahmad', 'Mei', 'Kumar'][Math.floor(Math.random() * 9)];
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use the name ${randomName}. IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. '${randomName} went to the shop.'). DO NOT delete the math question! IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = [answer, generateMoneyString(sumCents + 10), generateMoneyString(Math.max(50, sumCents - 10)), generateMoneyString(sumCents + 50)];
     options = getShuffledOptions(answer, options);
@@ -209,7 +209,7 @@ export const foundationVariants = {
 
     const questionTextTemplate = getQText(`An item costs ${targetPriceStr}. Is the amount of money shown enough to buy it?`, `Is amount shown enough for ${targetPriceStr}?`);
     const randomName = ['Siti', 'Muthu', 'Ali', 'Wei Ming', 'Ravi', 'Nurul', 'Ahmad', 'Mei', 'Kumar'][Math.floor(Math.random() * 9)];
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use the name ${randomName}. IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. '${randomName} went to the shop.'). DO NOT delete the math question! IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = ["Yes", "No"];
     options = getShuffledOptions(answer, options);
@@ -269,7 +269,7 @@ export const foundationVariants = {
 
     const questionTextTemplate = getQText(`Which amount matches the total money shown?`, `Total amount matches = ?`);
     const randomName = ['Siti', 'Muthu', 'Ali', 'Wei Ming', 'Ravi', 'Nurul', 'Ahmad', 'Mei', 'Kumar'][Math.floor(Math.random() * 9)];
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use the name ${randomName}. IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. '${randomName} went to the shop.'). DO NOT delete the math question! IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = [answer, generateMoneyString(sumCents + 10), generateMoneyString(Math.max(10, sumCents - 10)), generateMoneyString(sumCents + 50)];
     options = getShuffledOptions(answer, options);

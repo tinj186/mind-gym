@@ -152,6 +152,7 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
     currentMf.readOnly = disabled;
     currentMf.letterShapeStyle = "iso";
     currentMf.smartFence = true;
+    currentMf.mathModeSpace = "\\ ";
     currentMf.macros = {
       ...currentMf.macros,
       cm2: '{cm}^2',
