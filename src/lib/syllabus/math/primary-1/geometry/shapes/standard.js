@@ -18,7 +18,7 @@ export const standardVariants = {
 
     const answer = "{count}";
     const questionTextTemplate = getQText(`Look at the picture of the ${selectedSubject}. How many ${targetShape}s are used to build it?`, `How many ${targetShape}s in the ${selectedSubject}?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
@@ -44,7 +44,7 @@ export const standardVariants = {
       {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
-          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "questionText": ${JSON.stringify(questionTextTemplate)},
           "options": ["{count}", "{distractor1}", "{distractor2}", "{distractor3}"],
           "defectMap": { "{distractor1}": "CARELESS_CALCULATION", "{distractor2}": "CARELESS_CALCULATION", "{distractor3}": "CARELESS_CALCULATION" },
           "hint": ${JSON.stringify(getQText(`Count every single ${targetShape} you can find, even if they are different sizes or turned sideways!`, `Count all ${targetShape}s.`))},
@@ -73,7 +73,7 @@ export const standardVariants = {
     
     const answer = capitalize(selected.next);
     const questionTextTemplate = getQText(`What shape comes next in the pattern?`, `Next shape in pattern = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = getRandom(allShapes, 4).map(capitalize);
     if (!options.includes(answer)) {
@@ -122,7 +122,7 @@ export const standardVariants = {
     
     const answer = capitalize(sA);
     const questionTextTemplate = getQText(`Look at the pattern. What shape is missing in the box with the question mark?`, `Missing shape = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = getRandom(allShapes, 4).map(capitalize);
     if (!options.includes(answer)) {
@@ -175,7 +175,7 @@ export const standardVariants = {
     const answer = selected.ans;
 
     const questionTextTemplate = getQText(selected.text, selected.text);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = getRandom(["Squares", "Rectangles", "Triangles", "Circles"], 4);
     if (!options.includes(answer)) {
@@ -224,7 +224,7 @@ export const standardVariants = {
     const answer = selected.ans;
 
     const questionTextTemplate = getQText(selected.text, selected.text);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = getRandom(["Squares", "Triangles", "Circles", "Two half-circles"], 4);
     if (!options.includes(answer)) {
@@ -271,7 +271,7 @@ export const standardVariants = {
     const componentData = { layout: "COMPOSITE_GENERATIVE", parts: [], name: selectedSubject };
 
     const questionTextTemplate = getQText(`Look at the picture of the ${selectedSubject}. Which shape is used the ${askMostFrequent ? 'most' : 'least'} to build it?`, `${askMostFrequent ? 'Most' : 'Least'} frequent shape in the ${selectedSubject}?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
@@ -283,8 +283,8 @@ export const standardVariants = {
       1. Generate an array of 5 to 10 shapes inside visualEngine.componentData.parts to create the ${selectedSubject}. Every part MUST have:
           - shapeType: "circle" | "square" | "triangle" | "rectangle"
           - color: a vibrant, child-friendly hex code (e.g., "#ef4444", "#3b82f6", "#eab308")
-          - x: number (0 to 100) representing horizontal percentage (50 is center)
-          - y: number (0 to 100) representing vertical percentage (50 is center)
+          - x: number (20 to 80) representing horizontal percentage (50 is center)
+          - y: number (20 to 80) representing vertical percentage (50 is center)
           - scale: number (0.5 to 2.5) for size
           - rotation: number (0 to 360) for angle
       2. Ensure there is a clear ${askMostFrequent ? 'most' : 'least'} frequent shape. If asking for 'most', one shape type should appear at least 2 more times than any other. If asking for 'least', one shape type should appear at least 2 fewer times than any other, or only once.
@@ -297,7 +297,7 @@ export const standardVariants = {
       {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
-          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "questionText": ${JSON.stringify(questionTextTemplate)},
           "options": ["{targetShapeName}", "{distractor1}", "{distractor2}", "{distractor3}"],
           "defectMap": { "{distractor1}": "CONCEPTUAL_ERROR", "{distractor2}": "CONCEPTUAL_ERROR", "{distractor3}": "CONCEPTUAL_ERROR" },
           "hint": ${JSON.stringify(getQText(`Count how many times each type of shape appears in the ${selectedSubject}.`, `Count each shape type.`))},
@@ -325,7 +325,7 @@ export const standardVariants = {
     const answer = selected.ans;
 
     const questionTextTemplate = getQText(selected.clue, selected.clue);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = ["Circle", "Triangle", "Square", "Rectangle"];
     let mcqOptions = 'null';
@@ -375,7 +375,7 @@ export const standardVariants = {
     const optionPool = seq.map((s, i) => `The ${positionLabels[i]} ${capitalize(s)}`);
 
     const questionTextTemplate = getQText(`Look at the pattern. Which shape is the mistake?`, `Which shape is incorrect?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = getShuffledOptions(answer, getRandom(optionPool.filter(o => o !== answer), 3));
     let mcqOptions = 'null';
@@ -427,7 +427,7 @@ export const standardVariants = {
     const answer = String(count);
 
     const questionTextTemplate = getQText(`How many ${target}s are in the grid?`, `Number of ${target}s = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = getShuffledOptions(answer, ["0", "1", "2", "3", "4", "5"].filter(x => x !== answer).slice(0, 3));
     let mcqOptions = 'null';
@@ -473,20 +473,19 @@ export const standardVariants = {
 
     const answer = "{inventory}";
     const questionTextTemplate = getQText(`Look at the picture of the ${selectedSubject}. Which list of shapes was used to build it?`, `Shapes used to build the ${selectedSubject} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
-      ${storyInstruction}
 
       CRITICAL TASK: Build a 2D drawing of a "${selectedSubject.toUpperCase()}" built ENTIRELY out of basic shapes.
       
       1. Generate an array of 5 to 10 shapes inside visualEngine.componentData.parts to create the ${selectedSubject}. Every part MUST have:
           - shapeType: "circle" | "square" | "triangle" | "rectangle"
           - color: a vibrant, child-friendly hex code (e.g., "#ef4444", "#3b82f6", "#eab308")
-          - x: number (0 to 100) representing horizontal percentage (50 is center)
-          - y: number (0 to 100) representing vertical percentage (50 is center)
+          - x: number (20 to 80) representing horizontal percentage (50 is center)
+          - y: number (20 to 80) representing vertical percentage (50 is center)
           - scale: number (0.5 to 2.5) for size
           - rotation: number (0 to 360) for angle
       2. Calculate the exact inventory list of shapes used (e.g., "2 Triangles, 1 Square and 3 Circles").
@@ -498,7 +497,7 @@ export const standardVariants = {
       {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
-          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "questionText": ${JSON.stringify(questionTextTemplate)},
           "options": ["{inventory}", "{distractor1}", "{distractor2}", "{distractor3}"],
           "defectMap": { "{distractor1}": "CONCEPTUAL_ERROR", "{distractor2}": "CONCEPTUAL_ERROR", "{distractor3}": "CONCEPTUAL_ERROR" },
           "hint": ${JSON.stringify(getQText(`Break down the drawing into the simple shapes you know.`, `Identify the parts.`))},

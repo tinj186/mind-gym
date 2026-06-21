@@ -9,7 +9,7 @@ export const foundationVariants = {
     const componentData = { hour: randomHour, minute: 0, displayType: 'analog' };
     
     const questionTextTemplate = getQText(`Look at the clock. What time is it?`, `Time on analog clock = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}.`;
 
     let options = [`${randomHour === 12 ? 1 : randomHour + 1} o'clock`, `${randomHour === 1 ? 12 : randomHour - 1} o'clock`, "6 o'clock"];
     options = getShuffledOptions(answer, options);
@@ -56,7 +56,7 @@ export const foundationVariants = {
     const componentData = { hour: randomHour, minute: 0, displayType: 'digital' };
 
     const questionTextTemplate = getQText(`What time is shown on the digital clock?`, `Time on digital clock = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}.`;
 
     let options = [`${randomHour === 12 ? 1 : randomHour + 1} o'clock`, "half past 12", "3 o'clock"];
     options = getShuffledOptions(answer, options);
@@ -132,7 +132,7 @@ export const foundationVariants = {
       solutionSteps = getQText(`At any exact 'o'clock', zero minutes have passed. This means the minute hand (the long hand) points straight up to the number 12.`, `Answer is ${answer}.`);
     }
 
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}.`;
     
     let mcqOptions = 'null';
     let defectMapStr = 'null';
@@ -179,14 +179,32 @@ export const foundationVariants = {
       isNightScenario ? "Night activity = ?" : "Morning activity = ?"
     );
 
-    const answer = isNightScenario ? "Going to sleep in bed" : "Eating breakfast before school";
+    const morningActivities = [
+      "Eating breakfast before school",
+      "Watching the morning sunrise",
+      "Going to school",
+      "Waking up from bed",
+      "Brushing teeth in the morning",
+      "Playing at the school field"
+    ].sort(() => Math.random() - 0.5);
+
+    const nightActivities = [
+      "Going to sleep in bed",
+      "Looking at stars in the sky",
+      "Having dinner with family",
+      "Sleeping in pajamas",
+      "Reading a bedtime story",
+      "Watching the moon"
+    ].sort(() => Math.random() - 0.5);
+
+    const answer = isNightScenario ? nightActivities[0] : morningActivities[0];
     const distractors = isNightScenario 
-      ? ["Playing at the school field", "Eating breakfast", "Watching the morning sunrise"]
-      : ["Sleeping in pajamas", "Looking at stars in the sky", "Having dinner with family"];
+      ? morningActivities.slice(0, 3)
+      : nightActivities.slice(0, 3);
 
     let options = getShuffledOptions(answer, distractors);
 
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}.`;
 
     let mcqOptions = 'null';
     let defectMapStr = 'null';
@@ -245,7 +263,7 @@ export const foundationVariants = {
       
     let options = getShuffledOptions(answer, distractors);
     
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}.`;
 
     let mcqOptions = 'null';
     let defectMapStr = 'null';

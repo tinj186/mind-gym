@@ -45,7 +45,7 @@ export default function ReviewCard({
   const visualType = normalizedQuestion.visualEngine?.componentToRender; // Raw type from normalized question
 
   // Define visual categories
-  const isQuestionVisual = !!visualType && visualType !== 'NONE';
+  const isQuestionVisual = !!visualType && visualType !== 'NONE' && !normalizedQuestion.modelData?.hideVisual;
   const isBusy = processingId === q.id || processingId === 'bulk';
   const isArchived = q.isArchived === true;
 

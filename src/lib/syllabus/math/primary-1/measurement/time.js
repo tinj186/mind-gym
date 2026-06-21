@@ -81,7 +81,7 @@ export const timeBlueprint = {
       if (validVariants.length > 0) {
         activeVariant = validVariants[Math.floor(Math.random() * validVariants.length)];
       } else {
-        activeVariant = 'foundation_to_hour'; 
+        activeVariant = 'foundation_to_hour';
       }
     }
 
@@ -98,8 +98,8 @@ export const timeBlueprint = {
 
     const hintProtocol = `\nCRITICAL HINT PROTOCOL: You MUST provide a conceptual "hint" field in your JSON. Focus on reading clock hands correctly.`;
 
-    let formatInstructions = isMCQ 
-      ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}` 
+    let formatInstructions = isMCQ
+      ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}`
       : `Format as Short Answer. The "options" field in your JSON should be null.${hintProtocol}`;
 
     if (activeVariant.startsWith('foundation_')) {

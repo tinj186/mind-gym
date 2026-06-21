@@ -43,7 +43,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
 
   // 🛡️ Universal Content Guard: Validates based on the presence of DATA, not component names.
   const hasVisualContent = useMemo(() => {
-    if (!currentVisual || currentVisual === "NONE") return false;
+    if (!currentVisual || currentVisual === "NONE" || normalizedQuestion?.modelData?.hideVisual) return false;
 
     // 1. MODERN VISUALS (Picture Graphs, Ordinal Lines, etc.)
     const componentData = normalizedQuestion?.visualEngine?.componentData;

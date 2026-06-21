@@ -58,6 +58,10 @@ Execution: The Universal AI Parser (`generation-utils.js`) explicitly checks the
 Law (Negative Prompt Exclusion): Negative instructions must NOT be included in AI system prompts (e.g. "Do not write 'Start with'").
 Execution: Generative models frequently misinterpret negative string examples as positive instructions and hallucinate them into the JSON output (e.g. injecting them into `solutionSteps`). System prompts must explicitly command what the AI *should* do, omitting string examples of what it should avoid.
 
+Law (Language Layer Override Prevention): The general AI engine applies age-appropriate language constraints (e.g., "maximum 10-12 words") based on the student's level. However, explicit text templates hardcoded into syllabus blueprints (e.g., `questionTextTemplate`) strictly override these general rules.
+Execution: Developers MUST NOT hardcode complex vocabulary (e.g., "cumulative", "track frame map", "composite vector") into static syllabus templates for lower levels (P1/P2). The AI is instructed to output these templates EXACTLY, which will bypass the general engine's simplification rules and cause age-inappropriate wording to be rendered to the user.
+
+
 Law (Variant Fallback Constraints): Variants that conceptually violate a requested question type must securely fallback or override.
 Execution: During generation, the engine filters variants. If a variant conceptually violates the requested type (e.g., trying to render a "Strict Word Problem" as a "Short Question" equation), the generator securely falls back to a valid variant. Conversely, variants that strictly rely on multiple-choice mechanics (e.g., Equation Equivalence) will explicitly override the user's type request to `MCQ`.
 

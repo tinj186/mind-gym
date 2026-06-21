@@ -9,7 +9,7 @@ export const standardVariants = {
     const componentData = { hour, minute: 30, displayType: 'analog' };
 
     const questionTextTemplate = getQText(`What time is shown on the clock?`, `Time on analog clock = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}.`;
 
     let options = [answer, `half past ${hour === 12 ? 1 : hour + 1}`, `${hour} o'clock`, `half past ${hour === 1 ? 12 : hour - 1}`];
     options = getShuffledOptions(answer, options);
@@ -55,8 +55,8 @@ export const standardVariants = {
     const answer = `${hour}:30`;
     const componentData = { hour, minute: 30, displayType: 'analog' };
 
-    const questionTextTemplate = getQText(`Which digital clock shows the same time as the clock face?`, `Digital time = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const questionTextTemplate = getQText(isMCQ ? `Which digital clock shows the same time as the clock face?` : `What is the digital time shown on the clock face?`, `Digital time = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}.`;
 
     let options = [answer, `${hour === 12 ? 1 : hour + 1}:30`, `${hour}:00`, `${hour === 1 ? 12 : hour - 1}:30`];
     options = getShuffledOptions(answer, options);
@@ -103,7 +103,7 @@ export const standardVariants = {
     const componentData = { hour, minute: 30, displayType: 'digital' };
 
     const questionTextTemplate = getQText(`Look at the digital clock. What is another way to say this time?`, `Time in words = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}.`;
 
     let options = [answer, `${hour} o'clock`, `half past ${hour === 12 ? 1 : hour + 1}`, `half past ${hour === 1 ? 12 : hour - 1}`];
     options = getShuffledOptions(answer, options);
@@ -149,8 +149,8 @@ export const standardVariants = {
     const answer = `${hour}:30`;
     const phrase = `half past ${hour}`;
 
-    const questionTextTemplate = getQText(`Which of these is the same as ${phrase}?`, `Digital time for ${phrase} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const questionTextTemplate = getQText(isMCQ ? `Which of these is the same as ${phrase}?` : `What is the digital time for ${phrase}?`, `Digital time for ${phrase} = ?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}.`;
 
     let options = [answer, `${hour}:00`, `${hour === 12 ? 1 : hour + 1}:30`, `${hour}:06`];
     options = getShuffledOptions(answer, options);
@@ -196,8 +196,8 @@ export const standardVariants = {
     const nextHour = hour + 1;
     const answer = `Between ${hour} and ${nextHour}`;
 
-    const questionTextTemplate = getQText(`Where should the short hour hand point at half past ${hour}?`, `Hour hand position at half past ${hour} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const questionTextTemplate = getQText(`Where should the short hour hand point at half past ${hour}?`, `Where does the hour hand point at half past ${hour}?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}.`;
 
     let options = [answer, `Exactly at ${hour}`, `Exactly at ${nextHour}`, `Between ${nextHour} and ${nextHour + 1}`];
     options = getShuffledOptions(answer, options);
@@ -245,7 +245,7 @@ export const standardVariants = {
     const answer = `${duration} ${duration === 1 ? 'hour' : 'hours'}`;
 
     const questionTextTemplate = getQText(`Math class starts at ${start} o'clock and ends at ${end} o'clock. How long is the class?`, `Duration from ${start} to ${end} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}.`;
 
     let options = [answer, "3 hours", "half an hour", "5 hours"];
     options = getShuffledOptions(answer, options);
@@ -292,7 +292,7 @@ export const standardVariants = {
     const answer = `half past ${hour}`;
 
     const questionTextTemplate = getQText(`If a digital clock shows ${digital}, what time is it in words?`, `Time in words for ${digital} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}.`;
 
     let options = [answer, `${hour} o'clock`, `half past ${hour === 1 ? 12 : hour - 1}`, "6 o'clock"];
     options = getShuffledOptions(answer, options);
@@ -334,16 +334,54 @@ export const standardVariants = {
   },
 
   standard_timeline_sequence: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const events = ["Wake up (7:00)", "Breakfast (7:30)", "Recess (10:00)", "Lunch (12:30)"];
-    const answer = events.join(" ➔ ");
+    const eventSets = [
+      [
+        { text: "Wake up (7:00)", order: 1 },
+        { text: "Breakfast (7:30)", order: 2 },
+        { text: "Recess (10:00)", order: 3 },
+        { text: "Lunch (12:30)", order: 4 }
+      ],
+      [
+        { text: "Reach school (7:30)", order: 1 },
+        { text: "Assembly (8:00)", order: 2 },
+        { text: "PE Class (11:00)", order: 3 },
+        { text: "Go Home (1:30)", order: 4 }
+      ],
+      [
+        { text: "Math Class (8:00)", order: 1 },
+        { text: "Art Class (9:30)", order: 2 },
+        { text: "Recess (10:30)", order: 3 },
+        { text: "Lunch (12:30)", order: 4 }
+      ],
+      [
+        { text: "Leave House (7:00)", order: 1 },
+        { text: "Music Class (9:30)", order: 2 },
+        { text: "Lunch (12:00)", order: 3 },
+        { text: "CCA (2:30)", order: 4 }
+      ]
+    ];
+    const events = eventSets[Math.floor(Math.random() * eventSets.length)];
+    
+    const shuffled = events.sort(() => Math.random() - 0.5);
+    const labeledEvents = shuffled.map((e, i) => ({ ...e, letter: String.fromCharCode(65 + i) })); // A, B, C, D
+    const correctOrder = labeledEvents.slice().sort((a, b) => a.order - b.order).map(e => e.letter).join(", ");
+    
+    let questionText = `Arrange these school day events in the correct order from earliest to latest:\n`;
+    labeledEvents.forEach(e => {
+      questionText += `\n${e.letter}. ${e.text}`;
+    });
+    
+    if (!isMCQ) questionText += `\n\n(Write your answer as letters, e.g., A, B, C, D)`;
+
+    const answer = correctOrder;
     const distractors = [
-      "Breakfast (7:30) ➔ Wake up (7:00) ➔ Recess (10:00) ➔ Lunch (12:30)",
-      "Lunch (12:30) ➔ Recess (10:00) ➔ Breakfast (7:30) ➔ Wake up (7:00)",
-      "Wake up (7:00) ➔ Recess (10:00) ➔ Breakfast (7:30) ➔ Lunch (12:30)"
+      labeledEvents.slice().sort(() => Math.random() - 0.5).map(e => e.letter).join(", "),
+      labeledEvents.slice().sort(() => Math.random() - 0.5).map(e => e.letter).join(", "),
+      labeledEvents.slice().sort(() => Math.random() - 0.5).map(e => e.letter).join(", ")
     ];
 
-    const questionTextTemplate = getQText(`Arrange these school day events in the correct order from earliest to latest.`, `Order events earliest to latest = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const questionTextTemplate = getQText(questionText, questionText);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}.`;
 
     let options = getShuffledOptions(answer, distractors);
 
@@ -369,9 +407,9 @@ export const standardVariants = {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
           "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`Think about what happens at the start of your school day and what happens later!`, `Sort by time.`))},
+          "hint": ${JSON.stringify(getQText(`Read the times on each event. The smallest hour number comes first!`, `Sort by time.`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`We follow the clock from morning to afternoon. 7:00 comes before 7:30, which comes before 10:00, and lunch is last at 12:30.`, `Answer is ${answer}.`))}
+          "solutionSteps": ${JSON.stringify(getQText(`We follow the clock from morning to afternoon. 7:00 comes before 7:30, which comes before 10:00, and lunch is last at 12:30. The correct order of letters is ${answer}.`, `Answer is ${answer}.`))}
         },
         "visualEngine": {
           "componentToRender": "NONE",
@@ -392,7 +430,7 @@ export const standardVariants = {
     const answer = nameB;
 
     const questionTextTemplate = getQText(`${nameA} reads for ${durA} hour. ${nameB} draws for ${durB} hours. Who spent more time on their activity?`, `Who spent more time = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}.`;
 
     let options = [nameA, nameB, "They spent the same time", "Cannot tell"];
     options = getShuffledOptions(answer, options);
@@ -440,7 +478,7 @@ export const standardVariants = {
     const componentData = { hour, minute: 0, displayType: 'analog' };
 
     const questionTextTemplate = getQText(`The clock shows ${hour} o'clock. What time will it be half an hour ${isLater ? 'later' : 'earlier'}?`, `Time half an hour ${isLater ? 'later' : 'earlier'} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}.`;
 
     let options = [answer, `${hour} o'clock`, `half past ${hour === 12 ? 1 : hour + 1}`, `${hour}:00`];
     options = getShuffledOptions(answer, options);

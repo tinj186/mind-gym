@@ -18,8 +18,13 @@ export class GenerationEngine {
     // 1. Get Level Specific Strategy
     const levelStrategy = getLevelStrategy(level, type);
     let baseSystemInstructions = getBaseSystemInstructions(level) + "\n\nLEVEL CONSTRAINTS:\n" + levelStrategy + "\n\nCRITICAL RULE FOR MULTI_STEP_INPUT: If asked to inject an array of steps, you MUST formulate the mathematical equations (e.g., '17 - 6 = 11'). Step labels should be like 'Working' or 'Equation' (e.g. expectedAnswer: '17-6=11') and 'Final Answer' (e.g. expectedAnswer: '11'). Break down complex problems into multiple working steps. ALWAYS output a valid JSON array of objects!";
+    const isVisualTask = safeSubtopic.includes('shape') || safeSubtopic.includes('pattern') || (safeSubtopic === 'time' && (safeDifficulty === 'foundation' || safeDifficulty === 'standard'));
     if (type === 'Structured') {
-      baseSystemInstructions += " IMPORTANT: You MUST also append a clear instruction to the 'question' text asking the student to provide their working (e.g., 'How many altogether? Show your working and the final answer.').";
+      if (isVisualTask) {
+        baseSystemInstructions += " IMPORTANT: DO NOT ask the student to 'show your working' in the question text because this is a simple visual observation task.";
+      } else {
+        baseSystemInstructions += " IMPORTANT: You MUST also append a clear instruction to the 'question' text asking the student to provide their working (e.g., 'How many altogether? Show your working and the final answer.').";
+      }
     }
 
     // 2. Resolve Blueprint
@@ -88,9 +93,11 @@ export class GenerationEngine {
         }, { apiVersion: 'v1beta' });
         try {
           result = await model.generateContent(baseSystemInstructions + "\n" + stepResult.aiPrompt);
+          const aiResponse = parseAiResponse(result.response.text());
+          result.parsedResponse = aiResponse;
           break;
         } catch (error) {
-          if ((error.status === 503 || error.status === 429) && retries > 1) {
+          if (retries > 1) {
             const { cooldown } = await getDynamicDelays(currentModelId);
             modelCooldowns[currentModelId] = Date.now() + cooldown;
             retries--;
@@ -99,8 +106,8 @@ export class GenerationEngine {
         }
       }
 
-      if (result) {
-        const aiResponse = parseAiResponse(result.response.text());
+      if (result && result.parsedResponse) {
+        const aiResponse = result.parsedResponse;
         const aiBatch = Array.isArray(aiResponse) ? aiResponse : [aiResponse];
 
         for (const q of aiBatch) {

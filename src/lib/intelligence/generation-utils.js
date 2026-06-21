@@ -197,9 +197,9 @@ export function processAiQuestion(q, context) {
       modelData: {
         ...safeData,
         type: validatedData.visualEngine.componentToRender,
-        hideVisual: safeData?.hideVisual !== undefined 
+        hideVisual: stepResult?.metadata?.hideVisual ? true : (safeData?.hideVisual !== undefined 
           ? safeData.hideVisual 
-          : validatedData.visualEngine.componentToRender === 'NONE',
+          : validatedData.visualEngine.componentToRender === 'NONE'),
         inputRequirement: validatedData.inputRequirement,
         finalAnswer: validatedData.content.finalAnswer,
         items: Array.isArray(safeData?.items) ? safeData.items : [],

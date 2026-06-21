@@ -69,7 +69,7 @@ export default function QuestionTable({ data }) {
 
   return (
     <div className="overflow-x-auto rounded-2xl border border-slate-200">
-      <table className="w-full table-fixed divide-y divide-slate-200 text-left">
+      <table className="w-full min-w-[1150px] table-fixed divide-y divide-slate-200 text-left">
         <thead className="bg-slate-50">
           <tr>
             <th scope="col" className="w-[100px] whitespace-nowrap px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Level</th>

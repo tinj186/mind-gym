@@ -4,7 +4,7 @@ export default function AdminLayout({ children }) {
   return (
     <div className="flex min-h-screen bg-slate-800 text-slate-100">
       {/* Sidebar Navigation */}
-      <aside className="w-64 bg-slate-900 border-r border-slate-700 p-8 flex flex-col gap-8">
+      <aside className="w-48 bg-slate-900 border-r border-slate-700 p-6 flex flex-col gap-8">
         <Link href="/">
           <h1 className="font-black text-xl tracking-tighter italic cursor-pointer text-white">ADMIN.GYM</h1>
         </Link>

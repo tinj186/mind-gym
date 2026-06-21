@@ -21,7 +21,7 @@ export const advancedVariants = {
     const answer = findShortest ? item3 : item1;
     const distractors = itemsPool.map(capitalize).filter(i => ![item1, item2, item3].includes(i)).slice(0, 1);
 
-    const questionTextTemplate = getQText(`Object ${item1} is longer than ${item2}. Object ${item2} is longer than ${item3}. Which object is the ${findShortest ? 'shortest' : 'longest'}?`, `${item1} > ${item2}. ${item2} > ${item3}. ${findShortest ? 'Shortest' : 'Longest'} object = ?`);
+    const questionTextTemplate = getQText(`Object ${item1} is longer than ${item2}. Object ${item2} is longer than ${item3}. Which object is the ${findShortest ? 'shortest' : 'longest'}?`, `${item1} is longer than ${item2}. ${item2} is longer than ${item3}. ${findShortest ? 'Shortest' : 'Longest'} object = ?`);
     const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. 'Ali went to the store.'). DO NOT delete the math question! CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = [answer, ...[item1, item2, item3, ...distractors].filter(i => i !== answer)];
@@ -49,7 +49,7 @@ export const advancedVariants = {
           "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Draw a simple line for each object using the clues to help you see the order!`, `Use transitive logic.`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`Comparing the sequence dimensions: ${item1} (${lenA} units) > ${item2} (${lenB} units) > ${item3} (${lenC} units). The target is ${answer}.`, `Answer is ${answer}.`))}
+          "solutionSteps": ${JSON.stringify(getQText(`Comparing the sequence dimensions: ${item1} (${lenA} units) is longer than ${item2} (${lenB} units) which is longer than ${item3} (${lenC} units). The target is ${answer}.`, `Answer is ${answer}.`))}
         },
         "visualEngine": {
           "componentToRender": "MEASUREMENT_UNIT",
@@ -218,10 +218,17 @@ export const advancedVariants = {
     const visibleTotal = lenA + lenB - overlap;
     const selectedUnit = units[Math.floor(Math.random() * units.length)];
 
-    const componentData = { items: [{ label: shuffledItems[0], length: lenA }, { label: shuffledItems[1], length: lenB }], unitIcon: selectedUnit.icon };
+    const componentData = { 
+      items: [
+        { label: shuffledItems[0], length: lenA, startOffset: 0 }, 
+        { label: shuffledItems[1], length: lenB, startOffset: lenA - overlap }
+      ], 
+      unitIcon: selectedUnit.icon,
+      showFullRuler: true
+    };
     const answer = String(overlap);
 
-    const questionTextTemplate = getQText(`A ${shuffledItems[0].toLowerCase()} is ${lenA} ${selectedUnit.name} long and a ${shuffledItems[1].toLowerCase()} is ${lenB} ${selectedUnit.name} long. They overlap when joined. If the total combined length is ${visibleTotal} ${selectedUnit.name}, how long is the overlapping section?`, `Overlapping length = ?`);
+    const questionTextTemplate = getQText(`A ${shuffledItems[0].toLowerCase()} is ${lenA} ${selectedUnit.name} long and a ${shuffledItems[1].toLowerCase()} is ${lenB} ${selectedUnit.name} long. They overlap when joined. If the total combined length is ${visibleTotal} ${selectedUnit.name}, how long is the overlapping section?`, `${shuffledItems[0]} = ${lenA}. ${shuffledItems[1]} = ${lenB}. Combined length = ${visibleTotal}. Overlap = ?`);
     const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. 'Ali went to the store.'). DO NOT delete the math question! CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = [answer, String(overlap + 1), String(overlap - 1), '4'];
@@ -274,7 +281,7 @@ export const advancedVariants = {
     const componentData = { items: [{ label: targetObj, length: currentNetLength }], unitIcon: selectedUnit.icon };
     const answer = String(currentNetLength);
 
-    const questionTextTemplate = getQText(`A ${targetObj.toLowerCase()} was originally ${baseLen} ${selectedUnit.name} long. ${subtractAmt} ${selectedUnit.name} were cut off, and then an extension piece of ${additionAmt} ${selectedUnit.name} was added. How long is the ${targetObj.toLowerCase()} now?`, `Net length of ${targetObj.toLowerCase()} = ?`);
+    const questionTextTemplate = getQText(`A ${targetObj.toLowerCase()} was originally ${baseLen} ${selectedUnit.name} long. ${subtractAmt} ${selectedUnit.name} were cut off, and then an extension piece of ${additionAmt} ${selectedUnit.name} was added. How long is the ${targetObj.toLowerCase()} now?`, `Original length = ${baseLen}. Cut off = ${subtractAmt}. Added = ${additionAmt}. Net length = ?`);
     const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. 'Ali went to the store.'). DO NOT delete the math question! CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = [answer, String(baseLen), String(baseLen - subtractAmt), String(currentNetLength - 2)];
@@ -312,7 +319,7 @@ export const advancedVariants = {
         },
         "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
       }`,
-      metadata: { difficulty: 'advanced', steps: 3, logic: "multi_step_word", hideVisual: false }
+      metadata: { difficulty: 'advanced', steps: 3, logic: "multi_step_word", hideVisual: true }
     };
   },
 
@@ -326,7 +333,7 @@ export const advancedVariants = {
     const componentData = { items: [{ label: `${shuffledItems[0]} (Whole)`, length: completeWhole }, { label: `${shuffledItems[1]} (Part 1)`, length: partA }], unitIcon: selectedUnit.icon };
     const answer = String(partB);
 
-    const questionTextTemplate = getQText(`The total combined length of two objects is ${completeWhole} ${selectedUnit.name}. If one object measures ${partA} ${selectedUnit.name}, what is the length of the other object?`, `Missing part length = ?`);
+    const questionTextTemplate = getQText(`The total combined length of two objects is ${completeWhole} ${selectedUnit.name}. If one object measures ${partA} ${selectedUnit.name}, what is the length of the other object?`, `Total length = ${completeWhole}. One part = ${partA}. Missing part = ?`);
     const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. 'Ali went to the store.'). DO NOT delete the math question! CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = [answer, String(partB + 2), String(partB - 1), String(partA)];
@@ -364,7 +371,7 @@ export const advancedVariants = {
         },
         "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
       }`,
-      metadata: { difficulty: 'advanced', steps: 2, logic: "part_whole_missing", hideVisual: false }
+      metadata: { difficulty: 'advanced', steps: 2, logic: "part_whole_missing", hideVisual: true }
     };
   },
 
@@ -434,7 +441,7 @@ export const advancedVariants = {
     const sidesText = sides.length === 2 ? `${sides[0]} and ${sides[1]}` : sides.slice(0, -1).join(', ') + ', and ' + sides[sides.length - 1];
     const answer = String(cumulativePerimeter);
 
-    const questionTextTemplate = getQText(`Find the cumulative length around this ${numSides}-sided track frame map if the segments measure ${sidesText} ${selectedUnit.name} respectively.`, `Total length of sides ${sidesText} = ?`);
+    const questionTextTemplate = getQText(`Find the total length around this shape. The sides are ${sidesText} ${selectedUnit.name} long.`, `Total length of sides ${sidesText} = ?`);
     const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. 'Ali went to the store.'). DO NOT delete the math question! CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = [answer, String(cumulativePerimeter - 1), String(cumulativePerimeter + 2), '12'];
@@ -464,7 +471,7 @@ export const advancedVariants = {
           "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Trace your finger around the outside edges and count every unit!`, `Add all sides.`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`Accumulate the composite vector sides around boundary paths: ${sides.join(' + ')} = ${cumulativePerimeter} units.`, `Answer is ${answer}.`))}
+          "solutionSteps": ${JSON.stringify(getQText(`Add all the sides together: ${sides.join(' + ')} = ${cumulativePerimeter} ${selectedUnit.name}.`, `Answer is ${answer}.`))}
         },
         "visualEngine": {
           "componentToRender": "MEASUREMENT_UNIT",
