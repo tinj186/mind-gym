@@ -1,13 +1,13 @@
 import { getRandomContext } from '@/lib/utils/localization';
 
-const itemsPool = ["cutter", "highlighter", "pen", "pencil", "usbdrive"];
+import { getRandomLengthItems, LENGTH_ITEMS_POOL } from '@/lib/utils/variable-bank';
 const units = [{ name: "paperclips", icon: "paperclip.svg" }, { name: "paperpins", icon: "paperpin.svg" }];
 const getShuffledOptions = (correct, distractors) => [correct, ...distractors].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4);
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export const advancedVariants = {
   advanced_indirect_comparison: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const shuffledItems = [...itemsPool].sort(() => Math.random() - 0.5).map(capitalize);
+    const shuffledItems = getRandomLengthItems(5).map(capitalize);
     const item1 = shuffledItems[0];
     const item2 = shuffledItems[1];
     const item3 = shuffledItems[2];
@@ -19,7 +19,7 @@ export const advancedVariants = {
     const componentData = { items: [{ label: item1, length: lenA }, { label: item2, length: lenB }, { label: item3, length: lenC }].sort(() => Math.random() - 0.5), unitIcon: selectedUnit.icon };
     const findShortest = Math.random() > 0.5;
     const answer = findShortest ? item3 : item1;
-    const distractors = itemsPool.map(capitalize).filter(i => ![item1, item2, item3].includes(i)).slice(0, 1);
+    const distractors = LENGTH_ITEMS_POOL.map(capitalize).filter(i => ![item1, item2, item3].includes(i)).slice(0, 1);
 
     const questionTextTemplate = getQText(`Object ${item1} is longer than ${item2}. Object ${item2} is longer than ${item3}. Which object is the ${findShortest ? 'shortest' : 'longest'}?`, `${item1} is longer than ${item2}. ${item2} is longer than ${item3}. ${findShortest ? 'Shortest' : 'Longest'} object = ?`);
     const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. 'Ali went to the store.'). DO NOT delete the math question! CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
@@ -62,7 +62,7 @@ export const advancedVariants = {
   },
 
   advanced_misaligned_start: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const targetObj = capitalize(itemsPool[Math.floor(Math.random() * itemsPool.length)]);
+    const targetObj = capitalize(getRandomLengthItems(1));
     const startOffset = Math.floor(Math.random() * 3) + 2; 
     const trueLength = Math.floor(Math.random() * 4) + 4;  
     const endPoint = startOffset + trueLength;
@@ -112,7 +112,7 @@ export const advancedVariants = {
   },
 
   advanced_unit_size_inverse: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const targetObj = capitalize(itemsPool[Math.floor(Math.random() * itemsPool.length)]);
+    const targetObj = capitalize(getRandomLengthItems(1));
     const baseCount = Math.floor(Math.random() * 3) + 5; 
     const selectedUnit = units[Math.floor(Math.random() * units.length)];
     const componentData = { items: [{ label: targetObj, length: baseCount }], unitIcon: selectedUnit.icon };
@@ -161,7 +161,7 @@ export const advancedVariants = {
   },
 
   advanced_combined_total: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const shuffledItems = [...itemsPool].sort(() => Math.random() - 0.5).map(capitalize);
+    const shuffledItems = getRandomLengthItems(5).map(capitalize);
     const lenA = Math.floor(Math.random() * 3) + 4;
     const lenB = Math.floor(Math.random() * 3) + 3;
     const combinedTotal = lenA + lenB;
@@ -211,7 +211,7 @@ export const advancedVariants = {
   },
 
   advanced_overlap_deduction: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const shuffledItems = [...itemsPool].sort(() => Math.random() - 0.5).map(capitalize);
+    const shuffledItems = getRandomLengthItems(5).map(capitalize);
     const lenA = 8;
     const lenB = 6;
     const overlap = Math.floor(Math.random() * 2) + 2; 
@@ -271,7 +271,7 @@ export const advancedVariants = {
   },
 
   advanced_multi_step_word_problems: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const targetObj = capitalize(itemsPool[Math.floor(Math.random() * itemsPool.length)]);
+    const targetObj = capitalize(getRandomLengthItems(1));
     const baseLen = 10;
     const subtractAmt = 3;
     const additionAmt = 4;
@@ -324,7 +324,7 @@ export const advancedVariants = {
   },
 
   advanced_part_whole_missing: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const shuffledItems = [...itemsPool].sort(() => Math.random() - 0.5).map(capitalize);
+    const shuffledItems = getRandomLengthItems(5).map(capitalize);
     const completeWhole = 12;
     const partA = Math.floor(Math.random() * 3) + 4; 
     const partB = completeWhole - partA;
@@ -376,7 +376,7 @@ export const advancedVariants = {
   },
 
   advanced_excess_comparison: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const shuffledItems = [...itemsPool].sort(() => Math.random() - 0.5).map(capitalize);
+    const shuffledItems = getRandomLengthItems(5).map(capitalize);
     const currentLength = Math.floor(Math.random() * 3) + 4; 
     const targetThreshold = 10;
     const missingDeficit = targetThreshold - currentLength;
@@ -488,7 +488,7 @@ export const advancedVariants = {
     const difference = Math.floor(Math.random() * 3) + 2; 
     const isShorter = Math.random() > 0.5;
     const lengthB = isShorter ? (lengthA - difference) : (lengthA + difference);
-    const items = [...itemsPool].sort(() => Math.random() - 0.5).map((name, i) => `${capitalize(name)} ${String.fromCharCode(65 + i)}`);
+    const items = getRandomLengthItems(5).map((name, i) => `${capitalize(name)} ${String.fromCharCode(65 + i)}`);
     const item1 = items[0];
     const item2 = items[1];
     const selectedUnit = units[Math.floor(Math.random() * units.length)];

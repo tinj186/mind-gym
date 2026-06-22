@@ -32,14 +32,12 @@ export default function PictureGraphDisplay({ data, hideCardStyles = false }) {
                 {cat.label}
               </span>
               
-              {/* Left-justified emoji bar */}
-              <div className="flex flex-wrap gap-2 justify-start items-center flex-1">
+              <div className="flex flex-wrap gap-2 justify-start items-center flex-1 min-h-[32px]">
                 {Array.from({ length: cat.count || 0 }).map((_, sIdx) => (
                   <span key={sIdx} className="text-2xl select-none drop-shadow-[1px_1px_0px_rgba(0,0,0,1)] transform hover:scale-110 transition-transform">
                     {cat.emoji || defaultEmoji}
                   </span>
                 ))}
-                {(!cat.count || cat.count === 0) && <span className="text-slate-300 font-bold text-xs">0</span>}
               </div>
             </div>
           ))}

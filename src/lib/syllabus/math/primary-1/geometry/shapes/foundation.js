@@ -1,7 +1,5 @@
 import { getRandomContext } from '@/lib/utils/localization';
-
-const shapes = ["circle", "triangle", "square", "rectangle"];
-const colors = ["red", "blue", "yellow", "green"];
+import { getRandomShapes, getRandomColors, SHAPES_POOL, COLORS_POOL } from '@/lib/utils/variable-bank';
 
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const getShuffledOptions = (correct, distractors) => {
@@ -10,21 +8,22 @@ const getShuffledOptions = (correct, distractors) => {
 
 export const foundationVariants = {
   foundation_identify_shape: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const targetShape = shapes[Math.floor(Math.random() * shapes.length)];
+    const targetShape = getRandomShapes(1)[0];
     const rotation = Math.floor(Math.random() * 8) * 45;
     const componentData = { 
       shapeType: targetShape, 
-      color: colors[Math.floor(Math.random() * colors.length)], 
+      color: getRandomColors(1)[0], 
       size: "medium", 
       rotation, 
       layout: "SINGLE" 
     };
 
+    const distractors = SHAPES_POOL.filter(s => s !== targetShape).slice(0, 3);
     const answer = capitalize(targetShape);
     const questionTextTemplate = getQText(`What shape is shown in the picture?`, `Name this shape.`);
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context about finding a shape.`;
 
-    let options = shapes.map(capitalize);
+    let options = SHAPES_POOL.map(capitalize);
     let mcqOptions = 'null';
     let defectMapStr = 'null';
     if (type === 'MCQ') {
@@ -63,16 +62,16 @@ export const foundationVariants = {
 
   foundation_classify_attribute: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const useColor = Math.random() > 0.5;
-    const targetColor = colors[Math.floor(Math.random() * colors.length)];
-    const targetShape = shapes[Math.floor(Math.random() * shapes.length)];
+    const targetColor = getRandomColors(1)[0];
+    const targetShape = getRandomShapes(1)[0];
     const targetValue = useColor ? targetColor : targetShape;
 
     const componentData = { 
       layout: "GROUPS", 
       groups: [
         { label: "Group A", items: [{ shapeType: targetShape, color: targetColor, size: "medium" }] },
-        { label: "Group B", items: [{ shapeType: shapes.find(s => s !== targetShape), color: colors.find(c => c !== targetColor), size: "medium" }] },
-        { label: "Group C", items: [{ shapeType: shapes.find(s => s !== targetShape), color: colors.find(c => c !== targetColor), size: "medium" }] }
+        { label: "Group B", items: [{ shapeType: SHAPES_POOL.find(s => s !== targetShape), color: COLORS_POOL.find(c => c !== targetColor), size: "medium" }] },
+        { label: "Group C", items: [{ shapeType: SHAPES_POOL.find(s => s !== targetShape), color: COLORS_POOL.find(c => c !== targetColor), size: "medium" }] }
       ]
     };
 
@@ -126,7 +125,7 @@ export const foundationVariants = {
 
     const componentData = { 
       shapeType: targetShape, 
-      color: colors[Math.floor(Math.random() * colors.length)], 
+      color: getRandomColors(1)[0], 
       size: "large", 
       rotation: 0, 
       layout: "SINGLE" 
@@ -178,8 +177,8 @@ export const foundationVariants = {
   },
 
   foundation_size_comparison: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const targetShape = shapes[Math.floor(Math.random() * shapes.length)];
-    const targetColor = colors[Math.floor(Math.random() * colors.length)];
+    const targetShape = getRandomShapes(1)[0];
+    const targetColor = getRandomColors(1)[0];
     const askSmallest = Math.random() > 0.5;
 
     const items = [

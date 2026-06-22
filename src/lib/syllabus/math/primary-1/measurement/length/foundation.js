@@ -1,12 +1,12 @@
 import { getRandomContext } from '@/lib/utils/localization';
 
-const itemsPool = ["cutter", "highlighter", "pen", "pencil", "usbdrive"];
+import { getRandomLengthItems, LENGTH_ITEMS_POOL } from '@/lib/utils/variable-bank';
 const units = [{ name: "paperclips", icon: "paperclip.svg" }, { name: "paperpins", icon: "paperpin.svg" }];
 const getShuffledOptions = (correct, distractors) => [correct, ...distractors].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4);
 
 export const foundationVariants = {
   foundation_unit_counting: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTarget = itemsPool[Math.floor(Math.random() * itemsPool.length)];
+    const selectedTarget = getRandomLengthItems(1);
     const selectedUnit = units[Math.floor(Math.random() * units.length)];
     const lengthCount = Math.floor(Math.random() * 6) + 3;
 
@@ -54,14 +54,14 @@ export const foundationVariants = {
   },
 
   foundation_compare_two: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selection = [...itemsPool].sort(() => 0.5 - Math.random()).slice(0, 2);
+    const selection = getRandomLengthItems(2);
     const selectedUnit = units[Math.floor(Math.random() * units.length)];
     const len1 = Math.floor(Math.random() * 3) + 4; 
     const len2 = len1 + Math.floor(Math.random() * 3) + 1; 
     const isAskingLonger = Math.random() > 0.5;
     const shuffled = [{ label: selection[0], length: len1 }, { label: selection[1], length: len2 }].sort(() => 0.5 - Math.random());
     const targetItem = isAskingLonger ? shuffled.reduce((a, b) => a.length > b.length ? a : b) : shuffled.reduce((a, b) => a.length < b.length ? a : b);
-    const distractors = itemsPool.filter(i => !selection.includes(i)).sort(() => 0.5 - Math.random()).slice(0, 2);
+    const distractors = LENGTH_ITEMS_POOL.filter(i => !selection.includes(i)).sort(() => 0.5 - Math.random()).slice(0, 2);
 
     const componentData = { items: shuffled, unitIcon: selectedUnit.icon };
     const answer = targetItem.label;
@@ -107,7 +107,7 @@ export const foundationVariants = {
   },
 
   foundation_find_same: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selection = [...itemsPool].sort(() => 0.5 - Math.random()).slice(0, 3);
+    const selection = getRandomLengthItems(3);
     const selectedUnit = units[Math.floor(Math.random() * units.length)];
     const targetLen = Math.floor(Math.random() * 3) + 5; 
     const offLen = targetLen + (Math.random() > 0.5 ? 2 : -2); 
@@ -169,7 +169,7 @@ export const foundationVariants = {
   },
 
   foundation_identify_by_length: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selection = [...itemsPool].sort(() => 0.5 - Math.random()).slice(0, 4);
+    const selection = getRandomLengthItems(4);
     const selectedUnit = units[Math.floor(Math.random() * units.length)];
     const lengths = [4, 6, 8, 3].sort(() => 0.5 - Math.random());
     const itemsArr = selection.map((label, idx) => ({ label, length: lengths[idx] }));
@@ -221,7 +221,7 @@ export const foundationVariants = {
   },
 
   foundation_true_false: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selection = [...itemsPool].sort(() => 0.5 - Math.random()).slice(0, 2);
+    const selection = getRandomLengthItems(2);
     const selectedUnit = units[Math.floor(Math.random() * units.length)];
     const len1 = Math.floor(Math.random() * 3) + 4; 
     const len2 = len1 + Math.floor(Math.random() * 3) + 1;

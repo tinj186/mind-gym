@@ -1,4 +1,5 @@
 import { getRandomContext } from '@/lib/utils/localization';
+import { getRandomNames } from '@/lib/utils/variable-bank';
 
 const getShuffledOptions = (correct, distractors) => [correct, ...distractors].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4);
 const generateMoneyString = (cents) => {
@@ -27,7 +28,7 @@ export const standardVariants = {
     const answer = String(count);
 
     const questionTextTemplate = getQText(`How many ${randomSubToken} coins/notes make ${randomParent}?`, `How many ${randomSubToken} makes ${randomParent}?`);
-    const randomName = ['Siti', 'Muthu', 'Ali', 'Wei Ming', 'Ravi', 'Nurul', 'Ahmad', 'Mei', 'Kumar'][Math.floor(Math.random() * 9)];
+    const randomName = getRandomNames(1)[0];
     const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: The provided "questionText" is already a full math problem. Your ONLY job is to replace generic placeholders like 'Item A' or 'Item B' with actual Singaporean items (e.g. 'a curry puff', 'a toy car') and remove the '[STORY]' tag. KEEP all numbers, names, and math exactly the same! IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = [answer, String(count + 1), String(Math.max(1, count - 1)), String(count + 2)];
@@ -86,7 +87,7 @@ export const standardVariants = {
     const answer = generateMoneyString(totalCents);
 
     const questionTextTemplate = getQText(`Item A costs ${item1Str} and Item B costs ${item2Str}. What is the total cost?`, `Item A: ${item1Str}, Item B: ${item2Str}. Total cost = ?`);
-    const randomName = ['Siti', 'Muthu', 'Ali', 'Wei Ming', 'Ravi', 'Nurul', 'Ahmad', 'Mei', 'Kumar'][Math.floor(Math.random() * 9)];
+    const randomName = getRandomNames(1)[0];
     const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: The provided "questionText" is already a full math problem. Your ONLY job is to replace generic placeholders like 'Item A' or 'Item B' with actual Singaporean items (e.g. 'a curry puff', 'a toy car') and remove the '[STORY]' tag. KEEP all numbers, names, and math exactly the same! IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = [answer, generateMoneyString(totalCents + 100), generateMoneyString(Math.abs(item1Cents - item2Cents)), generateMoneyString(totalCents + 50)];
@@ -146,7 +147,7 @@ export const standardVariants = {
     const priceStr = generateMoneyString(priceCents);
     const answer = generateMoneyString(changeCents);
 
-    const randomName = ['Siti', 'Muthu', 'Ali', 'Wei Ming', 'Ravi', 'Nurul', 'Ahmad', 'Mei', 'Kumar'][Math.floor(Math.random() * 9)];
+    const randomName = getRandomNames(1)[0];
     const questionTextTemplate = getQText(`An item costs ${priceStr}. ${randomName} pays with a ${paidStr} note. How much change will ${randomName} receive?`, `Price: ${priceStr}. Paid: ${paidStr}. Change = ?`);
     const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: The provided "questionText" is already a full math problem. Your ONLY job is to replace generic placeholders like 'Item A' or 'Item B' with actual Singaporean items (e.g. 'a curry puff', 'a toy car') and remove the '[STORY]' tag. KEEP all numbers, names, and math exactly the same! IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
@@ -203,7 +204,7 @@ export const standardVariants = {
     const haveStr = generateMoneyString(haveCents);
     const answer = generateMoneyString(shortfallCents);
 
-    const randomName = ['Siti', 'Muthu', 'Ali', 'Wei Ming', 'Ravi', 'Nurul', 'Ahmad', 'Mei', 'Kumar'][Math.floor(Math.random() * 9)];
+    const randomName = getRandomNames(1)[0];
     const questionTextTemplate = getQText(`An item costs ${targetPriceStr}. ${randomName} only has ${haveStr}. How much more money does ${randomName} need?`, `Price: ${targetPriceStr}. You have: ${haveStr}. More money needed = ?`);
     const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: The provided "questionText" is already a full math problem. Your ONLY job is to replace generic placeholders like 'Item A' or 'Item B' with actual Singaporean items (e.g. 'a curry puff', 'a toy car') and remove the '[STORY]' tag. KEEP all numbers, names, and math exactly the same! IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
@@ -276,7 +277,7 @@ export const standardVariants = {
     const priceStrings = items.map(i => `${i.name}: ${generateMoneyString(i.price)}`).join(', ');
 
     const questionTextTemplate = getQText(`Here are some prices: ${priceStrings}. Which item costs the ${isMost ? 'most' : 'least'}?`, `${priceStrings}. Which costs the ${isMost ? 'most' : 'least'}?`);
-    const randomName = ['Siti', 'Muthu', 'Ali', 'Wei Ming', 'Ravi', 'Nurul', 'Ahmad', 'Mei', 'Kumar'][Math.floor(Math.random() * 9)];
+    const randomName = getRandomNames(1)[0];
     const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: The provided "questionText" is already a full math problem. Your ONLY job is to replace generic placeholders like 'Item A' or 'Item B' with actual Singaporean items (e.g. 'a curry puff', 'a toy car') and remove the '[STORY]' tag. KEEP all numbers, names, and math exactly the same! IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = items.map(i => i.name);
@@ -337,7 +338,7 @@ export const standardVariants = {
     const totalStr = generateMoneyString(totalCents);
     const answer = generateMoneyString(changeCents);
 
-    const randomName = ['Siti', 'Muthu', 'Ali', 'Wei Ming', 'Ravi', 'Nurul', 'Ahmad', 'Mei', 'Kumar'][Math.floor(Math.random() * 9)];
+    const randomName = getRandomNames(1)[0];
     const questionTextTemplate = getQText(`${randomName} buys Item A for ${item1Str} and Item B for ${item2Str}. ${randomName} pays with a ${paidStr} note. How much change will ${randomName} receive?`, `Item A: ${item1Str}. Item B: ${item2Str}. Paid: ${paidStr}. Change = ?`);
     const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use the name ${randomName}. IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 

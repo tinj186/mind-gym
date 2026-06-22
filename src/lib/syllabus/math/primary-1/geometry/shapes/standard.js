@@ -1,7 +1,5 @@
 import { getRandomContext } from '@/lib/utils/localization';
-
-const allShapes = ["circle", "triangle", "square", "rectangle"];
-const allColors = ["#ef4444", "#3b82f6", "#eab308", "#22c55e", "#a855f7", "#f97316"]; 
+import { getRandomShapes, getRandomColors, getRandomGeometrySubjects, SHAPES_POOL, COLORS_POOL } from '@/lib/utils/variable-bank';
 const getRandom = (arr, count) => [...arr].sort(() => Math.random() - 0.5).slice(0, count);
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const getShuffledOptions = (correct, distractors) => {
@@ -10,9 +8,9 @@ const getShuffledOptions = (correct, distractors) => {
 
 export const standardVariants = {
   standard_count_composite: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const targetShape = allShapes[Math.floor(Math.random() * allShapes.length)];
+    const targetShape = getRandomShapes(1)[0];
     const subjects = ["steam train", "space rocket", "friendly robot", "sailboat on water", "tall castle", "butterfly", "racecar", "snowman", "house with a tree", "dog", "cat", "fish in a bowl", "submarine", "hot air balloon", "bulldozer"];
-    const selectedSubject = subjects[Math.floor(Math.random() * subjects.length)];
+    const selectedSubject = getRandomGeometrySubjects(1)[0];
 
     const componentData = { layout: "COMPOSITE_GENERATIVE", parts: [], name: selectedSubject };
 
@@ -62,7 +60,7 @@ export const standardVariants = {
   },
 
   standard_pattern_next: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const [sA, sB, sC] = getRandom(allShapes, 3);
+    const [sA, sB, sC] = getRandomShapes(3);
     const templates = [
       { type: "ABAB", seq: [sA, sB, sA, sB, sA], next: sB },
       { type: "AABB", seq: [sA, sA, sB, sB, sA, sA], next: sB },
@@ -75,7 +73,7 @@ export const standardVariants = {
     const questionTextTemplate = getQText(`What shape comes next in the pattern?`, `Next shape in pattern = ?`);
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
-    let options = getRandom(allShapes, 4).map(capitalize);
+    let options = getRandomShapes(4).map(capitalize);
     if (!options.includes(answer)) {
       options[0] = answer;
     }
@@ -117,14 +115,14 @@ export const standardVariants = {
   },
 
   standard_pattern_missing_middle: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const [sA, sB] = getRandom(allShapes, 2);
+    const [sA, sB] = getRandomShapes(2);
     const componentData = { layout: "PATTERN", pattern: [sA, sB, sA, sB], gapIndex: 2 };
     
     const answer = capitalize(sA);
     const questionTextTemplate = getQText(`Look at the pattern. What shape is missing in the box with the question mark?`, `Missing shape = ?`);
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
-    let options = getRandom(allShapes, 4).map(capitalize);
+    let options = getRandomShapes(4).map(capitalize);
     if (!options.includes(answer)) {
       options[0] = answer;
     }
@@ -266,7 +264,7 @@ export const standardVariants = {
 
   standard_most_frequent_shape: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const subjects = ["steam train", "space rocket", "friendly robot", "sailboat on water", "tall castle", "butterfly", "racecar", "snowman", "house with a tree", "dog", "cat", "fish in a bowl", "submarine", "hot air balloon", "bulldozer"];
-    const selectedSubject = subjects[Math.floor(Math.random() * subjects.length)];
+    const selectedSubject = getRandomGeometrySubjects(1)[0];
     const askMostFrequent = Math.random() > 0.5; 
     const componentData = { layout: "COMPOSITE_GENERATIVE", parts: [], name: selectedSubject };
 
@@ -362,7 +360,7 @@ export const standardVariants = {
   },
 
   standard_pattern_mistake: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const [sA, sB] = getRandom(allShapes, 2);
+    const [sA, sB] = getRandomShapes(2);
     const mistakeIndex = Math.floor(Math.random() * 4) + 1;
     const seq = Array.from({ length: 5 }, (_, i) => i % 2 === 0 ? sA : sB);
     const originalShape = seq[mistakeIndex];
@@ -415,13 +413,13 @@ export const standardVariants = {
   },
 
   standard_find_all_target_shape: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const target = allShapes[Math.floor(Math.random() * allShapes.length)];
+    const target = getRandomShapes(1)[0];
     const items = [];
     let count = 0;
     for (let i = 0; i < 6; i++) {
-      const shape = allShapes[Math.floor(Math.random() * allShapes.length)];
+      const shape = getRandomShapes(1)[0];
       if (shape === target) count++;
-      items.push({ shapeType: shape, color: allColors[Math.floor(Math.random() * allColors.length)], size: getRandom(["small", "medium", "large"], 1)[0] });
+      items.push({ shapeType: shape, color: getRandomColors(1)[0], size: getRandom(["small", "medium", "large"], 1)[0] });
     }
     const componentData = { layout: "GRID", items: items };
     const answer = String(count);
@@ -468,7 +466,7 @@ export const standardVariants = {
 
   standard_match_composite_parts: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const subjects = ["steam train", "space rocket", "friendly robot", "sailboat on water", "tall castle", "butterfly", "racecar", "snowman", "house with a tree", "dog", "cat", "fish in a bowl", "submarine", "hot air balloon", "bulldozer"];
-    const selectedSubject = subjects[Math.floor(Math.random() * subjects.length)];
+    const selectedSubject = getRandomGeometrySubjects(1)[0];
     const componentData = { layout: "COMPOSITE_GENERATIVE", parts: [], name: selectedSubject };
 
     const answer = "{inventory}";

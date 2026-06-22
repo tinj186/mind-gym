@@ -8,6 +8,7 @@ import VisualRenderer from '@/components/math/VisualRenderer';
 import { normalizeQuestionData, deriveVisualProps } from '@/lib/intelligence/workout-utils';
 import ExamReviewBoard from '@/components/math/ExamReviewBoard';
 import { saveMockExamAction } from '@/app/actions/examActions';
+import MathInput from '@/components/math/MathInput';
 
 export default function ArenaSession({ studentId, level, examPaper, durationMinutes }) {
   const router = useRouter();
@@ -19,17 +20,28 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
   const [showReport, setShowReport] = useState(false);
   const [scoreSummary, setScoreSummary] = useState(null);
 
-  // Flatten questions to handle simple global master index loops
-  const currentQuestionsList = examPaper[activeSection] || [];
-  const activeQuestion = currentQuestionsList[currentIndex];
+  // Normalize entire exam paper ONCE on mount so that random variables 
+  // and final answers are stable for grading and review.
+  const [normalizedExamPaper] = useState(() => {
+    const normalizeList = (list = []) => list.map(q => normalizeQuestionData(q));
+    return {
+      mcq: normalizeList(examPaper.mcq),
+      short: normalizeList(examPaper.short),
+      structured: normalizeList(examPaper.structured)
+    };
+  });
 
-  const normalizedQuestion = useMemo(() => {
-    return normalizeQuestionData(activeQuestion);
-  }, [activeQuestion]);
+  // Flatten questions to handle simple global master index loops
+  const currentQuestionsList = normalizedExamPaper[activeSection] || [];
+  const activeQuestion = currentQuestionsList[currentIndex];
+  const normalizedQuestion = activeQuestion;
 
   const visualProps = useMemo(() => {
+    if (!normalizedQuestion) return null;
     return deriveVisualProps(normalizedQuestion);
   }, [normalizedQuestion]);
+
+  const isTextAnswer = /[a-zA-Z]/.test(String(normalizedQuestion?.finalAnswer || ''));
 
   const hasValidatedToken = React.useRef(false);
 
@@ -71,10 +83,10 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
       setCurrentIndex(prev => prev + 1);
     } else {
       // Section jumper logic
-      if (activeSection === 'mcq' && examPaper.short.length > 0) {
+      if (activeSection === 'mcq' && normalizedExamPaper.short.length > 0) {
         setActiveSection('short');
         setCurrentIndex(0);
-      } else if (activeSection === 'short' && examPaper.structured.length > 0) {
+      } else if (activeSection === 'short' && normalizedExamPaper.structured.length > 0) {
         setActiveSection('structured');
         setCurrentIndex(0);
       }
@@ -86,16 +98,41 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
     const calculateScore = (questions) => {
       if (!questions.length) return { correct: 0, total: 0 };
       const correctCount = questions.filter(q => {
-        const studentAns = String(answers[q.id] || '').trim().toLowerCase();
-        const realAns = String(q.finalAnswer || '').trim().toLowerCase();
-        return studentAns === realAns;
+        const inputType = q.inputRequirement?.inputType || 'STANDARD_TEXT';
+        const rawAns = answers[q.id];
+
+        const cleanString = (str) => {
+          return String(str || '')
+            .replace(/\\\s/g, ' ')
+            .replace(/\\text\{([^\}]+)\}/g, '$1')
+            .replace(/\\operatorname\{\\mathrm\{([^\}]+)\}\}/g, '$1')
+            .replace(/\\mathrm\{([^\}]+)\}/g, '$1')
+            .replace(/\\/g, '')
+            .replace(/\s+/g, '')
+            .toLowerCase();
+        };
+
+        if (inputType === 'MULTI_STEP_INPUT') {
+          const steps = q.inputRequirement?.steps || [];
+          const studentObj = typeof rawAns === 'object' && rawAns !== null ? rawAns : {};
+          return steps.every((step, idx) => {
+            let sAns = cleanString(studentObj[idx]);
+            let rAns = cleanString(step.expectedAnswer);
+            return sAns === rAns;
+          });
+        } else {
+          const studentAns = cleanString(rawAns);
+          const realAns = cleanString(q.finalAnswer);
+          const accepted = q.acceptedAnswers ? q.acceptedAnswers.map(a => cleanString(a)) : [];
+          return studentAns === realAns || accepted.includes(studentAns);
+        }
       }).length;
       return { correct: correctCount, total: questions.length };
     };
 
-    const mcq = calculateScore(examPaper.mcq);
-    const short = calculateScore(examPaper.short);
-    const structured = calculateScore(examPaper.structured);
+    const mcq = calculateScore(normalizedExamPaper.mcq);
+    const short = calculateScore(normalizedExamPaper.short);
+    const structured = calculateScore(normalizedExamPaper.structured);
     
     const totalCorrect = mcq.correct + short.correct + structured.correct;
     const totalQuestions = mcq.total + short.total + structured.total;
@@ -109,18 +146,55 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
 
     // Prepare data to send to database
     const flattenedQuestions = [
-      ...examPaper.mcq.map(q => ({ ...q, type: 'MULTIPLE_CHOICE' })),
-      ...examPaper.short.map(q => ({ ...q, type: 'SHORT_ANSWER' })),
-      ...examPaper.structured.map(q => ({ ...q, type: 'STRUCTURED' }))
+      ...normalizedExamPaper.mcq.map(q => ({ ...q, type: 'MULTIPLE_CHOICE' })),
+      ...normalizedExamPaper.short.map(q => ({ ...q, type: 'SHORT_ANSWER' })),
+      ...normalizedExamPaper.structured.map(q => ({ ...q, type: 'STRUCTURED' }))
     ];
     
     const generatedAnswersLog = flattenedQuestions.map(q => {
-      const studentAns = String(answers[q.id] || '').trim().toLowerCase();
-      const realAns = String(q.finalAnswer || '').trim().toLowerCase();
+      const inputType = q.inputRequirement?.inputType || 'STANDARD_TEXT';
+      const rawAns = answers[q.id];
+      let isCorrect = false;
+      let displayAnswer = rawAns || '';
+
+      const cleanString = (str) => {
+        return String(str || '')
+          .replace(/\\\s/g, ' ')
+          .replace(/\\text\{([^\}]+)\}/g, '$1')
+          .replace(/\\operatorname\{\\mathrm\{([^\}]+)\}\}/g, '$1')
+          .replace(/\\mathrm\{([^\}]+)\}/g, '$1')
+          .replace(/\\/g, '')
+          .replace(/\s+/g, '')
+          .toLowerCase();
+      };
+
+      if (inputType === 'MULTI_STEP_INPUT') {
+        const steps = q.inputRequirement?.steps || [];
+        const studentObj = typeof rawAns === 'object' && rawAns !== null ? rawAns : {};
+        isCorrect = steps.every((step, idx) => {
+          let sAns = cleanString(studentObj[idx]);
+          let rAns = cleanString(step.expectedAnswer);
+          return sAns === rAns;
+        });
+        
+        displayAnswer = steps.map((step, idx) => {
+          const label = step.stepLabel || `Step ${idx + 1}`;
+          const val = cleanString(studentObj[idx]);
+          return `${label}: ${val}`;
+        }).join(' | ');
+        
+      } else {
+        const studentAns = cleanString(rawAns);
+        const realAns = cleanString(q.finalAnswer);
+        const accepted = q.acceptedAnswers ? q.acceptedAnswers.map(a => cleanString(a)) : [];
+        isCorrect = studentAns === realAns || accepted.includes(studentAns);
+        displayAnswer = cleanString(rawAns);
+      }
+
       return {
         questionId: q.id,
-        studentAnswer: answers[q.id] || '',
-        actualCorrect: studentAns === realAns
+        studentAnswer: displayAnswer,
+        actualCorrect: isCorrect
       };
     });
 
@@ -133,18 +207,55 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
 
   if (showReport && scoreSummary) {
     const flattenedQuestions = [
-      ...examPaper.mcq.map(q => ({ ...q, type: 'MULTIPLE_CHOICE' })),
-      ...examPaper.short.map(q => ({ ...q, type: 'SHORT_ANSWER' })),
-      ...examPaper.structured.map(q => ({ ...q, type: 'STRUCTURED' }))
+      ...normalizedExamPaper.mcq.map(q => ({ ...q, type: 'MULTIPLE_CHOICE' })),
+      ...normalizedExamPaper.short.map(q => ({ ...q, type: 'SHORT_ANSWER' })),
+      ...normalizedExamPaper.structured.map(q => ({ ...q, type: 'STRUCTURED' }))
     ];
     
     const generatedAnswersLog = flattenedQuestions.map(q => {
-      const studentAns = String(answers[q.id] || '').trim().toLowerCase();
-      const realAns = String(q.finalAnswer || '').trim().toLowerCase();
+      const inputType = q.inputRequirement?.inputType || 'STANDARD_TEXT';
+      const rawAns = answers[q.id];
+      let isCorrect = false;
+      let displayAnswer = rawAns || '';
+
+      const cleanString = (str) => {
+        return String(str || '')
+          .replace(/\\\s/g, ' ')
+          .replace(/\\text\{([^\}]+)\}/g, '$1')
+          .replace(/\\operatorname\{\\mathrm\{([^\}]+)\}\}/g, '$1')
+          .replace(/\\mathrm\{([^\}]+)\}/g, '$1')
+          .replace(/\\/g, '')
+          .replace(/\s+/g, '')
+          .toLowerCase();
+      };
+
+      if (inputType === 'MULTI_STEP_INPUT') {
+        const steps = q.inputRequirement?.steps || [];
+        const studentObj = typeof rawAns === 'object' && rawAns !== null ? rawAns : {};
+        isCorrect = steps.every((step, idx) => {
+          let sAns = cleanString(studentObj[idx]);
+          let rAns = cleanString(step.expectedAnswer);
+          return sAns === rAns;
+        });
+        
+        displayAnswer = steps.map((step, idx) => {
+          const label = step.stepLabel || `Step ${idx + 1}`;
+          const val = cleanString(studentObj[idx]);
+          return `${label}: ${val}`;
+        }).join(' | ');
+        
+      } else {
+        const studentAns = cleanString(rawAns);
+        const realAns = cleanString(q.finalAnswer);
+        const accepted = q.acceptedAnswers ? q.acceptedAnswers.map(a => cleanString(a)) : [];
+        isCorrect = studentAns === realAns || accepted.includes(studentAns);
+        displayAnswer = cleanString(rawAns);
+      }
+
       return {
         questionId: q.id,
-        studentAnswer: answers[q.id] || '',
-        actualCorrect: studentAns === realAns
+        studentAnswer: displayAnswer,
+        actualCorrect: isCorrect
       };
     });
 
@@ -226,14 +337,36 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
               {/* Short / Structured Input Layout Interface */}
               {activeSection !== 'mcq' && (
                 <div className="pt-4">
-                  <label className="block text-[10px] font-black mb-2 uppercase text-slate-400 tracking-tighter">Student Workspace Input Response</label>
-                  <input
-                    type="text"
-                    value={answers[activeQuestion.id] || ''}
-                    onChange={(e) => handleSelectAnswer(activeQuestion.id, e.target.value)}
-                    placeholder="Type numerical answer..."
-                    className="w-full border-4 border-black p-6 text-3xl outline-none bg-slate-50 font-black focus:bg-white transition-colors"
-                  />
+                  {normalizedQuestion?.inputRequirement?.inputType === 'MULTI_STEP_INPUT' ? (
+                    <div className="space-y-4 w-full">
+                      {(normalizedQuestion.inputRequirement?.steps || []).map((step, index) => {
+                        const currentMultiAnswers = typeof answers[activeQuestion.id] === 'object' ? answers[activeQuestion.id] : {};
+                        return (
+                          <div key={index} className="flex flex-col bg-slate-50 p-6 border-4 border-black">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">
+                              {step.stepLabel || step.label}
+                            </label>
+                            <MathInput
+                              id={`multi-step-${index}`}
+                              value={currentMultiAnswers[index] || ''}
+                              onChange={(val) => {
+                                const updated = { ...currentMultiAnswers, [index]: val };
+                                handleSelectAnswer(activeQuestion.id, updated);
+                              }}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="block text-[10px] font-black mb-2 uppercase text-slate-400 tracking-tighter">Student Workspace Input Response</label>
+                      <MathInput
+                        value={typeof answers[activeQuestion.id] === 'string' ? answers[activeQuestion.id] : ''}
+                        onChange={(val) => handleSelectAnswer(activeQuestion.id, val)}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>

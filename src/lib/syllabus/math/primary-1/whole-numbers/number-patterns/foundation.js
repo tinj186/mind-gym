@@ -1,4 +1,6 @@
 import { numberToWords } from '@/lib/utils/math-helpers';
+import { getRandomNames } from '@/lib/utils/variable-bank';
+
 export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon) {
   const commonMeta = { level, topic, type: zodType, difficulty: zodDiff };
   const inputType = isStructure ? 'MULTI_STEP_INPUT' : (isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT');
@@ -27,7 +29,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const sequenceItems = [...sequence.map(String), "?"];
     const hideVisual = false;
     const questionTextTemplate = getQText(`What is the next number in this pattern?`, `What is the next number: ${sequence.join(', ')}, ?`);
-    const localName = ['Wei Ling', 'Siti', 'Ahmad', 'Muthu', 'Bala', 'Kumar', 'Mei Hua', 'Fatimah'][Math.floor(Math.random() * 8)];
+    const localName = getRandomNames(1);
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. DO NOT mention the number 1 in your story. Use the name ${localName}.`;
 
     return {
@@ -75,7 +77,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const sequenceItems = [String(sequence[0]), String(sequence[1]), "?", String(sequence[3]), String(sequence[4])];
     const hideVisual = false;
     const questionTextTemplate = getQText(`What is the missing number in the middle?`, `What is the missing number? ${sequenceItems.join(', ')}`);
-    const localName = ['Wei Ling', 'Siti', 'Ahmad', 'Muthu', 'Bala', 'Kumar', 'Mei Hua', 'Fatimah'][Math.floor(Math.random() * 8)];
+    const localName = getRandomNames(1);
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. DO NOT mention the number 1 in your story. Use the name ${localName}.`;
 
     return {
@@ -121,7 +123,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const sequenceItems = ["?", String(sequence[1]), String(sequence[2]), String(sequence[3])];
     const hideVisual = false;
     const questionTextTemplate = getQText(`What is the first number in the pattern?`, `What is the missing number? ${sequenceItems.join(', ')}`);
-    const localName = ['Wei Ling', 'Siti', 'Ahmad', 'Muthu', 'Bala', 'Kumar', 'Mei Hua', 'Fatimah'][Math.floor(Math.random() * 8)];
+    const localName = getRandomNames(1);
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. DO NOT mention the number 1 in your story. Use the name ${localName}.`;
 
     return {

@@ -1,4 +1,6 @@
 import { numberToWords } from '@/lib/utils/math-helpers';
+import { getRandomContext } from '@/lib/utils/localization';
+import { NUMBER_WORDS as numberWords } from '@/lib/utils/variable-bank';
 
 export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon) {
   // ==========================================
@@ -113,7 +115,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
   // 3. Number Words (Numeral <-> Word)
   if (activeVariant === 'foundation_number_words') {
     const number = Math.floor(Math.random() * 20) + 1;
-    const numberWords = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty"];
+    // using imported numberWords
     const chosenWord = numberWords[number];
     
     // Alternates between numeral-to-word and word-to-numeral

@@ -1,12 +1,6 @@
 import { getRandomContext } from '@/lib/utils/localization';
 
-const themes = [
-  { name: "fruits", items: ["Apple", "Banana", "Orange", "Grape"], emojis: ["🍎", "🍌", "🍊", "🍇"] },
-  { name: "toys", items: ["Car", "Doll", "Ball", "Robot"], emojis: ["🚗", "🧸", "⚽", "🤖"] },
-  { name: "pets", items: ["Dog", "Cat", "Fish", "Bird"], emojis: ["🐶", "🐱", "🐠", "🐦"] },
-  { name: "vegetables", items: ["Carrot", "Broccoli", "Corn", "Pea"], emojis: ["🥕", "🥦", "🌽", "🫛"] }
-];
-
+import { getRandomTheme } from '@/lib/utils/variable-bank';
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const getShuffledOptions = (correct, distractors) => {
   return [correct, ...distractors].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4);
@@ -14,7 +8,7 @@ const getShuffledOptions = (correct, distractors) => {
 
 export const foundationVariants = {
   foundation_read_single_category: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const themeItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const shuffledDisplay = [...themeItems].sort(() => Math.random() - 0.5);
@@ -31,7 +25,7 @@ export const foundationVariants = {
     };
 
     const questionTextTemplate = getQText(`Look at the picture graph. How many ${target.label.toLowerCase()} are there?`, `Number of ${target.label.toLowerCase()} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, "1", "0", String(counts[targetIdx] + 1)];
     let mcqOptions = 'null';
@@ -68,14 +62,14 @@ export const foundationVariants = {
           "componentToRender": "PICTURE_GRAPH_DISPLAY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": ${isStructure ? `{"inputType": "MULTI_STEP_INPUT", "steps": [{"stepLabel": "Which item are we counting?", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "How many are there?", "expectedAnswer": "FILL_ME_IN"}]}` : `{"inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}"}`}
       }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "read_single", hideVisual: false }
     };
   },
 
   foundation_compare_two_categories: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const themeItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const shuffledDisplay = [...themeItems].sort(() => Math.random() - 0.5);
@@ -97,7 +91,7 @@ export const foundationVariants = {
     };
 
     const questionTextTemplate = getQText(`How many ${isAskingMore ? 'more' : 'fewer'} ${shuffledDisplay[isAskingMore ? 0 : 1].label.toLowerCase()} are there than ${shuffledDisplay[isAskingMore ? 1 : 0].label.toLowerCase()}?`, `Difference between ${shuffledDisplay[0].label} and ${shuffledDisplay[1].label} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, "1", "2", String(countA + countB)];
     let mcqOptions = 'null';
@@ -134,14 +128,14 @@ export const foundationVariants = {
           "componentToRender": "PICTURE_GRAPH_DISPLAY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": ${isStructure ? `{"inputType": "MULTI_STEP_INPUT", "steps": [{"stepLabel": "Identify Category", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Count Items", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Final Answer", "expectedAnswer": "FILL_ME_IN"}]}` : `{"inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}"}`}
       }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "compare_two", hideVisual: false }
     };
   },
 
   foundation_total_two_categories: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const themeItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const shuffledDisplay = [...themeItems].sort(() => Math.random() - 0.5);
@@ -162,7 +156,7 @@ export const foundationVariants = {
     };
 
     const questionTextTemplate = getQText(`How many ${shuffledDisplay[0].label.toLowerCase()} and ${shuffledDisplay[1].label.toLowerCase()} are there altogether?`, `Total of ${shuffledDisplay[0].label} and ${shuffledDisplay[1].label} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, String(c1), String(c2), String(total + 1)];
     let mcqOptions = 'null';
@@ -199,14 +193,14 @@ export const foundationVariants = {
           "componentToRender": "PICTURE_GRAPH_DISPLAY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": ${isStructure ? `{"inputType": "MULTI_STEP_INPUT", "steps": [{"stepLabel": "Identify Category", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Count Items", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Final Answer", "expectedAnswer": "FILL_ME_IN"}]}` : `{"inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}"}`}
       }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "total_two", hideVisual: false }
     };
   },
 
   foundation_most_least_category: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const themeItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const shuffledDisplay = [...themeItems].sort(() => Math.random() - 0.5);
@@ -225,7 +219,7 @@ export const foundationVariants = {
     };
 
     const questionTextTemplate = getQText(`Which category has the ${isAskingMost ? 'most' : 'least'} items?`, `Category with ${isAskingMost ? 'most' : 'least'} items = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = shuffledDisplay.map(i => i.label);
     let mcqOptions = 'null';
@@ -258,14 +252,14 @@ export const foundationVariants = {
           "componentToRender": "PICTURE_GRAPH_DISPLAY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": ${isStructure ? `{"inputType": "MULTI_STEP_INPUT", "steps": [{"stepLabel": "Identify Category", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Count Items", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Final Answer", "expectedAnswer": "FILL_ME_IN"}]}` : `{"inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}"}`}
       }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "most_least", hideVisual: false }
     };
   },
 
   foundation_zero_value_category: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const themeItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const shuffledDisplay = [...themeItems].sort(() => Math.random() - 0.5);
@@ -281,7 +275,7 @@ export const foundationVariants = {
     };
 
     const questionTextTemplate = getQText(`Which category has no items (zero items) in the picture graph?`, `Category with 0 items = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = shuffledDisplay.map(i => i.label);
     let mcqOptions = 'null';
@@ -314,14 +308,14 @@ export const foundationVariants = {
           "componentToRender": "PICTURE_GRAPH_DISPLAY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": ${isStructure ? `{"inputType": "MULTI_STEP_INPUT", "steps": [{"stepLabel": "Identify Category", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Count Items", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Final Answer", "expectedAnswer": "FILL_ME_IN"}]}` : `{"inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}"}`}
       }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "zero_value", hideVisual: false }
     };
   },
 
   foundation_category_match_text: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const themeItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const shuffledDisplay = [...themeItems].sort(() => Math.random() - 0.5);
@@ -339,7 +333,7 @@ export const foundationVariants = {
     };
 
     const questionTextTemplate = getQText(`Which category has exactly ${targetCount} items?`, `Category with ${targetCount} items = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = shuffledDisplay.map(i => i.label);
     let mcqOptions = 'null';
@@ -372,7 +366,7 @@ export const foundationVariants = {
           "componentToRender": "PICTURE_GRAPH_DISPLAY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": ${isStructure ? `{"inputType": "MULTI_STEP_INPUT", "steps": [{"stepLabel": "Identify Category", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Count Items", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Final Answer", "expectedAnswer": "FILL_ME_IN"}]}` : `{"inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}"}`}
       }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "match_text", hideVisual: false }
     };

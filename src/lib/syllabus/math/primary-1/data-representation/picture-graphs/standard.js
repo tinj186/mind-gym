@@ -1,10 +1,5 @@
 import { getRandomContext } from '@/lib/utils/localization';
-
-const themes = [
-  { name: "fruits", items: ["Apples", "Bananas", "Oranges", "Grapes"], emojis: ["🍎", "🍌", "🍊", "🍇"] },
-  { name: "toys", items: ["Cars", "Dolls", "Balls", "Robots"], emojis: ["🚗", "🧸", "⚽", "🤖"] },
-  { name: "pets", items: ["Dogs", "Cats", "Fish", "Birds"], emojis: ["🐶", "🐱", "🐠", "🐦"] },
-];
+import { getRandomTheme } from '@/lib/utils/variable-bank';
 
 const getRandom = (arr, count) => [...arr].sort(() => Math.random() - 0.5).slice(0, count);
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -14,7 +9,7 @@ const getShuffledOptions = (correct, distractors) => {
 
 export const standardVariants = {
   standard_read_all_categories: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const uniqueCounts = [1, 2, 3, 4, 5, 6, 7].sort(() => Math.random() - 0.5);
     const baseCategories = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i], count: uniqueCounts[i] }));
@@ -25,7 +20,7 @@ export const standardVariants = {
     const componentData = { title: `Our ${capitalize(selectedTheme.name)}`, symbol: target.emoji, orientation, categories: baseCategories };
 
     const questionTextTemplate = getQText(`Look at the graph. How many ${target.label.toLowerCase()} are there?`, `Number of ${target.label.toLowerCase()} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, "2", "4", "5", "7"];
     let mcqOptions = 'null';
@@ -63,14 +58,14 @@ export const standardVariants = {
           "componentToRender": "PICTURE_GRAPH_DISPLAY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": ${isStructure ? `{"inputType": "MULTI_STEP_INPUT", "steps": [{"stepLabel": "Identify Category", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Count Items", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Final Answer", "expectedAnswer": "FILL_ME_IN"}]}` : `{"inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}"}`}
       }`,
       metadata: { difficulty: 'standard', steps: 1, logic: "read_all", hideVisual: false }
     };
   },
 
   standard_most_least_frequent: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const uniqueCounts = [1, 2, 3, 4, 5, 6, 7].sort(() => Math.random() - 0.5);
     const baseCategories = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i], count: uniqueCounts[i] }));
@@ -83,7 +78,7 @@ export const standardVariants = {
     const answer = target.label;
 
     const questionTextTemplate = getQText(`Which category has the ${askMost ? 'most' : 'least'} items?`, `Category with ${askMost ? 'most' : 'least'} items = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = baseCategories.map(c => c.label);
     let mcqOptions = 'null';
@@ -116,14 +111,14 @@ export const standardVariants = {
           "componentToRender": "PICTURE_GRAPH_DISPLAY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": ${isStructure ? `{"inputType": "MULTI_STEP_INPUT", "steps": [{"stepLabel": "Identify Category", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Count Items", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Final Answer", "expectedAnswer": "FILL_ME_IN"}]}` : `{"inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}"}`}
       }`,
       metadata: { difficulty: 'standard', steps: 1, logic: "most_least_freq", hideVisual: false }
     };
   },
 
   standard_difference_two_categories: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const uniqueCounts = [1, 2, 3, 4, 5, 6, 7].sort(() => Math.random() - 0.5);
     const baseCategories = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i], count: uniqueCounts[i] }));
@@ -133,7 +128,7 @@ export const standardVariants = {
     const componentData = { title: `Our ${capitalize(selectedTheme.name)}`, orientation, categories: baseCategories };
 
     const questionTextTemplate = getQText(`How many more ${cat1.count > cat2.count ? cat1.label.toLowerCase() : cat2.label.toLowerCase()} are there than ${cat1.count > cat2.count ? cat2.label.toLowerCase() : cat1.label.toLowerCase()}?`, `Difference between ${cat1.label} and ${cat2.label} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, "1", "2", "3", "5"];
     let mcqOptions = 'null';
@@ -171,14 +166,14 @@ export const standardVariants = {
           "componentToRender": "PICTURE_GRAPH_DISPLAY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": ${isStructure ? `{"inputType": "MULTI_STEP_INPUT", "steps": [{"stepLabel": "Identify Category", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Count Items", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Final Answer", "expectedAnswer": "FILL_ME_IN"}]}` : `{"inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}"}`}
       }`,
       metadata: { difficulty: 'standard', steps: 1, logic: "difference_two", hideVisual: false }
     };
   },
 
   standard_combine_two_groups_vs_third: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const uniqueCounts = [1, 2, 3, 4, 5, 6, 7].sort(() => Math.random() - 0.5);
     const baseCategories = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i], count: uniqueCounts[i] }));
@@ -189,7 +184,7 @@ export const standardVariants = {
     const componentData = { title: `Our ${capitalize(selectedTheme.name)}`, orientation, categories: baseCategories };
 
     const questionTextTemplate = getQText(`If we combine the ${c1.label.toLowerCase()} and the ${c2.label.toLowerCase()}, are there more than the ${c3.label.toLowerCase()}?`, `Is ${c1.label} + ${c2.label} > ${c3.label}?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = ["Yes", "No", "Exactly the same"];
     let mcqOptions = 'null';
@@ -224,14 +219,14 @@ export const standardVariants = {
           "componentToRender": "PICTURE_GRAPH_DISPLAY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": ${isStructure ? `{"inputType": "MULTI_STEP_INPUT", "steps": [{"stepLabel": "Identify Category", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Count Items", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Final Answer", "expectedAnswer": "FILL_ME_IN"}]}` : `{"inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}"}`}
       }`,
       metadata: { difficulty: 'standard', steps: 2, logic: "combine_vs_third", hideVisual: false }
     };
   },
 
   standard_fewer_than_threshold: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const uniqueCounts = [1, 2, 3, 4, 5, 6, 7].sort(() => Math.random() - 0.5);
     const baseCategories = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i], count: uniqueCounts[i] }));
@@ -241,7 +236,7 @@ export const standardVariants = {
     const componentData = { title: `Our ${capitalize(selectedTheme.name)}`, orientation, categories: baseCategories };
 
     const questionTextTemplate = getQText(`How many categories have fewer than ${threshold} pictures?`, `Number of categories with fewer than ${threshold} pictures = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, "0", "1", "2", "3", "4"];
     let mcqOptions = 'null';
@@ -274,14 +269,14 @@ export const standardVariants = {
           "componentToRender": "PICTURE_GRAPH_DISPLAY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": ${isStructure ? `{"inputType": "MULTI_STEP_INPUT", "steps": [{"stepLabel": "Identify Category", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Count Items", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Final Answer", "expectedAnswer": "FILL_ME_IN"}]}` : `{"inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}"}`}
       }`,
       metadata: { difficulty: 'standard', steps: 1, logic: "fewer_than", hideVisual: false }
     };
   },
 
   standard_rank_three_categories: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const uniqueCounts = [1, 2, 3, 4, 5, 6, 7].sort(() => Math.random() - 0.5);
     const baseCategories = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i], count: uniqueCounts[i] }));
@@ -292,7 +287,7 @@ export const standardVariants = {
     const componentData = { title: `Our ${capitalize(selectedTheme.name)}`, orientation, categories: baseCategories };
 
     const questionTextTemplate = getQText(`Arrange these 3 categories from ${isMostToLeast ? 'most to least' : 'least to most'}: ${selection.map(c => c.label).join(", ")}.`, `Arrange ${isMostToLeast ? 'most to least' : 'least to most'}: ${selection.map(c => c.label).join(", ")}`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [finalAnswer, [...sorted].reverse().map(c => c.label).join(", "), [sorted[1], sorted[0], sorted[2]].map(c => c.label).join(", "), [sorted[0], sorted[2], sorted[1]].map(c => c.label).join(", ")];
     let mcqOptions = 'null';
@@ -325,14 +320,14 @@ export const standardVariants = {
           "componentToRender": "PICTURE_GRAPH_DISPLAY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": ${isStructure ? `{"inputType": "MULTI_STEP_INPUT", "steps": [{"stepLabel": "Identify Category", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Count Items", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Final Answer", "expectedAnswer": "FILL_ME_IN"}]}` : `{"inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}"}`}
       }`,
       metadata: { difficulty: 'standard', steps: 2, logic: "rank_three", hideVisual: false }
     };
   },
 
   standard_equal_value_groups: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const uniqueCounts = [1, 2, 3, 4, 5, 6, 7].sort(() => Math.random() - 0.5);
     const baseCategories = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i], count: uniqueCounts[i] }));
@@ -346,7 +341,7 @@ export const standardVariants = {
 
     const answer = `${c1.label} and ${c2.label}`;
     const questionTextTemplate = getQText(`Which two categories have the same number of items?`, `Categories with equal items = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, `${categories[0].label} and ${categories[2].label}`, `${categories[1].label} and ${categories[3].label}`, "None of them"];
     let mcqOptions = 'null';
@@ -379,14 +374,14 @@ export const standardVariants = {
           "componentToRender": "PICTURE_GRAPH_DISPLAY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": ${isStructure ? `{"inputType": "MULTI_STEP_INPUT", "steps": [{"stepLabel": "Identify Category", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Count Items", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Final Answer", "expectedAnswer": "FILL_ME_IN"}]}` : `{"inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}"}`}
       }`,
       metadata: { difficulty: 'standard', steps: 1, logic: "equal_groups", hideVisual: false }
     };
   },
 
   standard_add_item_prediction: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const uniqueCounts = [1, 2, 3, 4, 5, 6, 7].sort(() => Math.random() - 0.5);
     const baseCategories = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i], count: uniqueCounts[i] }));
@@ -395,7 +390,7 @@ export const standardVariants = {
     const componentData = { title: `Our ${capitalize(selectedTheme.name)}`, orientation, categories: baseCategories };
 
     const questionTextTemplate = getQText(`If we add 1 more ${target.emoji} to the ${target.label} row, how many ${target.label.toLowerCase()} will there be in total?`, `Add 1 to ${target.label}. Total = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, String(target.count), String(target.count - 1), String(target.count + 2)];
     let mcqOptions = 'null';
@@ -432,7 +427,7 @@ export const standardVariants = {
           "componentToRender": "PICTURE_GRAPH_DISPLAY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": ${isStructure ? `{"inputType": "MULTI_STEP_INPUT", "steps": [{"stepLabel": "Identify Category", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Count Items", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Final Answer", "expectedAnswer": "FILL_ME_IN"}]}` : `{"inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}"}`}
       }`,
       metadata: { difficulty: 'standard', steps: 1, logic: "add_prediction", hideVisual: false }
     };

@@ -1,5 +1,5 @@
 import { getRandomContext } from '@/lib/utils/localization';
-
+import { getRandomNames } from '@/lib/utils/variable-bank';
 const getShuffledOptions = (correct, distractors) => [correct, ...distractors].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4);
 
 export const standardVariants = {
@@ -422,7 +422,7 @@ export const standardVariants = {
   },
 
   standard_activity_duration_compare: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const names = ["Meiling", "John", "Siti", "Ahmad", "Ali", "Wei Ming"].sort(() => Math.random() - 0.5);
+    const names = getRandomNames(4);
     const nameA = names[0];
     const nameB = names[1];
     const durA = Math.floor(Math.random() * 2) + 1; 

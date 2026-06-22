@@ -1,11 +1,6 @@
 import { getRandomContext } from '@/lib/utils/localization';
 
-const themes = [
-  { name: "fruits", items: ["Apples", "Bananas", "Oranges", "Grapes", "Mangoes"], emojis: ["🍎", "🍌", "🍊", "🍇", "🥭"] },
-  { name: "toys", items: ["Cars", "Dolls", "Balls", "Robots", "Trains"], emojis: ["🚗", "🧸", "⚽", "🤖", "🚂"] },
-  { name: "pets", items: ["Dogs", "Cats", "Fish", "Birds", "Hamsters"], emojis: ["🐶", "🐱", "🐠", "🐦", "🐹"] },
-];
-
+import { getRandomTheme } from '@/lib/utils/variable-bank';
 const getRandom = (arr, count) => [...arr].sort(() => Math.random() - 0.5).slice(0, count);
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const getShuffledOptions = (correct, distractors) => {
@@ -14,7 +9,7 @@ const getShuffledOptions = (correct, distractors) => {
 
 export const advancedVariants = {
   advanced_multi_step_problem: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    const selectedTheme = getRandomTheme(5);
     const pairedItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const [cat1, cat2, cat3] = getRandom(pairedItems, 3);
     const currentOrientation = Math.random() > 0.5 ? "HORIZONTAL" : "VERTICAL";
@@ -37,7 +32,7 @@ export const advancedVariants = {
     };
 
     const questionTextTemplate = getQText(`How many ${cat1.label} and ${cat2.label} are there altogether? Take away the number of ${cat3.label}, what is the final count?`, `(${cat1.label} + ${cat2.label}) - ${cat3.label} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, String(finalValue + 1), String(finalValue - 1), String(count1 + count2)];
     let mcqOptions = 'null';
@@ -74,14 +69,14 @@ export const advancedVariants = {
           "componentToRender": "PICTURE_GRAPH_DISPLAY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": ${isStructure ? `{"inputType": "MULTI_STEP_INPUT", "steps": [{"stepLabel": "Identify Category", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Count Items", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Final Answer", "expectedAnswer": "FILL_ME_IN"}]}` : `{"inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}"}`}
       }`,
       metadata: { difficulty: 'advanced', steps: 3, logic: "multi_step", hideVisual: false }
     };
   },
 
   advanced_predict_next_category: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    const selectedTheme = getRandomTheme(5);
     const pairedItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const cat1 = pairedItems[0];
     
@@ -104,7 +99,7 @@ export const advancedVariants = {
     };
 
     const questionTextTemplate = getQText(`Look at the pattern across Week 1, Week 2, and Week 3. If the pattern continues, how many items should be drawn for Week 4?`, `Predict count for Week 4 = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, String(nextPatternValue + 1), String(nextPatternValue - 1), String(count3)];
     let mcqOptions = 'null';
@@ -141,14 +136,14 @@ export const advancedVariants = {
           "componentToRender": "PICTURE_GRAPH_DISPLAY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": ${isStructure ? `{"inputType": "MULTI_STEP_INPUT", "steps": [{"stepLabel": "Identify Category", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Count Items", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Final Answer", "expectedAnswer": "FILL_ME_IN"}]}` : `{"inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}"}`}
       }`,
       metadata: { difficulty: 'advanced', steps: 2, logic: "predict_next", hideVisual: false }
     };
   },
 
   advanced_create_graph_from_data: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    const selectedTheme = getRandomTheme(5);
     const pairedItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const [cat1, cat2, cat3] = getRandom(pairedItems, 3);
     const currentOrientation = Math.random() > 0.5 ? "HORIZONTAL" : "VERTICAL";
@@ -195,7 +190,7 @@ export const advancedVariants = {
       defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
@@ -217,14 +212,14 @@ export const advancedVariants = {
           "componentToRender": "PICTURE_GRAPH_DISPLAY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": ${isStructure ? `{"inputType": "MULTI_STEP_INPUT", "steps": [{"stepLabel": "Identify Category", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Count Items", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Final Answer", "expectedAnswer": "FILL_ME_IN"}]}` : `{"inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}"}`}
       }`,
       metadata: { difficulty: 'advanced', steps: 2, logic: "create_graph", hideVisual: false }
     };
   },
 
   advanced_missing_data_point: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    const selectedTheme = getRandomTheme(5);
     const pairedItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const [cat1, cat2, cat3] = getRandom(pairedItems, 3);
     
@@ -247,7 +242,7 @@ export const advancedVariants = {
     };
 
     const questionTextTemplate = getQText(`The grand total number of items shown on the graph is ${totalGraph}, but the row for ${cat3.label} is blank. How many items belong in the ${cat3.label} category row?`, `Total is ${totalGraph}. Count for ${cat3.label} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, String(missingCount + 1), String(missingCount - 1), String(totalKnown)];
     let mcqOptions = 'null';
@@ -284,14 +279,14 @@ export const advancedVariants = {
           "componentToRender": "PICTURE_GRAPH_DISPLAY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": ${isStructure ? `{"inputType": "MULTI_STEP_INPUT", "steps": [{"stepLabel": "Identify Category", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Count Items", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Final Answer", "expectedAnswer": "FILL_ME_IN"}]}` : `{"inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}"}`}
       }`,
       metadata: { difficulty: 'advanced', steps: 2, logic: "missing_data", hideVisual: false }
     };
   },
 
   advanced_clue_deduction_riddle: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    const selectedTheme = getRandomTheme(5);
     const pairedItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const [cat1, cat2] = getRandom(pairedItems, 2);
     const currentOrientation = Math.random() > 0.5 ? "HORIZONTAL" : "VERTICAL";
@@ -307,12 +302,12 @@ export const advancedVariants = {
       orientation: currentOrientation,
       categories: [
         { label: cat1.label, emoji: cat1.emoji, count: count1 },
-        { label: cat2.label, emoji: cat2.emoji, count: count2 }
+        { label: `${cat2.label} (Hidden)`, emoji: cat2.emoji, count: 0 }
       ]
     };
 
     const questionTextTemplate = getQText(`Riddle Hint: There are ${count1} ${cat1.label}s on our graph. There are exactly ${diff} fewer ${cat2.label}s than ${cat1.label}s. Based on this rule, what is the count for ${cat2.label}?`, `${cat1.label} is ${count1}. ${cat2.label} is ${diff} fewer. Count for ${cat2.label} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, String(count1), String(count2 + 1), String(count1 + diff)];
     let mcqOptions = 'null';
@@ -346,17 +341,17 @@ export const advancedVariants = {
           "solutionSteps": ${JSON.stringify(getQText(`Starting with ${count1} ${cat1.label}s, subtract ${diff} because there are fewer ${cat2.label}s. This gives: ${count1} - ${diff} = ${count2}.`, `${count1} - ${diff} = ${count2}.`))}
         },
         "visualEngine": {
-          "componentToRender": "NONE",
-          "componentData": {}
+          "componentToRender": "PICTURE_GRAPH_DISPLAY",
+          "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": ${isStructure ? `{"inputType": "MULTI_STEP_INPUT", "steps": [{"stepLabel": "Identify Category", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Count Items", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Final Answer", "expectedAnswer": "FILL_ME_IN"}]}` : `{"inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}"}`}
       }`,
-      metadata: { difficulty: 'advanced', steps: 2, logic: "deduction_riddle", hideVisual: true }
+      metadata: { difficulty: 'advanced', steps: 2, logic: "deduction_riddle", hideVisual: false }
     };
   },
 
   advanced_total_graph_redistribution: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    const selectedTheme = getRandomTheme(5);
     const pairedItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const [cat1, cat2] = getRandom(pairedItems, 2);
     const move = Math.floor(Math.random() * 2) + 1; 
@@ -365,8 +360,18 @@ export const advancedVariants = {
     const c2 = targetVal - move;
     const answer = String(move);
 
-    const questionTextTemplate = getQText(`How many items must move from ${cat1.label} to ${cat2.label} so that both rows have the same number?`, `Items to move from ${cat1.label} to ${cat2.label} to equalise = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const componentData = {
+      title: "Equalising the Graph",
+      symbol: cat1.emoji,
+      orientation: "HORIZONTAL",
+      categories: [
+        { label: cat1.label, emoji: cat1.emoji, count: c1 },
+        { label: cat2.label, emoji: cat2.emoji, count: c2 }
+      ]
+    };
+
+    const questionTextTemplate = getQText(`How many items must move from ${cat1.label} to ${cat2.label} so that both rows have the same number?`, `How many ${cat1.label} must move to ${cat2.label} so both rows have an equal amount?`);
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, String(move + 1), String(move + 2), String(c1 - c2)];
     let mcqOptions = 'null';
@@ -399,15 +404,18 @@ export const advancedVariants = {
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`Total = ${c1} + ${c2} = ${c1 + c2}. For rows to be equal, both need ${(c1 + c2) / 2}. Moving ${move} from the ${c1} row leaves ${(c1 + c2) / 2}.`, `Equal amount is ${(c1 + c2) / 2}. Difference is ${move}.`))}
         },
-        "visualEngine": { "componentToRender": "NONE", "componentData": {} },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "visualEngine": {
+          "componentToRender": "PICTURE_GRAPH_DISPLAY",
+          "componentData": ${JSON.stringify(componentData)}
+        },
+        "inputRequirement": ${isStructure ? `{"inputType": "MULTI_STEP_INPUT", "steps": [{"stepLabel": "Identify Category", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Count Items", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Final Answer", "expectedAnswer": "FILL_ME_IN"}]}` : `{"inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}"}`}
       }`,
-      metadata: { difficulty: 'advanced', steps: 3, logic: "redistribution", hideVisual: true }
+      metadata: { difficulty: 'advanced', steps: 3, logic: "redistribution", hideVisual: false }
     };
   },
 
   advanced_comparative_sum_groups: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    const selectedTheme = getRandomTheme(5);
     const pairedItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const [cat1, cat2, cat3] = getRandom(pairedItems, 3);
     
@@ -417,8 +425,19 @@ export const advancedVariants = {
     const count3 = count1 + count2 + balanceNeeded;
     const answer = String(balanceNeeded);
 
+    const componentData = {
+      title: "Comparing Sums",
+      symbol: cat1.emoji,
+      orientation: "HORIZONTAL",
+      categories: [
+        { label: cat1.label, emoji: cat1.emoji, count: count1 },
+        { label: cat2.label, emoji: cat2.emoji, count: count2 },
+        { label: cat3.label, emoji: cat3.emoji, count: count3 }
+      ]
+    };
+
     const questionTextTemplate = getQText(`How many MORE icons must be added to ${cat1.label} and ${cat2.label} rows combined to equal ${cat3.label}?`, `How many more needed for (${cat1.label} + ${cat2.label}) to equal ${cat3.label}?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, String(balanceNeeded + 1), String(count3), String(count1 + count2)];
     let mcqOptions = 'null';
@@ -451,15 +470,18 @@ export const advancedVariants = {
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`${cat1.label} + ${cat2.label} = ${count1} + ${count2} = ${count1 + count2}. Target is ${count3}. Difference = ${count3} - ${count1 + count2} = ${balanceNeeded}.`, `${count3} - (${count1} + ${count2}) = ${balanceNeeded}.`))}
         },
-        "visualEngine": { "componentToRender": "NONE", "componentData": {} },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "visualEngine": {
+          "componentToRender": "PICTURE_GRAPH_DISPLAY",
+          "componentData": ${JSON.stringify(componentData)}
+        },
+        "inputRequirement": ${isStructure ? `{"inputType": "MULTI_STEP_INPUT", "steps": [{"stepLabel": "Identify Category", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Count Items", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Final Answer", "expectedAnswer": "FILL_ME_IN"}]}` : `{"inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}"}`}
       }`,
-      metadata: { difficulty: 'advanced', steps: 2, logic: "comparative_sum", hideVisual: true }
+      metadata: { difficulty: 'advanced', steps: 2, logic: "comparative_sum", hideVisual: false }
     };
   },
 
   advanced_data_entry_mistake: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    const selectedTheme = getRandomTheme(5);
     const pairedItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const targetCat = pairedItems[0];
     const accurateCount = Math.floor(Math.random() * 4) + 3; 
@@ -467,8 +489,17 @@ export const advancedVariants = {
     const flawedCount = accurateCount + extraCount;
     const answer = String(extraCount);
 
+    const componentData = {
+      title: "Checking for Mistakes",
+      symbol: targetCat.emoji,
+      orientation: "HORIZONTAL",
+      categories: [
+        { label: targetCat.label, emoji: targetCat.emoji, count: flawedCount }
+      ]
+    };
+
     const questionTextTemplate = getQText(`Someone was supposed to draw exactly ${accurateCount} ${targetCat.label.toLowerCase()} in the graph, but they accidentally drew ${flawedCount}. How many EXTRA symbols did they draw?`, `Expected ${accurateCount}. Drawn ${flawedCount}. Extra = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, String(extraCount + 1), String(accurateCount), "0"];
     let mcqOptions = 'null';
@@ -501,15 +532,18 @@ export const advancedVariants = {
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`The graph shows ${flawedCount} symbols, but there should be ${accurateCount}. The difference is ${flawedCount} - ${accurateCount} = ${extraCount} extra symbols.`, `${flawedCount} - ${accurateCount} = ${extraCount}.`))}
         },
-        "visualEngine": { "componentToRender": "NONE", "componentData": {} },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "visualEngine": {
+          "componentToRender": "PICTURE_GRAPH_DISPLAY",
+          "componentData": ${JSON.stringify(componentData)}
+        },
+        "inputRequirement": ${isStructure ? `{"inputType": "MULTI_STEP_INPUT", "steps": [{"stepLabel": "Identify Category", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Count Items", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Final Answer", "expectedAnswer": "FILL_ME_IN"}]}` : `{"inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}"}`}
       }`,
-      metadata: { difficulty: 'advanced', steps: 1, logic: "data_mistake", hideVisual: true }
+      metadata: { difficulty: 'advanced', steps: 1, logic: "data_mistake", hideVisual: false }
     };
   },
 
   advanced_backwards_tracking_total: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    const selectedTheme = getRandomTheme(5);
     const pairedItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const [cat1, cat2, cat3] = getRandom(pairedItems, 3);
     const c1 = Math.floor(Math.random() * 3) + 2; 
@@ -518,8 +552,19 @@ export const advancedVariants = {
     const totalValue = c1 + c2 + hidden;
     const answer = String(hidden);
 
+    const componentData = {
+      title: `Total Count: ${totalValue}`,
+      symbol: cat1.emoji,
+      orientation: "HORIZONTAL",
+      categories: [
+        { label: cat1.label, emoji: cat1.emoji, count: c1 },
+        { label: cat2.label, emoji: cat2.emoji, count: c2 },
+        { label: `${cat3.label} (Hidden)`, emoji: cat3.emoji, count: 0 }
+      ]
+    };
+
     const questionTextTemplate = getQText(`The total items is ${totalValue}. Based on the other rows (${cat1.label}: ${c1}, ${cat2.label}: ${c2}), what is the count for the unknown ${cat3.label} row?`, `Total = ${totalValue}. ${cat1.label} = ${c1}, ${cat2.label} = ${c2}. ${cat3.label} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, String(hidden + 1), String(c1 + c2), "0"];
     let mcqOptions = 'null';
@@ -552,15 +597,18 @@ export const advancedVariants = {
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`Total (${totalValue}) - ${cat1.label} (${c1}) - ${cat2.label} (${c2}) = ${hidden}.`, `${totalValue} - ${c1} - ${c2} = ${hidden}.`))}
         },
-        "visualEngine": { "componentToRender": "NONE", "componentData": {} },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "visualEngine": {
+          "componentToRender": "PICTURE_GRAPH_DISPLAY",
+          "componentData": ${JSON.stringify(componentData)}
+        },
+        "inputRequirement": ${isStructure ? `{"inputType": "MULTI_STEP_INPUT", "steps": [{"stepLabel": "Identify Category", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Count Items", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Final Answer", "expectedAnswer": "FILL_ME_IN"}]}` : `{"inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}"}`}
       }`,
-      metadata: { difficulty: 'advanced', steps: 2, logic: "backwards_total", hideVisual: true }
+      metadata: { difficulty: 'advanced', steps: 2, logic: "backwards_total", hideVisual: false }
     };
   },
 
   advanced_hypothetical_sharing: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    const selectedTheme = getRandomTheme(5);
     const pairedItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const [cat1, cat2] = getRandom(pairedItems, 2);
     const shared = Math.floor(Math.random() * 2) + 2; 
@@ -569,8 +617,18 @@ export const advancedVariants = {
     const total = c1 + c2;
     const answer = String(total - shared);
 
+    const componentData = {
+      title: "Before Sharing",
+      symbol: cat1.emoji,
+      orientation: "HORIZONTAL",
+      categories: [
+        { label: cat1.label, emoji: cat1.emoji, count: c1 },
+        { label: cat2.label, emoji: cat2.emoji, count: c2 }
+      ]
+    };
+
     const questionTextTemplate = getQText(`If ${shared} items from the ${cat1.label} row (${c1}) are given away, how many items are left in the whole graph (${cat2.label}: ${c2})?`, `Give away ${shared} from ${cat1.label} (${c1}). Total left with ${cat2.label} (${c2}) = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, String(total), String(c1 - shared), String(c2)];
     let mcqOptions = 'null';
@@ -603,10 +661,13 @@ export const advancedVariants = {
           "finalAnswer": "${answer}",
           "solutionSteps": ${JSON.stringify(getQText(`Total = ${c1} + ${c2} = ${total}. Subtracting the ${shared} given away: ${total} - ${shared} = ${total - shared}.`, `(${c1} + ${c2}) - ${shared} = ${answer}.`))}
         },
-        "visualEngine": { "componentToRender": "NONE", "componentData": {} },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "visualEngine": {
+          "componentToRender": "PICTURE_GRAPH_DISPLAY",
+          "componentData": ${JSON.stringify(componentData)}
+        },
+        "inputRequirement": ${isStructure ? `{"inputType": "MULTI_STEP_INPUT", "steps": [{"stepLabel": "Identify Category", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Count Items", "expectedAnswer": "FILL_ME_IN"}, {"stepLabel": "Final Answer", "expectedAnswer": "FILL_ME_IN"}]}` : `{"inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}"}`}
       }`,
-      metadata: { difficulty: 'advanced', steps: 2, logic: "hypothetical_sharing", hideVisual: true }
+      metadata: { difficulty: 'advanced', steps: 2, logic: "hypothetical_sharing", hideVisual: false }
     };
   }
 };

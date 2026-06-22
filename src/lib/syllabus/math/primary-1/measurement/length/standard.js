@@ -1,14 +1,13 @@
 import { getRandomContext } from '@/lib/utils/localization';
 
-const itemsPool = ["cutter", "highlighter", "pen", "pencil", "usbdrive"];
-const heightPool = ["tree", "giraffe", "building", "boy", "ladder", "lamp-post"];
+import { getRandomLengthItems, LENGTH_ITEMS_POOL } from '@/lib/utils/variable-bank';
 const units = [{ name: "paperclips", icon: "paperclip.svg" }, { name: "paperpins", icon: "paperpin.svg" }];
 const getShuffledOptions = (correct, distractors) => [correct, ...distractors].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4);
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export const standardVariants = {
   standard_baseline_comparison: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selection = [...itemsPool].sort(() => 0.5 - Math.random()).slice(0, 3);
+    const selection = getRandomLengthItems(3);
     const lengths = [4, 7, 9].sort(() => 0.5 - Math.random());
     const selectedUnit = units[Math.floor(Math.random() * units.length)];
     const componentData = { items: selection.map((name, idx) => ({ label: capitalize(name), length: lengths[idx] })), unitIcon: selectedUnit.icon };
@@ -59,7 +58,7 @@ export const standardVariants = {
   },
 
   standard_find_shortest: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selection = [...itemsPool].sort(() => 0.5 - Math.random()).slice(0, 3);
+    const selection = getRandomLengthItems(3);
     const lengths = [3, 5, 8].sort(() => 0.5 - Math.random());
     const selectedUnit = units[Math.floor(Math.random() * units.length)];
     const componentData = { items: selection.map((name, idx) => ({ label: capitalize(name), length: lengths[idx] })), unitIcon: selectedUnit.icon };
@@ -165,7 +164,7 @@ export const standardVariants = {
   },
 
   standard_ordering_ascending: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selection = [...itemsPool].sort(() => 0.5 - Math.random()).slice(0, 3).map(capitalize);
+    const selection = getRandomLengthItems(3).map(capitalize);
     const lengths = [4, 6, 9]; 
     const itemsArr = selection.map((name, idx) => ({ label: name, length: lengths[idx] })).sort(() => 0.5 - Math.random());
     const ascendingOrder = [...itemsArr].sort((a, b) => a.length - b.length).map(i => i.label);
@@ -221,7 +220,7 @@ export const standardVariants = {
   },
 
   standard_ordering_descending: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selection = [...itemsPool].sort(() => 0.5 - Math.random()).slice(0, 3).map(capitalize);
+    const selection = getRandomLengthItems(3).map(capitalize);
     const lengths = [3, 6, 8];
     const itemsArr = selection.map((name, idx) => ({ label: name, length: lengths[idx] })).sort(() => 0.5 - Math.random());
     const descendingOrder = [...itemsArr].sort((a, b) => b.length - a.length).map(i => i.label);
@@ -277,9 +276,9 @@ export const standardVariants = {
   },
 
   standard_transitive_logic: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selection = [...itemsPool].sort(() => 0.5 - Math.random()).slice(0, 3).map(capitalize);
+    const selection = getRandomLengthItems(3).map(capitalize);
     const labels = selection.map((name, i) => `${name} ${String.fromCharCode(65 + i)}`);
-    const distractor = capitalize(itemsPool.find(i => !selection.map(s => s.toLowerCase()).includes(i.toLowerCase()))) + " D";
+    const distractor = capitalize(LENGTH_ITEMS_POOL.find(i => !selection.map(s => s.toLowerCase()).includes(i.toLowerCase()))) + " D";
     const componentData = { items: [{ label: labels[0], length: 8 }, { label: labels[1], length: 5 }, { label: labels[2], length: 3 }] };
     
     const askLongest = Math.random() > 0.5;
@@ -328,7 +327,7 @@ export const standardVariants = {
   },
 
   standard_baseline_error_check: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selection = [...itemsPool].sort(() => 0.5 - Math.random()).slice(0, 2).map(capitalize);
+    const selection = getRandomLengthItems(2).map(capitalize);
     const lenA = Math.floor(Math.random() * 3) + 4; 
     const offsetB = Math.floor(Math.random() * 2) + 2; 
     const lenB = lenA - (Math.floor(Math.random() * 2) + 1); 
@@ -384,7 +383,7 @@ export const standardVariants = {
   },
 
   standard_as_long_as: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selection = [...itemsPool].sort(() => 0.5 - Math.random()).slice(0, 3).map(capitalize);
+    const selection = getRandomLengthItems(3).map(capitalize);
     const baseLen = 6;
     const variantLen = 4;
     const referenceItem = { label: selection[0], length: baseLen };
@@ -395,7 +394,7 @@ export const standardVariants = {
     
     const optionsSet = new Set([matchingTwin.label]);
     while (optionsSet.size < 4) {
-      const randomDistractor = capitalize(itemsPool[Math.floor(Math.random() * itemsPool.length)]);
+      const randomDistractor = capitalize(LENGTH_ITEMS_POOL[Math.floor(Math.random() * LENGTH_ITEMS_POOL.length)]);
       if (randomDistractor !== referenceItem.label) optionsSet.add(randomDistractor);
     }
     
@@ -443,7 +442,7 @@ export const standardVariants = {
   },
 
   standard_unit_difference_mcq: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selection = [...itemsPool].sort(() => 0.5 - Math.random()).slice(0, 2).map(capitalize);
+    const selection = getRandomLengthItems(2).map(capitalize);
     const len1 = 8;
     const len2 = 5;
     const diff = len1 - len2;
@@ -494,7 +493,7 @@ export const standardVariants = {
   },
 
   standard_mid_grid_alignment: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const selectedItem = capitalize(itemsPool[Math.floor(Math.random() * itemsPool.length)]);
+    const selectedItem = capitalize(getRandomLengthItems(1));
     const startMarker = Math.floor(Math.random() * 3) + 1;
     const actualLength = Math.floor(Math.random() * 3) + 3;
     const endMarker = startMarker + actualLength;

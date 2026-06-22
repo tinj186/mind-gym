@@ -80,7 +80,7 @@ export const pictureGraphsBlueprint = {
       if (validVariants.length > 0) {
         activeVariant = validVariants[Math.floor(Math.random() * validVariants.length)];
       } else {
-        activeVariant = 'foundation_read_single_category'; 
+        activeVariant = 'foundation_read_single_category';
       }
     }
 
@@ -97,9 +97,11 @@ export const pictureGraphsBlueprint = {
 
     const hintProtocol = `\nCRITICAL HINT PROTOCOL: You MUST provide a conceptual "hint" field in your JSON. Focus on how to read the picture graph correctly.`;
 
-    let formatInstructions = isMCQ 
-      ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}` 
-      : `Format as Short Answer. The "options" field in your JSON should be null.${hintProtocol}`;
+    let formatInstructions = isMCQ
+      ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}`
+      : isStructure
+        ? `Format as Structured Multi-step. The "options" field should be null. You MUST fill in the "expectedAnswer" values in the "inputRequirement.steps" array with the specific category name, item count, and final answer.${hintProtocol}`
+        : `Format as Short Answer. The "options" field in your JSON should be null.${hintProtocol}`;
 
     if (activeVariant.startsWith('foundation_')) {
       return foundationLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);

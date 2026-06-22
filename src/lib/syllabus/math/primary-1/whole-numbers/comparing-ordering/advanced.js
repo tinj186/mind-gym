@@ -1,4 +1,5 @@
 import { numberToWords } from '@/lib/utils/math-helpers';
+import { getRandomNames } from '@/lib/utils/variable-bank';
 
 export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon, hideVisual) {
   const commonMeta = { level, topic, type: zodType, difficulty: zodDiff };
@@ -56,7 +57,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   }
 
   if (activeVariant === 'advanced_relative_logic') {
-    const names = ['Wei Ling', 'Siti', 'Ahmad', 'Muthu', 'Bala', 'Kumar', 'Mei Hua', 'Fatimah'].sort(() => 0.5 - Math.random());
+    const names = getRandomNames(4);
     const [p1, p2, p3] = names.slice(0, 3);
     const amounts = [60, 45, 30]; 
     
@@ -258,7 +259,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   }
 
   if (activeVariant === 'advanced_logic_puzzle_order') {
-    const names = ['Wei Ling', 'Siti', 'Ahmad', 'Muthu', 'Bala', 'Kumar', 'Mei Hua', 'Fatimah'].sort(() => 0.5 - Math.random());
+    const names = getRandomNames(4);
     const [p1, p2, p3] = names.slice(0, 3);
     
     // Internal Logic: p1 > p2 > p3

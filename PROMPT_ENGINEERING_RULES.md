@@ -68,6 +68,24 @@ Execution: During generation, the engine filters variants. If a variant conceptu
 Law (Multi-Step Associative Flexibility): While final answers must match deterministically, multi-step associative working (e.g., 3+2=5 vs 2+3=5) must be handled flexibly.
 Execution: The client-side `WorkoutSession` executes a strict string-matching "fast path". If strict matching fails for a multi-step input, it securely delegates the check to a deterministic, zero-temperature AI Grader API (`/api/grade-multi-step`) to mathematically evaluate logical equivalence before incorrectly failing the student.
 
+VI. MathLive & Universal Grading Protocols
+
+To ensure resilient mathematical input and strictly deterministic grading across all components (`WorkoutSession`, `ArenaSession`, `MathInput`):
+
+Law (MathLive Upright Rendering): The MathLive engine must be forced to render words normally instead of in math-italics (`smartMode = true`, `letterShapeStyle = "upright"`). This prevents basic English words from looking like algebra variables when the student is typing multi-step textual responses.
+
+Law (Physical Keyboard Whitelisting): Physical keyboard inputs within `MathInput` must explicitly whitelist basic math operators (+, /, <, >, =, $, -, *, commas, periods) while aggressively blocking unhandled symbols. This prevents the student from triggering formatting bugs while allowing flexible data entry.
+
+Law (Ultra-Resilient String Sanitization): Before grading any user input string against a database answer, the engine must sanitize the strings using a two-step Universal String Sanitizer. 
+1. MathLive Formatting Stripping: MathLive's `smartMode` secretly wraps English words in `\text{...}` blocks. These must be explicitly stripped via regex (`.replace(/\\text\{([^\}]+)\}/g, '$1')`).
+2. Absolute Space Eradication: To prevent students from being penalized for double-spacing or invisible formatting gaps, the grader must entirely delete all spaces from BOTH the student's answer and the database target answer (`.replace(/\s+/g, '')`) before executing the final equivalence check.
+
+VII. Adaptive Engine Session Integrity
+
+Law (Strict Isolation Enforcement): When an Isolation Workout (Subtopic Focus) is triggered, the engine must prioritize the requested subtopic over any historically locked Daily Workout session. If the database `activeWorkout` lock does not strictly match the requested subtopic, the lock must be instantly discarded. Furthermore, Isolation Workouts MUST save their own 10-question lock to the database to preserve student progress.
+
+Law (Isolation Randomization): Isolation Workouts must NOT pull the top 10 static questions. They must execute a `.count()` on the subtopic and utilize a `randomSkip` offset to pull a dynamically randomized slice from the entire database pool for that subtopic, ensuring zero repetition for the student.
+
 ### 3.4 Cloud Neutrality & Vendor Lock-In Prevention
 To maintain the ability to smoothly migrate from Serverless (Vercel) to a containerized VPS (Docker/Render/DigitalOcean) in the future, strictly enforce the following architectural boundaries:
 
@@ -100,6 +118,11 @@ Protocol: Personalization must be "Invisible." The system uses user data to sele
 III. The Strict Localization Mandate (Anti-Hallucination)
 
 Protocol: When requesting a \`[STORY]\` context from the AI, the prompt MUST explicitly constrain the name generation (e.g., "Use a local name like Siti, Muthu, Ali instead of generic names like Sam"). If left unconstrained or if a local name is not explicitly passed as a variable, the AI generative models will default to generic English/Western names, violating the "Singapore Flavor" localization goal.
+
+IV. Centralized Variable Banks (Decoupled Localization)
+
+Protocol: To ensure consistency across all current and future syllabuses (Primary 1 through Primary 6), all culturally specific variables, names, items, and thematic concepts MUST be decoupled from the individual AI generation prompts.
+Execution: All variable banks (e.g., `localNames`, `singaporeItems`, `schoolContexts`) are centrally stored and managed within `src/lib/utils/localization.js`. The generation engine dynamically imports and selects these variables, injecting them into the locked blueprints *before* sending the prompt to the AI. This prevents duplication of logic and ensures a single, immutable source of truth for the platform's localization identity.
 
 6. System Architecture
 Frontend: Next.js 15 (React) with MathLive inputs and dynamic SVG Bar Models.

@@ -1,5 +1,5 @@
 import { numberToWords } from '@/lib/utils/math-helpers';
-
+import { getRandomNames } from '@/lib/utils/variable-bank';
 export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText, selectedIcon) {
   const commonMeta = { level, topic, type: zodType, difficulty: zodDiff };
   const inputType = isStructure ? 'MULTI_STEP_INPUT' : (isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT');
@@ -30,7 +30,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
     }
 
-    const localName = ['Wei Ling', 'Siti', 'Ahmad', 'Muthu', 'Bala', 'Kumar', 'Mei Hua', 'Fatimah'][Math.floor(Math.random() * 8)];
+    const localName = getRandomNames(1);
     const questionTextTemplate = getQText(`What is the missing number in this growing pattern?`, `Find the missing number: ${sequence[0]}, ${sequence[1]}, ${sequence[2]}, ${sequence[3]}, ?`);
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a short (2-sentence maximum), varied Singaporean math story context. Use the name ${localName}. Use themes of things getting larger, spreading further apart, or jumping higher (e.g., hopping on numbered lily pads, arranging queue tickets, stacking numbered blocks, or reading pages). End the story by asking the student to figure out the missing number. Do NOT mention the numbers or jump logic.`;
 
@@ -83,7 +83,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
     const solutionSteps = `1. This sequence has two patterns mixed together.\\n2. Pattern 1 (1st, 3rd, 5th numbers) counts by ${stepA}.\\n3. Pattern 2 (2nd, 4th, 6th numbers) counts by ${stepB}.\\n4. The missing number follows ${missingIdx === 4 ? `Pattern 1: ${sequence[2]} + ${stepA} = ${answer}` : `Pattern 2: ${sequence[3]} + ${stepB} = ${answer}`}.`;
 
-    const localName = ['Wei Ling', 'Siti', 'Ahmad', 'Muthu', 'Bala', 'Kumar', 'Mei Hua', 'Fatimah'][Math.floor(Math.random() * 8)];
+    const localName = getRandomNames(1);
     const questionTextTemplate = getQText(`What is the missing number in these mixed patterns?`, `Find the missing number: ${items.join(', ')}`);
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a short (2-sentence maximum), varied Singaporean math story context. Use the name ${localName}. Use themes of two different things taking turns (e.g., alternating red and blue cards, or two friends taking turns). End the story by asking the student to figure out the missing number. Do NOT mention the dual patterns.`;
 
@@ -138,7 +138,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
     }
 
-    const localName = ['Wei Ling', 'Siti', 'Ahmad', 'Muthu', 'Bala', 'Kumar', 'Mei Hua', 'Fatimah'][Math.floor(Math.random() * 8)];
+    const localName = getRandomNames(1);
     const questionTextTemplate = getQText(`What is the missing number in this shrinking pattern?`, `Find the missing number: ${sequence[0]}, ${sequence[1]}, ${sequence[2]}, ${sequence[3]}, ?`);
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a short (2-sentence maximum), varied Singaporean math story context. Use the name ${localName}. Use themes of things getting smaller, dropping down, or running out. End the story by asking the student to figure out the missing number. Do NOT mention the numbers or jump logic.`;
 

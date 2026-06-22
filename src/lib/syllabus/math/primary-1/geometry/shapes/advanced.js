@@ -1,7 +1,6 @@
 import { getRandomContext } from '@/lib/utils/localization';
+import { getRandomShapes, getRandomColors, getRandomGeometrySubjects, SHAPES_POOL, COLORS_POOL } from '@/lib/utils/variable-bank';
 
-const shapeTypes = ["circle", "triangle", "square", "rectangle"];
-const allColors = ["#ef4444", "#3b82f6", "#eab308", "#22c55e", "#a855f7", "#f97316"]; 
 const colorNames = { "#ef4444": "red", "#3b82f6": "blue", "#eab308": "yellow", "#22c55e": "green", "#a855f7": "purple", "#f97316": "orange" };
 const sizeTiers = ["small", "medium", "large"];
 
@@ -13,8 +12,8 @@ const getShuffledOptions = (correct, distractors) => {
 
 export const advancedVariants = {
   advanced_pattern_two_attributes: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const [s1, s2] = getRandom(shapeTypes, 2);
-    const [c1] = getRandom(allColors, 1);
+    const [s1, s2] = getRandomShapes(2);
+    const [c1] = getRandomColors(1);
     const [sz1, sz2] = getRandom(sizeTiers, 2);
     
     const p1 = { shapeType: s1, size: sz1, color: c1 };
@@ -63,8 +62,8 @@ export const advancedVariants = {
   },
 
   advanced_attribute_logic: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const [c1, c2] = getRandom(allColors, 2);
-    const [s1, s2] = getRandom(shapeTypes, 2);
+    const [c1, c2] = getRandomColors(2);
+    const [s1, s2] = getRandomShapes(2);
     const items = [
       { shapeType: s1, color: c1, size: "medium", label: "A" },
       { shapeType: s1, color: c2, size: "medium", label: "B" },
@@ -116,8 +115,8 @@ export const advancedVariants = {
   },
 
   advanced_pattern_three_attributes: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const [s1, s2] = getRandom(shapeTypes, 2);
-    const [c1, c2] = getRandom(allColors, 2);
+    const [s1, s2] = getRandomShapes(2);
+    const [c1, c2] = getRandomColors(2);
     const [sz1, sz2] = getRandom(sizeTiers, 2);
 
     const p1 = { shapeType: s1, color: c1, size: sz1 };
@@ -166,8 +165,8 @@ export const advancedVariants = {
   },
 
   advanced_pattern_retrograde_logic: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const [s1, s2] = getRandom(shapeTypes, 2);
-    const [c1] = getRandom(allColors, 1);
+    const [s1, s2] = getRandomShapes(2);
+    const [c1] = getRandomColors(1);
     const pattern = [s1, s2, s1, s2].map(s => ({ shapeType: s, color: c1, size: "medium" }));
     const componentData = { layout: "PATTERN", pattern, gapIndex: 0 };
 
@@ -175,7 +174,7 @@ export const advancedVariants = {
     const questionTextTemplate = getQText(`Look at the pattern. What shape is missing at the start?`, `Missing first shape = ?`);
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
-    let options = shapeTypes.map(capitalize);
+    let options = SHAPES_POOL.map(capitalize);
     if (!options.includes(answer)) { options[0] = answer; }
 
     let mcqOptions = 'null';
@@ -215,14 +214,14 @@ export const advancedVariants = {
   },
 
   advanced_shape_exclusion_riddles: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const [s1, s2, s3] = getRandom(shapeTypes, 3);
+    const [s1, s2, s3] = getRandomShapes(3);
     const sides = s1 === "triangle" ? 3 : (s1 === "circle" ? 0 : 4);
     const answer = capitalize(s1);
 
     const questionTextTemplate = getQText(`I am NOT a ${s2}. I am NOT a ${s3}. I have exactly ${sides} straight sides. What shape am I?`, `Not ${s2}, not ${s3}, has ${sides} sides. Shape = ?`);
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
-    let options = shapeTypes.map(capitalize);
+    let options = SHAPES_POOL.map(capitalize);
     if (!options.includes(answer)) { options[0] = answer; }
 
     let mcqOptions = 'null';
@@ -263,7 +262,7 @@ export const advancedVariants = {
     const count = Math.floor(Math.random() * 2) + 3; 
     const parts = Array.from({ length: count }, (_, i) => ({
       shapeType: targetShape,
-      color: allColors[i % allColors.length],
+      color: COLORS_POOL[i % COLORS_POOL.length],
       x: 50,
       y: 50,
       scale: 2.5 - (i * 0.5),
@@ -359,8 +358,8 @@ export const advancedVariants = {
   },
 
   advanced_attribute_matrix_intersection: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const [c1, c2] = getRandom(allColors, 2);
-    const [s1, s2] = getRandom(shapeTypes, 2);
+    const [c1, c2] = getRandomColors(2);
+    const [s1, s2] = getRandomShapes(2);
     const componentData = {
       layout: "GRID",
       items: [
@@ -415,13 +414,13 @@ export const advancedVariants = {
   advanced_orientation_invariance: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const target = getRandom(["square", "triangle", "rectangle"], 1)[0];
     const rotation = Math.floor(Math.random() * 200) + 30; 
-    const componentData = { shapeType: target, color: getRandom(allColors, 1)[0], size: "large", rotation, layout: "SINGLE" };
+    const componentData = { shapeType: target, color: getRandomColors(1)[0], size: "large", rotation, layout: "SINGLE" };
     const answer = capitalize(target);
 
     const questionTextTemplate = getQText(`Even though this shape is tilted, what shape is it?`, `Name this tilted shape.`);
     const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
 
-    let options = shapeTypes.map(capitalize);
+    let options = SHAPES_POOL.map(capitalize);
     if (!options.includes(answer)) { options[0] = answer; }
 
     let mcqOptions = 'null';

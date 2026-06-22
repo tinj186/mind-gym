@@ -30,7 +30,7 @@ export default function SynapseMap({ syllabus, masteryData, onStartTrack, active
 
                 // Defect Alerts: Display Coach's Note for any defect code appearing >= 3 times
                 const significantDefects = Object.entries(defectLog)
-                  .filter(([code, count]) => count >= 3 && code !== 'UNKNOWN');
+                  .filter(([code, count]) => count >= 3 && code !== 'UNKNOWN' && code !== 'lastTopicDiagnosticReps');
                 const coachMessage = significantDefects.length > 0 
                   ? `Coach: Watch your ${significantDefects[0][0].replace('_', ' ').toLowerCase()}!` 
                   : null;

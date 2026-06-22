@@ -41,6 +41,8 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
     deriveVisualProps(normalizedQuestion), 
   [normalizedQuestion]);
 
+  const isTextAnswer = /[a-zA-Z]/.test(String(normalizedQuestion?.finalAnswer || ''));
+
   // 🛡️ Universal Content Guard: Validates based on the presence of DATA, not component names.
   const hasVisualContent = useMemo(() => {
     if (!currentVisual || currentVisual === "NONE" || normalizedQuestion?.modelData?.hideVisual) return false;
@@ -222,9 +224,22 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
       // Serialize answer for logs
       submittedAnswer = JSON.stringify(submittedAnswer);
     } else {
-      isCorrect = String(submittedAnswer).trim().toLowerCase() === String(normalizedQuestion.finalAnswer).trim().toLowerCase();
+      const cleanString = (str) => {
+        return String(str || '')
+          .replace(/\\\s/g, ' ') // MathLive escaped spaces
+          .replace(/\\text\{([^\}]+)\}/g, '$1') // MathLive text wrappers
+          .replace(/\\operatorname\{\\mathrm\{([^\}]+)\}\}/g, '$1') // MathLive text wrappers
+          .replace(/\\mathrm\{([^\}]+)\}/g, '$1') // MathLive text wrappers
+          .replace(/\\/g, '') // Any remaining latex slashes
+          .replace(/\s+/g, '') // Strip ALL spaces for resilient math grading
+          .toLowerCase();
+      };
+      
+      const studentAns = cleanString(submittedAnswer);
+      const realAns = cleanString(normalizedQuestion.finalAnswer);
+      const accepted = normalizedQuestion.acceptedAnswers ? normalizedQuestion.acceptedAnswers.map(a => cleanString(a)) : [];
+      isCorrect = studentAns === realAns || accepted.includes(studentAns);
     }
-
     if (isCorrect) {
       setFeedback('correct');
       const result = {

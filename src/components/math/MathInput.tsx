@@ -150,7 +150,8 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
     currentMf.virtualKeyboardToggleVisibility = "visible";
 
     currentMf.readOnly = disabled;
-    currentMf.letterShapeStyle = "iso";
+    currentMf.letterShapeStyle = "upright"; // Forces all letters to be upright instead of math-italics
+    currentMf.smartMode = true; // Automatically detects text vs math
     currentMf.smartFence = true;
     currentMf.mathModeSpace = "\\ ";
     currentMf.macros = {
@@ -162,15 +163,11 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
       "m/s": '\\text{m/s}',
     };
 
-    // Override the default * shortcut which produces \cdot
-    if (currentMf.mathModeInlineShortcuts) {
-      currentMf.mathModeInlineShortcuts = {
-        ...currentMf.mathModeInlineShortcuts,
-        '*': '\\times',
-      };
-    } else {
-      currentMf.mathModeInlineShortcuts = { '*': '\\times' };
-    }
+    // Replace all default inline shortcuts to prevent words like "or" and "and" 
+    // from automatically turning into \lor and \land math symbols.
+    // We only define the specific physical keyboard shortcuts we want to allow.
+    currentMf.mathModeInlineShortcuts = { '*': '\\times' };
+    currentMf.inlineShortcuts = { '*': '\\times' };
 
     if (currentMf.value !== value) {
       currentMf.value = value || "";
@@ -189,10 +186,23 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
     };
 
     const onKeyDownEvent = (e: any) => {
+      // Submit on Enter
       if (e.key === 'Enter' && onEnterRef.current) {
         e.preventDefault();
         e.stopPropagation();
         onEnterRef.current();
+        return;
+      }
+
+      // Block special symbols from the physical keyboard so the student uses the virtual keyboard.
+      // e.key length === 1 ensures we are intercepting printable characters, not modifiers/arrows.
+      if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        // Block currency, percentage, and other non-alphanumeric math symbols.
+        // We allow [0-9], [A-Z], [a-z], spaces, periods, commas, dashes, equal signs, basic operators (+, /, <, >), and dollar signs ($).
+        if (/[^0-9A-Za-z.\s,\-=+/*<>$]/.test(e.key)) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
       }
     };
 

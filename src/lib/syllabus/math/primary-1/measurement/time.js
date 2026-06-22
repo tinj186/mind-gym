@@ -100,7 +100,7 @@ export const timeBlueprint = {
 
     let formatInstructions = isMCQ
       ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}`
-      : `Format as Short Answer. The "options" field in your JSON should be null.${hintProtocol}`;
+      : `Format as Short Answer. The "options" field in your JSON should be null. If the answer involves words like 'hour', 'o'clock', or formatting variations, include an "acceptedAnswers" array in the "content" object with string variations (e.g., ["1 hr", "one hour", "1:00"]).${hintProtocol}`;
 
     if (activeVariant.startsWith('foundation_')) {
       return foundationLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);

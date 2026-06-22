@@ -38,7 +38,7 @@ export default function MultiStepInput({ steps, onSubmit, disabled }) {
       {steps.map((step, index) => (
         <div key={index} className="flex flex-col bg-slate-50 p-6 rounded-3xl border-2 border-slate-100">
           <label className="text-sm font-black text-slate-500 uppercase tracking-widest mb-4">
-            {step.label}
+            {step.stepLabel || step.label}
           </label>
           <MathInput
             id={`multi-step-${index}`}

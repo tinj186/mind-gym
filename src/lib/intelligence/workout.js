@@ -48,8 +48,22 @@ export async function getDailyWorkout(studentId, primaryLevel, options = { mode:
         const existingQuestions = await prisma.questionBank.findMany({ where: { id: { in: active.questionIds } } });
         const ordered = active.questionIds.map(id => existingQuestions.find(q => q.id === id)).filter(Boolean);
         if (ordered.length === active.questionIds.length) {
-          console.log(`[Trainer] Resuming locked session for student ${studentId}`);
-          return ordered.map(formatWorkoutQuestion);
+          // Check if we are requesting a specific isolation target that conflicts with the locked session
+          let sessionMatchesRequest = true;
+          if (options?.mode === 'isolation' && options?.subtopicId) {
+            const isMatchingIsolation = ordered.every(q => q.subtopic === options.subtopicId);
+            if (!isMatchingIsolation) {
+              sessionMatchesRequest = false;
+            }
+          }
+
+          if (sessionMatchesRequest) {
+            console.log(`[Trainer] Resuming locked session for student ${studentId}`);
+            return ordered.map(formatWorkoutQuestion);
+          } else {
+            console.log(`[Trainer] Discarding locked session to start new isolation target: ${options.subtopicId}`);
+            // Let it fall through to generate a new workout
+          }
         } else {
           // If some questions are missing, clear the session to prevent partial workouts
           await prisma.studentProfile.update({ where: { id: studentId }, data: { activeWorkout: null } });
@@ -57,6 +71,8 @@ export async function getDailyWorkout(studentId, primaryLevel, options = { mode:
       }
     }
   }
+
+  const workout = [];
 
   if (options?.mode === 'isolation' && options?.subtopicId) {
     // STRICT TARGETING: Fetch 10 questions exclusively matching this subtopic ID
@@ -66,88 +82,93 @@ export async function getDailyWorkout(studentId, primaryLevel, options = { mode:
       ? options.difficulty.charAt(0).toUpperCase() + options.difficulty.slice(1) 
       : undefined;
 
-    const questions = await prisma.questionBank.findMany({
-      where: {
-        level: primaryLevel,
-        isApproved: true,
-        subtopic: options.subtopicId,
-        ...(difficultyFilter ? { difficulty: difficultyFilter } : {})
-      },
-      take: 10
-    });
-    
-    return questions.map(formatWorkoutQuestion);
-  }
-
-  // 1. Fetch Student Mastery records
-  const masteryRecords = await prisma.studentMastery.findMany({
-    where: { studentId },
-    select: { subTopicId: true, synapseStrength: true }
-  });
-
-  const warmUpTopics = masteryRecords.filter(m => m.synapseStrength >= 80).map(m => m.subTopicId);
-  const coreTopics = masteryRecords.filter(m => m.synapseStrength >= 30 && m.synapseStrength < 60).map(m => m.subTopicId);
-  const challengeTopics = masteryRecords.filter(m => m.synapseStrength < 30).map(m => m.subTopicId);
-
-  console.log(`[Trainer Logic] Warmup: ${warmUpTopics.length}, Core: ${coreTopics.length}, Challenge: ${challengeTopics.length}`);
-
-  const workout = [];
-
-  // ENHANCED: Fetch with Random Offset to prevent static repetition
-  const fetchRandomQuestions = async (subtopicIds, limit, excludeIds = []) => {
-    if (subtopicIds.length === 0) return [];
-    
-    const where = {
+    const whereClause = {
       level: primaryLevel,
       isApproved: true,
-      difficulty: { in: ['Foundation', 'Standard', 'Advanced'] },
-      id: { notIn: excludeIds },
-      subtopic: { in: subtopicIds }
+      subtopic: options.subtopicId,
+      ...(difficultyFilter ? { difficulty: difficultyFilter } : {})
     };
 
-    const count = await prisma.questionBank.count({ where });
-    if (count === 0) return [];
-
-    const randomSkip = Math.floor(Math.random() * Math.max(0, count - limit));
-
-    return prisma.questionBank.findMany({
-      where,
-      skip: randomSkip,
-      take: limit
+    const count = await prisma.questionBank.count({ where: whereClause });
+    
+    if (count > 0) {
+      const randomSkip = Math.floor(Math.random() * Math.max(0, count - 10));
+      const questions = await prisma.questionBank.findMany({
+        where: whereClause,
+        skip: randomSkip,
+        take: 10
+      });
+      workout.push(...questions);
+    }
+  } else {
+    // 1. Fetch Student Mastery records
+    const masteryRecords = await prisma.studentMastery.findMany({
+      where: { studentId },
+      select: { subTopicId: true, synapseStrength: true }
     });
-  };
 
-  // 2. 20% Warm-up (2 Reps)
-  const warmUpQuestions = await fetchRandomQuestions(warmUpTopics, 2);
-  workout.push(...warmUpQuestions);
+    const warmUpTopics = masteryRecords.filter(m => m.synapseStrength >= 80).map(m => m.subTopicId);
+    const coreTopics = masteryRecords.filter(m => m.synapseStrength >= 30 && m.synapseStrength < 60).map(m => m.subTopicId);
+    const challengeTopics = masteryRecords.filter(m => m.synapseStrength < 30).map(m => m.subTopicId);
 
-  // 3. 60% Core Workout (6 Reps)
-  const coreQuestions = await fetchRandomQuestions(coreTopics, 6, workout.map(q => q.id));
-  workout.push(...coreQuestions);
+    console.log(`[Trainer Logic] Warmup: ${warmUpTopics.length}, Core: ${coreTopics.length}, Challenge: ${challengeTopics.length}`);
 
-  // 4. 20% Challenge (2 Reps)
-  // Includes topics with low synapse OR topics the student hasn't tried yet
-  const allSubtopics = await prisma.questionBank.findMany({
-    where: { 
-      level: primaryLevel, 
-      isApproved: true,
-      difficulty: { in: ['Foundation', 'Standard', 'Advanced'] }
-    },
-    distinct: ['subtopic'],
-    select: { subtopic: true }
-  });
-  
-  const attemptedSubtopics = masteryRecords.map(m => m.subTopicId);
-  const unattemptedTopics = allSubtopics
-    .map(s => s.subtopic)
-    .filter(name => !attemptedSubtopics.includes(name));
+    // ENHANCED: Fetch with Random Offset to prevent static repetition
+    const fetchRandomQuestions = async (subtopicIds, limit, excludeIds = []) => {
+      if (subtopicIds.length === 0) return [];
+      
+      const where = {
+        level: primaryLevel,
+        isApproved: true,
+        difficulty: { in: ['Foundation', 'Standard', 'Advanced'] },
+        id: { notIn: excludeIds },
+        subtopic: { in: subtopicIds }
+      };
 
-  const challengePool = [...challengeTopics, ...unattemptedTopics];
-  const challengeQuestions = await fetchRandomQuestions(challengePool, 2, workout.map(q => q.id));
-  workout.push(...challengeQuestions);
+      const count = await prisma.questionBank.count({ where });
+      if (count === 0) return [];
+
+      const randomSkip = Math.floor(Math.random() * Math.max(0, count - limit));
+
+      return prisma.questionBank.findMany({
+        where,
+        skip: randomSkip,
+        take: limit
+      });
+    };
+
+    // 2. 20% Warm-up (2 Reps)
+    const warmUpQuestions = await fetchRandomQuestions(warmUpTopics, 2);
+    workout.push(...warmUpQuestions);
+
+    // 3. 60% Core Workout (6 Reps)
+    const coreQuestions = await fetchRandomQuestions(coreTopics, 6, workout.map(q => q.id));
+    workout.push(...coreQuestions);
+
+    // 4. 20% Challenge (2 Reps)
+    const allSubtopics = await prisma.questionBank.findMany({
+      where: { 
+        level: primaryLevel, 
+        isApproved: true,
+        difficulty: { in: ['Foundation', 'Standard', 'Advanced'] }
+      },
+      distinct: ['subtopic'],
+      select: { subtopic: true }
+    });
+    
+    const attemptedSubtopics = masteryRecords.map(m => m.subTopicId);
+    const unattemptedTopics = allSubtopics
+      .map(s => s.subtopic)
+      .filter(name => !attemptedSubtopics.includes(name));
+
+    const challengePool = [...challengeTopics, ...unattemptedTopics];
+    const challengeQuestions = await fetchRandomQuestions(challengePool, 2, workout.map(q => q.id));
+    workout.push(...challengeQuestions);
+  }
 
   // 5. Fallback logic: If we don't have enough specific questions, fill with random ones for that level
-  if (workout.length < totalQuestions) {
+  // ONLY for daily mode! Isolation mode should never mix in random topics.
+  if (options?.mode !== 'isolation' && workout.length < totalQuestions) {
     const remaining = totalQuestions - workout.length;
     const fallbackCount = await prisma.questionBank.count({
       where: { level: primaryLevel, isApproved: true, id: { notIn: workout.map(q => q.id) } }
