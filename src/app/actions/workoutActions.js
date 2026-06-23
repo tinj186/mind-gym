@@ -155,6 +155,53 @@ export async function finalizeWorkoutAction(studentId, results) {
     }
   }
 
+  // --- STREAK TRACKING LOGIC ---
+  const profile = await prisma.studentProfile.findUnique({
+    where: { id: studentId },
+    select: { currentStreak: true, longestStreak: true, lastPracticeDate: true }
+  });
+
+  if (profile) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const lastDate = profile.lastPracticeDate ? new Date(profile.lastPracticeDate) : null;
+    if (lastDate) lastDate.setHours(0, 0, 0, 0);
+
+    let newStreak = profile.currentStreak || 0;
+    let newLongest = profile.longestStreak || 0;
+
+    if (!lastDate) {
+      newStreak = 1;
+    } else {
+      const msPerDay = 1000 * 60 * 60 * 24;
+      // Use UTC dates to avoid daylight saving time edge cases
+      const utcToday = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+      const utcLast = Date.UTC(lastDate.getFullYear(), lastDate.getMonth(), lastDate.getDate());
+      const daysDiff = Math.floor((utcToday - utcLast) / msPerDay);
+
+      if (daysDiff === 1) {
+        newStreak += 1;
+      } else if (daysDiff > 1) {
+        newStreak = 1;
+      }
+      // If daysDiff === 0, it means they already practiced today, keep the same streak.
+    }
+
+    if (newStreak > newLongest) {
+      newLongest = newStreak;
+    }
+
+    await prisma.studentProfile.update({
+      where: { id: studentId },
+      data: {
+        lastPracticeDate: new Date(),
+        currentStreak: newStreak,
+        longestStreak: newLongest
+      }
+    });
+  }
+
   revalidatePath("/math");
   return {
     averageGrowth: totalGrowth.toFixed(1),

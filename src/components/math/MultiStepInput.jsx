@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import MathInput from '@/components/math/MathInput';
 
-export default function MultiStepInput({ steps, onSubmit, disabled }) {
+export default function MultiStepInput({ steps, onSubmit, disabled, level }) {
   const [answers, setAnswers] = useState({});
 
   useEffect(() => {
@@ -47,6 +47,7 @@ export default function MultiStepInput({ steps, onSubmit, disabled }) {
             onEnter={() => handleKeyDown({ key: 'Enter' }, index)}
             disabled={disabled}
             autoFocus={index === 0}
+            level={level}
           />
         </div>
       ))}

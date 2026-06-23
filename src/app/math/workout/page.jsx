@@ -4,6 +4,8 @@ import WorkoutSession from '@/components/math/WorkoutSession';
 import { redirect } from 'next/navigation';
 import { getCurrentStudentId } from '@/lib/auth-utils';
 
+export const dynamic = 'force-dynamic';
+
 export default async function DailyWorkoutPage({ searchParams }) {
   const studentId = await getCurrentStudentId() || "default-student";
   const params = await searchParams;
@@ -40,13 +42,22 @@ export default async function DailyWorkoutPage({ searchParams }) {
     );
   }
 
-  // 3. Launch the decoupled client session controller
+  // 3. Re-fetch the profile to ensure we get the guaranteed updated activeWorkout state (created by getDailyWorkout)
+  const finalProfile = await prisma.studentProfile.findUnique({
+    where: { id: studentId }
+  });
+  
+  const activeWorkout = finalProfile?.activeWorkout || {};
+
+  // 4. Launch the decoupled client session controller using server state
   return (
     <div className="min-h-screen bg-slate-50 py-12">
       <WorkoutSession 
         studentId={studentId}
         level={profile.primaryLevel}
         initialQuestions={workoutSet}
+        initialIndex={activeWorkout.currentIndex || 0}
+        initialLog={activeWorkout.answersLog || []}
         title={mode === 'isolation' ? "Hyper-Focused Isolation Reps" : "Daily Training Sequence"}
         mode={mode}
         subtopicId={subtopicId}

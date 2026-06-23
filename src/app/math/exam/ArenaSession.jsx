@@ -158,14 +158,41 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
       let displayAnswer = rawAns || '';
 
       const cleanString = (str) => {
-        return String(str || '')
+        let s = String(str || '')
           .replace(/\\\s/g, ' ')
-          .replace(/\\text\{([^\}]+)\}/g, '$1')
-          .replace(/\\operatorname\{\\mathrm\{([^\}]+)\}\}/g, '$1')
-          .replace(/\\mathrm\{([^\}]+)\}/g, '$1')
+          .replace(/\\text\{([^}]*)\}/g, '$1')
+          .replace(/\\operatorname\{\\mathrm\{([^}]*)\}\}/g, '$1')
+          .replace(/\\mathrm\{([^}]*)\}/g, '$1')
+          .replace(/\\times/g, '*')
+          .replace(/\\div/g, '/')
+          .replace(/\\cdot/g, '*')
+          .replace(/[\u200B-\u200D\uFEFF]/g, '')
+          .replace(/’/g, "'")
           .replace(/\\/g, '')
-          .replace(/\s+/g, '')
           .toLowerCase();
+
+        // 1. Protect and standardize place values and conjunctions first
+        s = s.replace(/\band\b/g, '');
+        s = s.replace(/,/g, '');
+        s = s.replace(/\bten\b/g, 'tens');
+        s = s.replace(/\bone\b/g, 'ones');
+
+        // 2. Map English word numbers to digits for robust grading
+        const wordMap = {
+          'first': '1st', 'second': '2nd', 'third': '3rd', 'fourth': '4th',
+          'fifth': '5th', 'sixth': '6th', 'seventh': '7th', 'eighth': '8th',
+          'ninth': '9th', 'tenth': '10th', 'eleventh': '11th', 'twelfth': '12th',
+          // Note: 'one' and 'ten' are intentionally omitted to protect "ones" and "tens" place values
+          'two': '2', 'three': '3', 'four': '4', 'five': '5',
+          'six': '6', 'seven': '7', 'eight': '8', 'nine': '9',
+          'eleven': '11', 'twelve': '12'
+        };
+
+        Object.keys(wordMap).forEach(key => {
+          s = s.replace(new RegExp(`\\b${key}\\b`, 'g'), wordMap[key]);
+        });
+
+        return s.replace(/\s+/g, '');
       };
 
       if (inputType === 'MULTI_STEP_INPUT') {
@@ -224,6 +251,9 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
           .replace(/\\text\{([^\}]+)\}/g, '$1')
           .replace(/\\operatorname\{\\mathrm\{([^\}]+)\}\}/g, '$1')
           .replace(/\\mathrm\{([^\}]+)\}/g, '$1')
+          .replace(/\\times/g, '*')
+          .replace(/\\div/g, '/')
+          .replace(/\\cdot/g, '*')
           .replace(/\\/g, '')
           .replace(/\s+/g, '')
           .toLowerCase();
@@ -289,8 +319,19 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
             </span>
           </div>
 
+          <div className="mb-8 p-4 bg-rose-50 border-2 border-rose-200 rounded-2xl flex items-start gap-4 shadow-sm">
+            <span className="text-2xl">⚠️</span>
+            <div>
+              <h3 className="font-black text-rose-900 text-sm uppercase tracking-wide">Continuous Session Warning</h3>
+              <p className="text-rose-700 text-xs mt-1 font-medium">
+                Do not refresh this page, close the tab, or hit the back button. Mock Exams do not save mid-way progress. Exiting will permanently end your session.
+              </p>
+            </div>
+          </div>
+
           {activeQuestion ? (
-            <div className="space-y-8">
+            <div className="space-y-8 relative">
+              <div className="absolute right-0 top-0 text-[10px] font-mono text-slate-300 select-all" title="Question ID">{normalizedQuestion.id}</div>
               <div className="space-y-2">
                 <span className="text-xs font-black text-blue-600 uppercase">Question {currentIndex + 1}</span>
                 <h2 className="text-3xl font-black text-slate-900 leading-tight">
@@ -353,6 +394,7 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
                                 const updated = { ...currentMultiAnswers, [index]: val };
                                 handleSelectAnswer(activeQuestion.id, updated);
                               }}
+                              level={level}
                             />
                           </div>
                         );
@@ -364,6 +406,7 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
                       <MathInput
                         value={typeof answers[activeQuestion.id] === 'string' ? answers[activeQuestion.id] : ''}
                         onChange={(val) => handleSelectAnswer(activeQuestion.id, val)}
+                        level={level}
                       />
                     </div>
                   )}

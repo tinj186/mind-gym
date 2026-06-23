@@ -7,27 +7,22 @@ import SynapseMap from './SynapseMap';
 import { useStudentContext } from '@/contexts/StudentContext';
 import { getThemeForLevel, getDailyTargetReps } from '@/lib/LevelThemeConfig';
 
-export default function MathDashboardClient({ studentId, syllabus, masteryData }) {
+export default function MathDashboardClient({ studentId, syllabus, masteryData, serverActiveWorkout }) {
   const router = useRouter();
   const [showTopicGrid, setShowTopicGrid] = useState(false);
-  const [activeWorkout, setActiveWorkout] = useState(null);
   const { currentLevel } = useStudentContext();
   const theme = getThemeForLevel(currentLevel);
   const dailyTarget = getDailyTargetReps(currentLevel);
 
-  useEffect(() => {
-    const saved = localStorage.getItem(`active_workout_${studentId}`);
-    if (saved) {
-      const data = JSON.parse(saved);
-      if (data.answersLog?.length > 0 && data.answersLog?.length < 10) {
-        setActiveWorkout({
-          mode: data.mode || 'daily',
-          progress: data.answersLog.length,
-          subtopicId: data.subtopicId
-        });
-      }
-    }
-  }, []);
+  // Compute activeWorkout derived state from the backend database state
+  let activeWorkout = null;
+  if (serverActiveWorkout && serverActiveWorkout.answersLog?.length > 0 && serverActiveWorkout.answersLog?.length < 10) {
+    activeWorkout = {
+      mode: serverActiveWorkout.mode || 'daily',
+      progress: serverActiveWorkout.answersLog.length,
+      subtopicId: serverActiveWorkout.subtopicId
+    };
+  }
 
   // Navigation handler for targeted Isolation sessions
   const handleIsolationStart = (subtopic, tier) => {

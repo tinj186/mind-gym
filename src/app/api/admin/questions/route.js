@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
+  const id = searchParams.get('id');
   const level = searchParams.get('level');
   const topic = searchParams.get('topic');
   const subtopic = searchParams.get('subtopic');
@@ -14,12 +15,17 @@ export async function GET(req) {
   const difficulty = searchParams.get('difficulty');
   const approved = searchParams.get('approved') === 'true';
 
-  const where = { isApproved: approved };
-  if (level) where.level = level;
-  if (topic) where.topic = topic;
-  if (subtopic) where.subtopic = subtopic;
-  if (type) where.type = type;
-  if (difficulty) where.difficulty = difficulty;
+  let where = {};
+  if (id) {
+    where = { id: id.toLowerCase() };
+  } else {
+    where = { isApproved: approved };
+    if (level) where.level = level;
+    if (topic) where.topic = topic;
+    if (subtopic) where.subtopic = subtopic;
+    if (type) where.type = type;
+    if (difficulty) where.difficulty = difficulty;
+  }
 
   try {
     const questions = await prisma.questionBank.findMany({ 

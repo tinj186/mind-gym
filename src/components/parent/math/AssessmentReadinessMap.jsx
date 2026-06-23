@@ -43,8 +43,8 @@ export default function AssessmentReadinessMap({ masteryData = [], examData = []
       </div>
       
       <div className="space-y-6 pl-11">
-        {boardData.map((item) => (
-          <div key={item.topicId} className="bg-white border border-indigo-100 rounded-[2.5rem] shadow-sm overflow-hidden transition-all hover:shadow-md hover:-translate-y-1">
+        {boardData.map((item, index) => (
+          <div key={`${item.topicId || item.topic}-${index}`} className="bg-white border border-indigo-100 rounded-[2.5rem] shadow-sm overflow-hidden transition-all hover:shadow-md hover:-translate-y-1">
             {/* Header / Summary Row */}
             <div className="p-6 md:p-8 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
               

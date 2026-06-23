@@ -109,19 +109,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
     console.groupEnd();
   }, [currentIndex, normalizedQuestion, visualProps, currentVisual, isEssential]);
 
-  // Part 2: Resume Logic (Mount check)
-  useEffect(() => {
-    const saved = localStorage.getItem(`active_workout_${studentId}`);
-    if (saved) {
-      const data = JSON.parse(saved);
-      // Only resume if the saved session is incomplete and has more progress
-      if (data.answersLog?.length > answersLog.length && data.answersLog?.length < 10) {
-        setAnswersLog(data.answersLog);
-        setCurrentIndex(data.currentIndex);
-        console.log("💪 Workout resumed from local storage.");
-      }
-    }
-  }, [studentId]);
+  // (Local storage resume logic removed: backend is now the source of truth)
 
   // Handle Rank Up Celebration
   useEffect(() => {
@@ -164,13 +152,6 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
           await saveAttemptAction(studentId, result);
           if (nextIndex < initialQuestions.length) {
             await updateWorkoutProgressAction(studentId, { currentIndex: nextIndex, answersLog: newLog });
-            localStorage.setItem(`active_workout_${studentId}`, JSON.stringify({
-              initialQuestions,
-              currentIndex: nextIndex,
-              answersLog: newLog,
-              mode,
-              subtopicId
-            }));
           }
         } catch (e) { console.error("Real-time save failed:", e); }
       });
@@ -186,14 +167,52 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
   const handleAnswer = async (submittedAnswer) => {
     let isCorrect = false;
 
+    const cleanString = (str) => {
+      let s = String(str || '')
+        .replace(/\\\s/g, ' ') // MathLive escaped spaces
+        .replace(/\\text\{([^}]*)\}/g, '$1') // MathLive text wrappers
+        .replace(/\\operatorname\{\\mathrm\{([^}]*)\}\}/g, '$1') // MathLive text wrappers
+        .replace(/\\mathrm\{([^}]*)\}/g, '$1') // MathLive text wrappers
+        .replace(/\\times/g, '*') // Normalize multiplication
+        .replace(/\\div/g, '/') // Normalize division
+        .replace(/\\cdot/g, '*') // Normalize multiplication dot
+        .replace(/[\u200B-\u200D\uFEFF]/g, '') // Strip zero-width invisible characters
+        .replace(/’/g, "'") // Normalize typographic apostrophes from MathInput bypass
+        .replace(/\\/g, '') // Any remaining latex slashes
+        .toLowerCase();
+
+      // 1. Protect and standardize place values and conjunctions first
+      s = s.replace(/\band\b/g, '');
+      s = s.replace(/,/g, '');
+      s = s.replace(/\bten\b/g, 'tens');
+      s = s.replace(/\bone\b/g, 'ones');
+
+      // 2. Map English word numbers to digits for robust grading (e.g. fourth -> 4th)
+      const wordMap = {
+        'first': '1st', 'second': '2nd', 'third': '3rd', 'fourth': '4th',
+        'fifth': '5th', 'sixth': '6th', 'seventh': '7th', 'eighth': '8th',
+        'ninth': '9th', 'tenth': '10th', 'eleventh': '11th', 'twelfth': '12th',
+        // Note: 'one' and 'ten' are intentionally omitted to protect "ones" and "tens" place values
+        'two': '2', 'three': '3', 'four': '4', 'five': '5',
+        'six': '6', 'seven': '7', 'eight': '8', 'nine': '9',
+        'eleven': '11', 'twelve': '12'
+      };
+
+      Object.keys(wordMap).forEach(key => {
+        s = s.replace(new RegExp(`\\b${key}\\b`, 'g'), wordMap[key]);
+      });
+
+      return s.replace(/\s+/g, ''); // Finally, strip ALL spaces for resilient math grading
+    };
+
     // Handle array of answers from MultiStepInput
     if (typeof submittedAnswer === 'object' && submittedAnswer !== null && !Array.isArray(submittedAnswer)) {
       const steps = normalizedQuestion.inputRequirement?.steps || [];
       // Fast-path strict matching
       isCorrect = true;
       for (let i = 0; i < steps.length; i++) {
-        const studentVal = String(submittedAnswer[i] || '').replace(/\s+/g, '').toLowerCase();
-        const expectedVal = String(steps[i].expectedAnswer).replace(/\s+/g, '').toLowerCase();
+        const studentVal = cleanString(submittedAnswer[i]);
+        const expectedVal = cleanString(steps[i].expectedAnswer);
         if (studentVal !== expectedVal) {
           isCorrect = false;
           break;
@@ -224,20 +243,15 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
       // Serialize answer for logs
       submittedAnswer = JSON.stringify(submittedAnswer);
     } else {
-      const cleanString = (str) => {
-        return String(str || '')
-          .replace(/\\\s/g, ' ') // MathLive escaped spaces
-          .replace(/\\text\{([^\}]+)\}/g, '$1') // MathLive text wrappers
-          .replace(/\\operatorname\{\\mathrm\{([^\}]+)\}\}/g, '$1') // MathLive text wrappers
-          .replace(/\\mathrm\{([^\}]+)\}/g, '$1') // MathLive text wrappers
-          .replace(/\\/g, '') // Any remaining latex slashes
-          .replace(/\s+/g, '') // Strip ALL spaces for resilient math grading
-          .toLowerCase();
-      };
-      
       const studentAns = cleanString(submittedAnswer);
       const realAns = cleanString(normalizedQuestion.finalAnswer);
       const accepted = normalizedQuestion.acceptedAnswers ? normalizedQuestion.acceptedAnswers.map(a => cleanString(a)) : [];
+      
+      console.log('🚨 [WorkoutSession Grading Debug] raw submittedAnswer:', submittedAnswer);
+      console.log('🚨 [WorkoutSession Grading Debug] studentAns (cleaned):', `"${studentAns}"`);
+      console.log('🚨 [WorkoutSession Grading Debug] realAns (cleaned):', `"${realAns}"`);
+      console.log('🚨 [WorkoutSession Grading Debug] accepted (cleaned):', accepted);
+      
       isCorrect = studentAns === realAns || accepted.includes(studentAns);
     }
     if (isCorrect) {
@@ -293,9 +307,8 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
     }
     startTransition(async () => {
       const summaryData = await finalizeWorkoutAction(studentId, finalLog);
-      // CLEAR SESSION: Remove the lock once complete
+      // Clear the session from the backend database
       await updateWorkoutProgressAction(studentId, null);
-      localStorage.removeItem(`active_workout_${studentId}`);
       setSummary(summaryData);
     });
   };
@@ -329,7 +342,8 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
   return (
     <div className="max-w-5xl mx-auto p-8 space-y-8">
       {/* Session Title Header */}
-      <div className="flex flex-col mb-2">
+      <div className="flex flex-col mb-2 relative">
+        <div className="absolute right-0 top-0 text-[10px] font-mono text-slate-300 select-all" title="Question ID">{normalizedQuestion.id}</div>
         <span className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] block">
           Syllabus_Mode // {title.toUpperCase().replace(/\s/g, '_')}
         </span>
@@ -392,6 +406,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
                 steps={normalizedQuestion.inputRequirement.steps} 
                 onSubmit={handleAnswer} 
                 disabled={feedback === 'correct'}
+                level={level}
               />
             ) : normalizedQuestion.options && normalizedQuestion.options.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
@@ -416,6 +431,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
                   onChange={setSingleInputAnswer}
                   onEnter={() => handleAnswer(singleInputAnswer)}
                   disabled={feedback === 'correct'}
+                  level={level}
                 />
               </div>
             )

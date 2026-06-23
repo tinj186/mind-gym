@@ -24,9 +24,10 @@ interface MathInputProps {
   onEnter?: () => void;
   disabled?: boolean;
   autoFocus?: boolean;
+  level?: string;
 }
 
-export default function MathInput({ id, name, value, onChange, onEnter, disabled = false, autoFocus = false }: MathInputProps) {
+export default function MathInput({ id, name, value, onChange, onEnter, disabled = false, autoFocus = false, level = "Primary 1" }: MathInputProps) {
   const mfRef = useRef<any>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   
@@ -92,68 +93,142 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
     const currentMf = mfRef.current;
     console.log('🔍 [MathInput] Initializing custom element properties...');
 
-    // Configure the "Lean Math" Keyboard for Primary Students (MathLive 0.109+ API)
+    // Determine student grade level to customize keyboard
+    const gradeLevel = parseInt((level || "Primary 1").replace(/\D/g, '')) || 1;
+
+    const buildLayoutRows = () => {
+      let toolKeys = [];
+      
+      if (gradeLevel >= 2) {
+        toolKeys.push({ command: ["insert", "\\frac{#?}{#?}", { mode: "math" }], label: "a/b" });
+        toolKeys.push({ command: ["insert", "#?\\frac{#?}{#?}", { mode: "math" }], label: "c a/b" });
+      }
+      if (gradeLevel >= 3) {
+        toolKeys.push({ command: ["insert", "^{\\circ}", { mode: "math" }], label: "deg" });
+      }
+      if (gradeLevel >= 4) {
+        toolKeys.push({ command: ["insert", "\\angle", { mode: "math" }], label: "angle" });
+        toolKeys.push({ label: "<", key: "<" });
+        toolKeys.push({ label: ">", key: ">" });
+        toolKeys.push({ label: "(", key: "(" });
+        toolKeys.push({ label: ")", key: ")" });
+      }
+      if (gradeLevel >= 5) {
+        toolKeys.push({ command: ["insert", "#?^{2}", { mode: "math" }], label: "x²" });
+        toolKeys.push({ command: ["insert", "#?^{3}", { mode: "math" }], label: "x³" });
+        toolKeys.push({ label: "%", key: "%" });
+      }
+
+      const rows = [];
+      
+      // Chunk toolKeys into rows of 5
+      for (let i = 0; i < toolKeys.length; i += 5) {
+        rows.push(toolKeys.slice(i, i + 5));
+      }
+
+      // Compact 5x4 Numpad Grid
+      rows.push([
+        { label: "7", key: "7" }, 
+        { label: "8", key: "8" }, 
+        { label: "9", key: "9" },
+        { command: ["insert", "\\div", { mode: "math" }], label: "÷", class: "action font-black" },
+        { label: "⌫", command: ["deleteBackward"], class: "action font-black text-rose-500 bg-rose-50" }
+      ]);
+
+      rows.push([
+        { label: "4", key: "4" }, 
+        { label: "5", key: "5" }, 
+        { label: "6", key: "6" },
+        { command: ["insert", "\\times", { mode: "math" }], label: "×", class: "action font-black" },
+        { label: "$", key: "$", class: "action font-black text-emerald-600" }
+      ]);
+
+      rows.push([
+        { label: "1", key: "1" }, 
+        { label: "2", key: "2" }, 
+        { label: "3", key: "3" },
+        { label: "−", key: "-", class: "action font-black" },
+        { label: "¢", key: "¢", class: "action font-black text-emerald-600" }
+      ]);
+
+      rows.push([
+        { label: "0", key: "0" }, 
+        { label: ".", key: "." },
+        { label: "'", key: "'" },
+        { label: "=", key: "=", class: "action font-black text-blue-600" },
+        { label: "+", key: "+", class: "action font-black" },
+        { label: "⏎", command: "commit", class: "action font-black text-white bg-blue-600" }
+      ]);
+
+      return rows;
+    };
+
+    const buildWordsLayoutRows = () => {
+      return [
+        [
+          { label: "1", key: "1" }, { label: "2", key: "2" }, { label: "3", key: "3" },
+          { label: "4", key: "4" }, { label: "5", key: "5" }, { label: "6", key: "6" },
+          { label: "7", key: "7" }, { label: "8", key: "8" }, { label: "9", key: "9" },
+          { label: "0", key: "0" }
+        ],
+        [
+          { label: "q", key: "q" }, { label: "w", key: "w" }, { label: "e", key: "e" },
+          { label: "r", key: "r" }, { label: "t", key: "t" }, { label: "y", key: "y" },
+          { label: "u", key: "u" }, { label: "i", key: "i" }, { label: "o", key: "o" },
+          { label: "p", key: "p" }
+        ],
+        [
+          { label: "a", key: "a" }, { label: "s", key: "s" }, { label: "d", key: "d" },
+          { label: "f", key: "f" }, { label: "g", key: "g" }, { label: "h", key: "h" },
+          { label: "j", key: "j" }, { label: "k", key: "k" }, { label: "l", key: "l" },
+          { label: "'", key: "'", class: "font-black text-emerald-600" } 
+        ],
+        [
+          { label: "z", key: "z" }, { label: "x", key: "x" }, { label: "c", key: "c" },
+          { label: "v", key: "v" }, { label: "b", key: "b" }, { label: "n", key: "n" },
+          { label: "m", key: "m" }, { label: ",", key: "," }, { label: "?", key: "?" },
+          { label: "⌫", command: ["deleteBackward"], class: "action font-black text-rose-500 bg-rose-50" }
+        ],
+        [
+          { label: "space", key: " ", width: 7 },
+          { label: "⏎", command: "commit", class: "action font-black text-white bg-blue-600", width: 3 }
+        ]
+      ];
+    };
+
     const mvk = (window as any).mathVirtualKeyboard;
     if (mvk) {
+      mvk.keypressSound = null; // Disable the missing click sounds that cause 404s
       mvk.layouts = [
         {
           name: "moe-math",
-          label: "Math",
+          label: "123",
           tooltip: "MOE Primary Math Layout",
-          rows: [
-            // Row 1: Fractions & Mixed Numbers (The "Heavy Lifters")
-            [
-              { latex: "\\frac{#?}{#?}", label: "fraction", class: "keycap" },
-              { latex: "#?\\frac{#?}{#?}", label: "mixed", class: "keycap" },
-              { latex: "#?^{2}", label: "sq", class: "keycap" }, // For Area units
-              { latex: "\\angle", label: "angle" },
-              { latex: "^{\\circ}", label: "deg" },
-              { label: "⌫", command: ["performWithComponent", "deleteBackward"], class: "keycap" }
-            ],
-            // Row 2: Numbers & Logic
-            [
-              { label: "7", key: "7" }, { label: "8", key: "8" }, { label: "9", key: "9" },
-              { label: "÷", latex: "\\div" },
-              { label: "<", key: "<" },
-              { label: ">", key: ">" }
-            ],
-            // Row 3: Numbers & Operations
-            [
-              { label: "4", key: "4" }, { label: "5", key: "5" }, { label: "6", key: "6" },
-              { label: "×", latex: "\\times" },
-              { label: "(", key: "(" },
-              { label: ")", key: ")" }
-            ],
-            // Row 4: Numbers & Finalization
-            [
-              { label: "1", key: "1" }, { label: "2", key: "2" }, { label: "3", key: "3" },
-              { label: "+", key: "+" },
-              { label: "−", key: "-" },
-              { label: "=", key: "=" }
-            ],
-            // Row 5: Zero & Enter
-            [
-              { label: "0", key: "0" }, 
-              { label: ".", key: "." },
-              { label: "$", key: "$" }, // For Money (Dollars)
-              { label: "¢", key: "¢" }, // For Money (Cents)
-              { label: "%", key: "%" }, // For Percentage (P5/P6)
-              { label: "⏎", key: "Enter", class: "action w-20" }
-            ]
-          ]
+          rows: buildLayoutRows()
+        },
+        {
+          name: "moe-words",
+          label: "abc",
+          tooltip: "MOE Primary Words Layout",
+          rows: buildWordsLayoutRows()
         }
       ];
     }
 
     // Force hide UI buttons that clutter the primary interface
     currentMf.menuToggleVisibility = "hidden";
-    currentMf.virtualKeyboardToggleVisibility = "visible";
+    currentMf.virtualKeyboardToggleVisibility = "hidden"; // Hide toggle to prevent focus loop glitch on mobile
+    currentMf.mathVirtualKeyboardPolicy = "auto"; // Revert back to auto so the virtual keyboard takes over natively
 
     currentMf.readOnly = disabled;
-    currentMf.letterShapeStyle = "upright"; // Forces all letters to be upright instead of math-italics
-    currentMf.smartMode = true; // Automatically detects text vs math
-    currentMf.smartFence = true;
+    currentMf.letterShapeStyle = "upright"; // Disguise math variables as normal text
+    currentMf.smartMode = false; // Disable unpredictable auto-guessing
+    currentMf.defaultMode = "math"; // Stay in native math mode to prevent text-block placeholder bugs
+    currentMf.smartFence = false;
     currentMf.mathModeSpace = "\\ ";
+    currentMf.popoverPolicy = "none"; // Disable error toasts
+    currentMf.plonkSound = null; // Disable error sounds
+    
     currentMf.macros = {
       ...currentMf.macros,
       cm2: '{cm}^2',
@@ -166,8 +241,14 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
     // Replace all default inline shortcuts to prevent words like "or" and "and" 
     // from automatically turning into \lor and \land math symbols.
     // We only define the specific physical keyboard shortcuts we want to allow.
-    currentMf.mathModeInlineShortcuts = { '*': '\\times' };
-    currentMf.inlineShortcuts = { '*': '\\times' };
+    currentMf.mathModeInlineShortcuts = { 
+      '*': '\\times',
+      "'": "’" // Prevent apostrophe from turning into a math prime
+    };
+    currentMf.inlineShortcuts = { 
+      '*': '\\times',
+      "'": "’"
+    };
 
     if (currentMf.value !== value) {
       currentMf.value = value || "";
@@ -175,9 +256,8 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
 
     const onInputEvent = (e: Event) => {
       const target = e.target as any;
-      // Get value in LaTeX format
       const newValue = target?.value || target?.getValue?.() || "";
-
+      
       // Use the ref to check against the latest value to avoid stale closure issues
       if (newValue === mfRef.current?.value && newValue === value) return;
 
@@ -193,29 +273,42 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
         onEnterRef.current();
         return;
       }
+    };
 
-      // Block special symbols from the physical keyboard so the student uses the virtual keyboard.
-      // e.key length === 1 ensures we are intercepting printable characters, not modifiers/arrows.
-      if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        // Block currency, percentage, and other non-alphanumeric math symbols.
-        // We allow [0-9], [A-Z], [a-z], spaces, periods, commas, dashes, equal signs, basic operators (+, /, <, >), and dollar signs ($).
-        if (/[^0-9A-Za-z.\s,\-=+/*<>$]/.test(e.key)) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
+    const onCommitEvent = (e: Event) => {
+      // MathLive fires 'change' on both Enter press AND blur.
+      // We only want to submit if the user explicitly pressed Enter (the field is still focused).
+      const isFocused = 
+        document.activeElement === currentMf || 
+        currentMf.contains(document.activeElement) ||
+        (currentMf.shadowRoot && currentMf.shadowRoot.activeElement !== null);
+
+      if (!isFocused && e.type === 'change') {
+        console.log('👻 [MathInput] Ignoring ghost submit on blur.');
+        return;
+      }
+
+      if (onEnterRef.current) {
+        e.preventDefault();
+        e.stopPropagation();
+        onEnterRef.current();
       }
     };
 
     currentMf.addEventListener('input', onInputEvent);
     currentMf.addEventListener('keydown', onKeyDownEvent);
+    currentMf.addEventListener('commit', onCommitEvent);
+    currentMf.addEventListener('change', onCommitEvent);
     
     console.log('✅ [MathInput] Event listeners attached successfully.');
 
     return () => {
       currentMf.removeEventListener('input', onInputEvent);
       currentMf.removeEventListener('keydown', onKeyDownEvent);
+      currentMf.removeEventListener('commit', onCommitEvent);
+      currentMf.removeEventListener('change', onCommitEvent);
     };
-  }, [isLoaded]);
+  }, [isLoaded, level]);
 
   // 5. External Value Sync
   useEffect(() => {
@@ -240,7 +333,13 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
   useEffect(() => {
     if (isLoaded && autoFocus && mfRef.current) {
       setTimeout(() => {
-        mfRef.current.focus();
+        try {
+          if (mfRef.current) {
+            mfRef.current.focus();
+          }
+        } catch (e) {
+          console.warn('⚠️ [MathInput] Auto-focus skipped (likely blocked by mobile Safari security policy):', e);
+        }
       }, 100);
     }
   }, [isLoaded, autoFocus]);

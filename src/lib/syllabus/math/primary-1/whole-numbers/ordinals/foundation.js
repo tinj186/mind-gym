@@ -220,7 +220,8 @@ export const foundationVariants = {
         ${isShort ? "- Write a short, simple question (max 2 sentences). You MUST explicitly ask a question." : "- Generate an engaging word problem using any fun theme."}
         - CRITICAL: You MUST use the localized name ${sName} in your question to add Singaporean flavor.
         - CRITICAL: The "items" array in "componentData" MUST contain exactly 0 unique objects since this is text-only.
-        - Ask what item is placed at the ${answer} position.
+        - Ask what ordinal position is just ${clueWord} the ${cluePosition} position.
+        - CRITICAL: DO NOT include the answer "${answer}" in your question text.
         
         OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
         { 

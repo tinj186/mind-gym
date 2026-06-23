@@ -123,6 +123,7 @@ export default async function StudentGymView() {
             studentId={studentId}
             syllabus={syllabus} 
             masteryData={masteryData} 
+            serverActiveWorkout={profile?.activeWorkout}
           />
         </main>
       </div>

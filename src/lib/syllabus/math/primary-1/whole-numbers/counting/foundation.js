@@ -244,11 +244,16 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         - Find the: ${targetLabel} number
         - Final Answer MUST be: "${answer}"
         
+        CREATIVE INSTRUCTIONS:
+        ${isShort || isStructure ? "- Generate an engaging word problem where a character has these quantities of items." : "- Keep it simple and direct."}
+        - CRITICAL: You MUST explicitly ask "What is the ${targetLabel} NUMBER of items?". 
+        - DO NOT ask "Which item has the ${targetLabel} amount?" or "Which fruit is the ${targetLabel}?", because the final answer is the numeric digit, NOT the name of the item.
+        
         OUTPUT FORMAT (Return ONLY valid JSON matching this schema):
         {
           "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
           "content": {
-            "questionText": ${JSON.stringify(getQText(`Look at these numbers: ${nums.join(', ')}. Which number is the ${targetLabel}?`, `Find ${targetLabel}: ${nums.join(', ')}`))},
+            "questionText": ${JSON.stringify(getQText(`Look at these numbers: ${nums.join(', ')}. What is the ${targetLabel} number?`, `Find ${targetLabel}: ${nums.join(', ')}`))},
             "hint": ${JSON.stringify(getQText(`Compare the value of the numbers. Which one is the ${isGreatest ? 'biggest' : 'least'}?`, "Compare the numbers."))},
             "options": ${optionsJSON},
             "defectMap": ${defectMapJSON},

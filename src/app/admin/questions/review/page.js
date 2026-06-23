@@ -8,19 +8,25 @@ export const dynamic = 'force-dynamic';
 
 export default async function QuestionReviewPage({ searchParams }) {
   const resolvedSearchParams = await searchParams;
-  const { level, strand, topic, subtopic, type, difficulty, approved } = resolvedSearchParams;
+  const { id, level, strand, topic, subtopic, type, difficulty, approved } = resolvedSearchParams;
   const isApprovedFilter = approved === 'true';
 
-  // Keep the query mapping focus cleanly on approval status, allowing archived questions through for admin tracking
-  const whereClause = { isApproved: isApprovedFilter };
+  let whereClause = {};
 
-  // Only apply metadata filters if they are provided in the URL (non-empty)
-  if (level) whereClause.level = level;
-  if (topic) whereClause.topic = topic;
-  if (type) whereClause.type = type;
-  if (difficulty) whereClause.difficulty = difficulty;
-  if (subtopic) whereClause.subtopic = subtopic;
-  if (strand) whereClause.strand = strand;
+  if (id) {
+    whereClause = { id: id.toLowerCase() };
+  } else {
+    // Keep the query mapping focus cleanly on approval status, allowing archived questions through for admin tracking
+    whereClause = { isApproved: isApprovedFilter };
+
+    // Only apply metadata filters if they are provided in the URL (non-empty)
+    if (level) whereClause.level = level;
+    if (topic) whereClause.topic = topic;
+    if (type) whereClause.type = type;
+    if (difficulty) whereClause.difficulty = difficulty;
+    if (subtopic) whereClause.subtopic = subtopic;
+    if (strand) whereClause.strand = strand;
+  }
 
   const levelData = SYLLABUS_DATA[level] || [];
   const topicEntry = levelData.find(t => t.topic === topic);
