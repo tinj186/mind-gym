@@ -189,7 +189,7 @@ export const foundationVariants = {
     const targetIndex = Math.floor(Math.random() * 5) + 2; // 2nd to 6th
     const askNext = Math.random() > 0.5;
     const clueIndex = askNext ? targetIndex - 1 : targetIndex + 1;
-    const clueWord = askNext ? "just to the right of" : "just to the left of";
+    const clueWord = askNext ? "after" : "before";
     const sName = extract(context.name);
     
     const cluePosition = ORDINAL_WORDS[clueIndex];
@@ -228,11 +228,11 @@ export const foundationVariants = {
           "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
           "content": {
             "questionText": "If [Name] is in the ${cluePosition} position, what position is just ${clueWord} [Name] in the line?", 
-            "hint": ${JSON.stringify(getQText(`If someone is "just to the right of" you, their position number is one greater. If "just to the left of", it's one less.`, `Think: +1 for right, -1 for left.`))},
+            "hint": ${JSON.stringify(getQText(`If a position is just after, the number is one greater. If just before, it's one less.`, `Think: +1 for after, -1 for before.`))},
             "options": ${mcqOptions}, 
             "defectMap": ${defectMapStr},
             "finalAnswer": "${answer}",
-            "solutionSteps": ${JSON.stringify(getQText(`The position ${clueWord} ${cluePosition} is ${answer}.`, `${ORDINAL_SYMBOLS[clueIndex]} ${askNext ? '+ 1' : '- 1'} = ${ORDINAL_WORDS[targetIndex]}`))}
+            "solutionSteps": ${JSON.stringify(getQText(`The position just ${clueWord} ${cluePosition} is ${answer}.`, `${ORDINAL_SYMBOLS[clueIndex]} ${askNext ? '+ 1' : '- 1'} = ${ORDINAL_WORDS[targetIndex]}`))}
           },
           "visualEngine": { "componentToRender": "NONE", "componentData": {} },
           "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }

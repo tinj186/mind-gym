@@ -262,7 +262,7 @@ export const advancedVariants = {
 
   advanced_activity_duration_logic: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const startHour = Math.floor(Math.random() * 8) + 1; // 1 to 8 o'clock
-    const duration = 1;
+    const duration = Math.floor(Math.random() * 3) + 1;
     const endHour = startHour + duration;
     const { name } = getRandomContext();
     const answer = `${startHour} o'clock`;

@@ -59,7 +59,10 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   if (activeVariant === 'advanced_relative_logic') {
     const names = getRandomNames(4);
     const [p1, p2, p3] = names.slice(0, 3);
-    const amounts = [60, 45, 30]; 
+    const base = Math.floor(Math.random() * 20) + 50;
+    const diff1 = Math.floor(Math.random() * 10) + 10;
+    const diff2 = Math.floor(Math.random() * 10) + 10;
+    const amounts = [base, base - diff1, base - diff1 - diff2]; 
     
     const askAsc = Math.random() > 0.5;
     const targetOrder = askAsc ? "least to most" : "most to least";
@@ -81,7 +84,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       defectMapJSON = JSON.stringify(defectMap);
     }
 
-    const storyInstruction = `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context where ${p1} has 60, ${p2} has 45, and ${p3} has 30 items. You MUST NOT leave the "[STORY]" tag.`;
+    const storyInstruction = `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context where ${p1} has ${amounts[0]}, ${p2} has ${amounts[1]}, and ${p3} has ${amounts[2]} items. You MUST NOT leave the "[STORY]" tag.`;
 
     return {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.
@@ -89,7 +92,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       ${storyInstruction}
 
       MATH CONSTRAINTS:
-      - Logic: ${p1} has 60, ${p2} has 45, ${p3} has 30.
+      - Logic: ${p1} has ${amounts[0]}, ${p2} has ${amounts[1]}, ${p3} has ${amounts[2]}.
       - Question: Order the names from ${targetOrder}.
       - Final Answer MUST be: "${answer}"
 
@@ -102,7 +105,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           "defectMap": ${defectMapJSON},
           "hint": "Identify the number of items for each child first, then compare them.",
           "finalAnswer": "${answer}",
-          "solutionSteps": "1. ${p1} has 60.\\n2. ${p2} has 45.\\n3. ${p3} has 30.\\n4. The order from ${targetOrder} is ${answer}."
+          "solutionSteps": "1. ${p1} has ${amounts[0]}.\\n2. ${p2} has ${amounts[1]}.\\n3. ${p3} has ${amounts[2]}.\\n4. The order from ${targetOrder} is ${answer}."
         },
         "visualEngine": { "componentToRender": "NONE", "componentData": {} },
         "inputRequirement": { "inputType": "${inputType}" }

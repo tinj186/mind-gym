@@ -73,8 +73,8 @@ export const foundationVariants = {
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const themeItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const shuffledDisplay = [...themeItems].sort(() => Math.random() - 0.5);
-    const countA = 5;
-    const countB = 2;
+    const countA = Math.floor(Math.random() * 5) + 3;
+    const countB = Math.floor(Math.random() * 3) + 1;
     const diff = countA - countB;
     const isAskingMore = Math.random() > 0.5;
     const answer = String(diff);
@@ -139,8 +139,8 @@ export const foundationVariants = {
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const themeItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const shuffledDisplay = [...themeItems].sort(() => Math.random() - 0.5);
-    const c1 = 3;
-    const c2 = 4;
+    const c1 = Math.floor(Math.random() * 4) + 2;
+    const c2 = Math.floor(Math.random() * 4) + 2;
     const total = c1 + c2;
     const answer = String(total);
 

@@ -668,7 +668,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     // S3
     const s3Correct = Math.random() > 0.5;
-    let s3Num = 3;
+    let s3Num = Math.floor(Math.random() * 3) + 2;
     if (s3Correct) {
       const divisors = [2, 4, 5, 10].filter(d => totalLegs % d === 0);
       s3Num = divisors.length > 0 ? divisors[Math.floor(Math.random() * divisors.length)] : 2;

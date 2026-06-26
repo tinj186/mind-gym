@@ -384,8 +384,8 @@ export const standardVariants = {
 
   standard_as_long_as: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const selection = getRandomLengthItems(3).map(capitalize);
-    const baseLen = 6;
-    const variantLen = 4;
+    const baseLen = Math.floor(Math.random() * 4) + 5;
+    const variantLen = Math.floor(Math.random() * 3) + 3;
     const referenceItem = { label: selection[0], length: baseLen };
     const matchingTwin = { label: selection[1], length: baseLen };
     const wrongItem = { label: selection[2], length: variantLen };
@@ -443,8 +443,8 @@ export const standardVariants = {
 
   standard_unit_difference_mcq: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const selection = getRandomLengthItems(2).map(capitalize);
-    const len1 = 8;
-    const len2 = 5;
+    const len1 = Math.floor(Math.random() * 4) + 6;
+    const len2 = Math.floor(Math.random() * 3) + 3;
     const diff = len1 - len2;
     const selectedUnit = units[Math.floor(Math.random() * units.length)];
     const componentData = { items: [{ label: selection[0], length: len1 }, { label: selection[1], length: len2 }], unitIcon: selectedUnit.icon };

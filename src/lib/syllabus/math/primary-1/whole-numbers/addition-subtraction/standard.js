@@ -573,22 +573,25 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   if (activeVariant === 'standard_fact_family_cards') {
     const part1 = Math.floor(Math.random() * 40) + 10;
     const part2 = Math.floor(Math.random() * 40) + 10;
+    const smaller = Math.min(part1, part2);
+    const larger = Math.max(part1, part2);
     const whole = part1 + part2;
     
     const isAdd = Math.random() > 0.5;
     const operatorWord = isAdd ? 'addition' : 'subtraction';
+    const constraintText = isAdd ? 'starting with the smallest number' : 'subtracting the smallest number';
     
-    const answer = isAdd ? `${part1} + ${part2} = ${whole}` : `${whole} - ${part1} = ${part2}`;
+    const answer = isAdd ? `${smaller} + ${larger} = ${whole}` : `${whole} - ${smaller} = ${larger}`;
     
     const distractors = [];
     if (isAdd) {
-      distractors.push(`${whole} + ${part2} = ${part1}`);
-      distractors.push(`${part1} + ${whole} = ${part2}`);
-      distractors.push(`${part1} + ${part2} = ${whole + 10}`);
+      distractors.push(`${whole} + ${smaller} = ${larger}`);
+      distractors.push(`${larger} + ${whole} = ${smaller}`);
+      distractors.push(`${smaller} + ${larger} = ${whole + 10}`);
     } else {
-      distractors.push(`${part1} - ${part2} = ${whole}`);
-      distractors.push(`${part2} - ${part1} = ${whole}`);
-      distractors.push(`${whole} - ${part2} = ${part1 + 10}`);
+      distractors.push(`${smaller} - ${larger} = ${whole}`);
+      distractors.push(`${larger} - ${smaller} = ${whole}`);
+      distractors.push(`${whole} - ${larger} = ${smaller + 10}`);
     }
 
     const items = [String(part1), String(part2), String(whole)].sort(() => Math.random() - 0.5);
@@ -603,7 +606,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
-        questionText: `Use all the number cards to form a correct ${operatorWord} equation.`,
+        questionText: `Use all the number cards to form a correct ${operatorWord} equation ${constraintText}.`,
         options: options,
         defectMap: defectMap,
         hint: "[AI: INJECT HINT]",

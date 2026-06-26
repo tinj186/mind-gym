@@ -11,9 +11,9 @@ export const advancedVariants = {
     const item1 = shuffledItems[0];
     const item2 = shuffledItems[1];
     const item3 = shuffledItems[2];
-    const lenA = 9;
-    const lenB = 6;
-    const lenC = 4;
+    const lenA = Math.floor(Math.random() * 5) + 6;
+    const lenB = Math.floor(Math.random() * 4) + 4;
+    const lenC = Math.floor(Math.random() * 3) + 2;
     const selectedUnit = units[Math.floor(Math.random() * units.length)];
 
     const componentData = { items: [{ label: item1, length: lenA }, { label: item2, length: lenB }, { label: item3, length: lenC }].sort(() => Math.random() - 0.5), unitIcon: selectedUnit.icon };
@@ -212,8 +212,8 @@ export const advancedVariants = {
 
   advanced_overlap_deduction: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const shuffledItems = getRandomLengthItems(5).map(capitalize);
-    const lenA = 8;
-    const lenB = 6;
+    const lenA = Math.floor(Math.random() * 4) + 6;
+    const lenB = Math.floor(Math.random() * 3) + 3;
     const overlap = Math.floor(Math.random() * 2) + 2; 
     const visibleTotal = lenA + lenB - overlap;
     const selectedUnit = units[Math.floor(Math.random() * units.length)];
@@ -272,9 +272,9 @@ export const advancedVariants = {
 
   advanced_multi_step_word_problems: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const targetObj = capitalize(getRandomLengthItems(1));
-    const baseLen = 10;
-    const subtractAmt = 3;
-    const additionAmt = 4;
+    const baseLen = Math.floor(Math.random() * 6) + 8;
+    const subtractAmt = Math.floor(Math.random() * 4) + 2;
+    const additionAmt = Math.floor(Math.random() * 4) + 2;
     const currentNetLength = baseLen - subtractAmt + additionAmt;
     const selectedUnit = units[Math.floor(Math.random() * units.length)];
 
@@ -325,7 +325,7 @@ export const advancedVariants = {
 
   advanced_part_whole_missing: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const shuffledItems = getRandomLengthItems(5).map(capitalize);
-    const completeWhole = 12;
+    const completeWhole = Math.floor(Math.random() * 5) + 10;
     const partA = Math.floor(Math.random() * 3) + 4; 
     const partB = completeWhole - partA;
     const selectedUnit = units[Math.floor(Math.random() * units.length)];
@@ -378,7 +378,7 @@ export const advancedVariants = {
   advanced_excess_comparison: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const shuffledItems = getRandomLengthItems(5).map(capitalize);
     const currentLength = Math.floor(Math.random() * 3) + 4; 
-    const targetThreshold = 10;
+    const targetThreshold = Math.floor(Math.random() * 4) + 8;
     const missingDeficit = targetThreshold - currentLength;
     const selectedUnit = units[Math.floor(Math.random() * units.length)];
 

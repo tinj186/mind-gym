@@ -230,7 +230,7 @@ export const standardVariants = {
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const uniqueCounts = [1, 2, 3, 4, 5, 6, 7].sort(() => Math.random() - 0.5);
     const baseCategories = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i], count: uniqueCounts[i] }));
-    const threshold = 4;
+    const threshold = Math.floor(Math.random() * 3) + 3;
     const countBelow = baseCategories.filter(c => c.count < threshold).length;
     const answer = String(countBelow);
     const componentData = { title: `Our ${capitalize(selectedTheme.name)}`, orientation, categories: baseCategories };
@@ -332,7 +332,7 @@ export const standardVariants = {
     const uniqueCounts = [1, 2, 3, 4, 5, 6, 7].sort(() => Math.random() - 0.5);
     const baseCategories = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i], count: uniqueCounts[i] }));
     const [c1, c2] = getRandom(baseCategories, 2);
-    const twinCount = 5;
+    const twinCount = Math.floor(Math.random() * 4) + 3;
     const categories = baseCategories.map(c => {
       if (c.label === c1.label || c.label === c2.label) return { ...c, count: twinCount };
       return { ...c, count: c.count === twinCount ? 2 : c.count };

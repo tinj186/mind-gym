@@ -24,7 +24,7 @@ export const standardVariants = {
     const sItem = extract(context.items[0]);
     const sSetting = extract(context.setting);
 
-    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: You MUST generate an array of ${totalItems} UNIQUE emojis for the "componentData.items" field. The emojis MUST match the subject of your story (e.g., if the story is about children queuing, use people emojis like 👦, 👧, 👨, 👩. DO NOT default to fruits unless the story is explicitly about fruits!).`;
+    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: You MUST generate an array of ${totalItems} UNIQUE objects for the "componentData.items" field. Each object must have an "icon" (emoji) and a "label" (one-word name). The emojis MUST match the subject of your story (e.g., if the story is about children queuing, use people emojis like 👦, 👧, 👨, 👩. DO NOT default to fruits unless the story is explicitly about fruits!).`;
 
     let options = [backOrdinal, ORDINAL_SYMBOLS[Math.max(0, targetFromBack - 2)], ORDINAL_SYMBOLS[Math.min(11, targetFromBack)], ORDINAL_SYMBOLS[Math.min(11, targetFromBack + 1)]];
     options = [...new Set(options)];
@@ -59,7 +59,7 @@ export const standardVariants = {
         CREATIVE INSTRUCTIONS:
         ${isShort ? "- Write a short, simple question (max 2 sentences). You MUST explicitly ask a question." : "- Generate an engaging word problem. You may use any fun theme (e.g., underwater, forest, toy box, space)."}
         - CRITICAL: You MUST use the localized name ${sName} in your question to add Singaporean flavor.
-        - CRITICAL: The "items" array in "componentData" MUST contain exactly ${totalItems} UNIQUE emojis that match your story theme. DO NOT use placeholder text like "emoji1" or "emoji2". Generate varied, creative emojis!
+        - CRITICAL: The "items" array in "componentData" MUST contain exactly ${totalItems} UNIQUE objects formatted as {\"icon\": \"<emoji>\", \"label\": \"<name>\"}. DO NOT use placeholders. Generate varied, creative objects!
         
         OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
         {
@@ -75,7 +75,7 @@ export const standardVariants = {
           "visualEngine": {
             "componentToRender": "ORDINAL_LINE",
             "componentData": {
-              "items": ["[Theme Emoji 1]", "[Theme Emoji 2]"],
+              "items": [{"icon": "[Theme Emoji]", "label": "[Theme Word]"}, {"icon": "[Theme Emoji 2]", "label": "[Theme Word 2]"}],
               "direction": "left"
             }
           },
@@ -88,10 +88,12 @@ export const standardVariants = {
   standard_change: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const sName = extract(context.name);
     const sSetting = extract(context.setting);
-    const answer = "3rd";
+    const startPos = Math.floor(Math.random() * 4) + 3;
+    const leaveCount = Math.floor(Math.random() * 2) + 1;
+    const answer = ORDINAL_WORDS[startPos - leaveCount - 1];
     const totalItems = Math.floor(Math.random() * 4) + 5; // 5 to 8 items in the queue
 
-    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: You MUST generate an array of ${totalItems} UNIQUE emojis for the "componentData.items" field. The emojis MUST match the subject of your story (e.g., if the story is about children queuing, use people emojis like 👦, 👧, 👨, 👩. DO NOT default to fruits unless the story is explicitly about fruits!).`;
+    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: You MUST generate an array of ${totalItems} UNIQUE objects for the "componentData.items" field. Each object must have an "icon" (emoji) and a "label" (one-word name). The emojis MUST match the subject of your story (e.g., if the story is about children queuing, use people emojis like 👦, 👧, 👨, 👩. DO NOT default to fruits unless the story is explicitly about fruits!).`;
 
     let options = [answer, "2nd", "4th", "5th"];
     options = [...new Set(options)];
@@ -118,15 +120,15 @@ export const standardVariants = {
         
         MATH CONSTRAINTS:
         - Topic: Ordinal Numbers (Standard Level - State Change)
-        - Initial state: A character is 4th from the left.
-        - Event: 1 person leaves from the VERY LEFT of the line.
+        - Initial state: A character is in the ${ORDINAL_WORDS[startPos - 1]} position.
+        - Event: ${leaveCount} person(s) leave from the FRONT of the line.
         - Question: What is that character's NEW position?
         - Final Answer MUST strictly be: "${answer}"
         
         CREATIVE INSTRUCTIONS:
         ${isShort ? "- Write a short, simple question (max 2 sentences). You MUST explicitly ask a question." : "- Generate an engaging word problem."}
         - CRITICAL: You MUST use the localized name ${sName} in your question to add Singaporean flavor.
-        - CRITICAL: The "items" array in "componentData" MUST contain exactly ${totalItems} UNIQUE emojis that match your story theme. DO NOT use placeholder text. Generate varied, creative emojis!
+        - CRITICAL: The "items" array in "componentData" MUST contain exactly ${totalItems} UNIQUE objects formatted as {\"icon\": \"<emoji>\", \"label\": \"<name>\"}. DO NOT use placeholders. Generate varied, creative objects!
         
         OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
         {
@@ -135,14 +137,14 @@ export const standardVariants = {
             "questionText": "...",
             "options": ${mcqOptions},
             "defectMap": ${defectMapStr},
-            "hint": ${JSON.stringify(getQText(`If someone to the left of ${sName} leaves, does ${sName}'s position move further left or right? By how many spots?`, `Think: Does the position number get smaller or larger?`))},
+            "hint": ${JSON.stringify(getQText(`If someone in front of ${sName} leaves, does ${sName}'s position number get smaller or larger? By how many spots?`, `Think: Does the position number get smaller or larger?`))},
             "finalAnswer": "${answer}",
             "solutionSteps": "..."
           },
           "visualEngine": {
             "componentToRender": "ORDINAL_LINE",
             "componentData": {
-              "items": ["[Theme Emoji 1]", "[Theme Emoji 2]"],
+              "items": [{"icon": "[Theme Emoji]", "label": "[Theme Word]"}, {"icon": "[Theme Emoji 2]", "label": "[Theme Word 2]"}],
               "direction": "left"
             }
           },
@@ -160,7 +162,7 @@ export const standardVariants = {
     const answer = ORDINAL_WORDS[rightPositionIndex];
     const targetEmoji = ITEM_EMOJIS[targetIndex];
 
-    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: You MUST generate an array of ${totalItems} UNIQUE emojis for the "componentData.items" field. The emojis MUST match the subject of your story (e.g., if the story is about children queuing, use people emojis like 👦, 👧, 👨, 👩. DO NOT default to fruits unless the story is explicitly about fruits!).`;
+    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: You MUST generate an array of ${totalItems} UNIQUE objects for the "componentData.items" field. Each object must have an "icon" (emoji) and a "label" (one-word name). The emojis MUST match the subject of your story (e.g., if the story is about children queuing, use people emojis like 👦, 👧, 👨, 👩. DO NOT default to fruits unless the story is explicitly about fruits!).`;
 
     let options = [answer, ORDINAL_WORDS[Math.max(0, rightPositionIndex - 1)], ORDINAL_WORDS[Math.min(11, rightPositionIndex + 1)], ORDINAL_WORDS[Math.min(11, rightPositionIndex + 2)]];
     options = [...new Set(options)];
@@ -186,14 +188,16 @@ export const standardVariants = {
         MATH CONSTRAINTS:
         - Topic: Counting from the right
         - Total Items in row: ${totalItems}
-        - Logic: The chosen emoji is the ${ORDINAL_WORDS[targetIndex]} from the left.
+        - Logic: The chosen emoji MUST be placed as the ${ORDINAL_WORDS[targetIndex]} item from the left.
+        - Counting from the right, its position is ${answer}.
         - Final Answer MUST be: "${answer}"
         
         CREATIVE INSTRUCTIONS:
         ${isShort ? "- Write a short, simple question (max 2 sentences). You MUST explicitly ask a question." : "- Generate an engaging word problem."}
         - CRITICAL: You MUST use the localized name ${sName} in your question to add Singaporean flavor.
-        - CRITICAL: The "items" array in "componentData" MUST contain exactly ${totalItems} UNIQUE emojis matching your theme. DO NOT use placeholder text. Generate varied, creative emojis!
-        - Ask what position the [Chosen Emoji] is in, counting from the RIGHT.
+        - CRITICAL: The "items" array in "componentData" MUST contain exactly ${totalItems} UNIQUE objects formatted as {\"icon\": \"<emoji>\", \"label\": \"<name>\"}. DO NOT use placeholders. Generate varied, creative objects!
+        - Identify the name of the item that is ${ORDINAL_WORDS[targetIndex]} from the left.
+        - Ask what position that specific item is in, counting from the RIGHT.
         
         OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
         { 
@@ -204,12 +208,12 @@ export const standardVariants = {
             "options": ${mcqOptions}, 
             "defectMap": ${defectMapStr},
             "finalAnswer": "${answer}", 
-            "solutionSteps": "..."
+            "solutionSteps": "Start counting from the right side. The [Chosen Item Name] is the ${answer} one."
           },
           "visualEngine": {
             "componentToRender": "ORDINAL_LINE",
             "componentData": {
-              "items": ["[Theme Emoji 1]", "[Theme Emoji 2]"],
+              "items": [{"icon": "[Theme Emoji]", "label": "[Theme Word]"}, {"icon": "[Theme Emoji 2]", "label": "[Theme Word 2]"}],
               "direction": "right"
             }
           },
@@ -223,11 +227,12 @@ export const standardVariants = {
     const startPos = Math.floor(Math.random() * 5) + 2; // 2nd to 6th
     const joinPos = Math.floor(Math.random() * startPos) + 1; // 1 to startPos
     const joinOrdinal = ORDINAL_WORDS[joinPos - 1];
-    const newPos = startPos + 1;
+    const joinCount = Math.floor(Math.random() * 2) + 1;
+    const newPos = startPos + joinCount;
     const answer = ORDINAL_WORDS[newPos - 1];
     const sName = extract(context.name);
-    const eventDesc = joinPos === 1 ? "joins the left side of the queue" : `joins the queue at the ${joinOrdinal} position from the left`;
-    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: You MUST generate an array of ${startPos + 2} UNIQUE emojis for the "componentData.items" field. The emojis MUST match the subject of your story (e.g., if the story is about children queuing, use people emojis like 👦, 👧, 👨, 👩. DO NOT default to fruits unless the story is explicitly about fruits!).`;
+    const eventDesc = joinPos === 1 ? `${joinCount} ${joinCount === 1 ? 'person' : 'people'} join the very front of the queue` : `${joinCount} ${joinCount === 1 ? 'person joins' : 'people join'} the queue at the ${joinOrdinal} position`;
+    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: You MUST generate an array of ${startPos + 2} UNIQUE objects for the "componentData.items" field. Each object must have an "icon" (emoji) and a "label" (one-word name). The emojis MUST match the subject of your story (e.g., if the story is about children queuing, use people emojis like 👦, 👧, 👨, 👩. DO NOT default to fruits unless the story is explicitly about fruits!).`;
 
     let options = [answer, ORDINAL_WORDS[Math.max(0, startPos - 2)], ORDINAL_WORDS[startPos - 1], ORDINAL_WORDS[Math.min(11, newPos)]];
     options = [...new Set(options)];
@@ -252,20 +257,20 @@ export const standardVariants = {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_join_front question. DO NOT modify the mathematical structure or the final answer.${visualProtocol}
         MATH CONSTRAINTS:
         - Initial Position: ${ORDINAL_WORDS[startPos - 1]} from the left
-        - Event: 1 more person ${eventDesc}.
+        - Event: ${eventDesc}.
         - Final Answer MUST be: "${answer}"
         
         CREATIVE INSTRUCTIONS:
         ${isShort ? "- Write a short, simple question (max 2 sentences). You MUST explicitly ask a question." : "- Generate an engaging word problem."}
         - CRITICAL: You MUST use the localized name ${sName} in your question to add Singaporean flavor.
-        - CRITICAL: The "items" array in "componentData" MUST contain exactly ${startPos + 2} UNIQUE emojis matching your theme. DO NOT use placeholder text. Generate varied, creative emojis!
+        - CRITICAL: The "items" array in "componentData" MUST contain exactly ${startPos + 2} UNIQUE objects formatted as {\"icon\": \"<emoji>\", \"label\": \"<name>\"}. DO NOT use placeholders. Generate varied, creative objects!
         
         OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
         { 
           "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
           "content": {
             "questionText": "...", 
-            "hint": ${JSON.stringify(getQText(`If someone joins the line to the left of ${sName}, does ${sName}'s position move further left or right? By how many spots?`, `Think: Does the position number get smaller or larger?`))},
+            "hint": ${JSON.stringify(getQText(`If someone joins the line in front of ${sName}, does ${sName}'s position number get smaller or larger? By how many spots?`, `Think: Does the position number get smaller or larger?`))},
             "options": ${mcqOptions}, 
             "defectMap": ${defectMapStr},
             "finalAnswer": "${answer}", 
@@ -274,7 +279,7 @@ export const standardVariants = {
           "visualEngine": {
             "componentToRender": "ORDINAL_LINE",
             "componentData": {
-              "items": ["[Theme Emoji 1]", "[Theme Emoji 2]"],
+              "items": [{"icon": "[Theme Emoji]", "label": "[Theme Word]"}, {"icon": "[Theme Emoji 2]", "label": "[Theme Word 2]"}],
               "direction": "left"
             }
           },
@@ -288,11 +293,12 @@ export const standardVariants = {
     const startPos = Math.floor(Math.random() * 5) + 3; // 3rd to 7th
     const leavePos = Math.floor(Math.random() * (startPos - 1)) + 1; // 1 to startPos-1
     const leaveOrdinal = ORDINAL_WORDS[leavePos - 1];
-    const newPos = startPos - 1; 
+    const leaveCount = Math.floor(Math.random() * 2) + 1;
+    const newPos = startPos - leaveCount; 
     const answer = ORDINAL_WORDS[newPos - 1];
     const sName = extract(context.name);
-    const eventDesc = leavePos === 1 ? "at the very left leaves" : `at the ${leaveOrdinal} position from the left leaves`;
-    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: You MUST generate an array of ${startPos + 1} UNIQUE emojis for the "componentData.items" field. The emojis MUST match the subject of your story (e.g., if the story is about children queuing, use people emojis like 👦, 👧, 👨, 👩. DO NOT default to fruits unless the story is explicitly about fruits!).`;
+    const eventDesc = leavePos === 1 ? `${leaveCount} ${leaveCount === 1 ? 'person' : 'people'} at the very front leave` : `${leaveCount} ${leaveCount === 1 ? 'person' : 'people'} at the ${leaveOrdinal} position leave`;
+    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: You MUST generate an array of ${startPos + 1} UNIQUE objects for the "componentData.items" field. Each object must have an "icon" (emoji) and a "label" (one-word name). The emojis MUST match the subject of your story (e.g., if the story is about children queuing, use people emojis like 👦, 👧, 👨, 👩. DO NOT default to fruits unless the story is explicitly about fruits!).`;
 
     let options = [answer, ORDINAL_WORDS[Math.max(0, newPos - 2)], ORDINAL_WORDS[startPos - 1], ORDINAL_WORDS[startPos]];
     options = [...new Set(options)];
@@ -317,20 +323,20 @@ export const standardVariants = {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_leave_front question. DO NOT modify the mathematical structure or the final answer.${visualProtocol}
         MATH CONSTRAINTS:
         - Initial Position: ${ORDINAL_WORDS[startPos - 1]} from the left
-        - Event: 1 person ${eventDesc}.
+        - Event: ${eventDesc}.
         - Final Answer MUST be: "${answer}"
         
         CREATIVE INSTRUCTIONS:
         ${isShort ? "- Write a short, simple question (max 2 sentences). You MUST explicitly ask a question." : "- Generate an engaging word problem."}
         - CRITICAL: You MUST use the localized name ${sName} in your question to add Singaporean flavor.
-        - CRITICAL: The "items" array in "componentData" MUST contain exactly ${startPos + 1} UNIQUE emojis matching your theme. DO NOT use placeholder text. Generate varied, creative emojis!
+        - CRITICAL: The "items" array in "componentData" MUST contain exactly ${startPos + 1} UNIQUE objects formatted as {\"icon\": \"<emoji>\", \"label\": \"<name>\"}. DO NOT use placeholders. Generate varied, creative objects!
         
         OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
         { 
           "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
           "content": {
             "questionText": "...", 
-            "hint": ${JSON.stringify(getQText(`If someone to the left of ${sName} leaves, does ${sName}'s position move further left or right? By how many spots?`, `Think: Does the position number get smaller or larger?`))},
+            "hint": ${JSON.stringify(getQText(`If someone in front of ${sName} leaves, does ${sName}'s position number get smaller or larger? By how many spots?`, `Think: Does the position number get smaller or larger?`))},
             "options": ${mcqOptions}, 
             "defectMap": ${defectMapStr},
             "finalAnswer": "${answer}", 
@@ -339,7 +345,7 @@ export const standardVariants = {
           "visualEngine": {
             "componentToRender": "ORDINAL_LINE",
             "componentData": {
-              "items": ["[Theme Emoji 1]", "[Theme Emoji 2]"],
+              "items": [{"icon": "[Theme Emoji]", "label": "[Theme Word]"}, {"icon": "[Theme Emoji 2]", "label": "[Theme Word 2]"}],
               "direction": "left"
             }
           },
@@ -380,7 +386,7 @@ export const standardVariants = {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_relative_ahead question. DO NOT modify the mathematical structure or the final answer.
         MATH CONSTRAINTS:
         - Base Position: ${ORDINAL_WORDS[basePos - 1]} from the left
-        - Condition: Target is ${stepsAhead} positions to the left.
+        - Condition: Target is ${stepsAhead} positions ahead (closer to the front).
         - Final Answer MUST be: "${answer}"
         
         CREATIVE INSTRUCTIONS:
@@ -392,7 +398,7 @@ export const standardVariants = {
           "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
           "content": {
             "questionText": "...", 
-            "hint": ${JSON.stringify(getQText(`If someone is 'to the left' of you, is their position number smaller or larger than yours?`, `Think: Smaller number means further left.`))},
+            "hint": ${JSON.stringify(getQText(`If someone is 'ahead' of you in a line, is their position number smaller or larger than yours?`, `Think: Ahead means a smaller position number.`))},
             "options": ${mcqOptions}, 
             "defectMap": ${defectMapStr},
             "finalAnswer": "${answer}", 
@@ -435,7 +441,7 @@ export const standardVariants = {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_relative_behind question. DO NOT modify the mathematical structure or the final answer.
         MATH CONSTRAINTS:
         - Base Position: ${ORDINAL_WORDS[basePos - 1]} from the left
-        - Condition: Target is ${stepsBehind} positions to the right.
+        - Condition: Target is ${stepsBehind} positions behind (further back in the line).
         - Final Answer MUST be: "${answer}"
         
         CREATIVE INSTRUCTIONS:
@@ -447,7 +453,7 @@ export const standardVariants = {
           "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
           "content": {
             "questionText": "...", 
-            "hint": ${JSON.stringify(getQText(`If someone is 'to the right' of you, is their position number smaller or larger than yours?`, `Think: Larger number means further right.`))},
+            "hint": ${JSON.stringify(getQText(`If someone is 'behind' you in a line, is their position number smaller or larger than yours?`, `Think: Behind means a larger position number.`))},
             "options": ${mcqOptions}, 
             "defectMap": ${defectMapStr},
             "finalAnswer": "${answer}", 

@@ -112,7 +112,8 @@ export const advancedVariants = {
   },
   advanced_mystery_number_bounds: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const tensDigit = Math.floor(Math.random() * 4) + 3; // 3 to 6
-    const onesDigit = tensDigit - 1; // tens digit is 1 more than ones
+    const diff = Math.floor(Math.random() * 3) + 1;
+    const onesDigit = tensDigit - diff;
     const num = (tensDigit * 10) + onesDigit;
     const lowerBound = tensDigit * 10;
     const upperBound = (tensDigit + 1) * 10;
@@ -138,7 +139,7 @@ export const advancedVariants = {
       aiPrompt: `STRICT VARIANT MANDATE: You are generating an advanced_mystery_number_bounds question. NO addition or subtraction stories.
         MATH CONSTRAINTS:
         - Number: ${num}
-        - Clues: Between ${lowerBound} and ${upperBound}, tens digit is 1 more than ones.
+        - Clues: Between ${lowerBound} and ${upperBound}, tens digit is ${diff} more than ones.
         - Final Answer MUST strictly be: "${num}"
         ${formatInstructions}
         CRITICAL: If the question type is MCQ, the "options" array MUST be exactly: ${JSON.stringify(options)}. DO NOT modify its content or format.
@@ -147,12 +148,12 @@ export const advancedVariants = {
         {
           "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
           "content": {
-            "questionText": ${JSON.stringify(getQText(`I am a number between ${lowerBound} and ${upperBound}. My tens digit is 1 more than my ones digit. What number am I?`, `Number between ${lowerBound} and ${upperBound}: Tens digit is 1 more than ones?`))},
+            "questionText": ${JSON.stringify(getQText(`I am a number between ${lowerBound} and ${upperBound}. My tens digit is ${diff} more than my ones digit. What number am I?`, `Number between ${lowerBound} and ${upperBound}: Tens digit is ${diff} more than ones?`))},
             "options": ${mcqOptions},
             "defectMap": ${defectMapStr},
             "hint": ${JSON.stringify(getQText(`If I am between ${lowerBound} and ${upperBound}, my tens digit must be ${tensDigit}. Now find the ones digit.`, `Tens digit is ${tensDigit}.`))},
             "finalAnswer": "${num}",
-            "solutionSteps": ${JSON.stringify(getQText(`The tens digit must be ${tensDigit}. So the ones digit is ${onesDigit}. The number is ${num}.`, `tens=${tensDigit}, ones=${tensDigit}-1=${onesDigit}`))}
+            "solutionSteps": ${JSON.stringify(getQText(`The tens digit must be ${tensDigit}. So the ones digit is ${onesDigit}. The number is ${num}.`, `tens=${tensDigit}, ones=${tensDigit}-${diff}=${onesDigit}`))}
           },
           "visualEngine": { "componentToRender": "NONE", "componentData": {} },
           "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
