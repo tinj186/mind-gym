@@ -61,10 +61,10 @@ export class HitPayAdapter extends PaymentGateway {
       // 2. Sort the keys alphabetically
       const keys = Object.keys(data).sort();
 
-      // 3. Concatenate the values of all POST parameters
+      // 3. Concatenate the keys AND values of all POST parameters
       let valuesStr = "";
       for (const key of keys) {
-        valuesStr += data[key];
+        valuesStr += key + data[key];
       }
 
       // 4. Generate HMAC-SHA256 signature using the salt
