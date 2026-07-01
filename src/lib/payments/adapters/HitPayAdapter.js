@@ -53,14 +53,26 @@ export class HitPayAdapter extends PaymentGateway {
     }
 
     // HitPay Webhook Verification Strategy (HMAC SHA256)
-    // HitPay sends the raw payload. We must generate an HMAC using the salt.
-    // Note: In production, you must parse the raw body exactly as received.
     try {
+      // 1. Clone payload and remove the hmac key
+      const data = { ...payload };
+      delete data.hmac;
+
+      // 2. Sort the keys alphabetically
+      const keys = Object.keys(data).sort();
+
+      // 3. Concatenate the values of all POST parameters
+      let valuesStr = "";
+      for (const key of keys) {
+        valuesStr += data[key];
+      }
+
+      // 4. Generate HMAC-SHA256 signature using the salt
       const hmac = crypto.createHmac('sha256', this.salt);
-      // Wait, HitPay actually sends a form-encoded payload, but we assume raw body string here
-      hmac.update(payload);
+      hmac.update(valuesStr);
       const generatedSignature = hmac.digest('hex');
 
+      // 5. Compare signatures
       return generatedSignature === signature;
     } catch (e) {
       console.error("HitPay Webhook Verification Failed:", e);
