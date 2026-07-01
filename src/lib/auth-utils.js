@@ -32,3 +32,24 @@ export async function getCurrentStudentId() {
 
   return profile.id;
 }
+
+/**
+ * Enforces that the current user has an ACTIVE subscription.
+ * If not, redirects them to the Parent Command Center to upgrade.
+ */
+import { redirect } from 'next/navigation';
+
+export async function enforceActiveSubscription() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    redirect('/login');
+  }
+  
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id }
+  });
+  
+  if (user?.subscriptionStatus === 'INACTIVE') {
+    redirect('/parent');
+  }
+}
