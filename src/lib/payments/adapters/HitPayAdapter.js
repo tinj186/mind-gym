@@ -8,7 +8,7 @@ export class HitPayAdapter extends PaymentGateway {
     this.salt = process.env.HITPAY_SALT;
     
     // Auto-detect Live vs Sandbox based on the key prefix
-    this.apiUrl = this.apiKey?.startsWith('liv_') 
+    this.apiUrl = (this.apiKey?.startsWith('liv_') || this.apiKey?.startsWith('sk_live_'))
       ? 'https://api.hit-pay.com/v1' 
       : 'https://api.sandbox.hit-pay.com/v1';
   }
