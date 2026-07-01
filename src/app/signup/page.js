@@ -46,7 +46,7 @@ export default function SignupPage() {
       // 3. Redirect to the callbackUrl or the parent portal
       const params = new URLSearchParams(window.location.search);
       const callback = params.get('callbackUrl') || '/hub';
-      router.push(callback);
+      window.location.href = callback;
     } catch (err) {
       setError(err.message);
     } finally {
