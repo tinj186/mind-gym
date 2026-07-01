@@ -92,11 +92,6 @@ export default function PublicLandingPage() {
                 className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-3 font-medium outline-none"
               >
                 <option value="Primary 1">Primary 1</option>
-                <option value="Primary 2" disabled>Primary 2 (Coming Q3)</option>
-                <option value="Primary 3" disabled>Primary 3 (Coming Q4)</option>
-                <option value="Primary 4" disabled>Primary 4 (Coming 2027)</option>
-                <option value="Primary 5 (Standard)" disabled>Primary 5 Std (Coming 2027)</option>
-                <option value="Primary 6 (Standard)" disabled>Primary 6 Std (Coming 2027)</option>
               </select>
             </div>
             

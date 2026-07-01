@@ -56,24 +56,6 @@ export default async function OverallView() {
       progress: progressScore,
       lastSession: lastSessionText,
       isActive: true,
-    },
-    {
-      id: 'math-p2',
-      name: 'Primary 2 Math',
-      icon: '🔒',
-      status: 'Coming Q3',
-      progress: 0,
-      lastSession: 'In Development',
-      isActive: false,
-    },
-    {
-      id: 'math-p3',
-      name: 'Primary 3 Math',
-      icon: '🔒',
-      status: 'Coming Q4',
-      progress: 0,
-      lastSession: 'In Development',
-      isActive: false,
     }
   ];
 

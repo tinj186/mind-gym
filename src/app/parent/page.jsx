@@ -2,8 +2,22 @@ import Link from 'next/link';
 import { getStudentStatsAction } from '@/app/actions/statsActions';
 import { getCurrentStudentId } from '@/lib/auth-utils';
 import ParentTour from '@/components/parent/ParentTour';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { prisma } from '@/lib/db';
+import CheckoutButton from '@/components/payments/CheckoutButton';
 
 export default async function ParentHub() {
+  const session = await getServerSession(authOptions);
+  let isSubscribed = true; // Assume subscribed unless proven otherwise
+
+  if (session?.user?.email) {
+    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+    if (user && user.subscriptionStatus === "INACTIVE") {
+      isSubscribed = false;
+    }
+  }
+
   const studentId = await getCurrentStudentId() || "default-student";
   let stats;
   try {
@@ -19,9 +33,20 @@ export default async function ParentHub() {
 
       <main className="max-w-7xl mx-auto px-6 py-12">
         {/* Welcome Section */}
-        <section className="mb-12">
-          <h1 className="text-4xl font-black text-indigo-950 tracking-tight uppercase">Parent Command Center</h1>
-          <p className="text-indigo-900/60 font-medium">Select a subject to monitor neural conditioning and analytics.</p>
+        <section className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div>
+            <h1 className="text-4xl font-black text-indigo-950 tracking-tight uppercase">Parent Command Center</h1>
+            <p className="text-indigo-900/60 font-medium">Select a subject to monitor neural conditioning and analytics.</p>
+          </div>
+          
+          {!isSubscribed && (
+            <div className="bg-white border-2 border-indigo-100 p-4 rounded-2xl shadow-sm flex items-center gap-4">
+              <div className="text-sm font-bold text-indigo-950 max-w-[200px]">
+                Unlock unlimited AI grading & analytics
+              </div>
+              <CheckoutButton />
+            </div>
+          )}
         </section>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -59,53 +84,6 @@ export default async function ParentHub() {
               </Link>
             </div>
           </div>
-
-          {/* Inactive Subject: Science */}
-          <div className="group relative p-8 rounded-[2.5rem] border shadow-sm transition-all bg-white/50 border-indigo-100/50 opacity-70 grayscale cursor-not-allowed">
-            <div className="flex justify-between items-start mb-6">
-              <div className="text-4xl w-16 h-16 flex items-center justify-center rounded-2xl transition-colors bg-slate-100">
-                🔒
-              </div>
-              <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border bg-slate-100 text-slate-500 border-slate-200">
-                Coming Soon
-              </span>
-            </div>
-
-            <h2 className="text-2xl font-bold mb-2 text-indigo-950">Science</h2>
-            <p className="text-sm opacity-60 mb-8 text-indigo-900/60">
-              In Development
-            </p>
-
-            <div className="mt-6 pt-6 border-t border-indigo-100/50">
-              <button disabled className="w-full py-4 rounded-2xl font-bold bg-slate-100 text-slate-400 cursor-not-allowed">
-                In Development
-              </button>
-            </div>
-          </div>
-
-          {/* Inactive Subject: English */}
-          <div className="group relative p-8 rounded-[2.5rem] border shadow-sm transition-all bg-white/50 border-indigo-100/50 opacity-70 grayscale cursor-not-allowed">
-            <div className="flex justify-between items-start mb-6">
-              <div className="text-4xl w-16 h-16 flex items-center justify-center rounded-2xl transition-colors bg-slate-100">
-                🔒
-              </div>
-              <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border bg-slate-100 text-slate-500 border-slate-200">
-                Coming Soon
-              </span>
-            </div>
-
-            <h2 className="text-2xl font-bold mb-2 text-indigo-950">English</h2>
-            <p className="text-sm opacity-60 mb-8 text-indigo-900/60">
-              In Development
-            </p>
-
-            <div className="mt-6 pt-6 border-t border-indigo-100/50">
-              <button disabled className="w-full py-4 rounded-2xl font-bold bg-slate-100 text-slate-400 cursor-not-allowed">
-                In Development
-              </button>
-            </div>
-          </div>
-
         </div>
       </main>
     </div>

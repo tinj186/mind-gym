@@ -11,11 +11,20 @@ export default async function GlobalNavbar() {
   
   // Fetch the actual student profile associated with this parent if logged in
   let studentName = null;
+  let isSubscribed = true;
+
   if (session) {
     const studentId = await getCurrentStudentId();
     if (studentId) {
       const profile = await prisma.studentProfile.findUnique({ where: { id: studentId } });
       if (profile?.name) studentName = profile.name;
+    }
+
+    if (session.user?.email) {
+      const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+      if (user && user.subscriptionStatus === "INACTIVE") {
+        isSubscribed = false;
+      }
     }
   }
 
@@ -30,6 +39,12 @@ export default async function GlobalNavbar() {
       <div className="flex items-center gap-6">
         {session ? (
           <>
+            {!isSubscribed && (
+              <div className="hidden md:block">
+                <CheckoutButton />
+              </div>
+            )}
+            
             <Link href="/hub" className="hidden sm:flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer">
               <div className="text-right">
                 <div className="text-sm font-black text-slate-900 leading-none">{studentName || 'Student'}</div>
