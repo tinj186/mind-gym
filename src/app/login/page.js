@@ -110,7 +110,7 @@ function LoginContent() {
 
         <p className="text-center text-slate-500 text-sm mt-6">
           Don't have an account?{' '}
-          <Link href="/signup" className="text-blue-600 font-bold hover:underline">
+          <Link href={`/signup?callbackUrl=${encodeURIComponent(callbackUrl)}`} className="text-blue-600 font-bold hover:underline">
             Sign up for free
           </Link>
         </p>

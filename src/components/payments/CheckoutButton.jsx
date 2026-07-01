@@ -11,8 +11,8 @@ export default function CheckoutButton() {
       const data = await res.json();
       
       if (res.status === 401) {
-        // User not logged in, redirect to login
-        router.push('/login?callbackUrl=/');
+        // User not logged in, redirect to login with callback to the new GET checkout route
+        router.push('/login?callbackUrl=/api/checkout/hitpay');
         return;
       }
       

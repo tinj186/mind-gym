@@ -43,8 +43,10 @@ export default function SignupPage() {
         throw new Error('Failed to log in automatically.');
       }
 
-      // 3. Redirect to the parent portal
-      router.push('/hub');
+      // 3. Redirect to the callbackUrl or the parent portal
+      const params = new URLSearchParams(window.location.search);
+      const callback = params.get('callbackUrl') || '/hub';
+      router.push(callback);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -53,7 +55,9 @@ export default function SignupPage() {
   };
 
   const handleGoogleLogin = () => {
-    signIn('google', { callbackUrl: '/hub' });
+    const params = new URLSearchParams(window.location.search);
+    const callback = params.get('callbackUrl') || '/hub';
+    signIn('google', { callbackUrl: callback });
   };
 
   return (
