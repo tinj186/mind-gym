@@ -31,8 +31,8 @@ export const advancedVariants = {
       ]
     };
 
-    const questionTextTemplate = getQText(`How many ${cat1.label} and ${cat2.label} are there altogether? Take away the number of ${cat3.label}, what is the final count?`, `(${cat1.label} + ${cat2.label}) - ${cat3.label} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
+    const questionTextTemplate = getQText(`How many ${cat1.label} and ${cat2.label} are there altogether? Take away the number of ${cat3.label}, what is the final count?`, `${cat1.label} + ${cat2.label} - ${cat3.label} = ?`);
+    const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, String(finalValue + 1), String(finalValue - 1), String(count1 + count2)];
     let mcqOptions = 'null';
@@ -99,7 +99,7 @@ export const advancedVariants = {
     };
 
     const questionTextTemplate = getQText(`Look at the pattern across Week 1, Week 2, and Week 3. If the pattern continues, how many items should be drawn for Week 4?`, `Predict count for Week 4 = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
+    const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, String(nextPatternValue + 1), String(nextPatternValue - 1), String(count3)];
     let mcqOptions = 'null';
@@ -190,7 +190,7 @@ export const advancedVariants = {
       defectMapStr = JSON.stringify(defectMapObj);
     }
 
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
+    const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
@@ -242,7 +242,7 @@ export const advancedVariants = {
     };
 
     const questionTextTemplate = getQText(`The grand total number of items shown on the graph is ${totalGraph}, but the row for ${cat3.label} is blank. How many items belong in the ${cat3.label} category row?`, `Total is ${totalGraph}. Count for ${cat3.label} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
+    const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, String(missingCount + 1), String(missingCount - 1), String(totalKnown)];
     let mcqOptions = 'null';
@@ -307,7 +307,7 @@ export const advancedVariants = {
     };
 
     const questionTextTemplate = getQText(`Riddle Hint: There are ${count1} ${cat1.label}s on our graph. There are exactly ${diff} fewer ${cat2.label}s than ${cat1.label}s. Based on this rule, what is the count for ${cat2.label}?`, `${cat1.label} is ${count1}. ${cat2.label} is ${diff} fewer. Count for ${cat2.label} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
+    const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, String(count1), String(count2 + 1), String(count1 + diff)];
     let mcqOptions = 'null';
@@ -371,7 +371,7 @@ export const advancedVariants = {
     };
 
     const questionTextTemplate = getQText(`How many items must move from ${cat1.label} to ${cat2.label} so that both rows have the same number?`, `How many ${cat1.label} must move to ${cat2.label} so both rows have an equal amount?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
+    const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, String(move + 1), String(move + 2), String(c1 - c2)];
     let mcqOptions = 'null';
@@ -436,8 +436,8 @@ export const advancedVariants = {
       ]
     };
 
-    const questionTextTemplate = getQText(`How many MORE icons must be added to ${cat1.label} and ${cat2.label} rows combined to equal ${cat3.label}?`, `How many more needed for (${cat1.label} + ${cat2.label}) to equal ${cat3.label}?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
+    const questionTextTemplate = getQText(`How many MORE icons must be added to ${cat1.label} and ${cat2.label} rows combined to equal ${cat3.label}?`, `How many more needed for ${cat1.label} + ${cat2.label} to equal ${cat3.label}?`);
+    const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, String(balanceNeeded + 1), String(count3), String(count1 + count2)];
     let mcqOptions = 'null';
@@ -499,7 +499,7 @@ export const advancedVariants = {
     };
 
     const questionTextTemplate = getQText(`Someone was supposed to draw exactly ${accurateCount} ${targetCat.label.toLowerCase()} in the graph, but they accidentally drew ${flawedCount}. How many EXTRA symbols did they draw?`, `Expected ${accurateCount}. Drawn ${flawedCount}. Extra = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
+    const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, String(extraCount + 1), String(accurateCount), "0"];
     let mcqOptions = 'null';
@@ -564,7 +564,7 @@ export const advancedVariants = {
     };
 
     const questionTextTemplate = getQText(`The total items is ${totalValue}. Based on the other rows (${cat1.label}: ${c1}, ${cat2.label}: ${c2}), what is the count for the unknown ${cat3.label} row?`, `Total = ${totalValue}. ${cat1.label} = ${c1}, ${cat2.label} = ${c2}. ${cat3.label} = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
+    const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, String(hidden + 1), String(c1 + c2), "0"];
     let mcqOptions = 'null';
@@ -628,7 +628,7 @@ export const advancedVariants = {
     };
 
     const questionTextTemplate = getQText(`If ${shared} items from the ${cat1.label} row (${c1}) are given away, how many items are left in the whole graph (${cat2.label}: ${c2})?`, `Give away ${shared} from ${cat1.label} (${c1}). Total left with ${cat2.label} (${c2}) = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
+    const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. ${getRandomContext().name}).`;
 
     let options = [answer, String(total), String(c1 - shared), String(c2)];
     let mcqOptions = 'null';

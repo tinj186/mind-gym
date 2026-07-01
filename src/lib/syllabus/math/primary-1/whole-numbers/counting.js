@@ -110,7 +110,7 @@ export const countingBlueprint = {
     // Helper to dynamically strip English words for short questions
     const getQText = (words, equation) => isShort ? equation : words;
 
-    let formatInstructions = '';
+    let formatInstructions = isShort ? 'CRITICAL: NEVER ask the student to "show working" or "write working" in the question text.' : '';
     // Localization Context (defined once, used in structured prompts)
     const levelNum = parseInt(level.replace('Primary ', ''));
     const tier = levelNum <= 2 ? 'LOWER_BLOCK' : (levelNum <= 4 ? 'MIDDLE_BLOCK' : 'UPPER_BLOCK');

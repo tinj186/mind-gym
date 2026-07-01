@@ -117,21 +117,23 @@ export const additionSubtractionBlueprint = {
     const supportsStructured = Object.keys(additionSubtractionBlueprint.variants).some(v => v.includes('advanced'));
 
     const getQText = (story, equation) => {
+      // Prevent duplication
+      if (story === equation) return story;
+
       // RULE 1: If it's a 3-Type syllabus (has Structured questions)
       if (supportsStructured) {
         if (zodType === 'SHORT_QUESTION') return equation; // Simplified, no backstory
-        if (zodType === 'STRUCTURED') return story; // Complex descriptive
-        return `${story} ${equation}`; // MCQ: Combination
+        return story; // For STRUCTURED and MCQ, use the story template
       }
 
       // RULE 2: If it's a 2-Type syllabus (Short & MCQ only)
       if (zodType === 'SHORT_QUESTION') {
-        return story || equation; // Brief description or equation
+        return equation; // Brief description or equation
       }
-      return `${story} ${equation}`; // MCQ
+      return story; // MCQ
     };
 
-    const formatInstructions = ''; // Creative instructions are handled within the aiPrompt of sub-modules
+    const formatInstructions = isShort ? 'CRITICAL: NEVER ask the student to "show working" or "write working" in the question text.' : '';
     const levelNum = parseInt(level.replace('Primary ', ''));
     const tier = levelNum <= 2 ? 'LOWER_BLOCK' : (levelNum <= 4 ? 'MIDDLE_BLOCK' : 'UPPER_BLOCK');
     const context = getRandomContext('GENERAL', tier);

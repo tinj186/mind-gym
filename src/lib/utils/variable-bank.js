@@ -48,8 +48,7 @@ export const getFullTheme = () => {
 // 3. MEASUREMENT (LENGTH & HEIGHT)
 // ----------------------------------------------------------------------------
 export const LENGTH_ITEMS_POOL = [
-  "cutter", "highlighter", "pen", "pencil", "usbdrive", 
-  "eraser", "ruler", "paperclip", "crayon", "marker"
+  "cutter", "highlighter", "pen", "pencil", "usbdrive", "paperclip"
 ];
 
 export const HEIGHT_SUBJECTS_POOL = [

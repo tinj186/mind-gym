@@ -114,7 +114,7 @@ export const comparingOrderingBlueprint = {
     const funIcons = ['⚽', '🏀', '⭐', '🚗', '🍎', '🥕', '🍪', '🍬', '🎈', '🧸', '🥟', '🍢', '🍡'];
     const selectedIcon = itemData?.icon || funIcons[Math.floor(Math.random() * funIcons.length)];
 
-    let formatInstructions = '';
+    let formatInstructions = isShort ? 'CRITICAL: NEVER ask the student to "show working" or "write working" in the question text.' : '';
     const hintProtocol = `\nCRITICAL HINT PROTOCOL: You MUST provide a conceptual "hint" field.
 Forbidden: "Choose 15," "It's the smallest one."
 Required: Point to place value or relative clues.

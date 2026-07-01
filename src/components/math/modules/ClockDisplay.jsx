@@ -12,8 +12,8 @@ export default function ClockDisplay({ data, hideCardStyles = false }) {
   // Helper to place clock numbers 1-12 accurately around the circle radius
   const getNumberCoordinates = (num, radius = 70) => {
     const angle = ((num * 30 - 90) * Math.PI) / 180; // Shift by 90 to start at top center
-    const x = 100 + radius * Math.cos(angle);
-    const y = 100 + radius * Math.sin(angle);
+    const x = Number((100 + radius * Math.cos(angle)).toFixed(4));
+    const y = Number((100 + radius * Math.sin(angle)).toFixed(4));
     return { x, y };
   };
 

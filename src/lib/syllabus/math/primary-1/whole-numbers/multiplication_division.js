@@ -111,18 +111,16 @@ export const multiplicationDivisionBlueprint = {
     const zodDiff = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
     const level = 'Primary 1';
     const topic = 'Whole Numbers';
-
-    // Determine if this topic supports Structured Questions (3-Type Protocol)
     const supportsStructured = Object.keys(multiplicationDivisionBlueprint.variants).some(v => v.includes('advanced'));
 
     const getQText = (story, equation, type) => {
+      if (story === equation) return story;
+      
       if (supportsStructured) {
-        if (type === 'SHORT_QUESTION') return equation; // Equation only for 3-Type Short
-        if (type === 'STRUCTURED') return story; // Descriptive for Structured
-        return `${story} ${equation}`; // Combined for MCQ
+        if (type === 'SHORT_QUESTION') return equation;
+        return story; // MCQ and Structured
       }
-      // 2-Type Protocol
-      return type === 'SHORT_QUESTION' ? (story || equation) : `${story} ${equation}`;
+      return type === 'SHORT_QUESTION' ? equation : story;
     };
 
     const getOptions = (ans) => {

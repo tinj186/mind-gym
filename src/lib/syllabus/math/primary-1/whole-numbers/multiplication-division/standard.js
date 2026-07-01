@@ -53,7 +53,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
-        questionText: getQText(`[STORY] How many groups of ${num} are there in the addition?`, `${additionStr} = ? x ${num}`, zodType),
+        questionText: getQText(`[STORY] How many groups of ${num} are there?`, `${additionStr} = ? x ${num}`, zodType),
         options: options,
         defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",

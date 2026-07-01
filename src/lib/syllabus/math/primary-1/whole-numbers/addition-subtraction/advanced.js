@@ -253,7 +253,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       aiPrompt: `You are an expert Primary 1 math generator. STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component, "solutionSteps", or "finalAnswer". Return exactly the provided JSON structure, modifying ONLY the hint and array placeholders to match the requirements. ${formatInstructions}
       ${isShortQ 
         ? 'STRICT: Provide a direct mathematical question. NO story context or names.' 
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean story about ${extract(context.name)} being in a queue.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean story about ${extract(context.name)} being in a queue. You MUST state that there are ${inFront} people in front of them and ${behind} people behind them.`
       }
 
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
@@ -294,7 +294,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
-        questionText: getQText(`[STORY] ${left1} + ${left2} = ${right1} + ?. How many more must be added to the second group to make them equal?`, `${left1} + ${left2} = ${right1} + ?`),
+        questionText: getQText(`[STORY]`, `${left1} + ${left2} = ${right1} + ?`),
         options: options,
         defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
@@ -309,7 +309,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       aiPrompt: `You are an expert Primary 1 math generator. STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component, "solutionSteps", or "finalAnswer". Return exactly the provided JSON structure, modifying ONLY the hint and array placeholders to match the requirements. ${formatInstructions}
       ${isShortQ 
         ? 'STRICT: Provide a direct mathematical equation (e.g. A + B = C + ?). NO story context or names.' 
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean story about balancing two groups of ${itemLabel}. DO NOT remove or change the equation.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative localized Singaporean story about balancing two groups of ${itemLabel} (e.g. "Mei has ${left1} blue ${itemLabel} and ${left2} red ${itemLabel}, while Ali has ${right1} ${itemLabel}. How many more must be added to Ali's group to make them equal?"). DO NOT include the direct mathematical equation (e.g. A + B = C + ?) in the question text.`
       }
 
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
@@ -330,7 +330,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
-        questionText: getQText(`[STORY] ? - ${change1} + ${change2} = ${finalAmount}. How many did ${extract(context.name)} have at first?`, `? - ${change1} + ${change2} = ${finalAmount}. Find the starting number.`),
+        questionText: getQText(`[STORY]`, `? - ${change1} + ${change2} = ${finalAmount}. Find the starting number.`),
         options: options,
         defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
@@ -345,7 +345,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       aiPrompt: `You are an expert Primary 1 math generator. STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component, "solutionSteps", or "finalAnswer". Return exactly the provided JSON structure, modifying ONLY the hint and array placeholders to match the requirements. ${formatInstructions}
       ${isShortQ 
         ? 'STRICT: Provide a direct mathematical equation involving a missing start (e.g. ? - X + Y = Z). NO story context or names.' 
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean word problem requiring the student to work backwards to find the starting number of ${itemLabel}. DO NOT remove or change the equation.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative localized Singaporean word problem requiring the student to work backwards to find the starting number of ${itemLabel}. (e.g. "Muthu had some ${itemLabel}, gave away ${change1}, then got ${change2} more to have ${finalAmount}. How many did Muthu have at first?"). DO NOT include the direct mathematical equation (e.g. ? - X + Y = Z) in the question text.`
       }
 
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
@@ -402,7 +402,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
-        questionText: getQText(`[STORY] ▲ + ▲ = ${eq1Sum}. ▲ + ● = ${eq2Sum}. Find the value of the circle (●).`, `▲ + ▲ = ${eq1Sum}. ▲ + ● = ${eq2Sum}. What is ●?`),
+        questionText: getQText(`[STORY]`, `▲ + ▲ = ${eq1Sum}. ▲ + ● = ${eq2Sum}. What is ●?`),
         options: options,
         defectMap: defectMap,
         hint: "[AI: INJECT HINT]",
@@ -417,7 +417,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       aiPrompt: `You are an expert Primary 1 math generator. STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component, "solutionSteps", or "finalAnswer". Return exactly the provided JSON structure, modifying ONLY the hint and array placeholders to match the requirements. ${formatInstructions}
       ${isShortQ 
         ? 'STRICT: Provide a direct shape logic question. NO story context or names.' 
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized story involving objects being used as symbols/shapes. DO NOT remove or change the equations.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 2-sentence localized story word problem. The story MUST use the exact symbols ▲ and ● to represent items (e.g., "Siti buys two ▲ for $8. She buys a ▲ and a ● for $9. How much is the ●?"). DO NOT include the direct mathematical equations (e.g. ▲ + ▲ = ${eq1Sum}) in the question text.`
       }
 
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,

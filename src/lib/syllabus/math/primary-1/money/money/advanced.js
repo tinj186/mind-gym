@@ -239,7 +239,7 @@ export const advancedVariants = {
     let p2Cents = 0;
     for (let i = 0; i < p2ItemCount; i++) {
       const item = p2Pool[Math.floor(Math.random() * p2Pool.length)];
-      const valCents = parseInt(item.replace('$', ''), 10) * 100;
+      const valCents = item.endsWith('¢') ? parseInt(item.replace('¢', ''), 10) : parseInt(item.replace('$', ''), 10) * 100;
       p2Items.push(item); 
       p2Cents += valCents;
     }

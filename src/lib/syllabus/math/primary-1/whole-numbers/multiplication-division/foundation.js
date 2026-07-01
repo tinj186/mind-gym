@@ -79,6 +79,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         : `STRICT: Replace the "[STORY]" tag in "questionText" with a unique and creative 1-sentence localized Singaporean math story about ${extract(context.name)} and ${itemLabel} (visually represented by the emoji "${selectedIcon}") using ${isMult ? 'equal groups' : 'sharing equally'}. 
         
         MANDATORY: You MUST use the name "${extract(context.name)}" and the item "${itemLabel}". 
+        ${isMult ? 'MANDATORY: You MUST include the word "each" in the story to clearly specify the amount per group (e.g., "3 erasers into each of 2 bags").' : ''}
         VARIETY GUARDRAIL: Do NOT default to common clichés like "pencils", "apples", or "oranges". 
         Creative Examples: distributing prizes at a community event, organizing a hobby collection, preparing materials for a craft project, or sorting items for a school drive.`
       }

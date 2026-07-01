@@ -8,11 +8,11 @@ const getShuffledOptions = (correct, distractors) => {
 
 export const foundationVariants = {
   foundation_identify_shape: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const targetShape = getRandomShapes(1)[0];
+    const targetShape = getRandomShapes(1);
     const rotation = Math.floor(Math.random() * 8) * 45;
     const componentData = { 
       shapeType: targetShape, 
-      color: getRandomColors(1)[0], 
+      color: getRandomColors(1), 
       size: "medium", 
       rotation, 
       layout: "SINGLE" 
@@ -21,7 +21,7 @@ export const foundationVariants = {
     const distractors = SHAPES_POOL.filter(s => s !== targetShape).slice(0, 3);
     const answer = capitalize(targetShape);
     const questionTextTemplate = getQText(`What shape is shown in the picture?`, `Name this shape.`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context about finding a shape.`;
+    const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers/shapes MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
 
     let options = SHAPES_POOL.map(capitalize);
     let mcqOptions = 'null';
@@ -62,8 +62,8 @@ export const foundationVariants = {
 
   foundation_classify_attribute: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const useColor = Math.random() > 0.5;
-    const targetColor = getRandomColors(1)[0];
-    const targetShape = getRandomShapes(1)[0];
+    const targetColor = getRandomColors(1);
+    const targetShape = getRandomShapes(1);
     const targetValue = useColor ? targetColor : targetShape;
 
     const componentData = { 
@@ -77,7 +77,7 @@ export const foundationVariants = {
 
     const answer = "Group A";
     const questionTextTemplate = getQText(`Which group shows shapes that are ${targetValue}?`, `Which group is ${targetValue}?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers/shapes MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
 
     let options = ["Group A", "Group B", "Group C"];
     let mcqOptions = 'null';
@@ -125,7 +125,7 @@ export const foundationVariants = {
 
     const componentData = { 
       shapeType: targetShape, 
-      color: getRandomColors(1)[0], 
+      color: getRandomColors(1), 
       size: "large", 
       rotation: 0, 
       layout: "SINGLE" 
@@ -133,7 +133,7 @@ export const foundationVariants = {
 
     const answer = String(sideCount);
     const questionTextTemplate = getQText(`How many straight sides does this ${targetShape} have?`, `Number of straight sides = ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers/shapes MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
 
     let options = [answer, "1", "2", "5"];
     if (sideCount === 3) options.push("4");
@@ -177,8 +177,8 @@ export const foundationVariants = {
   },
 
   foundation_size_comparison: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const targetShape = getRandomShapes(1)[0];
-    const targetColor = getRandomColors(1)[0];
+    const targetShape = getRandomShapes(1);
+    const targetColor = getRandomColors(1);
     const askSmallest = Math.random() > 0.5;
 
     const items = [
@@ -192,7 +192,7 @@ export const foundationVariants = {
     const answer = targetItem.label;
 
     const questionTextTemplate = getQText(`Which ${targetShape} is the ${askSmallest ? 'smallest' : 'largest'}?`, `Identify the ${askSmallest ? 'smallest' : 'largest'} ${targetShape}.`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers/shapes MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
 
     let options = ["Item A", "Item B", "Item C"];
     let mcqOptions = 'null';
@@ -247,7 +247,7 @@ export const foundationVariants = {
     const answer = target.shape;
 
     const questionTextTemplate = getQText(`A ${target.name} looks like a...`, `What shape is a ${target.name}?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. Use a local name (e.g. Siti, Muthu, Ali) instead of generic names like Sam.`;
+    const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers/shapes MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
 
     let options = ["Circle", "Triangle", "Square", "Rectangle"];
     let mcqOptions = 'null';
