@@ -8,18 +8,22 @@ export async function POST(req) {
     const formData = await req.formData();
     const payloadData = Object.fromEntries(formData.entries());
     
+    console.log("=== INCOMING HITPAY WEBHOOK ===");
+    console.log("Payload:", payloadData);
+    
     const adapter = new HitPayAdapter();
 
     // Verify the payload using our adapter
-    // Note: HitPay's actual HMAC verification requires sorting keys. 
-    // For now, we trust the adapter to handle the specific logic.
     const isValid = await adapter.verifyWebhookSignature(payloadData, payloadData.hmac);
 
     if (!isValid) {
       console.error("Payment Webhook: Invalid signature detected!");
+      console.error("Received HMAC:", payloadData.hmac);
+      console.error("Salt Exists?", !!adapter.salt);
       return NextResponse.json({ error: "Unauthorized payload" }, { status: 401 });
     }
 
+    console.log("Webhook Signature VERIFIED!");
     // Process the payment status
     const { status, reference_number } = payloadData;
 

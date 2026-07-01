@@ -72,6 +72,10 @@ export class HitPayAdapter extends PaymentGateway {
       hmac.update(valuesStr);
       const generatedSignature = hmac.digest('hex');
 
+      console.log("Calculated String:", valuesStr);
+      console.log("Generated Signature:", generatedSignature);
+      console.log("Received Signature:", signature);
+
       // 5. Compare signatures
       return generatedSignature === signature;
     } catch (e) {
