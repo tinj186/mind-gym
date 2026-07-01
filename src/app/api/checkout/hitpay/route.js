@@ -21,15 +21,29 @@ export async function POST(req) {
     const amount = 29.90;
     const currency = 'SGD';
     
+    // Determine host dynamically (crucial for Vercel preview environments)
+    let host = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    try {
+      if (req.nextUrl && req.nextUrl.origin) {
+        host = req.nextUrl.origin;
+      } else if (process.env.VERCEL_URL) {
+        host = `https://${process.env.VERCEL_URL}`;
+      }
+    } catch (e) {
+      // Fallback
+    }
+    
     // Where HitPay should send them after they pay
-    const redirectUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/hub?payment=success`;
+    const redirectUrl = `${host}/hub?payment=success`;
+    const webhookUrl = `${host}/api/webhooks/payment`;
 
     // Generate the secure checkout URL
     const checkoutUrl = await adapter.createCheckoutSession({
       userId,
       amount,
       currency,
-      redirectUrl
+      redirectUrl,
+      webhookUrl
     });
 
     return NextResponse.json({ url: checkoutUrl }, { status: 200 });

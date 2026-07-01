@@ -13,7 +13,7 @@ export class HitPayAdapter extends PaymentGateway {
       : 'https://api.sandbox.hit-pay.com/v1';
   }
 
-  async createCheckoutSession({ userId, amount, currency, redirectUrl }) {
+  async createCheckoutSession({ userId, amount, currency, redirectUrl, webhookUrl }) {
     if (!this.apiKey) {
       throw new Error("HITPAY_API_KEY is missing from environment variables.");
     }
@@ -30,7 +30,7 @@ export class HitPayAdapter extends PaymentGateway {
         currency: currency,
         reference_number: `sub_${userId}_${Date.now()}`,
         redirect_url: redirectUrl,
-        webhook: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/webhooks/payment`,
+        webhook: webhookUrl || `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/webhooks/payment`,
         purpose: "LearnReps Annual Pass"
       })
     });
