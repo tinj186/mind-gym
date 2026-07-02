@@ -90,15 +90,22 @@ function LoginContent() {
             onChange={(e) => setEmail(e.target.value)}
             className="w-full p-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-blue-600 focus:bg-white outline-none transition-all text-slate-900"
           />
-          <input 
-            type="password" 
-            name="password"
-            placeholder="Password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-blue-600 focus:bg-white outline-none transition-all text-slate-900"
-          />
+          <div className="space-y-1">
+            <input 
+              type="password" 
+              name="password"
+              placeholder="Password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-blue-600 focus:bg-white outline-none transition-all text-slate-900"
+            />
+            <div className="flex justify-end">
+              <Link href="/forgot-password" className="text-xs font-bold text-blue-600 hover:underline">
+                Forgot password?
+              </Link>
+            </div>
+          </div>
           <button 
             type="submit"
             disabled={isLoading}
