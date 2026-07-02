@@ -47,7 +47,7 @@ export async function POST(req) {
     await resend.emails.send({
       from: SENDER_EMAIL,
       to: toEmail,
-      reply_to: email, // This allows the admin to just hit "Reply" and email the user back directly
+      replyTo: email, // This allows the admin to just hit "Reply" and email the user back directly
       subject: emailSubject,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
