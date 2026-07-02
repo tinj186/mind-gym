@@ -2,7 +2,8 @@ import { prisma } from '@/lib/db';
 import Link from 'next/link';
 
 export default async function VerifyEmailPage({ searchParams }) {
-  const token = searchParams.token;
+  const params = await searchParams;
+  const token = params?.token;
 
   if (!token) {
     return (
