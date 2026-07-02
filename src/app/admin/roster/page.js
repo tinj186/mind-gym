@@ -163,7 +163,14 @@ export default function UserRosterPage() {
             {users.map(user => (
               <tr key={user.id} className="hover:bg-slate-600/50 transition-colors">
                 <td className="p-4">
-                  <div className="font-bold text-white">{user.name || "Unknown"}</div>
+                  <div className="font-bold text-white flex items-center gap-2">
+                    {user.name || "Unknown"}
+                    {user.emailVerified ? (
+                      <span className="bg-emerald-900/30 text-emerald-400 text-[10px] px-1.5 py-0.5 rounded border border-emerald-800" title="Email Verified">✓ Verified</span>
+                    ) : (
+                      <span className="bg-amber-900/30 text-amber-400 text-[10px] px-1.5 py-0.5 rounded border border-amber-800" title="Email Unverified">! Unverified</span>
+                    )}
+                  </div>
                   <div className="text-sm text-slate-400">{user.email || "No email"}</div>
                   <div className="text-xs text-slate-400 mt-1 font-mono">{user.id}</div>
                 </td>

@@ -22,6 +22,7 @@ export async function GET(req) {
         id: true,
         name: true,
         email: true,
+        emailVerified: true,
         role: true,
         subscriptionStatus: true,
         studentProfiles: {
