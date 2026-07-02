@@ -4,8 +4,26 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 const SENDER_EMAIL = 'The Learn Reps <no-reply@thelearnreps.com>';
 
+const getBaseUrl = () => {
+  if (process.env.NEXTAUTH_URL && !process.env.NEXTAUTH_URL.includes('vercel.app')) {
+    return process.env.NEXTAUTH_URL; // If it's a custom domain or localhost, use it
+  }
+  // On Vercel, prioritize the actual production URL to prevent branch-specific 404s
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+  if (process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+  // Fallback to NextAuth URL even if it's a vercel URL if others are missing
+  if (process.env.NEXTAUTH_URL) {
+    return process.env.NEXTAUTH_URL;
+  }
+  return 'http://localhost:3000';
+};
+
 export const sendVerificationEmail = async (email, token) => {
-  const confirmLink = `${process.env.NEXTAUTH_URL}/verify-email?token=${token}`;
+  const confirmLink = `${getBaseUrl()}/verify-email?token=${token}`;
 
   await resend.emails.send({
     from: SENDER_EMAIL,
@@ -30,7 +48,7 @@ export const sendVerificationEmail = async (email, token) => {
 };
 
 export const sendPasswordResetEmail = async (email, token) => {
-  const resetLink = `${process.env.NEXTAUTH_URL}/reset-password?token=${token}`;
+  const resetLink = `${getBaseUrl()}/reset-password?token=${token}`;
 
   await resend.emails.send({
     from: SENDER_EMAIL,
