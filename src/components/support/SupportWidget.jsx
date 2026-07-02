@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import Link from 'next/link';
 
 export default function SupportWidget({ defaultName = '', defaultEmail = '' }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -60,12 +61,22 @@ export default function SupportWidget({ defaultName = '', defaultEmail = '' }) {
                 <h3 className="text-xl font-black text-indigo-950">Subscriber Support</h3>
                 <p className="text-xs font-bold text-indigo-900/60 uppercase tracking-widest mt-1">Priority Channel</p>
               </div>
-              <button 
-                onClick={() => setIsOpen(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-indigo-100 text-indigo-900 hover:bg-indigo-200 transition-colors"
-              >
-                ✕
-              </button>
+              <div className="flex gap-2">
+                <Link 
+                  href="/parent/settings" 
+                  onClick={() => setIsOpen(false)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-indigo-100 text-indigo-900 hover:bg-indigo-200 transition-colors text-sm"
+                  title="Account Settings"
+                >
+                  ⚙️
+                </Link>
+                <button 
+                  onClick={() => setIsOpen(false)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-indigo-100 text-indigo-900 hover:bg-indigo-200 transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             <div className="p-6">
