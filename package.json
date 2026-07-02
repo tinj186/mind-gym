@@ -20,6 +20,7 @@
     "es-toolkit": "^1.47.1",
     "eslint-config-next": "^16.2.9",
     "framer-motion": "^12.38.0",
+    "lucide-react": "^1.23.0",
     "mathlive": "^0.109.1",
     "next": "^16.2.9",
     "next-auth": "^4.24.14",
