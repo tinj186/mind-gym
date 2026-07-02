@@ -10,6 +10,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -32,21 +33,12 @@ export default function SignupPage() {
         throw new Error(data.message || 'Something went wrong');
       }
 
-      // 2. Automatically log them in after successful registration
-      const loginRes = await signIn('credentials', {
-        redirect: false,
-        email,
-        password,
-      });
-
-      if (loginRes?.error) {
-        throw new Error('Failed to log in automatically.');
-      }
-
-      // 3. Redirect to the callbackUrl or the parent portal
-      const params = new URLSearchParams(window.location.search);
-      const callback = params.get('callbackUrl') || '/hub';
-      window.location.href = callback;
+      // 2. Clear form and show success message
+      setSuccess(true);
+      setName('');
+      setEmail('');
+      setPassword('');
+      setError('');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -75,6 +67,12 @@ export default function SignupPage() {
         {error && (
           <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-medium text-center border border-red-100">
             {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="bg-green-50 text-green-700 p-4 rounded-xl text-sm font-medium text-center border border-green-200">
+            Account created successfully! Please check your email to verify your account before logging in.
           </div>
         )}
 
