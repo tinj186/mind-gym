@@ -15,20 +15,16 @@ export async function getCurrentStudentId() {
 
   const userId = session.user.id;
 
-  let profile = await prisma.studentProfile.findFirst({
-    where: { userId: userId }
+  const profile = await prisma.studentProfile.upsert({
+    where: { externalId: `ext-${userId}` },
+    update: {},
+    create: {
+      userId: userId,
+      name: session.user.name || "Student",
+      externalId: `ext-${userId}`,
+      primaryLevel: "Primary 1"
+    }
   });
-
-  if (!profile) {
-    profile = await prisma.studentProfile.create({
-      data: {
-        userId: userId,
-        name: session.user.name || "Student",
-        externalId: `ext-${userId}`,
-        primaryLevel: "Primary 1"
-      }
-    });
-  }
 
   return profile.id;
 }
