@@ -3,6 +3,8 @@ import './globals.css'; // This line is the "Power Switch" for your CSS
 
 import GlobalNavbar from '@/components/layout/GlobalNavbar';
 
+import CookieBanner from '@/components/layout/CookieBanner';
+
 export const metadata = {
   title: 'Learn Reps',
   description: 'The Ultimate Neuro-Trainer for Education.',
@@ -21,6 +23,7 @@ export default function RootLayout({ children }) {
         }} />
         <GlobalNavbar />
         {children}
+        <CookieBanner />
       </body>
     </html>
   );

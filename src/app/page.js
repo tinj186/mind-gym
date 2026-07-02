@@ -74,7 +74,7 @@ export default function PublicLandingPage() {
           The Ultimate <br/><span className="text-blue-600">Neuro-Trainer</span> for Math.
         </h1>
         <p className="text-xl text-slate-600 mb-12 max-w-2xl mx-auto font-medium print:hidden">
-          Start the journey with our complete Primary 1 Math engine. (Primary 2–6 rolling out soon). Generate syllabus-ready worksheets instantly. Want auto-marking, AI performance tracking, and the adaptive 20/60/20 algorithm? Unlock the P1 Annual Pass to The Learn Reps for S$29.90.
+          Start the journey with our complete Primary 1 Math engine. (Primary 2–6 rolling out soon). Generate syllabus-ready worksheets instantly. Want auto-marking, AI performance tracking, and the adaptive 20/60/20 algorithm? Unlock the P1 Annual Pass to The Learn Reps for S$29.90 (No hidden fees).
         </p>
 
         {/* Free Worksheet Generator Tool */}
@@ -265,7 +265,7 @@ export default function PublicLandingPage() {
                     onClick={handleCheckout}
                     className="bg-white text-slate-900 font-black px-8 py-4 rounded-xl hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.3)]"
                   >
-                    Unlock P1 Annual Pass for S$29.90
+                    Unlock P1 Annual Pass for S$29.90 <span className="text-xs font-normal opacity-80">(No hidden fees)</span>
                   </button>
                   <p className="text-xs text-slate-500 font-bold mt-4 tracking-wide uppercase">30-Day Money-Back Guarantee</p>
                 </div>

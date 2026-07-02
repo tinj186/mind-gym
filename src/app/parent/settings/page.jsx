@@ -1,11 +1,16 @@
 import ChangePasswordForm from '@/components/parent/ChangePasswordForm';
+import UpdateProfileForm from '@/components/parent/UpdateProfileForm';
 import Link from 'next/link';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 export const metadata = {
   title: 'Settings | The Learn Reps'
 };
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const session = await getServerSession(authOptions);
+
   return (
     <div className="min-h-screen bg-indigo-50/50">
       <header className="px-6 py-12 max-w-7xl mx-auto">
@@ -26,6 +31,10 @@ export default function SettingsPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 pb-16 space-y-8">
+        <UpdateProfileForm 
+          defaultName={session?.user?.name || ''} 
+          defaultEmail={session?.user?.email || ''} 
+        />
         <ChangePasswordForm />
       </main>
     </div>
