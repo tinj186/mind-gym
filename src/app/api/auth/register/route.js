@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
+import { sendVerificationEmail } from '@/lib/email';
 
 export async function POST(req) {
   try {
@@ -8,6 +10,10 @@ export async function POST(req) {
 
     if (!email || !password) {
       return NextResponse.json({ message: 'Email and password are required' }, { status: 400 });
+    }
+
+    if (password.length < 8) {
+      return NextResponse.json({ message: 'Password must be at least 8 characters long' }, { status: 400 });
     }
 
     // Check if user exists
@@ -28,12 +34,27 @@ export async function POST(req) {
         email,
         password: hashedPassword,
         name: name || null,
-        // Optional: you can set a default trial subscription status here if you want
+        // emailVerified is null by default
       },
     });
 
+    // Generate Verification Token
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    await prisma.verificationToken.create({
+      data: {
+        identifier: email,
+        token,
+        expires,
+      },
+    });
+
+    // Send the email (do this async without awaiting if it's slow, or await it to ensure it sends)
+    await sendVerificationEmail(email, token);
+
     return NextResponse.json(
-      { message: 'User created successfully', user: { id: newUser.id, email: newUser.email } },
+      { message: 'User created successfully. Please check your email to verify your account.' },
       { status: 201 }
     );
   } catch (error) {

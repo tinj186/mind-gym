@@ -123,9 +123,9 @@ export default function SignupPage() {
           <input 
             type="password" 
             name="password"
-            placeholder="Create Password"
+            placeholder="Create Password (min 8 characters)"
             required
-            minLength={6}
+            minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full p-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-blue-600 focus:bg-white outline-none transition-all text-slate-900"
