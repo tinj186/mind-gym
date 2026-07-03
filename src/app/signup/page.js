@@ -65,7 +65,7 @@ export default function SignupPage() {
           <h1 className="text-3xl font-black tracking-tighter uppercase text-slate-900">
             Learn<span className="text-blue-600">Reps</span>
           </h1>
-          <p className="mt-2 text-slate-400 font-medium uppercase text-xs tracking-widest">
+          <p className="mt-2 text-slate-700 font-bold uppercase text-xs tracking-widest">
             Create your Free Account
           </p>
         </div>
@@ -99,10 +99,10 @@ export default function SignupPage() {
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-slate-100"></div>
+            <div className="w-full border-t border-slate-300"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-white text-slate-400">or register with email</span>
+            <span className="px-4 bg-transparent text-slate-800 font-medium">or register with email</span>
           </div>
         </div>
 
@@ -144,8 +144,8 @@ export default function SignupPage() {
               onChange={(e) => setConsent(e.target.checked)}
               className="mt-1 w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
-            <label htmlFor="consent" className="text-sm text-slate-500 text-left">
-              I consent to the collection and use of my personal data for the purpose of creating and managing my account, in accordance with the <Link href="/privacy-policy" className="text-blue-600 hover:underline">Privacy Policy</Link>.
+            <label htmlFor="consent" className="text-sm text-slate-800 font-medium text-left">
+              I consent to the collection and use of my personal data for the purpose of creating and managing my account, in accordance with the <Link href="/privacy-policy" className="text-blue-600 font-bold hover:underline">Privacy Policy</Link>.
             </label>
           </div>
           <button 
@@ -157,7 +157,7 @@ export default function SignupPage() {
           </button>
         </form>
 
-        <p className="text-center text-slate-500 text-sm mt-6">
+        <p className="text-center text-slate-800 font-medium text-sm mt-6">
           Already have an account?{' '}
           <Link href="/login" className="text-blue-600 font-bold hover:underline">
             Sign in
