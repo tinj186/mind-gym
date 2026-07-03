@@ -56,8 +56,11 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
-      <div className="w-full max-w-md space-y-8 bg-white p-10 rounded-[2.5rem] shadow-xl border border-slate-100">
+    <div 
+      className="min-h-screen flex items-center justify-center p-6 bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: 'url(/assets/img/login-bg.png)' }}
+    >
+      <div className="w-full max-w-md space-y-8 bg-white/90 backdrop-blur-md p-10 rounded-[2.5rem] shadow-2xl border border-white/20">
         <div className="text-center">
           <h1 className="text-3xl font-black tracking-tighter uppercase text-slate-900">
             Learn<span className="text-blue-600">Reps</span>
