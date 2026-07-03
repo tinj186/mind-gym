@@ -26,10 +26,11 @@ export async function POST(req) {
       },
     });
 
-    // We also need to update the StudentProfile name to keep it somewhat in sync if the user is the primary student.
-    // Wait, the StudentProfile `name` is usually set to the user's name on creation. 
-    // We'll update any student profile associated with this user ID where the email/name might be relevant,
-    // though the name in StudentProfile might just be the child's name. So maybe we shouldn't touch StudentProfile.
+    // Also update the associated StudentProfile so the top bar updates
+    await prisma.studentProfile.updateMany({
+      where: { userId: session.user.id },
+      data: { name },
+    });
 
     return NextResponse.json({ success: true, message: 'Profile updated successfully' });
   } catch (error) {

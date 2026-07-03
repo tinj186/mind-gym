@@ -2,11 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 
 export default function UpdateProfileForm({ defaultName = '' }) {
   const router = useRouter();
-  const { update } = useSession();
   const [formData, setFormData] = useState({ name: defaultName });
   const [status, setStatus] = useState('idle'); // idle, loading, success, error
   const [message, setMessage] = useState('');
@@ -27,11 +25,9 @@ export default function UpdateProfileForm({ defaultName = '' }) {
 
       if (!res.ok) throw new Error(data.error || 'Failed to update profile');
       
-      // Force NextAuth session to refresh client-side with new name
-      await update({ name: formData.name });
-      
       setStatus('success');
       setMessage('Your profile has been successfully updated.');
+      
       router.refresh(); 
     } catch (err) {
       console.error(err);
