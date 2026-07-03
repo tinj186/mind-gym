@@ -44,7 +44,7 @@ function LoginContent() {
       className="min-h-screen flex items-center justify-center p-6 bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: 'url(/assets/img/login-bg.png)' }}
     >
-      <div className="w-full max-w-md space-y-8 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-2xl border border-white/30">
+      <div className="w-full max-w-md space-y-8 bg-white/40 backdrop-blur-md p-10 rounded-[2.5rem] shadow-2xl border border-white/30">
         <div className="text-center">
           <h1 className="text-3xl font-black tracking-tighter uppercase text-slate-900">
             Learn<span className="text-blue-600">Reps</span>
