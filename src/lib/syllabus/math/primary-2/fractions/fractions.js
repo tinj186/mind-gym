@@ -1,9 +1,9 @@
-import { foundationLogic } from './foundation';
-import { standardLogic } from './standard';
-import { advancedLogic } from './advanced';
+import { foundationLogic } from './fractions/foundation';
+import { standardLogic } from './fractions/standard';
+import { advancedLogic } from './fractions/advanced';
 
-export const timeBlueprint = {
-  title: 'time', // Must match subtopic exactly if dynamic
+export const fractionsBlueprint = {
+  title: 'fractions', // Must match subtopic exactly if dynamic
   variants: {
     // Add variants here later
     // e.g., 'standard_variant_name': 'description'

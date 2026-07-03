@@ -1,9 +1,9 @@
-import { foundationLogic } from './foundation';
-import { standardLogic } from './standard';
-import { advancedLogic } from './advanced';
+import { foundationLogic } from './numbers-to-1000/foundation';
+import { standardLogic } from './numbers-to-1000/standard';
+import { advancedLogic } from './numbers-to-1000/advanced';
 
-export const massBlueprint = {
-  title: 'mass', // Must match subtopic exactly if dynamic
+export const numbersTo1000Blueprint = {
+  title: 'numbersTo1000', // Must match subtopic exactly if dynamic
   variants: {
     // Add variants here later
     // e.g., 'standard_variant_name': 'description'

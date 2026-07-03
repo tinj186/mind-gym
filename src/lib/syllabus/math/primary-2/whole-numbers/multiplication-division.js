@@ -1,9 +1,9 @@
-import { foundationLogic } from './foundation';
-import { standardLogic } from './standard';
-import { advancedLogic } from './advanced';
+import { foundationLogic } from './multiplication-division/foundation';
+import { standardLogic } from './multiplication-division/standard';
+import { advancedLogic } from './multiplication-division/advanced';
 
-export const lengthBlueprint = {
-  title: 'length', // Must match subtopic exactly if dynamic
+export const multiplicationDivisionBlueprint = {
+  title: 'multiplicationDivision', // Must match subtopic exactly if dynamic
   variants: {
     // Add variants here later
     // e.g., 'standard_variant_name': 'description'

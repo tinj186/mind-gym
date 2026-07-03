@@ -1,9 +1,9 @@
-import { foundationLogic } from './foundation';
-import { standardLogic } from './standard';
-import { advancedLogic } from './advanced';
+import { foundationLogic } from './mass/foundation';
+import { standardLogic } from './mass/standard';
+import { advancedLogic } from './mass/advanced';
 
-export const moneyBlueprint = {
-  title: 'money', // Must match subtopic exactly if dynamic
+export const massBlueprint = {
+  title: 'mass', // Must match subtopic exactly if dynamic
   variants: {
     // Add variants here later
     // e.g., 'standard_variant_name': 'description'

@@ -1,9 +1,9 @@
-import { foundationLogic } from './foundation';
-import { standardLogic } from './standard';
-import { advancedLogic } from './advanced';
+import { foundationLogic } from './addition-subtraction/foundation';
+import { standardLogic } from './addition-subtraction/standard';
+import { advancedLogic } from './addition-subtraction/advanced';
 
-export const numbersTo1000Blueprint = {
-  title: 'numbersTo1000', // Must match subtopic exactly if dynamic
+export const additionSubtractionBlueprint = {
+  title: 'additionSubtraction', // Must match subtopic exactly if dynamic
   variants: {
     // Add variants here later
     // e.g., 'standard_variant_name': 'description'

@@ -1,9 +1,9 @@
-import { foundationLogic } from './foundation';
-import { standardLogic } from './standard';
-import { advancedLogic } from './advanced';
+import { foundationLogic } from './length/foundation';
+import { standardLogic } from './length/standard';
+import { advancedLogic } from './length/advanced';
 
-export const additionSubtractionBlueprint = {
-  title: 'additionSubtraction', // Must match subtopic exactly if dynamic
+export const lengthBlueprint = {
+  title: 'length', // Must match subtopic exactly if dynamic
   variants: {
     // Add variants here later
     // e.g., 'standard_variant_name': 'description'

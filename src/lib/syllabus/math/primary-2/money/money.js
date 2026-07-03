@@ -1,9 +1,9 @@
-import { foundationLogic } from './foundation';
-import { standardLogic } from './standard';
-import { advancedLogic } from './advanced';
+import { foundationLogic } from './money/foundation';
+import { standardLogic } from './money/standard';
+import { advancedLogic } from './money/advanced';
 
-export const fractionsBlueprint = {
-  title: 'fractions', // Must match subtopic exactly if dynamic
+export const moneyBlueprint = {
+  title: 'money', // Must match subtopic exactly if dynamic
   variants: {
     // Add variants here later
     // e.g., 'standard_variant_name': 'description'
