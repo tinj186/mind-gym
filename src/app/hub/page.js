@@ -30,50 +30,60 @@ function timeAgo(dateInput) {
 }
 
 export default async function OverallView() {
-  const studentId = await getCurrentStudentId() || "default-student";
-  let stats;
-  
   try {
-    stats = await getStudentStatsAction(studentId);
-  } catch (error) {
-    stats = { avgStrength: 0, recentLogs: [] };
-  }
-
-  const profile = await prisma.studentProfile.findUnique({ where: { id: studentId } });
-  const currentLevel = profile?.primaryLevel || "";
-  const theme = getThemeForLevel(currentLevel);
-
-  const lastLogDate = stats?.recentLogs?.[0]?.createdAt;
-  const lastSessionText = lastLogDate ? timeAgo(lastLogDate) : 'Never practiced';
-  const progressScore = stats?.summary?.avgStrength || 0;
-
-  const subjects = [
-    {
-      id: 'math-p1',
-      name: 'Primary 1 Math',
-      icon: '📐',
-      status: 'Available Now',
-      progress: progressScore,
-      lastSession: lastSessionText,
-      isActive: true,
+    const studentId = await getCurrentStudentId() || "default-student";
+    let stats;
+    
+    try {
+      stats = await getStudentStatsAction(studentId);
+    } catch (error) {
+      stats = { avgStrength: 0, recentLogs: [] };
     }
-  ];
 
-  return (
-    <main className="max-w-7xl mx-auto px-6 py-12">
-      {/* Welcome Section */}
-      <section className="mb-12">
-        <h1 className="text-4xl font-black text-slate-900 tracking-tight">THE TRAINING GROUND</h1>
-        <p className="text-slate-500 font-medium">Select a wing to begin your neural conditioning.</p>
-      </section>
+    const profile = await prisma.studentProfile.findUnique({ where: { id: studentId } });
+    const currentLevel = profile?.primaryLevel || "";
+    const theme = getThemeForLevel(currentLevel);
 
-      {/* Subjects Grid */}
-      <HubGridClient 
-        subjects={subjects} 
-        themePrimaryBg={theme.primaryBg} 
-        themePrimaryColor={theme.primaryColor} 
-        isP6={theme === getThemeForLevel('Primary 6')} 
-      />
-    </main>
-  );
+    const lastLogDate = stats?.recentLogs?.[0]?.createdAt;
+    const lastSessionText = lastLogDate ? timeAgo(lastLogDate) : 'Never practiced';
+    const progressScore = stats?.summary?.avgStrength || 0;
+
+    const subjects = [
+      {
+        id: 'math-p1',
+        name: 'Primary 1 Math',
+        icon: '📐',
+        status: 'Available Now',
+        progress: progressScore,
+        lastSession: lastSessionText,
+        isActive: true,
+      }
+    ];
+
+    return (
+      <main className="max-w-7xl mx-auto px-6 py-12">
+        {/* Welcome Section */}
+        <section className="mb-12">
+          <h1 className="text-4xl font-black text-slate-900 tracking-tight">THE TRAINING GROUND</h1>
+          <p className="text-slate-500 font-medium">Select a wing to begin your neural conditioning.</p>
+        </section>
+
+        {/* Subjects Grid */}
+        <HubGridClient 
+          subjects={subjects} 
+          themePrimaryBg={theme.primaryBg} 
+          themePrimaryColor={theme.primaryColor} 
+          isP6={theme === getThemeForLevel('Primary 6')} 
+        />
+      </main>
+    );
+  } catch (globalError) {
+    return (
+      <div className="p-10 bg-red-100 text-red-900">
+        <h1>Server Error Caught!</h1>
+        <pre>{globalError.message}</pre>
+        <pre>{globalError.stack}</pre>
+      </div>
+    );
+  }
 }
