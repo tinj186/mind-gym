@@ -33,7 +33,6 @@ export default async function SettingsPage() {
       <main className="max-w-7xl mx-auto px-6 pb-16 space-y-8">
         <UpdateProfileForm 
           defaultName={session?.user?.name || ''} 
-          defaultEmail={session?.user?.email || ''} 
         />
         <ChangePasswordForm />
       </main>

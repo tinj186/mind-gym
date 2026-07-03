@@ -12,20 +12,10 @@ export async function POST(req) {
     }
 
     const body = await req.json();
-    const { name, email } = body;
+    const { name } = body;
 
-    if (!name || !email) {
+    if (!name) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
-
-    // If email is changing, check if the new email is already in use
-    if (email !== session.user.email) {
-      const existingUser = await prisma.user.findUnique({
-        where: { email },
-      });
-      if (existingUser) {
-        return NextResponse.json({ error: 'Email already in use by another account' }, { status: 400 });
-      }
     }
 
     // Update the user
@@ -33,7 +23,6 @@ export async function POST(req) {
       where: { email: session.user.email },
       data: {
         name,
-        email,
       },
     });
 

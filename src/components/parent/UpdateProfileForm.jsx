@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
-export default function UpdateProfileForm({ defaultName = '', defaultEmail = '' }) {
+export default function UpdateProfileForm({ defaultName = '' }) {
   const router = useRouter();
-  const [formData, setFormData] = useState({ name: defaultName, email: defaultEmail });
+  const { update } = useSession();
+  const [formData, setFormData] = useState({ name: defaultName });
   const [status, setStatus] = useState('idle'); // idle, loading, success, error
   const [message, setMessage] = useState('');
 
@@ -25,9 +27,12 @@ export default function UpdateProfileForm({ defaultName = '', defaultEmail = '' 
 
       if (!res.ok) throw new Error(data.error || 'Failed to update profile');
       
+      // Force NextAuth session to refresh client-side with new name
+      await update({ name: formData.name });
+      
       setStatus('success');
       setMessage('Your profile has been successfully updated.');
-      router.refresh(); // Refresh to update session data if possible
+      router.refresh(); 
     } catch (err) {
       console.error(err);
       setStatus('error');
@@ -64,18 +69,6 @@ export default function UpdateProfileForm({ defaultName = '', defaultEmail = '' 
             onChange={(e) => setFormData({...formData, name: e.target.value})}
             className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-base rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block p-4 font-medium outline-none transition-all"
           />
-        </div>
-        
-        <div>
-          <label className="block text-xs font-bold text-indigo-900/60 uppercase tracking-widest mb-2">Email Address</label>
-          <input 
-            type="email" 
-            required
-            value={formData.email}
-            onChange={(e) => setFormData({...formData, email: e.target.value})}
-            className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-base rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block p-4 font-medium outline-none transition-all"
-          />
-          <p className="text-xs text-slate-400 font-medium mt-2">Note: Changing your email will update your login credentials.</p>
         </div>
 
         <button 
