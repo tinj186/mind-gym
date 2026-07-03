@@ -180,7 +180,7 @@ export default function AdminSettingsPage() {
 
                 {backupStatus.exists && (
                   <div className="pt-4 border-t-2 border-slate-100 flex justify-between items-center text-[10px] font-mono text-slate-400 uppercase tracking-widest">
-                    <span>File Path: /public/backups/questions_backup.jsonl.gz</span>
+                    <span>Database Vault: public.DataFortressBackup (master_backup)</span>
                     <span>Last Sync: {new Date(backupStatus.lastGenerated).toLocaleString()}</span>
                   </div>
                 )}

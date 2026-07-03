@@ -1,26 +1,23 @@
 "use server";
 import { prisma } from "@/lib/db";
-import fsPromises from "fs/promises";
-import fs from "fs";
-import path from "path";
-import zlib from "zlib";
-import readline from "readline";
-
-const BACKUP_PATH = path.join(process.cwd(), "public", "backups", "questions_backup.jsonl.gz");
-const META_PATH = path.join(process.cwd(), "public", "backups", "questions_backup.meta.json");
 
 export async function getBackupStatusAction() {
   try {
-    const stats = await fsPromises.stat(BACKUP_PATH);
-    const metaContent = await fsPromises.readFile(META_PATH, 'utf-8');
-    const metaData = JSON.parse(metaContent);
+    const backup = await prisma.dataFortressBackup.findUnique({
+      where: { id: "master_backup" }
+    });
+    
     const dbCount = await prisma.questionBank.count();
+
+    if (!backup) {
+      return { exists: false, dbCount, backupCount: 0 };
+    }
 
     return {
       exists: true,
-      lastGenerated: stats.mtime,
-      fileSize: (stats.size / 1024).toFixed(2) + " KB",
-      backupCount: metaData.count || 0,
+      lastGenerated: backup.updatedAt,
+      fileSize: backup.sizeKB.toFixed(2) + " KB",
+      backupCount: backup.count,
       dbCount: dbCount
     };
   } catch (error) {
@@ -31,50 +28,31 @@ export async function getBackupStatusAction() {
 
 export async function triggerJsonDumpAction() {
   try {
-    await fsPromises.mkdir(path.dirname(BACKUP_PATH), { recursive: true });
-    
-    let totalExported = 0;
-    const BATCH_SIZE = 1000;
-    
-    const writeStream = fs.createWriteStream(BACKUP_PATH);
-    const gzip = zlib.createGzip();
-    gzip.pipe(writeStream);
-
-    let cursor = null;
-    let hasMore = true;
-
-    while (hasMore) {
-      const batch = await prisma.questionBank.findMany({
-        take: BATCH_SIZE,
-        skip: cursor ? 1 : 0,
-        cursor: cursor ? { id: cursor } : undefined,
-        orderBy: { id: 'asc' }
-      });
-
-      if (batch.length === 0) {
-        hasMore = false;
-        break;
-      }
-
-      for (const record of batch) {
-        gzip.write(JSON.stringify(record) + '\n');
-        totalExported++;
-      }
-
-      cursor = batch[batch.length - 1].id;
-    }
-
-    // Await stream completion properly
-    await new Promise((resolve, reject) => {
-      gzip.end();
-      writeStream.on('finish', resolve);
-      writeStream.on('error', reject);
-      gzip.on('error', reject);
+    const questions = await prisma.questionBank.findMany({
+      orderBy: { id: 'asc' }
     });
 
-    await fsPromises.writeFile(META_PATH, JSON.stringify({ count: totalExported }));
+    const serializedData = JSON.stringify(questions);
     
-    return { success: true, count: totalExported };
+    // Calculate approximate size in KB
+    const sizeKB = Buffer.byteLength(serializedData, 'utf8') / 1024;
+
+    await prisma.dataFortressBackup.upsert({
+      where: { id: "master_backup" },
+      update: {
+        data: serializedData,
+        count: questions.length,
+        sizeKB: sizeKB
+      },
+      create: {
+        id: "master_backup",
+        data: serializedData,
+        count: questions.length,
+        sizeKB: sizeKB
+      }
+    });
+
+    return { success: true, count: questions.length };
   } catch (error) {
     console.error("Dump failed:", error);
     return { success: false, error: error.message };
@@ -83,39 +61,24 @@ export async function triggerJsonDumpAction() {
 
 export async function restoreJsonBackupAction() {
   try {
-    const readStream = fs.createReadStream(BACKUP_PATH);
-    const gunzip = zlib.createGunzip();
-    
-    // We pipe the read stream to gunzip, then to readline
-    readStream.pipe(gunzip);
-
-    const rl = readline.createInterface({
-      input: gunzip,
-      crlfDelay: Infinity
+    const backup = await prisma.dataFortressBackup.findUnique({
+      where: { id: "master_backup" }
     });
 
-    let buffer = [];
-    let totalRestored = 0;
-    const BATCH_SIZE = 500;
-
-    for await (const line of rl) {
-      if (!line.trim()) continue;
-      buffer.push(JSON.parse(line));
-
-      if (buffer.length >= BATCH_SIZE) {
-        const result = await prisma.questionBank.createMany({
-          data: buffer,
-          skipDuplicates: true,
-        });
-        totalRestored += result.count;
-        buffer = [];
-      }
+    if (!backup) {
+      throw new Error("No backup found in database.");
     }
 
-    // Flush any remaining
-    if (buffer.length > 0) {
+    const questions = JSON.parse(backup.data);
+
+    // Batch insert to avoid hitting transaction limits if it gets huge
+    const BATCH_SIZE = 500;
+    let totalRestored = 0;
+
+    for (let i = 0; i < questions.length; i += BATCH_SIZE) {
+      const batch = questions.slice(i, i + BATCH_SIZE);
       const result = await prisma.questionBank.createMany({
-        data: buffer,
+        data: batch,
         skipDuplicates: true,
       });
       totalRestored += result.count;

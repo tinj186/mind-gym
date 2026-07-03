@@ -178,3 +178,11 @@ model SupportTicket {
   status    String   @default("OPEN") // OPEN, RESOLVED
   createdAt DateTime @default(now())
 }
+
+model DataFortressBackup {
+  id        String   @id @default("master_backup")
+  data      Json     // The complete serialized backup of the QuestionBank
+  count     Int      // Number of questions in the backup
+  sizeKB    Float    @default(0) // Approximate size in KB
+  updatedAt DateTime @updatedAt
+}
