@@ -24,15 +24,6 @@ export default function CookieBanner() {
     setIsVisible(false);
   };
 
-  const handleManagePreferences = () => {
-    // In a full implementation, this would open a modal with specific toggles
-    // For now, we'll treat it as a reject all/essential only for simplicity,
-    // or you could build out a full preference center.
-    alert("Preferences center coming soon. Defaulting to essential cookies only.");
-    localStorage.setItem('cookie-consent', 'essential');
-    setIsVisible(false);
-  };
-
   if (!isVisible) return null;
 
   return (
@@ -45,12 +36,6 @@ export default function CookieBanner() {
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
-          <button 
-            onClick={handleManagePreferences}
-            className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white border border-slate-700 rounded-lg hover:bg-slate-800 transition-colors"
-          >
-            Manage preferences
-          </button>
           <button 
             onClick={handleRejectAll}
             className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white border border-slate-700 rounded-lg hover:bg-slate-800 transition-colors"
