@@ -32,7 +32,7 @@ export default function CookieBanner() {
         <div className="flex-1 text-slate-300 text-sm">
           <h3 className="text-white font-bold mb-2">Cookie Consent</h3>
           <p>
-            We use cookies to enhance your browsing experience, serve personalized ads or content, and analyze our traffic. By clicking "Accept all", you consent to our use of cookies. Read more in our <a href="/privacy-policy" className="text-blue-400 hover:underline">Privacy Policy</a>.
+            We use cookies to enhance your browsing experience and analyze our traffic. By clicking "Accept all", you consent to our use of cookies. Read more in our <a href="/privacy-policy" className="text-blue-400 hover:underline">Privacy Policy</a>.
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
