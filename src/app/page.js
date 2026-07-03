@@ -71,13 +71,13 @@ export default function PublicLandingPage() {
       {/* Hero Section */}
       <main className="max-w-4xl mx-auto px-6 py-16 text-center">
         <h1 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter leading-tight mb-6 print:hidden">
-          Build Flawless Mastery. <br/><span className="text-blue-600">Eliminate "Bad Form".</span>
+          Build Flawless <span className="text-blue-600">Math</span> Mastery. <br/>Eliminate "Bad Form".
         </h1>
         <p className="text-xl text-slate-600 mb-6 max-w-2xl mx-auto font-medium print:hidden">
           Learning shouldn’t be a guessing game. Our adaptive platform acts as an intelligent coach—isolating specific learning bottlenecks, identifying exact cognitive "defect codes," and generating precise daily workouts to build the right neural pathways.
         </p>
         <p className="text-sm text-slate-500 mb-12 max-w-xl mx-auto print:hidden">
-          Experience the Universal Engine. Generate syllabus-aligned Primary 1 worksheets instantly, or unlock automated marking and granular performance tracking with the Annual Pass for S$29.90 (No hidden fees).
+          Experience the Universal Engine. Generate syllabus-aligned Primary 1 Math worksheets instantly (Primary 2–6 coming soon!), or unlock automated marking and granular performance tracking with the Annual Pass for S$29.90 (No hidden fees).
         </p>
 
         {/* Free Worksheet Generator Tool */}
