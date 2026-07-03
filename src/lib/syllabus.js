@@ -78,49 +78,103 @@ export const SYLLABUS_DATA = {
   "Primary 2": [
     {
       strand: "Number and Algebra",
-      topic: "Whole Numbers",
+      topic: "Numbers to 1000",
       subtopics: [
-        { name: "Numbers up to 1000", blueprint: "Count in tens/hundreds. Notation (hundreds, tens, ones). Compare/order, patterns, odd/even numbers.", visualType: "PLACE_VALUE_CHART", vocabulary: ["hundreds", "odd", "even", "pattern"] },
-        { name: "Addition and Subtraction", blueprint: "Algorithms up to 3 digits. Mental calc of 3-digit and ones/tens/hundreds. NEVER generate True/False questions. Always replace the final answer value in the diagram with a \"?\" string.", visualType: "PART_WHOLE", vocabulary: ["algorithm", "mental calculation", "hundreds"] },
-        { name: "Multiplication and Division", blueprint: "Tables 2, 3, 4, 5, 10. Use of ÷. Relationship between mult/div. Mental calc within these tables.", visualType: "PART_WHOLE", vocabulary: ["divide", "multiplication tables", "relationship"] }
+        { name: "Counting", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.STRUCTURED.label, QUESTION_TYPES.MCQ.label], blueprint: "Counting to 1000.", visualType: "PLACE_VALUE_CHART", vocabulary: ["hundreds", "tens", "ones"] },
+        { name: "Place values (hundreds, tens, ones)", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.STRUCTURED.label, QUESTION_TYPES.MCQ.label], blueprint: "Place values to 1000.", visualType: "PLACE_VALUE_CHART", vocabulary: ["hundreds", "tens", "ones", "place value"] },
+        { name: "Comparing", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.STRUCTURED.label, QUESTION_TYPES.MCQ.label], blueprint: "Comparing numbers to 1000.", visualType: "PLACE_VALUE_CHART", vocabulary: ["greater", "smaller", "compare"] },
+        { name: "Ordering", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.STRUCTURED.label, QUESTION_TYPES.MCQ.label], blueprint: "Ordering numbers.", visualType: "NUMBER_LINE", vocabulary: ["order", "arrange"] },
+        { name: "Number patterns", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.STRUCTURED.label, QUESTION_TYPES.MCQ.label], blueprint: "Number patterns.", visualType: "NUMBER_LINE", vocabulary: ["pattern", "next"] }
       ]
     },
     {
       strand: "Number and Algebra",
-      topic: "Fractions",
+      topic: "Addition & Subtraction",
       subtopics: [
-        { name: "Fraction of a Whole", blueprint: "Part of a whole. Notation. Compare/order unit/like fractions (denominators <= 12).", visualType: "FRACTION_BAR", vocabulary: ["fraction", "numerator", "denominator", "unit fraction", "like fraction"] },
-        { name: "Addition and Subtraction", blueprint: "Add/sub like fractions within one whole (denominators <= 12).", visualType: "FRACTION_BAR", vocabulary: ["add", "subtract", "like fractions", "whole"] }
+        { name: "Algorithms within 1000", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.STRUCTURED.label, QUESTION_TYPES.MCQ.label], blueprint: "Algorithms within 1000.", visualType: "GROUPING_WORKSPACE", vocabulary: ["add", "subtract"] },
+        { name: "Mental calculation", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.STRUCTURED.label, QUESTION_TYPES.MCQ.label], blueprint: "Mental calculation.", visualType: "GROUPING_WORKSPACE", vocabulary: ["mental"] },
+        { name: "2-step word problems", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.STRUCTURED.label, QUESTION_TYPES.MCQ.label], blueprint: "2-step word problems.", visualType: "BAR_MODEL", vocabulary: ["altogether", "left"] }
+      ]
+    },
+    {
+      strand: "Number and Algebra",
+      topic: "Multiplication & Division",
+      subtopics: [
+        { name: "2, 3, 4, 5, and 10 times tables", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.STRUCTURED.label, QUESTION_TYPES.MCQ.label], blueprint: "Times tables.", visualType: "GROUPING_WORKSPACE", vocabulary: ["multiply", "divide"] },
+        { name: "Concept of sharing equally and grouping", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.STRUCTURED.label, QUESTION_TYPES.MCQ.label], blueprint: "Sharing and grouping.", visualType: "GROUPING_WORKSPACE", vocabulary: ["share", "group"] }
+      ]
+    },
+    {
+      strand: "Measurement and Geometry",
+      topic: "Length",
+      subtopics: [
+        { name: "Measuring in meters (m) and centimeters (cm)", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.STRUCTURED.label, QUESTION_TYPES.MCQ.label], blueprint: "Measuring length.", visualType: "RULER_TOOL", vocabulary: ["meter", "m", "centimeter", "cm"] },
+        { name: "Estimating", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.STRUCTURED.label, QUESTION_TYPES.MCQ.label], blueprint: "Estimating length.", visualType: "RULER_TOOL", vocabulary: ["estimate"] },
+        { name: "Comparing", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.STRUCTURED.label, QUESTION_TYPES.MCQ.label], blueprint: "Comparing length.", visualType: "BAR_MODEL", vocabulary: ["longer", "shorter"] },
+        { name: "Drawing lines", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.STRUCTURED.label, QUESTION_TYPES.MCQ.label], blueprint: "Drawing lines.", visualType: "RULER_TOOL", vocabulary: ["draw", "line"] }
+      ]
+    },
+    {
+      strand: "Measurement and Geometry",
+      topic: "Mass",
+      subtopics: [
+        { name: "Measuring in kilograms (kg) and grams (g)", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.STRUCTURED.label, QUESTION_TYPES.MCQ.label], blueprint: "Measuring mass.", visualType: "WEIGHING_SCALE", vocabulary: ["kilogram", "kg", "gram", "g"] },
+        { name: "Reading scales", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.STRUCTURED.label, QUESTION_TYPES.MCQ.label], blueprint: "Reading scales.", visualType: "WEIGHING_SCALE", vocabulary: ["read", "scale"] },
+        { name: "Comparing masses", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.STRUCTURED.label, QUESTION_TYPES.MCQ.label], blueprint: "Comparing masses.", visualType: "WEIGHING_SCALE", vocabulary: ["heavier", "lighter"] }
+      ]
+    },
+    {
+      strand: "Measurement and Geometry",
+      topic: "Volume",
+      subtopics: [
+        { name: "Measuring in liters (l)", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.STRUCTURED.label, QUESTION_TYPES.MCQ.label], blueprint: "Measuring volume.", visualType: "BEAKER_TOOL", vocabulary: ["liter", "l"] },
+        { name: "Comparing capacities", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.STRUCTURED.label, QUESTION_TYPES.MCQ.label], blueprint: "Comparing capacity.", visualType: "BEAKER_TOOL", vocabulary: ["more", "less", "capacity"] },
+        { name: "Basic word problems", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.STRUCTURED.label, QUESTION_TYPES.MCQ.label], blueprint: "Word problems for volume.", visualType: "BEAKER_TOOL", vocabulary: ["volume"] }
       ]
     },
     {
       strand: "Number and Algebra",
       topic: "Money",
       subtopics: [
-        { name: "Money", blueprint: "Dollars and cents. Decimal notation. Compare 2-3 amounts. Convert decimal to cents and vice versa.", visualType: "COMPARISON", vocabulary: ["decimal notation", "convert", "cents", "dollars"] }
+        { name: "Dollars and cents", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.STRUCTURED.label, QUESTION_TYPES.MCQ.label], blueprint: "Dollars and cents.", visualType: "SINGAPORE_MONEY", vocabulary: ["dollar", "$", "cent", "¢"] },
+        { name: "Converting", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.STRUCTURED.label, QUESTION_TYPES.MCQ.label], blueprint: "Converting money.", visualType: "SINGAPORE_MONEY", vocabulary: ["convert"] },
+        { name: "Adding/subtracting money", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.STRUCTURED.label, QUESTION_TYPES.MCQ.label], blueprint: "Adding/subtracting money.", visualType: "SINGAPORE_MONEY", vocabulary: ["add", "subtract"] },
+        { name: "Exact change", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.STRUCTURED.label, QUESTION_TYPES.MCQ.label], blueprint: "Exact change.", visualType: "SINGAPORE_MONEY", vocabulary: ["change"] }
+      ]
+    },
+    {
+      strand: "Number and Algebra",
+      topic: "Fractions",
+      subtopics: [
+        { name: "Equal parts", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.MCQ.label], blueprint: "Equal parts.", visualType: "FRACTION_CIRCLE", vocabulary: ["equal parts"] },
+        { name: "Naming fractions", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.MCQ.label], blueprint: "Naming fractions.", visualType: "FRACTION_BAR", vocabulary: ["fraction", "numerator", "denominator"] },
+        { name: "Comparing like fractions", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.MCQ.label], blueprint: "Comparing like fractions.", visualType: "FRACTION_BAR", vocabulary: ["compare"] },
+        { name: "Adding/subtracting like fractions", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.MCQ.label], blueprint: "Adding/subtracting like fractions.", visualType: "FRACTION_BAR", vocabulary: ["add", "subtract"] }
       ]
     },
     {
       strand: "Measurement and Geometry",
-      topic: "Measurement",
+      topic: "Time",
       subtopics: [
-        { name: "Length, Mass and Volume", blueprint: "Measure in m, kg/g, litres. Use m, g, kg, l. Compare/order lengths, masses, volumes.", visualType: "WEIGHING_SCALE", vocabulary: ["metre", "kilogram", "gram", "litre", "mass", "volume"] },
-        { name: "Time", blueprint: "Tell time to the minute. Measure in hours/mins. Convert hours/mins to mins and vice versa.", visualType: "CLOCK", vocabulary: ["convert", "minute", "hour"] }
+        { name: "Reading/writing time to 5 minutes", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.MCQ.label], blueprint: "Reading/writing time.", visualType: "ANALOG_CLOCK", vocabulary: ["time", "minute", "hour"] },
+        { name: "Duration (hours/mins)", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.MCQ.label], blueprint: "Duration.", visualType: "ANALOG_CLOCK", vocabulary: ["duration"] },
+        { name: "a.m./p.m.", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.MCQ.label], blueprint: "a.m. and p.m.", visualType: "ANALOG_CLOCK", vocabulary: ["a.m.", "p.m."] }
       ]
     },
     {
       strand: "Measurement and Geometry",
-      topic: "Geometry",
+      topic: "2D & 3D Shapes",
       subtopics: [
-        { name: "2D Shapes", blueprint: "Make/complete patterns with 2D shapes by size, shape, colour, orientation.", visualType: "SHAPE", vocabulary: ["pattern", "orientation", "attribute"] },
-        { name: "3D Shapes", blueprint: "Identify/name/describe cube, cuboid, cone, cylinder, sphere.", visualType: "SHAPE", vocabulary: ["cube", "cuboid", "cone", "cylinder", "sphere", "3D shape"] }
+        { name: "Properties of straight/curve lines", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.MCQ.label], blueprint: "Properties of lines.", visualType: "SHAPE_CANVAS", vocabulary: ["straight", "curve", "line"] },
+        { name: "Forming 2D shapes", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.MCQ.label], blueprint: "Forming 2D shapes.", visualType: "SHAPE_CANVAS", vocabulary: ["shape", "2D"] },
+        { name: "Identifying 3D shapes", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.MCQ.label], blueprint: "Identifying 3D shapes.", visualType: "SHAPE_CANVAS", vocabulary: ["shape", "3D"] }
       ]
     },
     {
       strand: "Statistics",
-      topic: "Data Representation",
+      topic: "Picture Graphs",
       subtopics: [
-        { name: "Picture Graphs with Scales", blueprint: "Read and interpret data from picture graphs with scales.", visualType: "GRAPH", vocabulary: ["scale", "picture graph", "interpret"] }
+        { name: "Reading/interpreting graphs with scales", allowedTypes: [QUESTION_TYPES.SHORT_QUESTION.label, QUESTION_TYPES.MCQ.label], blueprint: "Reading graphs.", visualType: "PICTURE_GRAPH", vocabulary: ["picture graph", "interpret", "scale"] }
       ]
     }
   ],
