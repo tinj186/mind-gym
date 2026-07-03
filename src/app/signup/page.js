@@ -79,19 +79,6 @@ export default function SignupPage() {
           </div>
         )}
 
-        <div className="flex flex-col gap-2">
-          <div className="flex items-start gap-3 mb-2 px-2">
-            <input
-              type="checkbox"
-              id="google-consent"
-              checked={consent}
-              onChange={(e) => setConsent(e.target.checked)}
-              className="mt-1 w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-            />
-            <label htmlFor="google-consent" className="text-xs text-slate-500">
-              I consent to the collection and use of my personal data according to the <Link href="/privacy-policy" className="text-blue-600 hover:underline">Privacy Policy</Link>.
-            </label>
-          </div>
           <button 
             onClick={handleGoogleLogin}
             disabled={!consent}
@@ -155,7 +142,7 @@ export default function SignupPage() {
               onChange={(e) => setConsent(e.target.checked)}
               className="mt-1 w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
-            <label htmlFor="consent" className="text-sm text-slate-500">
+            <label htmlFor="consent" className="text-sm text-slate-500 text-left">
               I consent to the collection and use of my personal data for the purpose of creating and managing my account, in accordance with the <Link href="/privacy-policy" className="text-blue-600 hover:underline">Privacy Policy</Link>.
             </label>
           </div>
