@@ -93,7 +93,6 @@ export default function SignupPage() {
             </svg>
             Sign up with Google
           </button>
-        </div>
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
