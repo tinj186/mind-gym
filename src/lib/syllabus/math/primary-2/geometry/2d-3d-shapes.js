@@ -2,8 +2,8 @@ import { foundationLogic } from './2d-3d-shapes/foundation';
 import { standardLogic } from './2d-3d-shapes/standard';
 import { advancedLogic } from './2d-3d-shapes/advanced';
 
-export const 2d3dShapesBlueprint = {
-  title: '2d3dShapes', // Must match subtopic exactly if dynamic
+export const d3dShapesBlueprint = {
+  title: 'd3dShapes', // Must match subtopic exactly if dynamic
   variants: {
     // Add variants here later
     // e.g., 'standard_variant_name': 'description'
