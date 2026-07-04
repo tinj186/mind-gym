@@ -6,6 +6,7 @@ export default function NumberPattern({ data, attempts }) {
   // Hyper-resilient schema check: support both 'sequence' and 'items' keys
   const sequence = data?.sequence || data?.items || [];
   const rule = data?.rule || '';
+  const direction = data?.direction || 'forward'; // 'forward' or 'backward'
   const hideVisual = data?.hideVisual === true;
   const isQuestion = attempts === 0;
 
@@ -27,7 +28,9 @@ export default function NumberPattern({ data, attempts }) {
                   {rule}
                 </span>
               )}
-              <div className="text-slate-300 font-black text-3xl leading-none px-1">➔</div>
+              <div className="text-slate-300 font-black text-3xl leading-none px-1">
+                {direction === 'backward' ? '⬅' : '➔'}
+              </div>
             </div>
           )}
         </React.Fragment>

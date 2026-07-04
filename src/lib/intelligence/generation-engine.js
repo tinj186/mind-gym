@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getBestModel, modelCooldowns, getDynamicDelays } from '@/lib/ai-config';
 import { getBaseSystemInstructions, parseAiResponse, processAiQuestion, getSyllabusPrompt } from '@/lib/intelligence/generation-utils';
 import { getLevelStrategy } from '@/lib/intelligence/level-strategies';
-import { SYLLABUS_DATA } from '@/lib/syllabus';
+import { SYLLABUS_DATA, DIFFICULTY_DEFINITIONS } from '@/lib/syllabus';
 import { blueprintRegistry } from '@/lib/syllabus/index.js';
 import { prisma } from '@/lib/db';
 
@@ -12,12 +12,20 @@ const AI_TIMEOUT_MS = 25000;
 export class GenerationEngine {
   async generateQuestions({ quantity, level, topic, subtopic, type, difficulty, heuristic, strand, variant }) {
     const count = Math.min(quantity || 1, 10);
-    const safeDifficulty = String(difficulty || "foundation").toLowerCase();
+    const safeDifficulty = Object.keys(DIFFICULTY_DEFINITIONS).find(
+      k => k.toLowerCase() === (difficulty || "Standard").toLowerCase()
+    ) || "Standard";
+
+    // ENFORCE SYLLABUS DEFINITION: Advanced difficulty strictly forbids Short Questions (Pure Math)
+    if (safeDifficulty === 'Advanced' && type === 'Short Question') {
+      throw new Error("Syllabus Violation: Advanced difficulty strictly forbids Pure Math / Short Questions. Please generate Structured Questions or MCQs for Advanced difficulty.");
+    }
+    
     const safeSubtopic = String(subtopic || "").trim().toLowerCase();
     
     // 1. Get Level Specific Strategy
     const levelStrategy = getLevelStrategy(level, type);
-    let baseSystemInstructions = getBaseSystemInstructions(level) + "\n\nLEVEL CONSTRAINTS:\n" + levelStrategy + "\n\nCRITICAL RULE FOR MULTI_STEP_INPUT: If asked to inject an array of steps, you MUST formulate the mathematical equations (e.g., '17 - 6 = 11'). Step labels should be like 'Working' or 'Equation' (e.g. expectedAnswer: '17-6=11') and 'Final Answer' (e.g. expectedAnswer: '11'). Break down complex problems into multiple working steps. ALWAYS output a valid JSON array of objects!";
+    let baseSystemInstructions = getBaseSystemInstructions(level, difficulty) + "\n\nLEVEL CONSTRAINTS:\n" + levelStrategy + "\n\nCRITICAL RULE FOR MULTI_STEP_INPUT: If asked to inject an array of steps, you MUST formulate the mathematical equations (e.g., '17 - 6 = 11'). Step labels should be like 'Working' or 'Equation' (e.g. expectedAnswer: '17-6=11') and 'Final Answer' (e.g. expectedAnswer: '11'). Break down complex problems into multiple working steps. ALWAYS output a valid JSON array of objects!";
     const isVisualTask = safeSubtopic.includes('shape') || safeSubtopic.includes('pattern') || (safeSubtopic === 'time' && (safeDifficulty === 'foundation' || safeDifficulty === 'standard'));
     if (type === 'Structured') {
       if (isVisualTask) {
@@ -28,6 +36,15 @@ export class GenerationEngine {
     }
 
     // 2. Resolve Blueprint
+    
+    let moeDescription = "";
+    const levelData = SYLLABUS_DATA[level] || [];
+    const topicEntry = levelData.find(t => String(t.topic).toLowerCase() === String(topic).toLowerCase());
+    const subtopicEntry = topicEntry?.subtopics?.find(s => String(s.name).toLowerCase() === safeSubtopic);
+    if (subtopicEntry && subtopicEntry.moeDescription) {
+      moeDescription = subtopicEntry.moeDescription;
+    }
+    
     const blueprintId = `${level}-${topic}-${subtopic}`;
     const blueprintMeta = blueprintRegistry[blueprintId] || Object.values(blueprintRegistry).find(bp => String(bp.title).toLowerCase() === safeSubtopic);
 
@@ -37,7 +54,7 @@ export class GenerationEngine {
     if (blueprintMeta && typeof blueprintMeta.generate === 'function') {
       parsedQuestions = await this.generateWithHybridBlueprint({ 
         count, variant, safeDifficulty, type, blueprintMeta, baseSystemInstructions, 
-        context: { level, topic, subtopic, heuristic, difficulty, gradeLevel: level === 'Primary 1' ? 'P1' : level, type, strand }
+        context: { level, topic, subtopic, heuristic, difficulty, gradeLevel: level === 'Primary 1' ? 'P1' : level, type, strand, moeDescription }
       });
     } else {
       // Fallback to bulk legacy generation
@@ -68,11 +85,12 @@ export class GenerationEngine {
 
     
     for (let i = 0; i < count; i++) {
+      const difficultyPrefix = safeDifficulty.toLowerCase();
       let loopVariant = variant || 'visual_line';
-      const isValidForTier = blueprintMeta?.variants?.hasOwnProperty(loopVariant) && loopVariant.startsWith(safeDifficulty);
+      const isValidForTier = blueprintMeta?.variants?.hasOwnProperty(loopVariant) && loopVariant.startsWith(difficultyPrefix);
 
       if (!isValidForTier || loopVariant === 'visual_line') {
-        const matchingVariants = Object.keys(blueprintMeta.variants || {}).filter(k => k.startsWith(safeDifficulty));
+        const matchingVariants = Object.keys(blueprintMeta.variants || {}).filter(k => k.startsWith(difficultyPrefix));
         if (matchingVariants.length > 0) {
           // Stateful LRU Selection: sort by lowest usage count
           matchingVariants.sort((a, b) => (usageTracker[a] || 0) - (usageTracker[b] || 0));

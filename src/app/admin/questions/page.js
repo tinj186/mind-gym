@@ -44,6 +44,9 @@ export default async function AdminQuestionsPage({ searchParams }) {
           q.difficulty === d
         );
 
+        // Enforce strict syllabus mapping: Advanced difficulty strictly forbids Pure Math / Short Questions
+        if (d === 'Advanced' && s.type === 'Short Question') return;
+
         const pending = matches.filter(m => !m.isApproved).length;
         const approved = matches.filter(m => m.isApproved).length;
         
@@ -67,7 +70,10 @@ export default async function AdminQuestionsPage({ searchParams }) {
   const distinctLevels = GET_DISTINCT('level');
   const distinctTopics = GET_DISTINCT('topic', { level, type }); 
   const distinctSubtopics = GET_DISTINCT('subtopic', { level, topic, type }); 
-  const distinctTypes = GET_DISTINCT('type', { level, topic, subtopic });
+  const distinctTypes = GET_DISTINCT('type', { level, topic, subtopic }).filter(t => {
+    if (difficulty === 'Advanced' && t === 'Short Question') return false;
+    return true;
+  });
   const distinctDifficulties = DEFAULT_DIFFICULTIES;
 
   return (

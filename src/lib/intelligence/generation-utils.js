@@ -1,4 +1,5 @@
 import { UniversalQuestionSchema } from '@/app/api/admin/generate/questionSchema';
+import { DIFFICULTY_DEFINITIONS } from '@/lib/syllabus';
 
 /**
  * Builds a specialized prompt for the AI based on Singapore MOE Syllabus constraints.
@@ -34,13 +35,14 @@ SOLUTION STEP RULES:
 `;
 
   const instructions = [];
-  instructions.push(`DIFFICULTY TIERS (Singapore MOE Style):
-    - Foundation: Basic mastery. Direct computation, single-step logic.
-    - Standard: Grade level expectation. Multi-step word problems.
-    - Advanced: Complex logic, high-order heuristics, or non-routine integration.`);
+  instructions.push((() => {
+    const diffKey = String(difficulty).charAt(0).toUpperCase() + String(difficulty).slice(1).toLowerCase();
+    return DIFFICULTY_DEFINITIONS[diffKey] ? `DIFFICULTY CONSTRAINT (${diffKey}):\n` + JSON.stringify(DIFFICULTY_DEFINITIONS[diffKey], null, 2) : '';
+  })());
 
   if (blueprintData) {
     instructions.push(`MANDATORY BLUEPRINT: ${blueprintData.blueprint}`);
+    if (blueprintData.moeDescription) instructions.push(`MANDATORY MOE CONTEXT: ${blueprintData.moeDescription}`);
     instructions.push(`MANDATORY VOCABULARY: Use these words: ${blueprintData.vocabulary.join(', ')}`);
     instructions.push(`VISUAL STRATEGY: Ensure modelData uses ${blueprintData.visualType} logic.`);
   }
@@ -78,14 +80,14 @@ SOLUTION STEP RULES:
 /**
  * Returns age-appropriate system instructions for the AI generation path.
  */
-export function getBaseSystemInstructions(level) {
+export function getBaseSystemInstructions(level, difficulty) {
   const p1Constraints = level === 'Primary 1' ? `
     - Sentences must be extremely short (maximum 10-12 words per sentence).
     - Use simple, active-voice sentence structures.
     - Avoid technical math terms in hints (avoid "subtract", "variable", "equation").
     - Solutions must use straightforward step structures centered around visual models like "Number Bonds".` : '';
 
-  return `
+  const systemInstructions = `
 You are an expert primary school math content generator specializing in the Singapore Math curriculum.
 You are generating content strictly for a student at the following educational level: ${level}.
 
@@ -231,19 +233,31 @@ export function processAiQuestion(q, context) {
     if (prismaModelData.items === undefined) delete prismaModelData.items;
     if (prismaModelData.hideVisual === undefined) delete prismaModelData.hideVisual;
 
-    return {
-      ...cleanQ,
-      level, topic, subtopic: subtopic || "", heuristic: heuristic || "Standard",
-      difficulty, gradeLevel, subject: "Math",
-      type: type === 'MCQ' ? 'MCQ' : (type.toLowerCase().includes('short') ? 'Short Question' : 'Structured'),
-      strand: strand || blueprintMeta?.strand || "Number and Algebra",
-      isApproved: false,
-      finalAnswer: typeof (q.finalAnswer || qContent.finalAnswer) === 'object' ? JSON.stringify(q.finalAnswer || qContent.finalAnswer) : String(q.finalAnswer || qContent.finalAnswer || ""),
-      options: (meta?.type === 'MCQ' || type === 'MCQ') ? parseAiOptions(q.options || qContent.options) : null,
-      modelData: prismaModelData,
-      question: cleanQ.question || questionText || qContent.questionText || q.question || "Problem data missing",
-      solution: cleanQ.solution || solutionSteps || qContent.solutionSteps || q.solution || "No solution provided",
-      hint: qContent.hint || q.hint || q.conceptualHint || null
-    };
-  }
+      let rawSolution = cleanQ.solution || solutionSteps || qContent.solutionSteps || q.solution || "No solution provided";
+      if (Array.isArray(rawSolution)) {
+        rawSolution = rawSolution.map((s, i) => {
+          if (typeof s === 'object') return `${i + 1}. ` + Object.entries(s).map(([k, v]) => `${k}: ${v}`).join(', ');
+          return `${i + 1}. ${String(s)}`;
+        }).join('\n');
+      } else if (typeof rawSolution === 'object') {
+        rawSolution = JSON.stringify(rawSolution);
+      } else {
+        rawSolution = String(rawSolution);
+      }
+
+      return {
+        ...cleanQ,
+        level, topic, subtopic: subtopic || "", heuristic: heuristic || "Standard",
+        difficulty, gradeLevel, subject: "Math",
+        type: type === 'MCQ' ? 'MCQ' : (type.toLowerCase().includes('short') ? 'Short Question' : 'Structured'),
+        strand: strand || blueprintMeta?.strand || "Number and Algebra",
+        isApproved: false,
+        finalAnswer: typeof (q.finalAnswer || qContent.finalAnswer) === 'object' ? JSON.stringify(q.finalAnswer || qContent.finalAnswer) : String(q.finalAnswer || qContent.finalAnswer || ""),
+        options: (meta?.type === 'MCQ' || type === 'MCQ') ? parseAiOptions(q.options || qContent.options) : null,
+        modelData: prismaModelData,
+        question: cleanQ.question || questionText || qContent.questionText || q.question || "Problem data missing",
+        solution: rawSolution,
+        hint: qContent.hint || q.hint || q.conceptualHint || null
+      };
+    }
 }

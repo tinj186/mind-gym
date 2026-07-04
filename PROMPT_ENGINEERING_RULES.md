@@ -182,6 +182,10 @@ Structured Question (Word Problem): A complex, descriptive narrative. Requires m
 
 MCQ: A hybrid of Short and Structured logic, formatted with 4 distinct answer options.
 
+III. The Notation Variant Exception
+Protocol: Not all "Structured" questions are word problems. The system identifies pure mathematical logic tasks (e.g., "34 = 30 + ____") via an `isNotationVariant` flag.
+Execution: If a variant is flagged as `isNotationVariant`, the system explicitly overrides the standard "Structured" instruction (which normally forces a localized word problem) and defaults to a direct mathematical equation. This prevents strict variants from contradicting the overarching format rules, which would otherwise cause the AI to hallucinate word problems into pure notation exercises.
+
 [ADDENDUM: PHASE 2 STRATEGIC EVOLUTION]
 1. Business & Pricing Model
 Annual Subscription Anchor: The platform operates on a single-tier, annual subscription of S$29.90.

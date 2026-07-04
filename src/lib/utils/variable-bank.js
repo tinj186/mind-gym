@@ -6,12 +6,62 @@
  */
 
 // ----------------------------------------------------------------------------
+export const CONTEXT_TIERS = {
+  LOWER_BLOCK: { // P1-P2: Familiar and tangible
+    NAMES: ['Siti', 'Ali', 'Mei Ling', 'Muthu', 'Ahmad', 'Wei Ling'],
+    SETTINGS: ['playground', 'HDB void deck', 'school canteen', 'East Coast Park'],
+    GENERAL: [
+      { item: 'stickers', icon: '⭐' },
+      { item: 'marbles', icon: '🔮' },
+      { item: 'erasers', icon: '🧽' },
+      { item: 'pencils', icon: '✏️' },
+      { item: 'magnets', icon: '🧲' }
+    ],
+    FOOD: [
+      { item: 'curry puffs', icon: '🥟' },
+      { item: 'satay sticks', icon: '🍢' },
+      { item: 'kueh lapis', icon: '🍰' },
+      { item: 'fishballs', icon: '🍡' }
+    ]
+  },
+  MIDDLE_BLOCK: { // P3-P4: Broader community settings
+    NAMES: ['Ravi', 'Jun Jie', 'Fatimah', 'Deepak', 'Kumar', 'Grace'],
+    SETTINGS: ['MRT station', 'wet market', 'community club', 'public library', 'Science Centre'],
+    GENERAL: [
+      { item: 'ang pows', icon: '🧧' },
+      { item: 'storybooks', icon: '📚' },
+      { item: 'game cards', icon: '🃏' },
+      { item: 'bottles', icon: '🧴' }
+    ],
+    FOOD: [
+      { item: 'mangosteens', icon: '🍎' },
+      { item: 'dumplings', icon: '🥟' },
+      { item: 'durians', icon: '🍈' }
+    ]
+  },
+  UPPER_BLOCK: { // P5-P6: Professional/Abstract
+    NAMES: ['Mr. Lim', 'Mrs. Teo', 'Manager Kumar', 'Officer Ravi', 'Dr. Siti'],
+    SETTINGS: ['Changi Business Park', 'PSA Port', 'Jurong Island', 'Stock Exchange', 'Warehouse'],
+    GENERAL: [
+      { item: 'vouchers', icon: '🎫' },
+      { item: 'shipping containers', icon: '📦' },
+      { item: 'investment shares', icon: '📈' },
+      { item: 'parcels', icon: '📦' }
+    ],
+    FOOD: [
+      { item: 'mooncakes', icon: '🥮' },
+      { item: 'bento sets', icon: '🍱' }
+    ]
+  }
+};
+
+
 // 1. NAMES
 // ----------------------------------------------------------------------------
 export const NAMES_POOL = [
-  'Wei Ling', 'Siti', 'Ahmad', 'Muthu', 'Bala', 'Kumar', 
-  'Mei Hua', 'Fatimah', 'Ali', 'Wei Ming', 'Ravi', 'Nurul', 
-  'Mei', 'Meiling', 'John'
+  ...CONTEXT_TIERS.LOWER_BLOCK.NAMES,
+  ...CONTEXT_TIERS.MIDDLE_BLOCK.NAMES,
+  ...CONTEXT_TIERS.UPPER_BLOCK.NAMES
 ];
 
 export const getRandomNames = (count = 1) => {
@@ -117,3 +167,27 @@ export const getOrdinalWord = (num) => {
   // num is 1-indexed for ordinals (1 = first)
   return ORDINAL_WORDS[num - 1] || `${num}th`;
 };
+
+
+export const emojiObjects = [
+  { name: 'apples', icon: '🍎' }, { name: 'cars', icon: '🚗' }, { name: 'stars', icon: '⭐' }, 
+  { name: 'balls', icon: '⚽' }, { name: 'cats', icon: '🐱' }, { name: 'dogs', icon: '🐶' }, 
+  { name: 'rabbits', icon: '🐰' }, { name: 'books', icon: '📚' }, { name: 'pencils', icon: '✏️' }, 
+  { name: 'trees', icon: '🌳' }, { name: 'flowers', icon: '🌸' }, { name: 'leaves', icon: '🍃' }, 
+  { name: 'butterflies', icon: '🦋' }, { name: 'birds', icon: '🐦' }, { name: 'fish', icon: '🐟' }, 
+  { name: 'pizzas', icon: '🍕' }, { name: 'burgers', icon: '🍔' }, { name: 'cookies', icon: '🍪' }, 
+  { name: 'cakes', icon: '🍰' }, { name: 'candies', icon: '🍬' }, { name: 'balloons', icon: '🎈' }, 
+  { name: 'presents', icon: '🎁' }, { name: 'houses', icon: '🏠' }, { name: 'buses', icon: '🚌' }, 
+  { name: 'trains', icon: '🚆' }, { name: 'airplanes', icon: '✈️' }, { name: 'boats', icon: '⛵' }, 
+  { name: 'clocks', icon: '🕰️' }, { name: 'phones', icon: '📱' }, { name: 'computers', icon: '💻' }, 
+  { name: 'keys', icon: '🔑' }, { name: 'umbrellas', icon: '☂️' }, { name: 'sunflowers', icon: '🌻' }, 
+  { name: 'strawberries', icon: '🍓' }, { name: 'grapes', icon: '🍇' }, { name: 'bananas', icon: '🍌' }, 
+  { name: 'cherries', icon: '🍒' }, { name: 'ice creams', icon: '🍦' }, { name: 'cups', icon: '☕' }, 
+  { name: 'hats', icon: '🎩' }, { name: 'shoes', icon: '👞' }, { name: 'socks', icon: '🧦' }, 
+  { name: 'shirts', icon: '👕' }, { name: 'pants', icon: '👖' }, { name: 'dresses', icon: '👗' }, 
+  { name: 'rings', icon: '💍' }, { name: 'crowns', icon: '👑' }, { name: 'diamonds', icon: '💎' }, 
+  { name: 'hearts', icon: '❤️' }, { name: 'stars', icon: '✨' }, { name: 'moons', icon: '🌙' }, 
+  { name: 'suns', icon: '☀️' }, { name: 'clouds', icon: '☁️' }, { name: 'snowflakes', icon: '❄️' }, 
+  { name: 'fire', icon: '🔥' }, { name: 'water drops', icon: '💧' }, { name: 'leaves', icon: '🍂' }, 
+  { name: 'mushrooms', icon: '🍄' }, { name: 'cactuses', icon: '🌵' }, { name: 'palm trees', icon: '🌴' }
+];
