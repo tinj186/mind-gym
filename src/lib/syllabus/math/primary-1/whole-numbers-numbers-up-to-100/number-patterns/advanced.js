@@ -32,17 +32,15 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     const localName = getRandomNames(1);
     const questionTextTemplate = getQText(`What is the missing number in this growing pattern?`, `Find the missing number: ${sequence[0]}, ${sequence[1]}, ${sequence[2]}, ${sequence[3]}, ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a short (2-sentence maximum), varied Singaporean math story context. Use the name ${localName}. Use themes of things getting larger, spreading further apart, or jumping higher (e.g., hopping on numbered lily pads, arranging queue tickets, stacking numbered blocks, or reading pages). End the story by asking the student to figure out the missing number. Do NOT mention the numbers or jump logic.`;
-
+    
     return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol. ${formatInstructions} 
-      ${storyInstruction}
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story. Keep the exact questionText provided. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol. ${formatInstructions}
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
-          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "questionText": ${JSON.stringify(questionTextTemplate)},
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
           "defectMap": ${defectMap ? JSON.stringify(defectMap) : (typeof answer === 'string' && !isNaN(parseInt(answer)) ? JSON.stringify({ [String(parseInt(answer) + 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) - 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) + 10)]: "CARELESS_CALCULATION", [typeof wrongOpAnswer !== 'undefined' ? wrongOpAnswer : '9999']: "CONFUSED_OPERATION" }) : 'null')},
           "hint": "The jumps between numbers are getting larger each time.",
@@ -85,17 +83,15 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     const localName = getRandomNames(1);
     const questionTextTemplate = getQText(`What is the missing number in these mixed patterns?`, `Find the missing number: ${items.join(', ')}`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a short (2-sentence maximum), varied Singaporean math story context. Use the name ${localName}. Use themes of two different things taking turns (e.g., alternating red and blue cards, or two friends taking turns). End the story by asking the student to figure out the missing number. Do NOT mention the dual patterns.`;
-
+    
     return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol. ${formatInstructions}
-      ${storyInstruction}
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story. Keep the exact questionText provided. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol. ${formatInstructions}
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
-          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "questionText": ${JSON.stringify(questionTextTemplate)},
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
           "defectMap": ${defectMap ? JSON.stringify(defectMap) : (typeof answer === 'string' && !isNaN(parseInt(answer)) ? JSON.stringify({ [String(parseInt(answer) + 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) - 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) + 10)]: "CARELESS_CALCULATION", [typeof wrongOpAnswer !== 'undefined' ? wrongOpAnswer : '9999']: "CONFUSED_OPERATION" }) : 'null')},
           "hint": "Try looking at every second number to see if you can find two patterns.",
@@ -140,17 +136,15 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     const localName = getRandomNames(1);
     const questionTextTemplate = getQText(`What is the missing number in this shrinking pattern?`, `Find the missing number: ${sequence[0]}, ${sequence[1]}, ${sequence[2]}, ${sequence[3]}, ?`);
-    const storyInstruction = isShort ? "" : `STRICT: Replace the "[STORY]" placeholder in "questionText" with a short (2-sentence maximum), varied Singaporean math story context. Use the name ${localName}. Use themes of things getting smaller, dropping down, or running out. End the story by asking the student to figure out the missing number. Do NOT mention the numbers or jump logic.`;
-
+    
     return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol. ${formatInstructions}
-      ${storyInstruction}
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story. Keep the exact questionText provided. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol. ${formatInstructions}
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
-          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "questionText": ${JSON.stringify(questionTextTemplate)},
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
           "defectMap": ${defectMap ? JSON.stringify(defectMap) : (typeof answer === 'string' && !isNaN(parseInt(answer)) ? JSON.stringify({ [String(parseInt(answer) + 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) - 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) + 10)]: "CARELESS_CALCULATION", [typeof wrongOpAnswer !== 'undefined' ? wrongOpAnswer : '9999']: "CONFUSED_OPERATION" }) : 'null')},
           "hint": "The jumps between numbers are getting larger, but the numbers are getting smaller.",
@@ -185,14 +179,13 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
 
     return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol. ${formatInstructions}
-      STRICT: Replace the "[STORY]" placeholder in "questionText" with a 1-sentence Singaporean math story context. DO NOT reveal the specific number ${step} in the story.
-
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story. Keep the exact questionText provided. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol. ${formatInstructions}
+      
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
-          "questionText": "[STORY] What number is missing in this pattern?",
+          "questionText": "What number is missing in this pattern?",
           "options": ${isMCQ ? JSON.stringify(options) : 'null'},
           "defectMap": ${defectMap ? JSON.stringify(defectMap) : (typeof answer === 'string' && !isNaN(parseInt(answer)) ? JSON.stringify({ [String(parseInt(answer) + 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) - 1)]: "CARELESS_CALCULATION", [String(parseInt(answer) + 10)]: "CARELESS_CALCULATION", [typeof wrongOpAnswer !== 'undefined' ? wrongOpAnswer : '9999']: "CONFUSED_OPERATION" }) : 'null')},
           "hint": "Check the difference between the first two numbers.",
@@ -233,7 +226,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
 
     return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol. ${formatInstructions}
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story. Keep the exact questionText provided. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol. ${formatInstructions}
       STRICT: This is a text-only question. Provide a direct mathematical question that includes the number sequence. Do NOT use names, items, or stories. Focus on the alternating jump logic.
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
@@ -314,7 +307,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
 
     return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol. ${formatInstructions}
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story. Keep the exact questionText provided. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol. ${formatInstructions}
       STRICT: This is a visual number pattern question. Provide a direct, varied, and professional mathematical question to identify the missing number '?' in the sequence: ${items.join(', ')}. Do NOT use names (e.g., Ali), items (e.g., stickers), or story contexts. Focus strictly on logic and pattern identification. Do NOT convert the numerical rules into story actions (e.g., "gets more", "gives away").
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):

@@ -42,29 +42,26 @@ export const comparingOrderingBlueprint = {
     foundation_compare_two: "Identify the greater or smaller of two 2-digit numbers.",
     foundation_greatest_three: "Identify the greatest number from a set of 3.",
     foundation_smallest_three: "Identify the smallest number from a set of 3.",
-    foundation_next_number: "Identify the number that comes just after a given number.",
-    foundation_before_number: "Identify the number that comes just before a given number.", // Kept as is
+    foundation_greater_than_target: "Identify a number from a set that is greater than a target number.",
+    foundation_smaller_than_target: "Identify a number from a set that is smaller than a target number.",
 
     standard_ordering_asc: "Order 4 numbers from smallest to greatest.", // Renamed
     standard_ordering_desc: "Order 4 numbers from greatest to smallest.", // Renamed
     standard_between_bounds: "Identify a number that falls between two given bounds.", // Renamed
-    standard_clue_comparison: "Solve a simple word problem comparing 3 quantities.", // Renamed
-    standard_missing_seq_asc: "Identify a missing number in a +1 ascending sequence.",
-    standard_missing_seq_desc: "Identify a missing number in a -1 descending sequence.",
+    standard_clue_comparison: "Solve a word problem to find the greatest or smallest amount from clues.", // Renamed
     standard_greatest_four: "Identify the greatest number from a set of 4.",
     standard_smallest_four: "Identify the smallest number from a set of 4.",
-    standard_ten_more_compare: "Compare '10 more than X' with another number.",
-    standard_ten_less_compare: "Compare '10 less than X' with another number.",
+    standard_ten_more_compare: "Compare a number that is '10 more' than a base to another number.",
+    standard_ten_less_compare: "Compare a number that is '10 less' than a base to another number.",
 
-    advanced_greatest_from_digits: "Form the greatest 2-digit number using given digits.", // Renamed
-    advanced_relative_logic: "Deduce the order of 3 amounts based on relative 'more than/less than' clues.",
-    advanced_sequence_skip_counting: "Identify a missing number in a skip-counting pattern (by 2s, 5s, or 10s).",
-    advanced_smallest_from_digits: "Form the smallest 2-digit number from given digits that is greater than a specific value.", // Renamed
-    advanced_swapped_digits_difference: "Find the difference between a number and the number formed by swapping its digits.",
-    advanced_logic_puzzle_order: "Order 3 characters based on relative abstract clues (e.g., A is less than B).",
-    advanced_mystery_number_clues: "Deduce a mystery number using bounds and the sum of its digits.",
-    advanced_extreme_inequality: "Identify the greatest number that is smaller than a complex regrouped expression.",
-    advanced_net_value_comparison: "Determine the final value after a number undergoes a series of regrouped 'more than' and 'less than' changes (e.g., Start with 4 tens, add 15 ones, then take away 1 ten)."
+    advanced_greatest_from_digits: "Form the greatest 2-digit number from 3 given digits.", // Renamed
+    advanced_relative_logic: "Order 3 amounts based on a relative math word problem.",
+    advanced_smallest_from_digits: "Form the smallest 2-digit number greater than a threshold using 3 digits.", // Renamed
+    advanced_swapped_digits_difference: "Find the difference between a number and its swapped-digit version.",
+    advanced_logic_puzzle_order: "Determine the order of 3 people based on multiple logical constraints.",
+    advanced_mystery_number_clues: "Find a mystery 2-digit number given its range and digit sum.",
+    advanced_extreme_inequality: "Find the greatest number smaller than a regrouped tens/ones expression.",
+    advanced_net_value_comparison: "Calculate and compare a starting value after adding/subtracting extra tens."
   },
 
   // 3. GENERATION ENGINE
@@ -90,7 +87,7 @@ export const comparingOrderingBlueprint = {
     const zodType = isMCQ ? 'MCQ' : isShort ? 'SHORT_QUESTION' : 'STRUCTURED';
     const zodDiff = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
     const level = 'Primary 1';
-    const topic = 'Whole Numbers';
+    const topic = 'Whole Numbers - Numbers up to 100';
 
     // Logic: Identify if this is a notation-only variant (no word problems/stories)
     const isNotationVariant = !activeVariant.includes('word') && !activeVariant.includes('clue') && !activeVariant.includes('logic');
@@ -114,7 +111,6 @@ export const comparingOrderingBlueprint = {
     const funIcons = ['⚽', '🏀', '⭐', '🚗', '🍎', '🥕', '🍪', '🍬', '🎈', '🧸', '🥟', '🍢', '🍡'];
     const selectedIcon = itemData?.icon || funIcons[Math.floor(Math.random() * funIcons.length)];
 
-    let formatInstructions = isShort ? 'CRITICAL: NEVER ask the student to "show working" or "write working" in the question text.' : '';
     const hintProtocol = `\nCRITICAL HINT PROTOCOL: You MUST provide a conceptual "hint" field.
 Forbidden: "Choose 15," "It's the smallest one."
 Required: Point to place value or relative clues.
@@ -122,12 +118,11 @@ Example: "Compare the tens place first. Which number has more tens?" or "If A is
 
     const visualProtocol = `\nSTRICT VISUAL PROTOCOL: For the "visualItems" array and any "COMPARE_OBJECTS" icons, you MUST use the emoji: "${selectedIcon || '⭐'}". Do not pick any other emoji. DO NOT use emojis inside "NUMBER_CARDS" items.`;
 
-    // Only provide creative instructions for actual stories/logic puzzles
-    if (isStructure || (isMCQ && !isNotationVariant)) {
-      formatInstructions = `CRITICAL: For the "questionText" string, write a clear localized word problem.${hintProtocol}${visualProtocol}`;
-    } else {
-      formatInstructions = `${hintProtocol}`;
-    }
+    let formatInstructions = isMCQ
+      ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}${visualProtocol}`
+      : isStructure
+        ? `Format as Structured Question. The "options" field in your JSON should be null.${hintProtocol}${visualProtocol}`
+        : `Format as Short Answer. The "options" field in your JSON should be null. CRITICAL: NEVER ask the student to "show working" or "write working" in the question text.${hintProtocol}${visualProtocol}`;
 
     // Pass calculated hideVisual to sub-modules
     // We hide visuals for notation questions in Short/MCQ modes because text is explicit

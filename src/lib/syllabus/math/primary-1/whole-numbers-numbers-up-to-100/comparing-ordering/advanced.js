@@ -114,56 +114,6 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
   }
 
-  if (activeVariant === 'advanced_sequence_skip_counting') {
-    const steps = [2, 5, 10];
-    const step = steps[Math.floor(Math.random() * steps.length)];
-    const start = Math.floor(Math.random() * 40) + 10;
-    const sequence = [start, start + step, start + 2*step, start + 3*step];
-    const missingIdx = Math.floor(Math.random() * 2) + 1;
-    const answer = String(sequence[missingIdx]);
-    const displaySeq = [...sequence];
-    displaySeq[missingIdx] = "?";
-    let mcqOptions = 'null';
-    let defectMapJSON = 'null';
-    if (isMCQ) {
-      let options = Array.from(new Set([String(sequence[missingIdx] - step), answer, String(sequence[missingIdx] + step), String(sequence[missingIdx] + 1)])).slice(0, 4);
-      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
-      options = options.sort(() => Math.random() - 0.5);
-      mcqOptions = JSON.stringify(options);
-      
-      const defectMap = {
-        [String(sequence[missingIdx] - step)]: "CONFUSED_OPERATION",
-        [String(sequence[missingIdx] + 1)]: "CONCEPTUAL_ERROR"
-      };
-      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
-      defectMapJSON = JSON.stringify(defectMap);
-    }
-
-    return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT rewrite "questionText" into a story unless replacing the [STORY] placeholder. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.
-      ${formatInstructions}
-
-      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
-      {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
-        "content": {
-          "questionText": "What is the missing number in the pattern? ${displaySeq.join(', ')}",
-          "options": ${mcqOptions},
-          "defectMap": ${defectMapJSON},
-          "hint": "Check how much the numbers are increasing by each time.",
-          "finalAnswer": "${answer}",
-          "solutionSteps": "1. Look at the numbers: ${sequence[0]}, ${sequence[1]}...\\n2. Each jump is +${step}.\\n3. ${sequence[missingIdx - 1]} + ${step} = ${answer}."
-        },
-        "visualEngine": {
-          "componentToRender": "NUMBER_PATTERN",
-          "componentData": { "sequence": ${JSON.stringify(displaySeq.map(String))}, "rule": "+${step}" }
-        },
-        "inputRequirement": { "inputType": "${inputType}" }
-      }`,
-      metadata: { difficulty, steps: 3, logic: "sequence_skip", hideVisual: hideVisual }
-    };
-  }
-
   if (activeVariant === 'advanced_smallest_from_digits') { // Renamed
     const digits = [];
     while(digits.length < 3) {

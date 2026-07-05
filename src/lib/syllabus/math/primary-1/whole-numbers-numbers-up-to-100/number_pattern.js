@@ -101,7 +101,7 @@ export const numberPatternBlueprint = {
     const zodType = isMCQ ? 'MCQ' : isShort ? 'SHORT_QUESTION' : 'STRUCTURED';
     const zodDiff = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
     const level = 'Primary 1';
-    const topic = 'Whole Numbers';
+    const topic = 'Whole Numbers - Numbers up to 100';
 
     // Helper to dynamically strip English words for short questions
     const getQText = (words, equation) => isShort ? equation : words;

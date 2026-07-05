@@ -110,7 +110,7 @@ export default function QuestionTable({ data }) {
                 </button>
                 
                 <Link 
-                  href={`/admin/questions/review?level=${row.level}&topic=${row.topic}&subtopic=${row.subtopic || ''}&type=${row.type}&difficulty=${row.difficulty}&approved=false`}
+                  href={`/admin/questions/review?level=${encodeURIComponent(row.level)}&topic=${encodeURIComponent(row.topic)}&subtopic=${encodeURIComponent(row.subtopic || '')}&type=${encodeURIComponent(row.type)}&difficulty=${encodeURIComponent(row.difficulty)}&approved=false`}
                   className="bg-amber-100 text-amber-600 px-2 py-1 rounded hover:bg-amber-200 transition-colors inline-block"
                   title="Review Pending Questions"
                 >
@@ -118,7 +118,7 @@ export default function QuestionTable({ data }) {
                 </Link>
 
                 <Link 
-                  href={`/admin/questions/review?level=${row.level}&topic=${row.topic}&subtopic=${row.subtopic || ''}&type=${row.type}&difficulty=${row.difficulty}&approved=true`}
+                  href={`/admin/questions/review?level=${encodeURIComponent(row.level)}&topic=${encodeURIComponent(row.topic)}&subtopic=${encodeURIComponent(row.subtopic || '')}&type=${encodeURIComponent(row.type)}&difficulty=${encodeURIComponent(row.difficulty)}&approved=true`}
                   className="bg-green-100 text-green-600 px-2 py-1 rounded hover:bg-green-200 transition-colors inline-block"
                   title="View Approved Questions"
                 >

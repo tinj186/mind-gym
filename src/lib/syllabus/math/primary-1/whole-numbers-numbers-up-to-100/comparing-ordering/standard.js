@@ -40,7 +40,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const solutionSteps = getQText(`Comparing the tens and ones, the correct order from ${targetWord} is ${answer}.`, answer);
 
     return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_ordering question. You MUST write the word problem into "questionText". DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.\n\n MATH CONSTRAINTS:\n - Topic: Ordering Numbers\n - Numbers: ${nums.join(', ')}\n - Final Answer MUST be exactly: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):\n ${JSON.stringify({
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a standard_ordering question. DO NOT rewrite "questionText" into a story. Keep the exact questionText provided. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.\n\n MATH CONSTRAINTS:\n - Topic: Ordering Numbers\n - Numbers: ${nums.join(', ')}\n - Final Answer MUST be exactly: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):\n ${JSON.stringify({
         meta: commonMeta,
         content: {
           questionText: questionText,
@@ -154,100 +154,6 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         inputRequirement: { inputType: inputType }
       })}`,
       metadata: { difficulty, steps: 2, logic: "compare_word", hideVisual: true }
-    };
-  }
-
-  if (activeVariant === 'standard_missing_seq_asc') {
-    const start = Math.floor(Math.random() * 70) + 10;
-    const sequence = [start, start + 1, start + 2, start + 3];
-    const missingIdx = Math.floor(Math.random() * 2) + 1;
-    const answer = String(sequence[missingIdx]);
-    const displaySeq = [...sequence];
-    displaySeq[missingIdx] = "?";
-    
-    let options = null;
-    let defectMap = null;
-    if (isMCQ) {
-      options = Array.from(new Set([String(sequence[missingIdx] - 1), answer, String(sequence[missingIdx] + 1), String(start + 10)])).slice(0, 4);
-      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
-      options = options.sort(() => Math.random() - 0.5);
-      
-      defectMap = {
-        [String(sequence[missingIdx] - 1)]: "CONFUSED_OPERATION",
-        [String(start + 10)]: "CONCEPTUAL_ERROR"
-      };
-      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
-    }
-    const hint = getQText(`The numbers are going up by 1. What comes after ${sequence[missingIdx - 1]}?`, `Count forward by 1.`);
-
-    const questionText = getQText(`Look at the number cards. What is the missing number in the pattern?`, `Find the missing number: ${displaySeq.join(', ')}`);
-    const solutionSteps = getQText(`The numbers are increasing by 1. After ${sequence[missingIdx - 1]} comes ${answer}.`, `${sequence[missingIdx - 1]} + 1 = ${answer}`);
-
-    return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating a missing sequence question. DO NOT rewrite "questionText" into a story. Keep the exact questionText provided. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.\n\n MATH CONSTRAINTS:\n - Topic: Missing Number (Ascending)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):\n ${JSON.stringify({
-        meta: commonMeta,
-        content: {
-          questionText: questionText,
-          options: options,
-          defectMap: defectMap,
-          hint: hint,
-          finalAnswer: answer,
-          solutionSteps: solutionSteps
-        },
-        visualEngine: {
-          componentToRender: hideVisual ? "NONE" : "NUMBER_CARDS",
-          componentData: { items: displaySeq, hideVisual: hideVisual }
-        },
-        inputRequirement: { inputType: inputType }
-      })}`,
-      metadata: { difficulty, steps: 2, logic: "missing_seq_asc", hideVisual: hideVisual }
-    };
-  }
-
-  if (activeVariant === 'standard_missing_seq_desc') {
-    const start = Math.floor(Math.random() * 70) + 20;
-    const sequence = [start, start - 1, start - 2, start - 3];
-    const missingIdx = Math.floor(Math.random() * 2) + 1;
-    const answer = String(sequence[missingIdx]);
-    const displaySeq = [...sequence];
-    displaySeq[missingIdx] = "?";
-    
-    let options = null;
-    let defectMap = null;
-    if (isMCQ) {
-      options = Array.from(new Set([String(sequence[missingIdx] + 1), answer, String(sequence[missingIdx] - 1), String(start - 10)])).slice(0, 4);
-      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
-      options = options.sort(() => Math.random() - 0.5);
-      
-      defectMap = {
-        [String(sequence[missingIdx] + 1)]: "CONFUSED_OPERATION",
-        [String(start - 10)]: "CONCEPTUAL_ERROR"
-      };
-      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
-    }
-    const hint = getQText(`The numbers are going down by 1. What comes before ${sequence[missingIdx - 1]}?`, `Count backward by 1.`);
-
-    const questionText = getQText(`Look at the number cards. What is the missing number in the pattern?`, `Find the missing number: ${displaySeq.join(', ')}`);
-    const solutionSteps = getQText(`The numbers are decreasing by 1. Before ${sequence[missingIdx - 1]} comes ${answer}.`, `${sequence[missingIdx - 1]} - 1 = ${answer}`);
-
-    return {
-      aiPrompt: `STRICT VARIANT MANDATE: You are generating a missing sequence question. DO NOT rewrite "questionText" into a story. Keep the exact questionText provided. DO NOT change the "visualEngine" component or "solutionSteps". Return exactly the provided JSON structure, modifying ONLY the hint to match the Hint Protocol.\n\n MATH CONSTRAINTS:\n - Topic: Missing Number (Descending)\n - Final Answer MUST be: "${answer}"\n ${formatInstructions}\n OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):\n ${JSON.stringify({
-        meta: commonMeta,
-        content: {
-          questionText: questionText,
-          options: options,
-          defectMap: defectMap,
-          hint: hint,
-          finalAnswer: answer,
-          solutionSteps: solutionSteps
-        },
-        visualEngine: {
-          componentToRender: hideVisual ? "NONE" : "NUMBER_CARDS",
-          componentData: { items: displaySeq, hideVisual: hideVisual }
-        },
-        inputRequirement: { inputType: inputType }
-      })}`,
-      metadata: { difficulty, steps: 2, logic: "missing_seq_desc", hideVisual: hideVisual }
     };
   }
 

@@ -57,6 +57,18 @@ export default function VisualRenderer({ type, ...props }) {
           case 'RENDER_ICON_GRID':
           case 'ICON_GRID':
             return <IconGrid data={props.data} modelData={props.modelData} visualProps={props.visualProps} />;
+          case 'MULTI_COMPONENT': {
+            const data = props.visualEngine?.componentData || props.data || {};
+            return (
+              <div className={`flex flex-col sm:flex-row gap-6 md:gap-12 justify-center items-center ${data.className || ''}`}>
+                {data.components?.map((comp, idx) => (
+                  <div key={idx}>
+                    <VisualRenderer {...props} visualEngine={comp} data={comp.componentData} />
+                  </div>
+                ))}
+              </div>
+            );
+          }
           case 'NUMBER_CARDS': return <NumberCards {...props} />;
           case 'NUMBER_PATTERN': return <NumberPattern {...props} />;
           case 'EQUAL_GROUPS': return <EqualGroups {...props} />;
