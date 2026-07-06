@@ -246,7 +246,6 @@ export function processAiQuestion(q, context) {
       }
 
       return {
-        ...cleanQ,
         level, topic, subtopic: subtopic || "", heuristic: heuristic || "Standard",
         difficulty, gradeLevel, subject: "Math",
         type: type === 'MCQ' ? 'MCQ' : (type.toLowerCase().includes('short') ? 'Short Question' : 'Structured'),
@@ -254,10 +253,10 @@ export function processAiQuestion(q, context) {
         isApproved: false,
         finalAnswer: typeof (q.finalAnswer || qContent.finalAnswer) === 'object' ? JSON.stringify(q.finalAnswer || qContent.finalAnswer) : String(q.finalAnswer || qContent.finalAnswer || ""),
         options: (meta?.type === 'MCQ' || type === 'MCQ') ? parseAiOptions(q.options || qContent.options) : null,
-        modelData: prismaModelData,
-        question: cleanQ.question || questionText || qContent.questionText || q.question || "Problem data missing",
+        question: cleanQ.question || questionText || qContent.questionText || q.question || cleanQ.problem || "Problem data missing",
         solution: rawSolution,
-        hint: qContent.hint || q.hint || q.conceptualHint || null
+        hint: qContent.hint || q.hint || q.conceptualHint || null,
+        modelData: prismaModelData
       };
     }
 }

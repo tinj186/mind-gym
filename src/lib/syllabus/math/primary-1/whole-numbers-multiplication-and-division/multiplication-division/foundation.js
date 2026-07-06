@@ -76,8 +76,9 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
       ${isShortQ 
         ? `STRICT: Provide a direct mathematical equation (${equationStr}). NO story context or names.` 
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a unique and creative 1-sentence localized Singaporean math story about ${extract(context.name)} and ${itemLabel} (visually represented by the emoji "${selectedIcon}") using ${isMult ? 'equal groups' : 'sharing equally'}. 
+        : `STRICT: Write a unique and creative 1-sentence localized Singaporean math story about ${extract(context.name)} and ${itemLabel} (visually represented by the emoji "${selectedIcon}") using ${isMult ? 'equal groups' : 'sharing equally'}. 
         
+        CRITICAL: For "questionText", you MUST output your story followed EXACTLY by the sentence: "How many are there ${isMult ? 'altogether' : 'in each group'}?"
         MANDATORY: You MUST use the name "${extract(context.name)}" and the item "${itemLabel}". 
         ${isMult ? 'MANDATORY: You MUST include the word "each" in the story to clearly specify the amount per group (e.g., "3 erasers into each of 2 bags").' : ''}
         VARIETY GUARDRAIL: Do NOT default to common clichés like "pencils", "apples", or "oranges". 
@@ -138,4 +139,279 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       metadata: { difficulty: 'foundation', logic: activeVariant, hideVisual: false }
     };
   }
+
+  // 3. Recognize Equal Groups
+  if (activeVariant === 'foundation_recognize_equal_groups') {
+    const groups = Math.floor(Math.random() * 2) + 3; // 3 to 4 groups
+    const itemsPerGroup = Math.floor(Math.random() * 3) + 2; // 2 to 4 items
+    const total = groups * itemsPerGroup;
+    
+    const valid = `${groups} groups of ${itemsPerGroup}`;
+    const invalid1 = `${groups} groups with ${itemsPerGroup}, ${itemsPerGroup - 1}, and ${itemsPerGroup + 1} items`;
+    const invalid2 = `${groups - 1} groups of ${itemsPerGroup} and 1 group of ${itemsPerGroup + 1}`;
+    
+    const options = [valid, invalid1, invalid2, `${groups} groups of different amounts`].sort(() => Math.random() - 0.5);
+    
+    let questionText = "Which of the following describes equal groups?";
+    let finalAnswerStr = valid;
+    if (!isMCQ) {
+      questionText += `\n(A) ${options[0]}\n(B) ${options[1]}\n(C) ${options[2]}\n(D) ${options[3]}`;
+      const validIndex = options.indexOf(valid);
+      finalAnswerStr = ['A', 'B', 'C', 'D'][validIndex];
+    }
+    
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      STRICT GUARDRAIL: Do NOT modify the "questionText" string. You MUST output it EXACTLY as provided in the JSON template below, preserving all newlines and options.
+      
+      OUTPUT FORMAT:
+      ${JSON.stringify({
+        meta: commonMeta,
+        content: {
+          questionText: questionText,
+          options: isMCQ ? options : null,
+          defectMap: isMCQ ? {
+            [invalid1]: "CONCEPTUAL_ERROR",
+            [invalid2]: "CONCEPTUAL_ERROR",
+            [`${groups} groups of different amounts`]: "CONCEPTUAL_ERROR"
+          } : null,
+          hint: "Equal groups mean every group has exactly the same number of items.",
+          finalAnswer: finalAnswerStr,
+          solutionSteps: `1. Equal groups must have the same number of items in every single group.\n2. "${valid}" means every group has exactly ${itemsPerGroup} items.\n3. The others have different amounts in some groups.`
+        },
+        visualEngine: { componentToRender: "NONE", componentData: { hideVisual: true } },
+        inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
+      })}`,
+      metadata: { difficulty: 'foundation', logic: activeVariant, hideVisual: true }
+    };
+  }
+
+  // 4. Count Equal Groups
+  if (activeVariant === 'foundation_count_equal_groups') {
+    const groups = Math.floor(Math.random() * 4) + 2; // 2 to 5 groups
+    const itemsPerGroup = Math.floor(Math.random() * 5) + 2; // 2 to 6 items
+    const total = groups * itemsPerGroup;
+    
+    const answerStr = `${groups} groups of ${itemsPerGroup}`;
+    
+    const distractor1 = `${itemsPerGroup} groups of ${groups}`;
+    const distractor2 = `${groups} groups of ${itemsPerGroup + 1}`;
+    const distractor3 = `${groups + 1} groups of ${itemsPerGroup}`;
+    
+    const options = [answerStr, distractor1, distractor2, distractor3].sort(() => Math.random() - 0.5);
+    
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      STRICT GUARDRAIL: Do NOT modify the "questionText" string. You MUST output it EXACTLY as provided in the JSON template below.
+      
+      OUTPUT FORMAT:
+      ${JSON.stringify({
+        meta: commonMeta,
+        content: {
+          questionText: `Look at the picture. How many equal groups are there, and how many items are in each group?`,
+          options: options,
+          defectMap: {
+            [distractor1]: "CONFUSED_GROUPS_AND_ITEMS",
+            [distractor2]: "COUNTING_ERROR",
+            [distractor3]: "COUNTING_ERROR"
+          },
+          hint: "First count how many big groups there are. Then count how many items are inside one group.",
+          finalAnswer: answerStr,
+          solutionSteps: `1. Count the big groups. There are ${groups} groups.\n2. Count the items inside one group. There are ${itemsPerGroup} items.\n3. So, there are ${groups} groups of ${itemsPerGroup}.`
+        },
+        visualEngine: {
+          componentToRender: "EQUAL_GROUPS",
+          componentData: {
+            totalItems: total,
+            groups: groups,
+            itemsPerGroup: itemsPerGroup,
+            icon: selectedIcon
+          }
+        },
+        inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
+      })}`,
+      metadata: { difficulty: 'foundation', logic: activeVariant, hideVisual: false }
+    };
+  }
+
+  // 5. Repeated Addition
+  if (activeVariant === 'foundation_repeated_addition') {
+    const groups = Math.floor(Math.random() * 3) + 3; // 3 to 5 groups
+    const itemsPerGroup = Math.floor(Math.random() * 4) + 2; // 2 to 5 items
+    const total = groups * itemsPerGroup;
+    
+    const answer = Array(groups).fill(itemsPerGroup).join(' + ');
+    
+    const distractor1 = Array(itemsPerGroup).fill(groups).join(' + ');
+    const distractor2 = Array(groups - 1).fill(itemsPerGroup).join(' + ');
+    const distractor3 = Array(groups + 1).fill(itemsPerGroup).join(' + ');
+    
+    const options = Array.from(new Set([answer, distractor1, distractor2, distractor3]));
+    while(options.length < 4) { options.push(Array(groups).fill(itemsPerGroup + 1).join(' + ')); }
+    const shuffledOptions = options.slice(0, 4).sort(() => Math.random() - 0.5);
+    
+    let questionText = `Which addition sentence matches the picture?`;
+    let finalAnswerStr = answer;
+    if (!isMCQ) {
+      questionText += `\n(A) ${shuffledOptions[0]}\n(B) ${shuffledOptions[1]}\n(C) ${shuffledOptions[2]}\n(D) ${shuffledOptions[3]}`;
+      const validIndex = shuffledOptions.indexOf(answer);
+      finalAnswerStr = ['A', 'B', 'C', 'D'][validIndex];
+    }
+    
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      STRICT GUARDRAIL: Do NOT modify the "questionText" string. You MUST output it EXACTLY as provided in the JSON template below.
+      
+      OUTPUT FORMAT:
+      ${JSON.stringify({
+        meta: commonMeta,
+        content: {
+          questionText: questionText,
+          options: isMCQ ? shuffledOptions : null,
+          defectMap: {
+            [distractor1]: "CONFUSED_GROUPS_AND_ITEMS",
+            [distractor2]: "COUNTING_ERROR",
+            [distractor3]: "COUNTING_ERROR"
+          },
+          hint: "How many items are in each group? Write that number down for every group you see and add them.",
+          finalAnswer: finalAnswerStr,
+          solutionSteps: `1. There are ${groups} groups.\n2. Each group has ${itemsPerGroup} items.\n3. We add ${itemsPerGroup} together ${groups} times: ${answer}.`
+        },
+        visualEngine: {
+          componentToRender: "EQUAL_GROUPS",
+          componentData: {
+            totalItems: total,
+            groups: groups,
+            itemsPerGroup: itemsPerGroup,
+            icon: selectedIcon
+          }
+        },
+        inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
+      })}`,
+      metadata: { difficulty: 'foundation', logic: activeVariant, hideVisual: false }
+    };
+  }
+  // 6. Repeated Subtraction
+  if (activeVariant === 'foundation_repeated_subtraction') {
+    const groups = Math.floor(Math.random() * 3) + 3; // 3 to 5 groups
+    const itemsPerGroup = Math.floor(Math.random() * 4) + 2; // 2 to 5 items
+    const total = groups * itemsPerGroup;
+    
+    const answer = `${total} - ` + Array(groups).fill(itemsPerGroup).join(' - ') + ' = 0';
+    
+    const distractor1 = `${total} - ` + Array(itemsPerGroup).fill(groups).join(' - ') + ' = 0';
+    const distractor2 = `${total} - ` + Array(groups - 1).fill(itemsPerGroup).join(' - ') + ' = 0';
+    const distractor3 = `${total} - ` + Array(groups + 1).fill(itemsPerGroup).join(' - ') + ' = 0';
+    
+    const options = Array.from(new Set([answer, distractor1, distractor2, distractor3]));
+    while(options.length < 4) { options.push(`${total} - ` + Array(groups).fill(itemsPerGroup + 1).join(' - ') + ' = 0'); }
+    const shuffledOptions = options.slice(0, 4).sort(() => Math.random() - 0.5);
+    
+    let questionText = `Which subtraction sentence matches the picture?`;
+    let finalAnswerStr = answer;
+    if (!isMCQ) {
+      questionText += `\n(A) ${shuffledOptions[0]}\n(B) ${shuffledOptions[1]}\n(C) ${shuffledOptions[2]}\n(D) ${shuffledOptions[3]}`;
+      const validIndex = shuffledOptions.indexOf(answer);
+      finalAnswerStr = ['A', 'B', 'C', 'D'][validIndex];
+    }
+    
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      STRICT GUARDRAIL: Do NOT modify the "questionText" string. You MUST output it EXACTLY as provided in the JSON template below.
+      
+      OUTPUT FORMAT:
+      ${JSON.stringify({
+        meta: commonMeta,
+        content: {
+          questionText: questionText,
+          options: isMCQ ? shuffledOptions : null,
+          defectMap: {
+            [distractor1]: "CONFUSED_GROUPS_AND_ITEMS",
+            [distractor2]: "COUNTING_ERROR",
+            [distractor3]: "COUNTING_ERROR"
+          },
+          hint: "We start with the total items. Then we subtract the number of items in one group again and again until we have 0.",
+          finalAnswer: finalAnswerStr,
+          solutionSteps: `1. The total number of items is ${total}.\n2. Each group has ${itemsPerGroup} items.\n3. We subtract ${itemsPerGroup} repeatedly until 0: ${answer}.`
+        },
+        visualEngine: {
+          componentToRender: "EQUAL_GROUPS",
+          componentData: {
+            totalItems: total,
+            groups: groups,
+            itemsPerGroup: itemsPerGroup,
+            icon: selectedIcon
+          }
+        },
+        inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
+      })}`,
+      metadata: { difficulty: 'foundation', logic: activeVariant, hideVisual: false }
+    };
+  }
+
+  // 7. Division Equation
+  if (activeVariant === 'foundation_division_equation') {
+    const groups = Math.floor(Math.random() * 4) + 2; // 2 to 5 groups
+    const itemsPerGroup = Math.floor(Math.random() * 5) + 2; // 2 to 6 items
+    const total = groups * itemsPerGroup;
+    
+    const answer = `${total} ÷ ${groups} = ${itemsPerGroup}`;
+    const answerAlternative = `${total} ÷ ${itemsPerGroup} = ${groups}`;
+    
+    const isGroupFocus = Math.random() > 0.5;
+    const finalAns = isGroupFocus ? answer : answerAlternative;
+    
+    const distractor1 = `${total} ÷ ${groups + 1} = ${itemsPerGroup}`;
+    const distractor2 = `${total} ÷ ${groups} = ${itemsPerGroup + 1}`;
+    const distractor3 = `${total} - ${groups} = ${itemsPerGroup}`; // Confused operation
+    
+    const options = [finalAns, distractor1, distractor2, distractor3].sort(() => Math.random() - 0.5);
+    
+    let questionText = `Which division equation matches the picture?`;
+    let finalAnswerStr = finalAns;
+    if (!isMCQ) {
+      questionText += `\n(A) ${options[0]}\n(B) ${options[1]}\n(C) ${options[2]}\n(D) ${options[3]}`;
+      const validIndex = options.indexOf(finalAns);
+      finalAnswerStr = ['A', 'B', 'C', 'D'][validIndex];
+    }
+    
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      STRICT GUARDRAIL: Do NOT modify the "questionText" string. You MUST output it EXACTLY as provided in the JSON template below.
+      
+      OUTPUT FORMAT:
+      ${JSON.stringify({
+        meta: commonMeta,
+        content: {
+          questionText: questionText,
+          options: isMCQ ? options : null,
+          defectMap: {
+            [distractor1]: "COUNTING_ERROR",
+            [distractor2]: "COUNTING_ERROR",
+            [distractor3]: "CONFUSED_OPERATION"
+          },
+          hint: "The first number is the total. Then we divide by the number of groups to get the items in each group (or divide by items to get groups).",
+          finalAnswer: finalAnswerStr,
+          solutionSteps: `1. The total number of items is ${total}.\n2. There are ${groups} groups with ${itemsPerGroup} items each.\n3. The division equation is ${finalAns}.`
+        },
+        visualEngine: {
+          componentToRender: "EQUAL_GROUPS",
+          componentData: {
+            totalItems: total,
+            groups: groups,
+            itemsPerGroup: itemsPerGroup,
+            icon: selectedIcon
+          }
+        },
+        inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
+      })}`,
+      metadata: { difficulty: 'foundation', logic: activeVariant, hideVisual: false }
+    };
+  }
+
+  // Fallback
+  return {
+    aiPrompt: `Return standard placeholder JSON.`,
+    metadata: { difficulty, steps: 1, logic: activeVariant, hideVisual: true }
+  };
 }

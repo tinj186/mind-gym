@@ -10,7 +10,7 @@ const generateMoneyString = (cents) => {
 };
 
 export const foundationVariants = {
-  foundation_counting_coins: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  foundation_counting_coins: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const pool = ['5¢', '10¢', '20¢', '50¢'];
     const itemCount = Math.floor(Math.random() * 3) + 3; 
     const generatedItems = [];
@@ -28,7 +28,7 @@ export const foundationVariants = {
     const componentData = { items: generatedItems, total: displayTotal };
 
     const questionTextTemplate = getQText(`Count the total amount of money shown below.`, `Total amount = ?`);
-    const randomName = getRandomNames(1)[0];
+    const randomName = getRandomNames(1);
     const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. '${randomName} went to the shop.'). DO NOT delete the math question! IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = [answer, generateMoneyString(sumCents + 10), generateMoneyString(Math.max(10, sumCents - 10)), generateMoneyString(sumCents + 20)];
@@ -51,7 +51,7 @@ export const foundationVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -70,7 +70,7 @@ export const foundationVariants = {
     };
   },
 
-  foundation_identifying_notes: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  foundation_identifying_notes: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const pool = ['$2', '$5', '$10'];
     const itemCount = Math.floor(Math.random() * 2) + 2; 
     const generatedItems = [];
@@ -88,7 +88,7 @@ export const foundationVariants = {
     const componentData = { items: generatedItems, total: displayTotal };
 
     const questionTextTemplate = getQText(`Count the total amount of money shown below.`, `Total amount = ?`);
-    const randomName = getRandomNames(1)[0];
+    const randomName = getRandomNames(1);
     const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. '${randomName} went to the shop.'). DO NOT delete the math question! IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = [answer, generateMoneyString(sumCents + 100), generateMoneyString(Math.max(200, sumCents - 100)), generateMoneyString(sumCents + 200)];
@@ -111,7 +111,7 @@ export const foundationVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -130,7 +130,7 @@ export const foundationVariants = {
     };
   },
 
-  foundation_mixed_counting: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  foundation_mixed_counting: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const pool = ['10¢', '20¢', '50¢', '$1', '$2', '$5', '$10'];
     const itemCount = Math.floor(Math.random() * 3) + 4; 
     const generatedItems = [];
@@ -148,7 +148,7 @@ export const foundationVariants = {
     const componentData = { items: generatedItems, total: displayTotal };
 
     const questionTextTemplate = getQText(`Count the total amount of money shown below.`, `Total amount = ?`);
-    const randomName = getRandomNames(1)[0];
+    const randomName = getRandomNames(1);
     const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. '${randomName} went to the shop.'). DO NOT delete the math question! IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = [answer, generateMoneyString(sumCents + 10), generateMoneyString(Math.max(50, sumCents - 10)), generateMoneyString(sumCents + 50)];
@@ -171,7 +171,7 @@ export const foundationVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -190,7 +190,7 @@ export const foundationVariants = {
     };
   },
 
-  foundation_comparing_values: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  foundation_comparing_values: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const pool = ['10¢', '20¢', '50¢', '$1', '$2', '$5', '$10'];
     const itemCount = Math.floor(Math.random() * 3) + 4; 
     const generatedItems = [];
@@ -210,7 +210,7 @@ export const foundationVariants = {
     const componentData = { items: generatedItems, total: displayTotal };
 
     const questionTextTemplate = getQText(`An item costs ${targetPriceStr}. Is the amount of money shown enough to buy it?`, `Is amount shown enough for ${targetPriceStr}?`);
-    const randomName = getRandomNames(1)[0];
+    const randomName = getRandomNames(1);
     const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. '${randomName} went to the shop.'). DO NOT delete the math question! IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = ["Yes", "No"];
@@ -233,7 +233,7 @@ export const foundationVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -252,7 +252,7 @@ export const foundationVariants = {
     };
   },
 
-  foundation_matching_exact_amount: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  foundation_matching_exact_amount: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const pool = ['10¢', '20¢', '50¢', '$1', '$2', '$5', '$10'];
     const itemCount = Math.floor(Math.random() * 3) + 4; 
     const generatedItems = [];
@@ -270,7 +270,7 @@ export const foundationVariants = {
     const componentData = { items: generatedItems, total: displayTotal };
 
     const questionTextTemplate = getQText(`Which amount matches the total money shown?`, `Total amount matches = ?`);
-    const randomName = getRandomNames(1)[0];
+    const randomName = getRandomNames(1);
     const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: Keep the mathematical sentences in "questionText" exactly as they are! Just replace the "[STORY]" tag at the beginning with a 1-sentence Singaporean math story context (e.g. '${randomName} went to the shop.'). DO NOT delete the math question! IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = [answer, generateMoneyString(sumCents + 10), generateMoneyString(Math.max(10, sumCents - 10)), generateMoneyString(sumCents + 50)];
@@ -293,7 +293,7 @@ export const foundationVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -313,8 +313,8 @@ export const foundationVariants = {
   }
 };
 
-export const foundationLogic = (activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+export const foundationLogic = (activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
   if (foundationVariants[activeVariant]) {
-    return foundationVariants[activeVariant](config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
+    return foundationVariants[activeVariant](config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText);
   }
 };

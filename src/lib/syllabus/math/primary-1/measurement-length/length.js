@@ -1,7 +1,5 @@
 /**
- * Blueprint for Primary 1: Measurement - Length
- * FOCUS: Non-standard unit estimation, baseline comparison matrices, and logical length differences.
- * PATH: src/lib/syllabus/math/primary-1/measurement/length.js
+ * Blueprint for Primary 1: Measurement - Length (cm)
  */
 import { getRandomContext } from '@/lib/utils/localization';
 import { foundationLogic } from './length/foundation';
@@ -16,52 +14,37 @@ export const lengthBlueprint = {
 
   difficultyLevels: {
     foundation: {
-      name: 'Non-Standard Unit Counting & Basic Comparison',
+      name: 'Reading a cm Ruler',
       steps: 1,
-      logicDescription: "Counting units, comparing two items, and identifying equal lengths."
+      logicDescription: "Reading single item lengths in cm."
     },
     standard: {
-      name: 'Direct Baseline Comparison',
+      name: 'Measurement Differences in cm',
       steps: 2,
-      logicDescription: "Evaluating relative lengths (longest, shortest) of multiple objects."
+      logicDescription: "Calculating differences and measuring misaligned objects in cm."
     },
     advanced: {
-      name: 'Indirect Logic & Operational Differences',
+      name: 'Multi-Step Length Word Problems',
       steps: 3,
-      logicDescription: "Solving multi-step word problems involving positional arithmetic differences."
+      logicDescription: "Solving multi-step word problems involving positional arithmetic differences in cm."
     }
   },
 
   variants: {
-    // Expanded Foundation Tier
-    foundation_unit_counting: "Counting item length using lined-up identical unit objects.",
-    foundation_compare_two: "Comparing exactly two objects to identify which is longer or shorter.",
-    foundation_find_same: "Identifying which two objects out of three have the exact same length.",
-    foundation_identify_by_length: "Finding which specific object matches a given unit length.",
-    foundation_true_false: "Evaluating a True/False statement about the relative lengths of two objects.",
-
-    // Standard & Advanced
-    standard_baseline_comparison: "Comparing 3 distinct objects aligned horizontally to find the longest/shortest.",
-    standard_find_shortest: "Identifying the shortest object among 3 items aligned horizontally.",
-    standard_vertical_baseline: "Comparing height vectors of objects standing on a common ground baseline.",
-    standard_ordering_ascending: "Ordering 3 items from shortest to longest.",
-    standard_ordering_descending: "Ordering 3 items from longest to shortest.",
-    standard_transitive_logic: "Deducing the longest or shortest item using transitive word logic (A > B, B > C).",
-    standard_baseline_error_check: "Detecting errors in length comparison when objects do not share a common baseline.",
-    standard_as_long_as: "Identifying objects with equal lengths among a set.",
-    standard_unit_difference_mcq: "Calculating the arithmetic difference in non-standard units between two items.",
-    standard_mid_grid_alignment: "Calculating length for an object not starting at the grid baseline.",
-
-    advanced_indirect_difference: "Calculating missing length dimensions by adding or subtracting non-standard object units.",
-    advanced_indirect_comparison: "Using transitive logic to compare and order three or more objects based on text clues (e.g., Object A is longer than B, B is longer than C).",
-    advanced_misaligned_start: "Determining the true length of an object when it does not align with the zero baseline of the unit ruler track (handling custom start and end offsets).",
-    advanced_unit_size_inverse: "Deducing length relationships based on different unit sizes (e.g., understanding why measuring the same item requires more paperclips than erasers).",
-    advanced_combined_total: "Calculating the total combined length of two or more objects laid end-to-end using non-standard units.",
-    advanced_overlap_deduction: "Solving word problems where two objects overlap and calculating the net length or the hidden overlap dimension.",
-    advanced_multi_step_word_problems: "Solving two-step story problems involving cutting, extending, or comparing object lengths using addition and subtraction.",
-    advanced_part_whole_missing: "Finding the length of a missing segment when provided with the total structural length and one known constituent object.",
-    advanced_excess_comparison: "Calculating exactly how many more or fewer units an object requires to match a target reference length.",
-    advanced_perimeter_units: "Counting non-standard units around a multi-sided basic shape grid or open path framework."
+    foundation_unit_counting: "Measuring item length in cm.",
+    foundation_identify_by_length: "Finding which specific object matches a given cm length.",
+    
+    standard_baseline_error_check: "Detecting errors in length measurement when objects do not share a common baseline.",
+    standard_unit_difference_mcq: "Calculating the arithmetic difference in cm between two items.",
+    standard_mid_grid_alignment: "Calculating length for an object not starting at the zero mark.",
+    
+    advanced_indirect_difference: "Calculating missing length dimensions by adding or subtracting cm.",
+    advanced_misaligned_start: "Determining the true length of an object when it does not align with the zero baseline.",
+    advanced_combined_total: "Calculating the total combined length of two or more objects in cm.",
+    advanced_overlap_deduction: "Solving word problems where two objects overlap and calculating the net length.",
+    advanced_multi_step_word_problems: "Solving two-step story problems involving cutting or extending object lengths.",
+    advanced_part_whole_missing: "Finding the length of a missing segment when provided with the total structural length.",
+    advanced_perimeter_units: "Counting cm units around a multi-sided basic shape grid."
   },
 
   generate: (difficulty = 'foundation', variant = 'foundation_unit_counting', type = 'MCQ') => {
@@ -92,29 +75,32 @@ export const lengthBlueprint = {
     const zodType = isMCQ ? 'MCQ' : isShort ? 'SHORT_QUESTION' : 'STRUCTURED';
     const zodDiff = finalDifficulty.charAt(0).toUpperCase() + finalDifficulty.slice(1);
     const level = 'Primary 1';
-    const topic = 'Measurement';
+    const topic = 'Measurement - Length';
+    const subtopic = 'Length Measurement (cm)';
 
     const getQText = (words, equation) => isShort ? equation : words;
     const levelNum = parseInt(level.replace('Primary ', ''));
     const tier = levelNum <= 2 ? 'LOWER_BLOCK' : (levelNum <= 4 ? 'MIDDLE_BLOCK' : 'UPPER_BLOCK');
     const context = getRandomContext('GENERAL', tier);
 
-    const hintProtocol = `\nCRITICAL HINT PROTOCOL: You MUST provide a conceptual "hint" field in your JSON. Focus on comparing lengths correctly.`;
+    const hintProtocol = `\nCRITICAL HINT PROTOCOL: You MUST provide a conceptual "hint" field in your JSON. Focus on cm measurement.`;
 
     let formatInstructions = isMCQ
       ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}`
-      : `Format as Short Answer. The "options" field in your JSON should be null.${hintProtocol}`;
+      : isStructure
+        ? `Format as Structured Multi-step. The "options" field should be null. You MUST fill in the "expectedAnswer" values in the "inputRequirement.steps" array with the specific item lengths and final answer.${hintProtocol}`
+        : `Format as Short Answer. The "options" field in your JSON should be null.${hintProtocol}`;
 
     if (activeVariant.startsWith('foundation_')) {
-      return foundationLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
+      return foundationLogic.generate(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText);
     }
 
     if (activeVariant.startsWith('standard_')) {
-      return standardLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
+      return standardLogic.generate(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText);
     }
 
     if (activeVariant.startsWith('advanced_')) {
-      return advancedLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
+      return advancedLogic.generate(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText);
     }
 
     throw new Error(`Variant '${finalVariant}' not valid.`);

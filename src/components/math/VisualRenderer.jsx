@@ -8,7 +8,7 @@ export const ESSENTIAL_VISUALS = [
   "ORDINAL_LINE", "GROUPING_WORKSPACE", "NUMBER_CARDS", 
   "NUMBER_BOND", "NUMBER_PATTERN", "BASE_TEN_BLOCKS", 
   "SINGAPORE_MONEY", "MEASUREMENT_UNIT", "CLOCK_DISPLAY",
-  "SHAPE_DISPLAY", "PLACE_VALUE_CHART"
+  "SHAPE_DISPLAY", "PLACE_VALUE_CHART", "VERTICAL_ALGORITHM"
   // "PICTURE_GRAPH_DISPLAY" // Not essential, lazy-loaded
 ];
 
@@ -31,6 +31,7 @@ const PictureGraphDisplay = lazy(() => import('./modules/PictureGraphDisplay'));
 const CrossOutGroup = lazy(() => import('./modules/CrossOutGroup'));
 const TwoSetComparison = lazy(() => import('./modules/TwoSetComparison'));
 const TFMatrixTable = lazy(() => import('./modules/TFMatrixTable'));
+const VerticalAlgorithm = lazy(() => import('./modules/VerticalAlgorithm'));
 
 export default function VisualRenderer({ type, ...props }) {
   const activeType = (
@@ -91,6 +92,10 @@ export default function VisualRenderer({ type, ...props }) {
           case 'TF_MATRIX_TABLE': {
             const data = props.visualEngine?.componentData || props.data || {};
             return <TFMatrixTable statements={data.statements} entities={data.entities} />;
+          }
+          case 'VERTICAL_ALGORITHM': {
+            const data = props.visualEngine?.componentData || props.data || {};
+            return <VerticalAlgorithm data={data} />;
           }
           
           default:

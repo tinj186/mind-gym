@@ -46,6 +46,7 @@ export default async function AdminQuestionsPage({ searchParams }) {
 
         // Enforce strict syllabus mapping: Advanced difficulty strictly forbids Pure Math / Short Questions
         if (d === 'Advanced' && s.type === 'Short Question') return;
+        if (d === 'Foundation' && s.type === 'Short Question' && s.topic === 'Whole Numbers - Multiplication and Division' && s.subtopic === 'Multiplication/Division Concepts') return;
 
         const pending = matches.filter(m => !m.isApproved).length;
         const approved = matches.filter(m => m.isApproved).length;
@@ -72,6 +73,7 @@ export default async function AdminQuestionsPage({ searchParams }) {
   const distinctSubtopics = GET_DISTINCT('subtopic', { level, topic, type }); 
   const distinctTypes = GET_DISTINCT('type', { level, topic, subtopic }).filter(t => {
     if (difficulty === 'Advanced' && t === 'Short Question') return false;
+    if (difficulty === 'Foundation' && t === 'Short Question' && subtopic === 'Multiplication/Division Concepts') return false;
     return true;
   });
   const distinctDifficulties = DEFAULT_DIFFICULTIES;

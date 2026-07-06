@@ -129,7 +129,109 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
   }
 
-  // 3. Comparison (Times as many)
+  // 3. Array Equations
+  if (activeVariant === 'standard_array_equations') {
+    const rows = Math.floor(Math.random() * 3) + 2;
+    const cols = Math.floor(Math.random() * 4) + 2;
+    const answer = `${rows} x ${cols} = ${rows * cols}`;
+
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = Array.from(new Set([
+        answer, 
+        `${rows + 1} x ${cols} = ${(rows + 1) * cols}`, 
+        `${rows} x ${cols + 1} = ${rows * (cols + 1)}`, 
+        `${rows + cols} = ${rows + cols}`
+      ])).slice(0, 4);
+      while(options.length < 4) { options.push(`${rows + 2} x ${cols - 1} = ${(rows + 2) * (cols - 1)}`); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [`${rows + cols} = ${rows + cols}`]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CONCEPTUAL_ERROR"; });
+    }
+
+    const promptObject = {
+      meta: commonMeta,
+      content: {
+        questionText: getQText(`[STORY] Which multiplication equation matches the array?`, `Which multiplication equation matches the array?`, zodType),
+        options: options,
+        defectMap: defectMap,
+        hint: "[AI: PROVIDE A CONCEPTUAL HINT ABOUT ROWS AND COLUMNS]",
+        finalAnswer: answer,
+        solutionSteps: `1. The array has ${rows} rows.\n2. Each row has ${cols} ${itemLabel}.\n3. So, ${rows} groups of ${cols} is written as ${answer}.`
+      },
+      visualEngine: {
+        componentToRender: "ICON_GRID",
+        componentData: { rows, cols, totalItems: rows * cols, icon: selectedIcon }
+      },
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      IMPORTANT: DO NOT include any mathematical equations or hints in the questionText.
+      STRICT: Replace ONLY the "[STORY]" tag in "questionText" with a short creative Singaporean story about ${context.name} arranging ${itemLabel} in an array. DO NOT alter or remove the actual question text ("Which multiplication equation matches the array?").
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'standard', logic: "array_equations", hideVisual: hideVisual }
+    };
+  }
+
+  // 4. Identify Division Sentence
+  if (activeVariant === 'standard_identify_division_sentence') {
+    const divisor = Math.floor(Math.random() * 4) + 2;
+    const quotient = Math.floor(Math.random() * 4) + 2;
+    const total = divisor * quotient;
+    const answer = `${total} ÷ ${divisor} = ${quotient}`;
+
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = Array.from(new Set([
+        answer, 
+        `${total} ÷ ${quotient} = ${divisor}`,
+        `${total} - ${divisor} = ${total - divisor}`, 
+        `${total} x ${divisor} = ${total * divisor}`
+      ])).slice(0, 4);
+      while(options.length < 4) { options.push(`${total + 2} ÷ ${divisor} = ${Math.floor((total+2)/divisor)}`); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [`${total} x ${divisor} = ${total * divisor}`]: "CONFUSED_OPERATION",
+        [`${total} - ${divisor} = ${total - divisor}`]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CONCEPTUAL_ERROR"; });
+    }
+
+    const promptObject = {
+      meta: commonMeta,
+      content: {
+        questionText: getQText(`[STORY] Which division equation matches the picture?`, `Which division equation matches the picture?`, zodType),
+        options: options,
+        defectMap: defectMap,
+        hint: "[AI: PROVIDE A CONCEPTUAL HINT ABOUT DIVIDING TOTAL INTO GROUPS]",
+        finalAnswer: answer,
+        solutionSteps: `1. There are ${total} ${itemLabel} in total.\n2. They are divided into ${divisor} equal groups.\n3. There are ${quotient} ${itemLabel} in each group.\n4. So, the division equation is ${answer}.`
+      },
+      visualEngine: {
+        componentToRender: "EQUAL_GROUPS",
+        componentData: { totalItems: total, groups: divisor, itemsPerGroup: quotient, icon: selectedIcon }
+      },
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      IMPORTANT: DO NOT include any mathematical equations or hints in the questionText.
+      STRICT: Replace ONLY the "[STORY]" tag in "questionText" with a short creative Singaporean story about ${context.name} sharing ${total} ${itemLabel} equally into ${divisor} groups. DO NOT alter or remove the actual question text ("Which division equation matches the picture?").
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'standard', logic: "identify_division_sentence", hideVisual: hideVisual }
+    };
+  }
+
+  // 5. Comparison (Times as many)
   if (activeVariant === 'standard_comparison_times_as_many') {
     const startVal = Math.floor(Math.random() * 5) + 2; 
     const times = Math.floor(Math.random() * 3) + 2; 
@@ -277,7 +379,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
   }
 
-  // 6. Sharing (Missing Each)
+  // 8. Sharing (Missing Each)
   if (activeVariant === 'standard_sharing_missing_each') {
     const groups = Math.floor(Math.random() * 3) + 2; 
     const each = Math.floor(Math.random() * 4) + 2; 
@@ -561,4 +663,177 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
   }
 
+
+  // 1. Translate a word problem directly into a multiplication sentence.
+  if (activeVariant === 'standard_word_problem_to_equation') {
+    const groups = Math.floor(Math.random() * 4) + 2; // 2 to 5
+    const num = Math.floor(Math.random() * 5) + 2; // 2 to 6
+    const total = groups * num;
+    
+    const answer = `${groups} x ${num} = ${total}`;
+    
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      options = [
+        answer,
+        `${num} x ${groups} = ${total}`,
+        `${groups} + ${num} = ${groups + num}`,
+        `${groups} - ${num} = ${Math.max(0, groups - num)}`
+      ].sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [`${groups} + ${num} = ${groups + num}`]: "CONFUSED_OPERATION",
+        [`${groups} - ${num} = ${Math.max(0, groups - num)}`]: "CONFUSED_OPERATION",
+        [`${num} x ${groups} = ${total}`]: "REVERSED_ORDER"
+      };
+    }
+
+    const promptObject = {
+      meta: commonMeta,
+      content: {
+        questionText: getQText(`[STORY] Which multiplication equation matches the story?`, `${extract(context.name)} has ${groups} boxes. There are ${num} ${extract(selectedContextItem)} in each box. Which equation matches the story?`),
+        options,
+        defectMap,
+        hint: "Count the number of groups first. Then find the number in each group.",
+        finalAnswer: answer,
+        solutionSteps: `1. There are ${groups} groups.\n2. Each group has ${num} items.\n3. This means we write ${groups} groups of ${num}.\n4. The correct equation is ${answer}.`
+      },
+      visualEngine: { componentToRender: "NONE", componentData: {} },
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      ${isShortQ 
+        ? `STRICT: Do not change the question string.` 
+        : `STRICT: Write a creative 1-sentence localized Singaporean math story about ${extract(context.name)} having ${groups} groups (e.g. bags, boxes, plates) with ${num} ${extract(selectedContextItem)} (visually represented by the emoji "${selectedIcon}") in each group. 
+        MANDATORY: You MUST use the name "${extract(context.name)}" and the item "${extract(selectedContextItem)}".
+        MANDATORY: You MUST use the words 'each' or 'every'.
+        CRITICAL: For "questionText", you MUST output your story followed EXACTLY by the sentence: "Which multiplication equation matches the story?"`
+      }
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'standard', logic: activeVariant, hideVisual: true }
+    };
+  }
+
+  // 1.5 Translate a word problem directly into a division sentence.
+  if (activeVariant === 'standard_division_word_problem_to_equation') {
+    const groups = Math.floor(Math.random() * 4) + 2; // 2 to 5
+    const num = Math.floor(Math.random() * 5) + 2; // 2 to 6
+    const total = groups * num;
+    
+    // Choose randomly whether it's sharing or grouping.
+    const isSharing = Math.random() > 0.5;
+    
+    const answer = isSharing ? `${total} ÷ ${groups} = ${num}` : `${total} ÷ ${num} = ${groups}`;
+    
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      options = [
+        answer,
+        isSharing ? `${total} ÷ ${num} = ${groups}` : `${total} ÷ ${groups} = ${num}`,
+        `${total} - ${isSharing ? groups : num} = ${total - (isSharing ? groups : num)}`,
+        `${groups} x ${num} = ${total}`
+      ].sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [`${total} - ${isSharing ? groups : num} = ${total - (isSharing ? groups : num)}`]: "CONFUSED_OPERATION",
+        [`${groups} x ${num} = ${total}`]: "CONFUSED_OPERATION",
+        [isSharing ? `${total} ÷ ${num} = ${groups}` : `${total} ÷ ${groups} = ${num}`]: "CONCEPTUAL_ERROR"
+      };
+    } else {
+      options = [
+        answer,
+        isSharing ? `${total} ÷ ${num} = ${groups}` : `${total} ÷ ${groups} = ${num}`,
+        `${total} - ${isSharing ? groups : num} = ${total - (isSharing ? groups : num)}`,
+        `${groups} x ${num} = ${total}`
+      ].sort(() => Math.random() - 0.5);
+    }
+
+    let questionText = getQText(`[STORY] Which division equation matches the story?`, `${extract(context.name)} has ${total} ${extract(selectedContextItem)}. He puts them into ${isSharing ? `${groups} equal groups` : `groups of ${num}`}. Which division equation matches the story?`);
+    let finalAnswerStr = answer;
+    
+    if (!isMCQ) {
+      questionText += `\n(A) ${options[0]}\n(B) ${options[1]}\n(C) ${options[2]}\n(D) ${options[3]}`;
+      const validIndex = options.indexOf(answer);
+      finalAnswerStr = ['A', 'B', 'C', 'D'][validIndex];
+    }
+
+    const promptObject = {
+      meta: commonMeta,
+      content: {
+        questionText: questionText,
+        options: isMCQ ? options : null,
+        defectMap: isMCQ ? defectMap : null,
+        hint: isSharing ? "Start with the total. Divide it by the number of groups." : "Start with the total. Divide it by the number in each group.",
+        finalAnswer: finalAnswerStr,
+        solutionSteps: `1. The total number of items is ${total}.\n2. ${isSharing ? `There are ${groups} groups.` : `There are ${num} items in each group.`}\n3. The division equation is ${answer}.`
+      },
+      visualEngine: { componentToRender: "NONE", componentData: {} },
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      ${isShortQ 
+        ? `STRICT: Do not change the question string.` 
+        : `STRICT: Write a creative 1-sentence localized Singaporean math story about ${extract(context.name)} sharing ${total} ${extract(selectedContextItem)} (visually represented by the emoji "${selectedIcon}") ${isSharing ? `equally among ${groups} people/groups` : `into groups of ${num}`}. 
+        MANDATORY: You MUST use the name "${extract(context.name)}" and the item "${extract(selectedContextItem)}".
+        CRITICAL: For "questionText", you MUST output your story followed EXACTLY by the sentence: "Which division equation matches the story?"`
+      }
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'standard', logic: activeVariant, hideVisual: true }
+    };
+  }
+
+  
+  // 2. Fill in the blank to link repeated addition to multiplication.
+  if (activeVariant === 'standard_missing_factor_addition') {
+    const groups = Math.floor(Math.random() * 4) + 3; // 3 to 6
+    const num = Math.floor(Math.random() * 5) + 2; // 2 to 6
+    const total = groups * num;
+    
+    const repeatedAdd = Array(groups).fill(num).join(' + ');
+    const equationStr = `${repeatedAdd} = [?] x ${num}`;
+    const answer = String(groups);
+    
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      options = [
+        answer,
+        String(total),
+        String(groups + 1),
+        String(num)
+      ].sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(total)]: "CONFUSED_OPERATION",
+        [String(num)]: "CARELESS_CALCULATION"
+      };
+    }
+
+    const promptObject = {
+      meta: commonMeta,
+      content: {
+        questionText: getQText(`Look at this equation: ${equationStr}. What is the missing number?`, `What is the missing number in ${equationStr}?`),
+        options,
+        defectMap,
+        hint: "Count how many times the number is being added together.",
+        finalAnswer: answer,
+        solutionSteps: `1. The number ${num} is added ${groups} times.\n2. This means there are ${groups} groups of ${num}.\n3. So, ${repeatedAdd} is the same as ${groups} x ${num}.\n4. The missing number is ${answer}.`
+      },
+      visualEngine: { componentToRender: "NONE", componentData: {} },
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}\nJSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'standard', logic: activeVariant, hideVisual: true }
+    };
+  }
+
+  
 }

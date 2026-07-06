@@ -95,7 +95,8 @@ export const moneyBlueprint = {
     const zodType = isMCQ ? 'MCQ' : isShort ? 'SHORT_QUESTION' : 'STRUCTURED';
     const zodDiff = finalDifficulty.charAt(0).toUpperCase() + finalDifficulty.slice(1);
     const level = 'Primary 1';
-    const topic = 'Money';
+    const topic = 'Money - Money';
+    const subtopic = 'Money Counting';
 
     const getQText = (words, equation) => isShort ? equation : words;
     const levelNum = parseInt(level.replace('Primary ', ''));
@@ -109,15 +110,15 @@ export const moneyBlueprint = {
       : `Format as Short Answer. The "options" field in your JSON should be null.${hintProtocol}`;
 
     if (activeVariant.startsWith('foundation_')) {
-      return foundationLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
+      return foundationLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText);
     }
 
     if (activeVariant.startsWith('standard_')) {
-      return standardLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
+      return standardLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText);
     }
 
     if (activeVariant.startsWith('advanced_')) {
-      return advancedLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
+      return advancedLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText);
     }
 
     throw new Error(`Variant '${finalVariant}' not valid.`);

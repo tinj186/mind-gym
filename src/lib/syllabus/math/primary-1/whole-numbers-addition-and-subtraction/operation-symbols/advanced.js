@@ -198,7 +198,7 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
 
   // 4. advanced_word_to_multi_step_equation
   if (activeVariant === 'advanced_word_to_multi_step_equation') {
-    const name = getRandomNames(1)[0];
+    const name = getRandomNames(1);
     
     // Start with a, minus b, plus c
     const a = Math.floor(Math.random() * 5) + 10; // 10 to 14

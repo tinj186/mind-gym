@@ -40,34 +40,22 @@ export const additionSubtractionBlueprint = {
   variants: {
     foundation_add_20: "Add two numbers within 20.",
     foundation_sub_20: "Subtract two numbers within 20.",
-    foundation_missing_addend: "Find the missing addend in an equation within 20.",
-    foundation_number_bond_logic: "Find the missing part in a number bond within 20.",
-    foundation_visual_cross_out: "Visual subtraction where a subset of rendered items are explicitly crossed out.",
-    foundation_fact_family_cards: "Construct an addition/subtraction equation using 3 visual number cards within 20.",
+    foundation_add_word_problem_20: "Solve a 1-step addition word problem within 20.",
+    foundation_sub_word_problem_20: "Solve a 1-step subtraction word problem within 20.",
+    foundation_add_three_single_digits: "Add three 1-digit numbers with sum up to 20.",
 
-    standard_add_100_no_regroup: "Add two 2-digit numbers within 100 without regrouping.",
     standard_sub_100_no_regroup: "Subtract two 2-digit numbers within 100 without regrouping.",
-    standard_add_three_numbers: "Add three 1-digit numbers with sums up to 20.",
-    standard_missing_addend_100: "Find the missing addend in a 2-digit equation (no regrouping).",
-    standard_missing_subtrahend_100: "Find the missing subtrahend in a 2-digit equation (no regrouping).",
-    standard_related_fact_families: "Use addition facts to solve related subtraction problems.",
     standard_comparison_more_basic: "Solve 'How many more' problems within 40 (no regrouping).",
     standard_comparison_fewer_basic: "Solve 'How many fewer' problems within 40 (no regrouping).",
-    standard_number_bond_multiples_10: "Complete a number bond within 100 (e.g., 85 = 50 + ?).",
-    standard_equation_equivalence: "Evaluate multiple full equations to find the one that matches a target sum/difference (no regrouping).",
-    standard_fact_family_cards: "Construct an equation using 3 visual number cards within 100.",
+    standard_two_step_subtraction_no_regroup: "Solve a 2-step subtraction word problem within 100 (no regrouping).",
+    standard_add_sub_mixed_no_regroup: "Solve a 2-step word problem involving both addition and subtraction within 100 (no regrouping).",
 
-    advanced_add_regrouping: "Add two numbers within 100 with regrouping.",
     advanced_sub_regrouping: "Subtract two numbers within 100 with regrouping.",
     advanced_comparative_more: "Solve 'more than' problems (e.g., What is X more than Y?).",
     advanced_comparative_less: "Solve 'less than' problems (e.g., What is X less than Y?).",
     advanced_cross_ordinal_queue: "Solve problems involving positions in a queue (ordinal logic).",
-    advanced_balance_equations: "Find the missing number to balance an equation (e.g., 12 + 5 = 10 + ?).",
     advanced_working_backwards: "Find the starting amount using the 'working backwards' heuristic.",
-    advanced_two_step_total: "Solve 2-step word problems involving a comparison and a total sum.",
-    advanced_shape_substitution: "Find the value of a symbol using simultaneous logic (e.g., A + A = 10).",
-    advanced_missing_digit_regrouping: "Find a missing digit in a 2-digit addition equation requiring regrouping.",
-    advanced_equation_equivalence: "Evaluate multiple full equations to find the one matching a target sum/difference (requires regrouping)."
+    advanced_two_step_total: "Solve 2-step word problems involving a comparison and a total sum."
   },
 
   // 3. GENERATION ENGINE

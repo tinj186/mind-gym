@@ -25,9 +25,12 @@ export class GenerationEngine {
     
     // 1. Get Level Specific Strategy
     const levelStrategy = getLevelStrategy(level, type);
-    let baseSystemInstructions = getBaseSystemInstructions(level, difficulty) + "\n\nLEVEL CONSTRAINTS:\n" + levelStrategy + "\n\nCRITICAL RULE FOR MULTI_STEP_INPUT: If asked to inject an array of steps, you MUST formulate the mathematical equations (e.g., '17 - 6 = 11'). Step labels should be like 'Working' or 'Equation' (e.g. expectedAnswer: '17-6=11') and 'Final Answer' (e.g. expectedAnswer: '11'). Break down complex problems into multiple working steps. ALWAYS output a valid JSON array of objects!";
+    let baseSystemInstructions = getBaseSystemInstructions(level, difficulty) + "\n\nLEVEL CONSTRAINTS:\n" + levelStrategy;
     const isVisualTask = safeSubtopic.includes('shape') || safeSubtopic.includes('pattern') || (safeSubtopic === 'time' && (safeDifficulty === 'foundation' || safeDifficulty === 'standard'));
+    
     if (type === 'Structured') {
+      baseSystemInstructions += "\n\nCRITICAL RULE FOR MULTI_STEP_INPUT: If asked to inject an array of steps, you MUST formulate the mathematical equations (e.g., '17 - 6 = 11'). Step labels should be like 'Working' or 'Equation' (e.g. expectedAnswer: '17-6=11') and 'Final Answer' (e.g. expectedAnswer: '11'). Break down complex problems into multiple working steps. ALWAYS output a valid JSON array of objects!";
+      
       if (isVisualTask) {
         baseSystemInstructions += " IMPORTANT: DO NOT ask the student to 'show your working' in the question text because this is a simple visual observation task.";
       } else {

@@ -21,9 +21,17 @@ export default function IconGrid({ data, modelData, visualProps }) {
     
   if (!renderArray || renderArray.length === 0) return null;
 
+  const cols = Number(source?.cols) || 0;
+  
+  const containerClass = cols > 0
+    ? "grid gap-4 md:gap-6 justify-center mx-auto"
+    : "flex flex-wrap justify-center gap-4 md:gap-6 max-w-2xl";
+    
+  const gridStyle = cols > 0 ? { gridTemplateColumns: `repeat(${cols}, max-content)` } : {};
+
   return (
     <div className="flex flex-col items-center justify-center p-4 w-full">
-      <div className="flex flex-wrap justify-center gap-4 md:gap-6 max-w-2xl">
+      <div className={containerClass} style={gridStyle}>
         {renderArray.map((item, idx) => {
           const displayIcon = typeof item === 'object' ? (item.icon || item.symbol || '🔔') : item;
           

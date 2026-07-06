@@ -2,6 +2,7 @@
  * Blueprint for Primary 1: Multiplication and Division
  * FOCUS: Concepts of Equal Groups, Sharing, and Grouping.
  */
+import { emojiObjects } from '@/lib/utils/variable-bank';
 import { getRandomContext } from '@/lib/utils/localization';
 import { foundationLogic } from './multiplication-division/foundation';
 import { standardLogic } from './multiplication-division/standard';
@@ -35,45 +36,38 @@ export const multiplicationDivisionBlueprint = {
   },
 
   variants: {
-    foundation_multiplication: "Basic multiplication (equal groups) within 40.",
-    foundation_division: "Basic division (sharing/grouping) within 20.",
     foundation_grouping_interactive: "Interactive: Group items into sets of a specific size.",
     foundation_sharing_interactive: "Interactive: Share items equally into a given number of groups.",
+    foundation_recognize_equal_groups: "Identify which picture shows equal groups.",
+    foundation_count_equal_groups: "Count the number of equal groups and items in each group.",
+    foundation_repeated_addition: "Match a picture of equal groups to a repeated addition sentence.",
 
-    standard_repeated_addition_convert: "Convert repeated addition to a multiplication equation.",
     standard_array_rows_cols: "Find the total items in an array (rows and columns).",
-    standard_comparison_times_as_many: "Solve 'times as many' word problems within 40.",
-    standard_skip_count_total: "Use skip counting by 2, 5, or 10 to find a total.",
-    standard_unit_price_calc: "Calculate the total cost of multiple identical items.",
     standard_sharing_missing_each: "Find how many in each group (Sharing).",
     standard_grouping_missing_groups: "Find the number of groups (Grouping).",
-    standard_inverse_fact_families: "Solve division using a related multiplication fact.",
-    standard_attribute_multiplication: "Count total attributes (e.g., wheels on 5 cars).",
-    standard_multiplication_syntax_audit: "Vocabulary audit: Identify which expression does NOT represent the total number of items shown.",
+    standard_array_equations: "Select the multiplication equation that matches the given array.",
+    standard_identify_division_sentence: "Match a picture of sharing/grouping to the correct division sentence.",
 
-    advanced_multi_step_mult_add: "Multi-step: Multiply groups then add more.",
-    advanced_multi_step_mult_sub: "Multi-step: Multiply groups then subtract.",
-    advanced_logic_wheels_legs: "Logic puzzle: Counting total wheels or legs across groups.",
-    advanced_multi_step_sharing_add: "Multi-step: Share equally then receive more.",
     advanced_grouping_need_more: "Multi-step: Grouping and finding how many more needed.",
-    advanced_two_entities_total: "Multi-step: Total of two grouped quantities.",
-    advanced_two_entities_diff: "Multi-step: Difference of two grouped quantities.",
-    advanced_money_mult_change: "Money: Buy multiple items and find change.",
-    advanced_money_group_buy: "Money: Find how many items can be bought with a sum.",
-    advanced_balance_mult_add: "Multi-step: Equate a grouped quantity with another by finding difference.",
-    advanced_attribute_tf_matrix: "Logic puzzle: Evaluate multiple True/False statements about the total attributes (e.g., legs/wheels) of mixed entities."
+    advanced_multi_step_sharing_add: "Multi-step: Share items equally, then one person receives more.",
+    advanced_logic_wheels_legs: "Logic Puzzle: Count total attributes (e.g., wheels/legs) across different groups.",
+    advanced_two_entities_total: "Multi-step: Find the total of two different grouped quantities.",
+    advanced_two_entities_diff: "Multi-step: Find the difference between two grouped quantities."
   },
 
-  generate: (difficulty = 'foundation', variant = 'foundation_mult_eqn', type = 'MCQ') => {
-    const safeType = String(type).toLowerCase();
-    const isShort = safeType.includes('short');
-    const isStructure = safeType.includes('structure') || safeType.includes('structured');
-    const isMCQ = safeType.includes('mcq');
+  generate: (difficulty = 'foundation', variant = 'foundation_grouping_interactive', type = 'MCQ') => {
+    let safeType = String(type).toLowerCase();
+    let isShort = safeType.includes('short');
+    let isStructure = safeType.includes('structure') || safeType.includes('structured');
+    let isMCQ = safeType.includes('mcq');
 
     let activeVariant = variant;
     const isMissing = !multiplicationDivisionBlueprint.variants[activeVariant];
-    const violatesShort = isShort && activeVariant && (activeVariant.includes('word_problem') || activeVariant.includes('interactive') || (activeVariant.includes('logic') && !activeVariant.includes('advanced')));
-    const violatesStructure = isStructure && activeVariant && (!activeVariant.includes('word_problem') && !activeVariant.includes('logic') && !activeVariant.includes('interactive') && !activeVariant.includes('standard') && !activeVariant.includes('advanced') && !activeVariant.includes('multiplication') && !activeVariant.includes('division'));
+    
+    const forceMCQVariants = ['foundation_recognize_equal_groups', 'foundation_count_equal_groups', 'foundation_repeated_addition'];
+    
+    const violatesShort = isShort && activeVariant && (activeVariant.includes('word_problem') || activeVariant.includes('interactive') || forceMCQVariants.includes(activeVariant) || (activeVariant.includes('logic') && !activeVariant.includes('advanced')));
+    const violatesStructure = isStructure && activeVariant && (!activeVariant.includes('word_problem') && !activeVariant.includes('logic') && !activeVariant.includes('interactive') && !activeVariant.includes('standard') && !activeVariant.includes('advanced'));
 
     if (isMissing || violatesShort || violatesStructure) {
       const safeDiff = String(difficulty).toLowerCase();
@@ -92,12 +86,22 @@ export const multiplicationDivisionBlueprint = {
           k.includes('word_problem') ||
           k.includes('logic') ||
           k.includes('interactive') ||
-          k.includes('multiplication') || k.includes('division') ||
           k.includes('standard') || k.includes('advanced')
         );
       }
 
-      activeVariant = validVariants[Math.floor(Math.random() * validVariants.length)] || 'foundation_multiplication';
+      activeVariant = validVariants[Math.floor(Math.random() * validVariants.length)] || 'foundation_grouping_interactive';
+    }
+
+    // STRICT TYPE OVERRIDES: Prevent UI from forcing wrong types for visual/interactive variants
+    if (activeVariant.includes('interactive')) {
+      isStructure = true;
+      isShort = false;
+      isMCQ = false;
+    } else if (forceMCQVariants.includes(activeVariant)) {
+      isMCQ = true;
+      isShort = false;
+      isStructure = false;
     }
 
     let formatInstructions = isMCQ
@@ -136,8 +140,10 @@ export const multiplicationDivisionBlueprint = {
     const tier = levelNum <= 2 ? 'LOWER_BLOCK' : (levelNum <= 4 ? 'MIDDLE_BLOCK' : 'UPPER_BLOCK');
     const context = getRandomContext('GENERAL', tier);
 
-    // Fix: Properly randomize the item from the context items array if selectedItem is not available
-    const itemData = context?.selectedItem || (context?.items && context.items.length > 0 ? context.items[Math.floor(Math.random() * context.items.length)] : null) || { item: 'item', icon: '⭐' };
+    // FIX: Pull directly from the 50+ item variable bank
+    const itemData = emojiObjects[Math.floor(Math.random() * emojiObjects.length)];
+    context.selectedItem = itemData; // Inject for logic files to use
+
     const cleanItemLabel = typeof itemData === 'string'
       ? itemData
       : (itemData.item || itemData.name?.singular || itemData.name || 'item');
@@ -145,11 +151,10 @@ export const multiplicationDivisionBlueprint = {
     if (String(cleanItemLabel).includes('[object')) console.warn("⚠️ [Blueprint: Mult/Div] Context item extraction failed for:", itemData);
 
     // Dynamic visual item selection
-    const funIcons = ['⚽', '🏀', '⭐', '🚗', '🥟', '🍢', '🍡', '🍎'];
-    const selectedIcon = itemData?.icon || funIcons[Math.floor(Math.random() * funIcons.length)];
+    const selectedIcon = itemData?.icon || '⭐';
 
-    // Visuals are hidden for text-only questions (Structured and MCQ) unless they use interactive tools
-    const hideVisual = !isShort && !activeVariant.includes('interactive');
+    // Visuals are extremely helpful for Primary 1 students, so we always show them across all question types
+    const hideVisual = false;
 
     if (activeVariant.startsWith('foundation_')) {
       return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, cleanItemLabel, getQText, selectedIcon, hideVisual, supportsStructured);

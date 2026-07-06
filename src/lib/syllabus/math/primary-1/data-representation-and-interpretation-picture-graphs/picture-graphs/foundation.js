@@ -7,7 +7,7 @@ const getShuffledOptions = (correct, distractors) => {
 };
 
 export const foundationVariants = {
-  foundation_read_single_category: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  foundation_read_single_category: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const themeItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
@@ -49,7 +49,7 @@ export const foundationVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -68,7 +68,7 @@ export const foundationVariants = {
     };
   },
 
-  foundation_compare_two_categories: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  foundation_compare_two_categories: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const themeItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
@@ -115,7 +115,7 @@ export const foundationVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -134,7 +134,7 @@ export const foundationVariants = {
     };
   },
 
-  foundation_total_two_categories: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  foundation_total_two_categories: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const themeItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
@@ -180,7 +180,7 @@ export const foundationVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -199,7 +199,7 @@ export const foundationVariants = {
     };
   },
 
-  foundation_most_least_category: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  foundation_most_least_category: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const themeItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
@@ -239,7 +239,7 @@ export const foundationVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -258,7 +258,7 @@ export const foundationVariants = {
     };
   },
 
-  foundation_zero_value_category: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  foundation_zero_value_category: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const themeItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
@@ -295,7 +295,7 @@ export const foundationVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -314,7 +314,7 @@ export const foundationVariants = {
     };
   },
 
-  foundation_category_match_text: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  foundation_category_match_text: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const themeItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
@@ -353,7 +353,7 @@ export const foundationVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -373,8 +373,8 @@ export const foundationVariants = {
   }
 };
 
-export const foundationLogic = (activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+export const foundationLogic = (activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
   if (foundationVariants[activeVariant]) {
-    return foundationVariants[activeVariant](config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
+    return foundationVariants[activeVariant](config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText);
   }
 };

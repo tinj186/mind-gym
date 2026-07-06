@@ -1,5 +1,6 @@
 import { numberToWords } from '@/lib/utils/math-helpers';
 import { getRandomContext } from '@/lib/utils/localization';
+import { getRandomNames } from '@/lib/utils/variable-bank';
 
 // Robust extraction helper for localized context objects
 const extract = (val) => {
@@ -628,6 +629,130 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
       metadata: { difficulty: 'standard', logic: "fact_family_cards", hideVisual: false }
+    };
+  }
+
+  // 12. Standard Two-Step Subtraction (No Regrouping)
+  if (activeVariant === 'standard_two_step_subtraction_no_regroup') {
+    const t1 = Math.floor(Math.random() * 3) + 7; // 7-9
+    const o1 = Math.floor(Math.random() * 3) + 6; // 6-8
+    const num1 = t1 * 10 + o1; // 76-98
+
+    const t2 = Math.floor(Math.random() * 3) + 1; // 1-3
+    const o2 = Math.floor(Math.random() * 3) + 1; // 1-3
+    const num2 = t2 * 10 + o2; // 11-33
+
+    const t3 = Math.floor(Math.random() * 2) + 1; // 1-2
+    const o3 = Math.floor(Math.random() * 2) + 1; // 1-2
+    const num3 = t3 * 10 + o3; // 11-22
+
+    const step1Ans = num1 - num2;
+    const finalAns = step1Ans - num3;
+
+    const name = getRandomNames();
+    const storyText = `${name} had ${num1} ${itemLabel}. ${name} gave ${num2} ${itemLabel} to a friend and lost another ${num3} ${itemLabel}. How many ${itemLabel} does ${name} have left?`;
+    
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      options = [
+        String(finalAns),
+        String(finalAns + 10), // careless tens
+        String(step1Ans + num3), // added third instead of subtracting
+        String(finalAns - 10)
+      ];
+      options = [...new Set(options)].filter(opt => parseInt(opt) >= 0);
+      while(options.length < 4) options.push(String(finalAns + Math.floor(Math.random() * 5) + 1));
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(step1Ans + num3)]: "CONCEPTUAL_ERROR",
+        [String(finalAns + 10)]: "CARELESS_CALCULATION",
+        [String(finalAns - 10)]: "CARELESS_CALCULATION"
+      };
+    }
+
+    const promptObject = {
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
+      content: {
+        questionText: getQText(storyText, `${num1} - ${num2} - ${num3} = ?`),
+        options: options,
+        defectMap: defectMap,
+        hint: "[AI: INJECT HINT]",
+        finalAnswer: String(finalAns),
+        solutionSteps: `1. First subtraction: ${num1} - ${num2} = ${step1Ans}.\\n2. Second subtraction: ${step1Ans} - ${num3} = ${finalAns}.\\n3. Total left is ${finalAns}.`
+      },
+      visualEngine: { componentToRender: "NONE", componentData: {} },
+      inputRequirement: { inputType }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT change the "visualEngine" component, "solutionSteps", or "finalAnswer". Return exactly the provided JSON structure, modifying ONLY the hint and array placeholders to match the requirements. ${formatInstructions}
+      
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'standard', steps: 2, logic: activeVariant, hideVisual: true }
+    };
+  }
+
+  // 13. Standard Add/Sub Mixed (No Regrouping)
+  if (activeVariant === 'standard_add_sub_mixed_no_regroup') {
+    const t1 = Math.floor(Math.random() * 3) + 4; // 4-6
+    const o1 = Math.floor(Math.random() * 4) + 2; // 2-5
+    const num1 = t1 * 10 + o1; // 42-65
+
+    const t2 = Math.floor(Math.random() * 2) + 2; // 2-3
+    const o2 = Math.floor(Math.random() * 3) + 1; // 1-3
+    const num2 = t2 * 10 + o2; // 21-33
+
+    const step1Ans = num1 + num2;
+
+    const t3 = Math.floor(Math.random() * 3) + 2; // 2-4
+    const o3 = Math.floor(Math.random() * 3) + 1; // 1-3
+    const num3 = t3 * 10 + o3; // 21-43
+
+    const finalAns = step1Ans - num3;
+
+    const name = getRandomNames();
+    const storyText = `${name} collected ${num1} ${itemLabel}. A friend gave ${name} ${num2} more ${itemLabel}. Then, ${name} sold ${num3} ${itemLabel}. How many ${itemLabel} does ${name} have now?`;
+    
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      options = [
+        String(finalAns),
+        String(step1Ans + num3), // added third instead of subtracting
+        String(num1 - num2 - num3 > 0 ? num1 - num2 - num3 : finalAns + 20), // subtracted second
+        String(finalAns + 10)
+      ];
+      options = [...new Set(options)].filter(opt => parseInt(opt) >= 0);
+      while(options.length < 4) options.push(String(finalAns + Math.floor(Math.random() * 5) + 1));
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(step1Ans + num3)]: "CONCEPTUAL_ERROR",
+        [String(finalAns + 10)]: "CARELESS_CALCULATION"
+      };
+    }
+
+    const promptObject = {
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
+      content: {
+        questionText: getQText(storyText, `${num1} + ${num2} - ${num3} = ?`),
+        options: options,
+        defectMap: defectMap,
+        hint: "[AI: INJECT HINT]",
+        finalAnswer: String(finalAns),
+        solutionSteps: `1. Addition step: ${num1} + ${num2} = ${step1Ans}.\\n2. Subtraction step: ${step1Ans} - ${num3} = ${finalAns}.\\n3. Total now is ${finalAns}.`
+      },
+      visualEngine: { componentToRender: "NONE", componentData: {} },
+      inputRequirement: { inputType }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT change the "visualEngine" component, "solutionSteps", or "finalAnswer". Return exactly the provided JSON structure, modifying ONLY the hint and array placeholders to match the requirements. ${formatInstructions}
+      
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'standard', steps: 2, logic: activeVariant, hideVisual: true }
     };
   }
 }

@@ -14,7 +14,7 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
   // 1. standard_word_to_equation
   if (activeVariant === 'standard_word_to_equation') {
     const isAddition = Math.random() > 0.5;
-    const name = getRandomNames(1)[0];
+    const name = getRandomNames(1);
     
     let a, b, total, story;
     if (isAddition) {

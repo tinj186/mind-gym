@@ -9,7 +9,7 @@ const generateMoneyString = (cents) => {
 };
 
 export const advancedVariants = {
-  advanced_transaction_change: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  advanced_transaction_change: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const isCentsMode = Math.random() > 0.5;
     let item1Cents, item2Cents, item3Cents, paidCents;
     if (isCentsMode) {
@@ -36,7 +36,7 @@ export const advancedVariants = {
     const totalStr = generateMoneyString(totalCents);
     const answer = generateMoneyString(changeCents);
 
-    const randomName = getRandomNames(1)[0];
+    const randomName = getRandomNames(1);
     const questionTextTemplate = getQText(`${randomName} buys Item A for ${item1Str}, Item B for ${item2Str}, and Item C for ${item3Str}. ${randomName} pays with a ${paidStr} note. How much change will ${randomName} receive?`, `Item A: ${item1Str}. Item B: ${item2Str}. Item C: ${item3Str}. Paid: ${paidStr}. Change = ?`);
     const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: The provided "questionText" is already a full math problem. Your ONLY job is to replace generic placeholders like 'Item A' or 'Item B' with actual Singaporean items (e.g. 'a curry puff', 'a toy car') and remove the '[STORY]' tag. KEEP all numbers, names, and math exactly the same! IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
@@ -65,7 +65,7 @@ export const advancedVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -84,7 +84,7 @@ export const advancedVariants = {
     };
   },
 
-  advanced_savings_and_spending: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  advanced_savings_and_spending: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const isCentsMode = Math.random() > 0.5;
     let startCents, saveCents, spendCents;
     if (isCentsMode) {
@@ -103,7 +103,7 @@ export const advancedVariants = {
     const spendStr = generateMoneyString(spendCents);
     const answer = generateMoneyString(finalCents);
 
-    const randomName = getRandomNames(1)[0];
+    const randomName = getRandomNames(1);
     const questionTextTemplate = getQText(`${randomName} starts with ${startStr}. ${randomName} saves another ${saveStr}. Then ${randomName} spends ${spendStr}. How much money does ${randomName} have left?`, `Start: ${startStr}. Save: ${saveStr}. Spend: ${spendStr}. Money left = ?`);
     const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: The provided "questionText" is already a full math problem. Your ONLY job is to replace generic placeholders like 'Item A' or 'Item B' with actual Singaporean items (e.g. 'a curry puff', 'a toy car') and remove the '[STORY]' tag. KEEP all numbers, names, and math exactly the same! IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
@@ -132,7 +132,7 @@ export const advancedVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -151,7 +151,7 @@ export const advancedVariants = {
     };
   },
 
-  advanced_missing_price_deduction: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  advanced_missing_price_deduction: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const isCentsMode = Math.random() > 0.5;
     let item1Cents, item2Cents, changeCents;
     if (isCentsMode) {
@@ -170,7 +170,7 @@ export const advancedVariants = {
     const changeStr = generateMoneyString(changeCents);
     const answer = generateMoneyString(item2Cents);
 
-    const randomName = getRandomNames(1)[0];
+    const randomName = getRandomNames(1);
     const questionTextTemplate = getQText(`${randomName} bought Item A for ${item1Str} and Item B. ${randomName} paid with ${paidStr} and received ${changeStr} in change. What is the price of Item B?`, `Item A: ${item1Str}. Paid: ${paidStr}. Change: ${changeStr}. Price of Item B = ?`);
     const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: The provided "questionText" is already a full math problem. Your ONLY job is to replace generic placeholders like 'Item A' or 'Item B' with actual Singaporean items (e.g. 'a curry puff', 'a toy car') and remove the '[STORY]' tag. KEEP all numbers, names, and math exactly the same! IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
@@ -199,7 +199,7 @@ export const advancedVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -218,7 +218,7 @@ export const advancedVariants = {
     };
   },
 
-  advanced_pooled_affordability: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  advanced_pooled_affordability: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const isCentsMode = Math.random() > 0.5;
     // Generate money for person 1
     const p1Pool = isCentsMode ? ['10¢', '20¢', '50¢'] : ['$1', '$2', '$5', '$10'];
@@ -270,7 +270,7 @@ export const advancedVariants = {
       `Mei has ${p1TotalStr} in her purse. Ali has ${p2Items.join(' and ')}. They put all their money together. They want to buy a toy that costs ${targetPriceStr}. ${isShortfall ? 'How much more money do they need?' : 'How much change will they receive?'}`, 
       isShortfall ? `Mei: ${p1TotalStr}, Ali: ${p2Items.join(' + ')}. Toy: ${targetPriceStr}. More money needed = ?` : `Mei: ${p1TotalStr}, Ali: ${p2Items.join(' + ')}. Toy: ${targetPriceStr}. Change = ?`
     );
-    const randomName = getRandomNames(1)[0];
+    const randomName = getRandomNames(1);
     const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question." : `STRICT: The provided "questionText" is already a full math problem. Your ONLY job is to replace generic placeholders like 'a toy' with actual Singaporean items (e.g. 'a kite', 'a game') and remove the '[STORY]' tag. KEEP all numbers, names, and math exactly the same! IMPORTANT: In Singapore, $2, $5, $10 are notes. 5¢, 10¢, 20¢, 50¢, $1 are coins.`;
 
     let options = [
@@ -303,7 +303,7 @@ export const advancedVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -323,7 +323,7 @@ export const advancedVariants = {
   }
 };
 
-export const advancedLogic = (activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+export const advancedLogic = (activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
   let targetVariant = advancedVariants[activeVariant] ? activeVariant : 'advanced_transaction_change';
-  return advancedVariants[targetVariant](config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
+  return advancedVariants[targetVariant](config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText);
 };

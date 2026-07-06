@@ -79,7 +79,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
       ${isShortQ 
         ? `STRICT: Use exactly "${equationStr}" as the question. Ignore the rule about not using English words.`
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean math story involving ${groups} groups of ${size} ${itemLabel} (represented by the emoji "${selectedIcon}") and ${extra} more.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean math story involving ${groups} groups of ${size} ${itemLabel} (represented by the emoji "${selectedIcon}") and ${extra} more.\n\n        CRITICAL RULE: You are ONLY allowed to replace the exact word "[STORY]" in the "questionText" field. The rest of the string (the actual question being asked) MUST remain completely untouched and appended to the end of your story.`
       }
 
       CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
@@ -140,7 +140,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
       ${isShortQ 
         ? `STRICT: Use exactly "${equationStr}" as the question. Ignore the rule about not using English words.`
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean math story involving ${groups} groups of ${size} ${itemLabel} (represented by the emoji "${selectedIcon}") where ${remove} are removed.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean math story involving ${groups} groups of ${size} ${itemLabel} (represented by the emoji "${selectedIcon}") where ${remove} are removed.\n\n        CRITICAL RULE: You are ONLY allowed to replace the exact word "[STORY]" in the "questionText" field. The rest of the string (the actual question being asked) MUST remain completely untouched and appended to the end of your story.`
       }
 
       CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
@@ -193,7 +193,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
       ${isShortQ 
         ? `STRICT: Use exactly "${equationStr}" as the question. Ignore the rule about not using English words.` 
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean story involving ${count} ${typeLabel} (visually represented by the emoji "${selectedIcon}").`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative 1-sentence localized Singaporean story involving ${count} ${typeLabel}.\n\n        CRITICAL RULE: You are ONLY allowed to replace the exact word "[STORY]" in the "questionText" field. The rest of the string (the actual question being asked) MUST remain completely untouched and appended to the end of your story.`
       }
 
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
@@ -253,7 +253,69 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
       ${isShortQ 
         ? `STRICT: Use exactly "${equationStr}" as the question. Ignore the rule about not using English words.`
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative localized Singaporean story where ${total} ${itemLabel} (represented by "${selectedIcon}") are shared equally among ${groups} people. Then, one person receives ${extra} more.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative localized Singaporean story where ${total} ${itemLabel} (represented by "${selectedIcon}") are shared equally among ${groups} people. Then, one person receives ${extra} more.\n\n        CRITICAL RULE: You are ONLY allowed to replace the exact word "[STORY]" in the "questionText" field. The rest of the string (the actual question being asked) MUST remain completely untouched and appended to the end of your story.`
+      }
+
+      CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'advanced', logic: activeVariant, hideVisual: hideVisual }
+    };
+  }
+
+  if (activeVariant === 'advanced_multi_step_sharing_sub') {
+    const itemLabel = extract(selectedContextItem);
+    const groups = Math.floor(Math.random() * 3) + 2; // 2 to 4
+    const each = Math.floor(Math.random() * 4) + 3; // 3 to 6
+    const total = groups * each;
+    const removed = Math.floor(Math.random() * 2) + 1; // 1 to 2
+    const answer = String(each - removed);
+    
+    const equationStr = `${total} shared equally among ${groups}, then subtract ${removed} = ?`;
+
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = Array.from(new Set([
+        answer, 
+        String(each), 
+        String(total - removed), 
+        String(each + removed)
+      ])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 1)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+
+      defectMap = {
+        [String(each)]: "CONCEPTUAL_ERROR",
+        [String(total - removed)]: "CONCEPTUAL_ERROR",
+        [String(each + removed)]: "CONFUSED_OPERATION"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
+
+    const promptObject = {
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
+      content: {
+        questionText: getQText(`[STORY] How many items does that person have left?`, equationStr, zodType),
+        options: options,
+        defectMap: defectMap,
+        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
+        finalAnswer: answer,
+        solutionSteps: `1. Step 1 (Share): ${total} ÷ ${groups} = ${each}.\n2. Step 2 (Give away): ${each} - ${removed} = ${answer}.`
+      },
+      visualEngine: {
+        componentToRender: "NONE",
+        componentData: {}
+      },
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
+      ${isShortQ 
+        ? `STRICT: Use exactly "${equationStr}" as the question. Ignore the rule about not using English words.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a creative localized Singaporean story where ${total} ${itemLabel} (represented by "${selectedIcon}") are shared equally among ${groups} people. Then, one person loses or gives away ${removed}.\n\n        CRITICAL RULE: You are ONLY allowed to replace the exact word "[STORY]" in the "questionText" field. The rest of the string (the actual question being asked) MUST remain completely untouched and appended to the end of your story.`
       }
 
       CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
@@ -315,7 +377,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
       ${isShortQ 
         ? `STRICT: Use exactly "${equationStr}" as the question. Ignore the rule about not using English words.`
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story where someone has ${currentItems} ${itemLabel} (represented by "${selectedIcon}") and wants to make ${targetGroups} groups with ${size} in each group.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story where someone has ${currentItems} ${itemLabel} (represented by "${selectedIcon}") and wants to make ${targetGroups} groups with ${size} in each group.\n\n        CRITICAL RULE: You are ONLY allowed to replace the exact word "[STORY]" in the "questionText" field. The rest of the string (the actual question being asked) MUST remain completely untouched and appended to the end of your story.`
       }
 
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
@@ -378,7 +440,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
       ${isShortQ 
         ? `STRICT: Use exactly "${equationStr}" as the question. Ignore the rule about not using English words.`
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story involving Person A with ${groupsA} groups of ${sizeA} ${itemLabel} and Person B with ${groupsB} groups of ${sizeB} ${itemLabel}.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story involving Person A with ${groupsA} groups of ${sizeA} ${itemLabel} and Person B with ${groupsB} groups of ${sizeB} ${itemLabel}.\n\n        CRITICAL RULE: You are ONLY allowed to replace the exact word "[STORY]" in the "questionText" field. The rest of the string (the actual question being asked) MUST remain completely untouched and appended to the end of your story.`
       }
 
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
@@ -441,7 +503,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
       ${isShortQ 
         ? `STRICT: Use exactly "${equationStr}" as the question. Ignore the rule about not using English words.`
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story where Person A has ${groupsA} groups of ${sizeA} ${itemLabel} and Person B has ${groupsB} groups of ${sizeB} ${itemLabel}.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story where Person A has ${groupsA} groups of ${sizeA} ${itemLabel} and Person B has ${groupsB} groups of ${sizeB} ${itemLabel}.\n\n        CRITICAL RULE: You are ONLY allowed to replace the exact word "[STORY]" in the "questionText" field. The rest of the string (the actual question being asked) MUST remain completely untouched and appended to the end of your story.`
       }
 
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
@@ -485,7 +547,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
-        questionText: getQText(`[STORY] How much change does the person receive?`, equationStr, zodType),
+        questionText: getQText(`[STORY] How much change does the person receive?`, `${extract(context.name)} buys ${qty} ${itemLabel} for $${unitPrice} each. ${extract(context.name)} pays with a $${paidNote} note. How much change does ${extract(context.name)} receive?`, zodType),
         options: options,
         defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
@@ -504,8 +566,71 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
       ${isShortQ 
         ? `STRICT: Use exactly "${equationStr}" as the question. Ignore the rule about not using English words.`
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story where someone buys ${qty} ${itemLabel} for $${unitPrice} each, and pays with a $${paidNote} note.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story where someone buys ${qty} ${itemLabel} for $${unitPrice} each, and pays with a $${paidNote} note.\n\n        CRITICAL RULE: You are ONLY allowed to replace the exact word "[STORY]" in the "questionText" field. The rest of the string (the actual question being asked) MUST remain completely untouched and appended to the end of your story.`
       }
+
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'advanced', logic: activeVariant, hideVisual: hideVisual }
+    };
+  }
+
+  if (activeVariant === 'advanced_money_share_change') {
+    const itemLabel = extract(selectedContextItem);
+    const groups = 2; // Share between 2 people
+    const each = [2, 5, 10][Math.floor(Math.random() * 3)];
+    const totalMoney = groups * each;
+    const itemCost = Math.floor(Math.random() * (each - 1)) + 1; // 1 to (each-1)
+    
+    const answer = String(each - itemCost);
+    
+    const equationStr = `$${totalMoney} shared between ${groups}, then spend $${itemCost} = ?`;
+
+    let defectMap = null;
+    let options = null;
+    if (isMCQ) {
+      options = Array.from(new Set([
+        answer, 
+        String(totalMoney - itemCost), 
+        String(each + itemCost), 
+        String(each)
+      ])).slice(0, 4);
+      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 1)); options = Array.from(new Set(options)); }
+      options = options.sort(() => Math.random() - 0.5);
+
+      defectMap = {
+        [String(totalMoney - itemCost)]: "CONFUSED_OPERATION",
+        [String(each + itemCost)]: "CONFUSED_OPERATION",
+        [String(each)]: "INCOMPLETE_STEP"
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
+
+    const promptObject = {
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
+      content: {
+        questionText: getQText(`[STORY] How much money does that person have left?`, `${extract(context.name)} and a friend share $${totalMoney} equally. Then ${extract(context.name)} buys a ${itemLabel} for $${itemCost}. How much money does ${extract(context.name)} have left?`, zodType),
+        options: options,
+        defectMap: defectMap,
+        hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
+        finalAnswer: answer,
+        solutionSteps: `1. Step 1 (Share): $${totalMoney} ÷ ${groups} = $${each}.\n2. Step 2 (Spend): $${each} - $${itemCost} = $${answer}.`
+      },
+      visualEngine: {
+        componentToRender: "NONE",
+        componentData: {}
+      },
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. ${formatInstructions}
+      IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
+      ${isShortQ 
+        ? 'STRICT: Provide a direct mathematical equation involving money. NO story context or names.' 
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story where 2 people share $${totalMoney} equally. Then, one person buys ${itemLabel} for $${itemCost}.\n\n        CRITICAL RULE: You are ONLY allowed to replace the exact word "[STORY]" in the "questionText" field. The rest of the string (the actual question being asked) MUST remain completely untouched and appended to the end of your story.`
+      }
+
+      CRITICAL VISUAL RULE: "componentData" MUST be an object. NEVER return it as a string.
 
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
       metadata: { difficulty: 'advanced', logic: activeVariant, hideVisual: hideVisual }
@@ -545,7 +670,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const promptObject = {
       meta: { level, topic, type: zodType, difficulty: zodDiff },
       content: {
-        questionText: getQText(`[STORY] How many items can be bought?`, equationStr, zodType),
+        questionText: getQText(`[STORY] How many items can be bought?`, `${extract(context.name)} has $${totalMoney}. ${extract(context.name)} buys some ${itemLabel} that cost $${unitPrice} each. How many ${itemLabel} can be bought?`, zodType),
         options: options,
         defectMap: defectMap,
         hint: "[AI: PROVIDE A CONCEPTUAL HINT]",
@@ -564,7 +689,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
       ${isShortQ 
         ? 'STRICT: Provide a direct mathematical equation involving money. NO story context or names.' 
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story where someone has $${totalMoney} and wants to buy ${itemLabel} that cost $${unitPrice} each.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story where someone has $${totalMoney} and wants to buy ${itemLabel} that cost $${unitPrice} each.\n\n        CRITICAL RULE: You are ONLY allowed to replace the exact word "[STORY]" in the "questionText" field. The rest of the string (the actual question being asked) MUST remain completely untouched and appended to the end of your story.`
       }
 
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
@@ -625,7 +750,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       IMPORTANT: For story questions, DO NOT include the mathematical equation (e.g., 3 x $10 = ?) in the questionText.
       ${isShortQ 
         ? `STRICT: Use exactly "${equationStr}" as the question. Ignore the rule about not using English words.`
-        : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story where Person A has ${groupsA} groups of ${sizeA} ${itemLabel} and Person B has only ${currentB} ${itemLabel}.`
+        : `STRICT: Replace the "[STORY]" tag in "questionText" with a localized Singaporean story where Person A has ${groupsA} groups of ${sizeA} ${itemLabel} and Person B has only ${currentB} ${itemLabel}.\n\n        CRITICAL RULE: You are ONLY allowed to replace the exact word "[STORY]" in the "questionText" field. The rest of the string (the actual question being asked) MUST remain completely untouched and appended to the end of your story.`
       }
 
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,

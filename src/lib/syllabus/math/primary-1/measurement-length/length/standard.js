@@ -1,7 +1,7 @@
 import { getRandomContext } from '@/lib/utils/localization';
 
 import { getRandomLengthItems, LENGTH_ITEMS_POOL } from '@/lib/utils/variable-bank';
-const units = [{ name: "paperclips", icon: "paperclip.svg" }, { name: "paperpins", icon: "paperpin.svg" }];
+const units = [{ name: "cm", icon: "ruler.svg" }];
 const getShuffledOptions = (correct, distractors) => [correct, ...distractors].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4);
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 

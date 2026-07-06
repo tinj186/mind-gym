@@ -1,5 +1,6 @@
 import { numberToWords } from '@/lib/utils/math-helpers';
 import { getRandomContext } from '@/lib/utils/localization';
+import { getRandomNames } from '@/lib/utils/variable-bank';
 
 // Robust extraction helper for localized context objects
 const extract = (val) => {
@@ -352,6 +353,111 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
       metadata: { difficulty: 'foundation', logic: "fact_family_cards", hideVisual: false }
+    };
+  }
+
+  // 6. Foundation Add/Sub Word Problem Within 20
+  if (activeVariant === 'foundation_add_word_problem_20' || activeVariant === 'foundation_sub_word_problem_20') {
+    const isAdd = activeVariant.includes('add');
+    const num1 = isAdd ? Math.floor(Math.random() * 6) + 6 : Math.floor(Math.random() * 8) + 12; 
+    const num2 = isAdd ? Math.floor(Math.random() * 6) + 3 : Math.floor(Math.random() * 5) + 2;
+    const answer = isAdd ? String(num1 + num2) : String(num1 - num2);
+    
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      const wrongOpAnswer = isAdd ? String(num1 - num2) : String(num1 + num2);
+      options = Array.from(new Set([answer, wrongOpAnswer, String(parseInt(answer) + 1), String(parseInt(answer) - 1)])).slice(0, 4);
+      options = options.filter(opt => parseInt(opt) >= 0);
+      while(options.length < 4) { 
+        let cand = parseInt(answer) + Math.floor(Math.random() * 10) - 3;
+        if (cand >= 0 && String(cand) !== answer) options.push(String(cand));
+        options = Array.from(new Set(options));
+      }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [wrongOpAnswer]: "CONCEPTUAL_ERROR"
+      };
+      options.forEach(opt => { if (opt !== answer && opt !== wrongOpAnswer) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
+
+    const name = getRandomNames();
+    const storyText = isAdd 
+      ? `${name} had ${num1} ${itemLabel}. Then, ${name} bought ${num2} more ${itemLabel}. How many ${itemLabel} does ${name} have altogether?`
+      : `${name} had ${num1} ${itemLabel}. Then, ${name} gave away ${num2} ${itemLabel}. How many ${itemLabel} does ${name} have left?`;
+
+    const promptObject = {
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
+      content: {
+        questionText: getQText(storyText, isAdd ? `${num1} + ${num2} = ?` : `${num1} - ${num2} = ?`),
+        options: options,
+        defectMap: defectMap,
+        hint: "[AI: INJECT HINT]",
+        finalAnswer: answer,
+        solutionSteps: `1. ${num1} ${isAdd ? '+' : '-'} ${num2} = ${answer}.`
+      },
+      visualEngine: { componentToRender: "NONE", componentData: {} },
+      inputRequirement: { inputType }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT change the "visualEngine" component, "solutionSteps", or "finalAnswer". Return exactly the provided JSON structure, modifying ONLY the hint and array placeholders to match the requirements. ${formatInstructions}
+      
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'foundation', steps: 1, logic: activeVariant, hideVisual: true }
+    };
+  }
+
+  // 7. Foundation Add Three Single Digits
+  if (activeVariant === 'foundation_add_three_single_digits') {
+    // Generate three 1-digit numbers summing to <= 20
+    const n1 = Math.floor(Math.random() * 6) + 2; 
+    const n2 = Math.floor(Math.random() * (10 - n1)) + 1; // Make first two sum to <= 10
+    const n3 = Math.floor(Math.random() * (20 - (n1 + n2))) + 1;
+    const answer = String(n1 + n2 + n3);
+
+    let options = null;
+    let defectMap = null;
+    if (isMCQ) {
+      options = Array.from(new Set([answer, String(n1 + n2), String(n1 + n2 + n3 + 2), String(parseInt(answer) - 1)])).slice(0, 4);
+      options = options.filter(opt => parseInt(opt) >= 0);
+      while(options.length < 4) { 
+        let cand = parseInt(answer) + Math.floor(Math.random() * 5) - 2;
+        if (cand >= 0 && String(cand) !== answer) options.push(String(cand));
+        options = Array.from(new Set(options));
+      }
+      options = options.sort(() => Math.random() - 0.5);
+      
+      defectMap = {
+        [String(n1 + n2)]: "CONCEPTUAL_ERROR" // forgot the third number
+      };
+      options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
+    }
+
+    const promptObject = {
+      meta: { level, topic, type: zodType, difficulty: zodDiff },
+      content: {
+        questionText: getQText(`[STORY] How many altogether?`, `${n1} + ${n2} + ${n3} = ?`),
+        options: options,
+        defectMap: defectMap,
+        hint: "[AI: INJECT HINT]",
+        finalAnswer: answer,
+        solutionSteps: `1. Add the first two numbers: ${n1} + ${n2} = ${n1 + n2}.\\n2. Add the third number: ${n1 + n2} + ${n3} = ${answer}.`
+      },
+      visualEngine: { componentToRender: "NONE", componentData: {} },
+      inputRequirement: { inputType }
+    };
+
+    return {
+      aiPrompt: `You are an expert Primary 1 math generator. STRICT VARIANT MANDATE: You are generating a specific logic variant. DO NOT change the "visualEngine" component, "solutionSteps", or "finalAnswer". Return exactly the provided JSON structure, modifying ONLY the hint and array placeholders to match the requirements. ${formatInstructions}
+      ${isShortQ 
+        ? 'STRICT: Provide a direct mathematical equation. NO story context.' 
+        : `STRICT: Replace the "[STORY]" tag with a 1-sentence localized Singaporean story about finding the total of ${n1}, ${n2}, and ${n3} ${itemLabel}.`
+      }
+      
+      JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
+      metadata: { difficulty: 'foundation', steps: 2, logic: activeVariant, hideVisual: true }
     };
   }
 }

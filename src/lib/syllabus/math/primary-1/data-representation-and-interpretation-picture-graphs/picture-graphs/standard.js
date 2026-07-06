@@ -8,7 +8,7 @@ const getShuffledOptions = (correct, distractors) => {
 };
 
 export const standardVariants = {
-  standard_read_all_categories: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  standard_read_all_categories: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const uniqueCounts = [1, 2, 3, 4, 5, 6, 7].sort(() => Math.random() - 0.5);
@@ -45,7 +45,7 @@ export const standardVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -64,7 +64,7 @@ export const standardVariants = {
     };
   },
 
-  standard_most_least_frequent: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  standard_most_least_frequent: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const uniqueCounts = [1, 2, 3, 4, 5, 6, 7].sort(() => Math.random() - 0.5);
@@ -98,7 +98,7 @@ export const standardVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -117,7 +117,7 @@ export const standardVariants = {
     };
   },
 
-  standard_difference_two_categories: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  standard_difference_two_categories: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const uniqueCounts = [1, 2, 3, 4, 5, 6, 7].sort(() => Math.random() - 0.5);
@@ -153,7 +153,7 @@ export const standardVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -172,7 +172,7 @@ export const standardVariants = {
     };
   },
 
-  standard_combine_two_groups_vs_third: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  standard_combine_two_groups_vs_third: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const uniqueCounts = [1, 2, 3, 4, 5, 6, 7].sort(() => Math.random() - 0.5);
@@ -206,7 +206,7 @@ export const standardVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -225,7 +225,7 @@ export const standardVariants = {
     };
   },
 
-  standard_fewer_than_threshold: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  standard_fewer_than_threshold: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const uniqueCounts = [1, 2, 3, 4, 5, 6, 7].sort(() => Math.random() - 0.5);
@@ -256,7 +256,7 @@ export const standardVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -275,7 +275,7 @@ export const standardVariants = {
     };
   },
 
-  standard_rank_three_categories: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  standard_rank_three_categories: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const uniqueCounts = [1, 2, 3, 4, 5, 6, 7].sort(() => Math.random() - 0.5);
@@ -307,7 +307,7 @@ export const standardVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -326,7 +326,7 @@ export const standardVariants = {
     };
   },
 
-  standard_equal_value_groups: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  standard_equal_value_groups: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const uniqueCounts = [1, 2, 3, 4, 5, 6, 7].sort(() => Math.random() - 0.5);
@@ -361,7 +361,7 @@ export const standardVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -380,7 +380,7 @@ export const standardVariants = {
     };
   },
 
-  standard_add_item_prediction: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  standard_add_item_prediction: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const selectedTheme = getRandomTheme(4);
     const orientation = Math.random() > 0.5 ? 'HORIZONTAL' : 'VERTICAL';
     const uniqueCounts = [1, 2, 3, 4, 5, 6, 7].sort(() => Math.random() - 0.5);
@@ -414,7 +414,7 @@ export const standardVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -434,8 +434,8 @@ export const standardVariants = {
   }
 };
 
-export const standardLogic = (activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+export const standardLogic = (activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
   if (standardVariants[activeVariant]) {
-    return standardVariants[activeVariant](config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
+    return standardVariants[activeVariant](config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText);
   }
 };

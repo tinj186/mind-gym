@@ -8,7 +8,7 @@ const getShuffledOptions = (correct, distractors) => {
 };
 
 export const advancedVariants = {
-  advanced_multi_step_problem: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  advanced_multi_step_problem: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const selectedTheme = getRandomTheme(5);
     const pairedItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const [cat1, cat2, cat3] = getRandom(pairedItems, 3);
@@ -56,7 +56,7 @@ export const advancedVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -75,7 +75,7 @@ export const advancedVariants = {
     };
   },
 
-  advanced_predict_next_category: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  advanced_predict_next_category: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const selectedTheme = getRandomTheme(5);
     const pairedItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const cat1 = pairedItems[0];
@@ -123,7 +123,7 @@ export const advancedVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -142,7 +142,7 @@ export const advancedVariants = {
     };
   },
 
-  advanced_create_graph_from_data: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  advanced_create_graph_from_data: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const selectedTheme = getRandomTheme(5);
     const pairedItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const [cat1, cat2, cat3] = getRandom(pairedItems, 3);
@@ -199,7 +199,7 @@ export const advancedVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -218,7 +218,7 @@ export const advancedVariants = {
     };
   },
 
-  advanced_missing_data_point: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  advanced_missing_data_point: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const selectedTheme = getRandomTheme(5);
     const pairedItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const [cat1, cat2, cat3] = getRandom(pairedItems, 3);
@@ -266,7 +266,7 @@ export const advancedVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -285,7 +285,7 @@ export const advancedVariants = {
     };
   },
 
-  advanced_clue_deduction_riddle: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  advanced_clue_deduction_riddle: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const selectedTheme = getRandomTheme(5);
     const pairedItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const [cat1, cat2] = getRandom(pairedItems, 2);
@@ -331,7 +331,7 @@ export const advancedVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -350,7 +350,7 @@ export const advancedVariants = {
     };
   },
 
-  advanced_total_graph_redistribution: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  advanced_total_graph_redistribution: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const selectedTheme = getRandomTheme(5);
     const pairedItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const [cat1, cat2] = getRandom(pairedItems, 2);
@@ -395,7 +395,7 @@ export const advancedVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -414,7 +414,7 @@ export const advancedVariants = {
     };
   },
 
-  advanced_comparative_sum_groups: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  advanced_comparative_sum_groups: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const selectedTheme = getRandomTheme(5);
     const pairedItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const [cat1, cat2, cat3] = getRandom(pairedItems, 3);
@@ -461,7 +461,7 @@ export const advancedVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -480,7 +480,7 @@ export const advancedVariants = {
     };
   },
 
-  advanced_data_entry_mistake: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  advanced_data_entry_mistake: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const selectedTheme = getRandomTheme(5);
     const pairedItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const targetCat = pairedItems[0];
@@ -523,7 +523,7 @@ export const advancedVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -542,7 +542,7 @@ export const advancedVariants = {
     };
   },
 
-  advanced_backwards_tracking_total: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  advanced_backwards_tracking_total: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const selectedTheme = getRandomTheme(5);
     const pairedItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const [cat1, cat2, cat3] = getRandom(pairedItems, 3);
@@ -588,7 +588,7 @@ export const advancedVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -607,7 +607,7 @@ export const advancedVariants = {
     };
   },
 
-  advanced_hypothetical_sharing: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+  advanced_hypothetical_sharing: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
     const selectedTheme = getRandomTheme(5);
     const pairedItems = selectedTheme.items.map((name, i) => ({ label: name, emoji: selectedTheme.emojis[i] }));
     const [cat1, cat2] = getRandom(pairedItems, 2);
@@ -652,7 +652,7 @@ export const advancedVariants = {
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+        "meta": { "level": "${level}", "topic": "${topic}", "subtopic": "${subtopic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
@@ -672,8 +672,8 @@ export const advancedVariants = {
   }
 };
 
-export const advancedLogic = (activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+export const advancedLogic = (activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText) => {
   if (advancedVariants[activeVariant]) {
-    return advancedVariants[activeVariant](config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
+    return advancedVariants[activeVariant](config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText);
   }
 };
