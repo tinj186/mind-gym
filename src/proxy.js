@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 // 🚨 MAINTENANCE MODE SWITCH 🚨
 // Set to true to lock the entire website. Set to false to open to the public.
-const MAINTENANCE_MODE = true; 
+const MAINTENANCE_MODE = false; 
 
 export default withAuth(
   function middleware(req) {
