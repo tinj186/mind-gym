@@ -73,3 +73,28 @@ export const sendPasswordResetEmail = async (email, token) => {
     `,
   });
 };
+
+export const sendSubscriptionWelcomeEmail = async (email, name) => {
+  const hubLink = `${getBaseUrl()}/hub`;
+
+  await resend.emails.send({
+    from: SENDER_EMAIL,
+    to: email,
+    subject: 'Welcome to Mind Gym Annual Pass! 🧠',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #2563EB;">Welcome to the Annual Pass!</h2>
+        <p>Hi ${name || 'there'},</p>
+        <p>Thank you for subscribing! Your payment was successful and your account has been instantly upgraded to the <strong>Primary 1 Annual Pass</strong>.</p>
+        <p>You now have unlimited access to our syllabus-aligned math worksheet generator, automated marking, and granular performance tracking.</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${hubLink}" style="background-color: #2563EB; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Go to Your Hub</a>
+        </div>
+        <p>If you have any questions or need help getting started, just reply to this email!</p>
+        <br />
+        <p>Best regards,</p>
+        <p><strong>The Learn Reps Team</strong></p>
+      </div>
+    `,
+  });
+};

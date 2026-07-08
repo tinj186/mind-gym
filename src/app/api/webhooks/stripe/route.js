@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { StripeAdapter } from '@/lib/payments/adapters/StripeAdapter';
+import { sendSubscriptionWelcomeEmail } from '@/lib/email';
 
 export async function POST(req) {
   try {
@@ -23,7 +24,7 @@ export async function POST(req) {
       const stripeCustomerId = session.customer;
 
       if (userId) {
-        await prisma.user.update({
+        const updatedUser = await prisma.user.update({
           where: { id: userId },
           data: { 
             subscriptionStatus: 'ACTIVE',
@@ -31,6 +32,16 @@ export async function POST(req) {
           }
         });
         console.log(`Successfully upgraded User ${userId} to ACTIVE subscription!`);
+        
+        // Send the welcome email
+        if (updatedUser && updatedUser.email) {
+          try {
+            await sendSubscriptionWelcomeEmail(updatedUser.email, updatedUser.name);
+            console.log(`Welcome email sent successfully to ${updatedUser.email}`);
+          } catch (emailError) {
+            console.error(`Failed to send welcome email to ${updatedUser.email}:`, emailError);
+          }
+        }
       } else {
         console.warn(`[Stripe Webhook] checkout.session.completed missing client_reference_id for session ${session.id}`);
       }
