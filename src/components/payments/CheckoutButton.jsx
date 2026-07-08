@@ -7,18 +7,18 @@ export default function CheckoutButton() {
 
   const handleCheckout = async () => {
     try {
-      const res = await fetch('/api/checkout/hitpay', { method: 'POST' });
+      const res = await fetch('/api/checkout/stripe', { method: 'POST' });
       const data = await res.json();
       
       if (res.status === 401) {
-        // User not logged in, redirect to login with callback to the new GET checkout route
-        router.push('/login?callbackUrl=/api/checkout/hitpay');
+        // User not logged in
+        router.push('/login?callbackUrl=/api/checkout/stripe');
         return;
       }
       
       if (!res.ok) throw new Error(data.error);
       
-      // Redirect to HitPay
+      // Redirect to Stripe
       window.location.href = data.url;
     } catch (err) {
       alert("Checkout failed: " + err.message);

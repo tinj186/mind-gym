@@ -47,12 +47,12 @@ export default function PublicLandingPage() {
 
   const handleCheckout = async () => {
     try {
-      const res = await fetch('/api/checkout/hitpay', { method: 'POST' });
+      const res = await fetch('/api/checkout/stripe', { method: 'POST' });
       const data = await res.json();
       
       if (res.status === 401) {
         // User not logged in, redirect to login with callback to the new GET checkout route
-        router.push('/login?callbackUrl=/api/checkout/hitpay');
+        router.push('/login?callbackUrl=/api/checkout/stripe');
         return;
       }
       

@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { HitPayAdapter } from '@/lib/payments/adapters/HitPayAdapter';
-import { prisma } from '@/lib/db';
+import { StripeAdapter } from '@/lib/payments/adapters/StripeAdapter';
 
 async function generateCheckout(req, isRedirect = false) {
   try {
@@ -10,16 +9,13 @@ async function generateCheckout(req, isRedirect = false) {
 
     if (!session || !session.user) {
       if (isRedirect) {
-        return NextResponse.redirect(new URL('/login?callbackUrl=/api/checkout/hitpay', req.url));
+        return NextResponse.redirect(new URL('/login?callbackUrl=/api/checkout/stripe', req.url));
       }
       return NextResponse.json({ error: "Please log in or sign up to unlock unlimited access." }, { status: 401 });
     }
 
     const userId = session.user.id;
-    const adapter = new HitPayAdapter();
-
-    const amount = 29.90;
-    const currency = 'SGD';
+    const adapter = new StripeAdapter();
     
     let host = process.env.NEXTAUTH_URL || 'http://localhost:3000';
     try {
@@ -30,15 +26,11 @@ async function generateCheckout(req, isRedirect = false) {
       }
     } catch (e) {}
     
-    const redirectUrl = `${host}/hub?payment=success`;
-    const webhookUrl = `${host}/api/webhooks/payment`;
+    const redirectUrl = `${host}/hub`;
 
     const checkoutUrl = await adapter.createCheckoutSession({
       userId,
-      amount,
-      currency,
-      redirectUrl,
-      webhookUrl
+      redirectUrl
     });
 
     if (isRedirect) {
