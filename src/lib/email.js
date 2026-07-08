@@ -78,7 +78,7 @@ export const sendSubscriptionWelcomeEmail = async (email, name) => {
   const hubLink = `${getBaseUrl()}/hub`;
 
   await resend.emails.send({
-    from: SENDER_EMAIL,
+    from: 'The Learn Reps <support@thelearnreps.com>',
     to: email,
     subject: 'Welcome to The Learn Reps! Your Annual Pass is Active 🧠',
     html: `
