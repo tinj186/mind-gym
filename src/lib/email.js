@@ -80,7 +80,7 @@ export const sendSubscriptionWelcomeEmail = async (email, name) => {
   await resend.emails.send({
     from: 'The Learn Reps <support@thelearnreps.com>',
     to: email,
-    subject: 'Welcome to The Learn Reps! Your Annual Pass is Active 🧠',
+    subject: `Welcome to The Learn Reps, ${name || 'User'}! Your Annual Pass is Active 🧠`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; line-height: 1.6; color: #1E293B;">
         <p>Hi ${name || 'there'},</p>
