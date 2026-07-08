@@ -81,7 +81,7 @@ export const blueprintRegistry = {
   'Primary 1-Measurement - Length-Length Measurement (cm)': lengthBlueprint,
   'Primary 1-Measurement - Time-Time to 5 Minutes': timeBlueprint,
   'Primary 1-Data Representation and Interpretation - Picture Graphs-Picture Graph Interpretation': pictureGraphsBlueprint,
-  'Primary 1-Geometry - 2D Shapes-identifying, naming, describing and classifying 2D shapes': shapesBlueprint,
+  'Primary 1-Geometry - 2D Shapes-2D Shape Classification': shapesBlueprint,
 
   // Primary 2
   'Primary 2-Whole Numbers - Numbers up to 1000-Counting by Tens/Hundreds': numbersTo1000Blueprint,

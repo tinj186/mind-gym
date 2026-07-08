@@ -25,40 +25,31 @@ export const timeBlueprint = {
       logicDescription: "Telling time to the half-hour and matching analog to digital displays."
     },
     advanced: {
-      name: 'Time Sequences & Duration Shifting',
+      name: 'Advanced Clock Face Concepts',
       steps: 3,
-      logicDescription: "Ordering events in time and calculating one-hour future/past shifts."
+      logicDescription: "Analyzing complex clock face concepts."
     }
   },
 
   variants: {
     foundation_to_hour: "Reading analog clocks showing whole hours.",
-    foundation_day_night: "Identifying appropriate activities for daytime vs nighttime.",
     foundation_digital_hour: "Reading digital clock readouts displaying whole hours (e.g., 4:00) and matching them to descriptive time text.",
     foundation_clock_parts: "Identifying the basic features of an analog clock face, specifically distinguishing between the long minute hand and the short hour hand.",
-    foundation_sequence_simple: "Arranging two or three highly distinct everyday events in chronological order (e.g., waking up, going to school, sleeping at night).",
+    foundation_day_night_activities: "Identifying whether common daily activities (e.g., breakfast, sleeping) happen during the day or night.",
+    foundation_time_word_match: "Matching the word form of a time (e.g., 'seven o\\'clock') to its numerical representation (e.g., '7 o\\'clock').",
 
     standard_to_half_hour: "Reading analog clocks showing half-hour increments.",
     standard_analog_digital: "Converting between analog clock faces and digital time formats.",
     standard_digital_half_hour: "Reading digital clock readouts displaying half-hour increments (e.g., 8:30) and matching them to descriptive time text.",
     standard_half_past_concept: "Recognizing that 'half past' an hour is identical to the ':30' digital representation (e.g., matching 'half past 2' with '2:30').",
     standard_hour_hand_placement: "Identifying the correct positioning of the hour hand during a half-hour increment (understanding it must point exactly midway between two numbers).",
-    standard_duration_simple: "Determining basic everyday event durations when given discrete start and end markers on whole or half hours.",
     standard_digital_to_analog: "Converting from a text/digital format constraint into a matching visual analog clock alignment target.",
-    standard_timeline_sequence: "Arranging four common primary school daily timeline events chronologically using a mix of half-past and whole-hour descriptions.",
-    standard_activity_duration_compare: "Comparing the length of two activities to deduce which one takes a longer or shorter duration of time.",
-    standard_half_hour_later_earlier: "Calculating exactly half an hour later or earlier from a fixed baseline whole-hour or half-hour point.",
 
-    advanced_sequence_logic: "Arranging a series of events or clock faces in chronological order.",
-    advanced_one_hour_shift: "Determining the time one hour before or after a given clock state.",
-    advanced_half_hour_shift: "Calculating the time exactly half an hour (30 minutes) earlier or later from a baseline time, shifting across hour boundaries (e.g., half an hour after 11:30 is 12:00).",
-    advanced_elapsed_time_simple: "Calculating how many hours or half-hours have elapsed between a given start time and end time (e.g., from 2 o'clock to half past 3).",
-    advanced_clock_pattern_prediction: "Analyzing a series of chronologically advancing clocks to find the pattern and predict the next clock face in the sequence (e.g., advancing by 1 hour or 30 minutes each step).",
-    advanced_activity_duration_logic: "Deducing start or end times given a starting/ending point and a specific duration statement (e.g., 'Class is 1 hour long and ends at 11 o'clock. What time did it start?').",
-    advanced_transitive_time_comparison: "Using logical deduction to order or evaluate the durations of three different characters' activities based on comparative text clues.",
     advanced_half_hour_hand_drift: "Analyzing challenging conceptual scenarios regarding exactly where the short hour hand is pointing when the long minute hand is at 6.",
-    advanced_split_schedule_total: "Adding up two separate blocks of time dedicated to the same task to find the total structural duration (e.g., reading for 1 hour in the morning and half an hour at night).",
-    advanced_earlier_later_clue_parsing: "Solving multi-step story problems matching descriptive vocabulary clues like 'too early' or 'too late' to adjust a clock state to its correct intended target."
+    advanced_missing_numbers_clock: "Reading the correct time from an analog clock face that has had its numbers removed.",
+    advanced_broken_minute_hand: "Deducing the exact time by only analyzing the position of the short hour hand.",
+    advanced_fast_slow_clock_simple: "Determining the true time when given a clock that is explicitly stated to be running exactly 1 hour fast or 1 hour slow.",
+    advanced_straight_line_hands: "Identifying unique visual states of the clock hands, such as determining which time shows the hour and minute hands forming a perfectly straight line."
   },
 
   generate: (difficulty = 'foundation', variant = 'foundation_to_hour', type = 'MCQ') => {

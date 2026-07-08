@@ -33,10 +33,15 @@ export const lengthBlueprint = {
   variants: {
     foundation_unit_counting: "Measuring item length in cm.",
     foundation_identify_by_length: "Finding which specific object matches a given cm length.",
+    foundation_true_false_length: "Evaluating a true or false statement about an object's length.",
+    foundation_longer_than_target: "Identifying which object is longer than a specified length.",
+    foundation_shorter_than_target: "Identifying which object is shorter than a specified length.",
     
     standard_baseline_error_check: "Detecting errors in length measurement when objects do not share a common baseline.",
     standard_unit_difference_mcq: "Calculating the arithmetic difference in cm between two items.",
     standard_mid_grid_alignment: "Calculating length for an object not starting at the zero mark.",
+    standard_baseline_comparison: "Identifying the longest object among three objects measured in cm.",
+    standard_ordering_ascending: "Ordering three objects from shortest to longest based on their lengths in cm.",
     
     advanced_indirect_difference: "Calculating missing length dimensions by adding or subtracting cm.",
     advanced_misaligned_start: "Determining the true length of an object when it does not align with the zero baseline.",
@@ -88,19 +93,19 @@ export const lengthBlueprint = {
     let formatInstructions = isMCQ
       ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}`
       : isStructure
-        ? `Format as Structured Multi-step. The "options" field should be null. You MUST fill in the "expectedAnswer" values in the "inputRequirement.steps" array with the specific item lengths and final answer.${hintProtocol}`
+        ? `Format as Structured Multi-step. The "options" field should be null. You MUST fill in the "expectedAnswer" values in the "inputRequirement.steps" array with the specific item lengths and final answer. CRITICAL: The "expectedAnswer" of the final step MUST EXACTLY match the "finalAnswer" string (including units if present)!${hintProtocol}`
         : `Format as Short Answer. The "options" field in your JSON should be null.${hintProtocol}`;
 
     if (activeVariant.startsWith('foundation_')) {
-      return foundationLogic.generate(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText);
+      return foundationLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
     }
 
     if (activeVariant.startsWith('standard_')) {
-      return standardLogic.generate(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText);
+      return standardLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
     }
 
     if (activeVariant.startsWith('advanced_')) {
-      return advancedLogic.generate(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText);
+      return advancedLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
     }
 
     throw new Error(`Variant '${finalVariant}' not valid.`);

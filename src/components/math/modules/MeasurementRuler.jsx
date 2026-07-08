@@ -24,8 +24,8 @@ const ASSET_TUNING = {
   'usbdrive.svg':     { scaleX: 1.00, translateX: 0, baseLength: 4, stretchFactor: 0.20 }
 };
 
-export default function MeasurementUnit({ data, topic, difficulty, hideCardStyles = false }) {
-  // 🦒 1. VERTICAL RENDERING ENGINE (UNCHANGED)
+export default function MeasurementRuler({ data, topic, difficulty, hideCardStyles = false }) {
+  // 🦒 1. VERTICAL RENDERING ENGINE
   const isVerticalOrientation = data?.items?.some(item => 
     (item.label || '').toLowerCase().includes('tall') || (item.label || '').toLowerCase().includes('height')
   );
@@ -47,13 +47,29 @@ export default function MeasurementUnit({ data, topic, difficulty, hideCardStyle
 
   if (isPerimeter && perimeterSides.length >= 2) {
     const unitSize = 40;
-    const innerGraphicSize = 32;
-    const gap = 6;
+    const gap = 0; // No gap for continuous ruler
     
     const maxHorizontal = Math.max(perimeterSides[0] || 0, perimeterSides[2] || 0);
     const maxVertical = Math.max(perimeterSides[1] || 0, perimeterSides[3] || 0);
-    const frameWidth = maxHorizontal * (unitSize + gap) - gap;
-    const frameHeight = maxVertical * (unitSize + gap) - gap;
+    const frameWidth = maxHorizontal * unitSize;
+    const frameHeight = maxVertical * unitSize;
+
+    const renderRulerSegment = (length, isVertical) => (
+      <div className={`relative bg-[#fdd835] border border-[#f57f17] flex ${isVertical ? 'flex-col' : ''}`}
+           style={{ width: isVertical ? '30px' : `${length * unitSize}px`, height: isVertical ? `${length * unitSize}px` : '30px' }}>
+        {Array.from({ length: length + 1 }).map((_, i) => (
+          <div key={i} className="absolute" 
+               style={isVertical 
+                 ? { top: `${i * unitSize}px`, left: 0, width: '10px', height: '1px', backgroundColor: '#000' }
+                 : { left: `${i * unitSize}px`, top: 0, width: '1px', height: '10px', backgroundColor: '#000' }}>
+            <span className="absolute text-[8px] font-bold text-slate-800"
+                  style={isVertical ? { left: '12px', top: '-6px' } : { top: '12px', left: '-3px' }}>
+              {i}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
 
     return (
       <div className={`${containerStyle} flex flex-col items-center justify-center py-20`}>
@@ -65,45 +81,26 @@ export default function MeasurementUnit({ data, topic, difficulty, hideCardStyle
           
           {/* Top Side */}
           {perimeterSides.length >= 1 && (
-            <div className="absolute -top-[56px] left-0 w-full flex justify-center gap-[6px]">
-              {Array.from({ length: perimeterSides[0] }).map((_, uIdx) => (
-                <div key={`top-${uIdx}`} className="flex items-center justify-center bg-white border-2 border-slate-200 rounded-md shadow-sm shrink-0" style={{ width: `${unitSize}px`, height: `${unitSize}px` }}>
-                  <img src={`/assets/measurement/${data.unitIcon || 'paperclip.svg'}`} alt="unit" style={{ width: `${innerGraphicSize}px`, height: `${innerGraphicSize}px` }} className="object-contain" />
-                </div>
-              ))}
+            <div className="absolute -top-[30px] left-0 w-full flex justify-center">
+              {renderRulerSegment(perimeterSides[0], false)}
             </div>
           )}
-
           {/* Right Side */}
           {perimeterSides.length >= 2 && (
-            <div className="absolute top-0 -right-[56px] h-full flex flex-col justify-center gap-[6px]">
-              {Array.from({ length: perimeterSides[1] }).map((_, uIdx) => (
-                <div key={`right-${uIdx}`} className="flex items-center justify-center bg-white border-2 border-slate-200 rounded-md shadow-sm shrink-0" style={{ width: `${unitSize}px`, height: `${unitSize}px` }}>
-                  <img src={`/assets/measurement/${data.unitIcon || 'paperclip.svg'}`} alt="unit" style={{ width: `${innerGraphicSize}px`, height: `${innerGraphicSize}px` }} className="object-contain rotate-90" />
-                </div>
-              ))}
+            <div className="absolute top-0 -right-[30px] h-full flex flex-col justify-center">
+              {renderRulerSegment(perimeterSides[1], true)}
             </div>
           )}
-
           {/* Bottom Side */}
           {perimeterSides.length >= 3 && (
-            <div className="absolute -bottom-[56px] left-0 w-full flex justify-center gap-[6px]">
-              {Array.from({ length: perimeterSides[2] }).map((_, uIdx) => (
-                <div key={`bottom-${uIdx}`} className="flex items-center justify-center bg-white border-2 border-slate-200 rounded-md shadow-sm shrink-0" style={{ width: `${unitSize}px`, height: `${unitSize}px` }}>
-                  <img src={`/assets/measurement/${data.unitIcon || 'paperclip.svg'}`} alt="unit" style={{ width: `${innerGraphicSize}px`, height: `${innerGraphicSize}px` }} className="object-contain" />
-                </div>
-              ))}
+            <div className="absolute -bottom-[30px] left-0 w-full flex justify-center">
+              {renderRulerSegment(perimeterSides[2], false)}
             </div>
           )}
-
           {/* Left Side */}
           {perimeterSides.length === 4 && (
-            <div className="absolute top-0 -left-[56px] h-full flex flex-col justify-center gap-[6px]">
-              {Array.from({ length: perimeterSides[3] }).map((_, uIdx) => (
-                <div key={`left-${uIdx}`} className="flex items-center justify-center bg-white border-2 border-slate-200 rounded-md shadow-sm shrink-0" style={{ width: `${unitSize}px`, height: `${unitSize}px` }}>
-                  <img src={`/assets/measurement/${data.unitIcon || 'paperclip.svg'}`} alt="unit" style={{ width: `${innerGraphicSize}px`, height: `${innerGraphicSize}px` }} className="object-contain rotate-90" />
-                </div>
-              ))}
+            <div className="absolute top-0 -left-[30px] h-full flex flex-col justify-center">
+              {renderRulerSegment(perimeterSides[3], true)}
             </div>
           )}
         </div>
@@ -123,17 +120,17 @@ export default function MeasurementUnit({ data, topic, difficulty, hideCardStyle
                 <div className="w-16 flex items-end justify-center relative select-none overflow-visible origin-bottom" style={{ height: `${targetedHeight}px` }}>
                   <span className="block font-normal text-center select-none transform origin-bottom transition-all duration-300" style={{ fontSize: '48px', lineHeight: '1', height: '48px', transform: `scaleY(${(targetedHeight / 48).toFixed(3)})` }}>{emojiAsset}</span>
                 </div>
-                <div className="flex flex-col-reverse gap-[1px] bg-slate-50 border-2 border-slate-900 p-[2px] rounded-lg shadow-[2px_2px_0px_rgba(15,23,42,1)] z-10">
-                  {Array.from({ length: mItem.length }).map((_, uIdx) => (
-                    <div key={uIdx} className="w-6 h-[22px] bg-white border border-slate-200 rounded-sm flex items-center justify-center text-[11px]">
-                      <img 
-                        src={`/assets/measurement/${data.unitIcon || 'paperclip.svg'}`} 
-                        alt="unit" 
-                        className="w-4 h-4 object-contain select-none" 
-                      />
+                
+                {/* Vertical Ruler */}
+                <div className="relative bg-[#fdd835] border-2 border-[#f57f17] rounded-sm w-8 z-10" style={{ height: `${targetedHeight}px` }}>
+                   {Array.from({ length: mItem.length + 1 }).map((_, uIdx) => (
+                    <div key={uIdx} className="absolute w-full" style={{ bottom: `${uIdx * 24}px` }}>
+                      <div className="w-3 h-0.5 bg-black absolute right-0"></div>
+                      <span className="absolute right-4 -translate-y-1/2 text-[10px] font-bold text-slate-800">{uIdx}</span>
                     </div>
                   ))}
                 </div>
+
                 {/* Label for vertical objects */}
                 <div className="absolute -bottom-10 w-full flex justify-center whitespace-nowrap">
                   <span className="text-xs font-black uppercase text-slate-500 tracking-wider">
@@ -148,17 +145,13 @@ export default function MeasurementUnit({ data, topic, difficulty, hideCardStyle
     );
   }
 
-  // 📐 2. DYNAMIC HORIZONTAL ENGINE (RESPONSIVE RESIZING BASELINE)
-  // Determine the highest structural unit span present across the active data elements
+  // 📐 2. DYNAMIC HORIZONTAL ENGINE
   const maxTotalUnits = Math.max(
     10,
     ...(data?.items || []).map(item => (item.startOffset || 0) + item.length)
   );
 
-  // Set standard width limits inside the layout viewport container
-  // If required blocks exceed 10 units, grid steps smoothly scale down from 48px
   const unitSize = Math.min(48, Math.floor(480 / maxTotalUnits));
-  const innerGraphicSize = Math.floor(unitSize * 0.83); // Keeps asset graphics uniformly isolated
 
   return (
     <div className={`${containerStyle} space-y-8`}>
@@ -170,6 +163,7 @@ export default function MeasurementUnit({ data, topic, difficulty, hideCardStyle
         const gridOffset = data.showFullRuler ? 0 : offsetLeftPadding;
         const tuning = ASSET_TUNING[assetFile] || { scaleX: 1.0, translateX: 0, baseLength: 4, stretchFactor: 0.15 };
         const dynamicScaleY = Math.max(0.6, Math.min(2.0, 1 + (mItem.length - tuning.baseLength) * tuning.stretchFactor));
+        const rulerStartNum = data.showFullRuler ? 0 : (mItem.startOffset || 0);
 
         return (
           <div key={idx} className="space-y-4 pb-6">
@@ -180,7 +174,7 @@ export default function MeasurementUnit({ data, topic, difficulty, hideCardStyle
                 </span>
               </div>
               
-              {/* Measurement Object Wrapper - shrink-0 locks rendering parameters */}
+              {/* Measurement Object Wrapper */}
               <div 
                 className="relative flex items-center overflow-visible shrink-0" 
                 style={{ 
@@ -203,35 +197,36 @@ export default function MeasurementUnit({ data, topic, difficulty, hideCardStyle
               </div>
             </div>
 
-            {/* Grid Ruler Track - Fluid responsive scaling engine alignment */}
+            {/* Continuous Ruler Track */}
             <div className="flex items-center gap-4">
               <div className="w-28 shrink-0" />
               <div 
-                className="flex gap-0"
-                style={{ marginLeft: `${gridOffset}px` }}
+                className="relative bg-[#fdd835] border-2 border-[#f57f17] rounded-sm shadow-sm"
+                style={{ 
+                  width: `${gridLengthCount * unitSize}px`, 
+                  height: '40px',
+                  marginLeft: `${gridOffset}px` 
+                }}
               >
-                {Array.from({ length: gridLengthCount }).map((_, uIdx) => (
+                {Array.from({ length: gridLengthCount + 1 }).map((_, uIdx) => (
                   <div 
                     key={uIdx} 
-                    style={{ width: `${unitSize}px`, height: `${unitSize}px` }}
-                    className="flex flex-col items-center justify-center bg-transparent relative shrink-0"
+                    className="absolute top-0 flex flex-col items-center"
+                    style={{ left: `${uIdx * unitSize}px`, transform: 'translateX(-50%)' }}
                   >
-                    <img 
-                      src={`/assets/measurement/${data.unitIcon || 'paperclip.svg'}`} 
-                      alt="unit" 
-                      style={{ width: `${innerGraphicSize}px`, height: `${innerGraphicSize}px` }}
-                      className="object-contain" 
-                    />
-                    {data.showFullRuler && (
-                      <>
-                        {uIdx === 0 && (
-                          <span className="absolute -bottom-5 left-0 -translate-x-1/2 text-[10px] font-bold text-slate-400">0</span>
-                        )}
-                        <span className="absolute -bottom-5 right-0 translate-x-1/2 text-[10px] font-bold text-slate-400">{uIdx + 1}</span>
-                      </>
+                    <div className="w-0.5 h-3 bg-black"></div>
+                    {/* Add half-cm tick */}
+                    {uIdx < gridLengthCount && (
+                      <div className="absolute top-0 left-0 flex justify-center" style={{ width: `${unitSize}px`, marginLeft: '1px' }}>
+                         <div className="w-[1px] bg-slate-600/50 h-2"></div>
+                      </div>
                     )}
+                    <span className="text-[10px] font-bold text-slate-800 mt-1">
+                      {rulerStartNum + uIdx}
+                    </span>
                   </div>
                 ))}
+                <div className="absolute bottom-1 right-2 text-[10px] font-black text-slate-800">cm</div>
               </div>
             </div>
           </div>

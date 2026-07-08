@@ -34,6 +34,8 @@ export const lengthComparisonCmBlueprint = {
     foundation_compare_two: "Comparing exactly two objects to identify which is longer or shorter.",
     foundation_find_same: "Identifying which two objects out of three have the exact same length.",
     foundation_true_false: "Evaluating a True/False statement about the relative lengths of two objects.",
+    foundation_compare_height: "Comparing exactly two objects placed vertically to identify which is taller or shorter.",
+    foundation_find_shorter_than: "Given a reference object, identifying which of the other two objects is shorter (or longer) than it.",
     
     standard_baseline_comparison: "Comparing 3 distinct objects aligned horizontally to find the longest/shortest.",
     standard_find_shortest: "Identifying the shortest object among 3 items aligned horizontally.",
@@ -44,7 +46,9 @@ export const lengthComparisonCmBlueprint = {
     standard_as_long_as: "Identifying objects with equal lengths among a set.",
     
     advanced_indirect_comparison: "Using transitive logic to compare and order three or more objects based on text clues.",
-    advanced_excess_comparison: "Calculating exactly how many more or fewer cm an object requires to match a target reference length."
+    advanced_excess_comparison: "Calculating exactly how many more or fewer cm an object requires to match a target reference length.",
+    advanced_combined_comparison: "Comparing the combined length of two shorter objects joined together against a third longer object.",
+    advanced_misaligned_comparison: "Comparing the lengths of two objects that do not start at the same point on a ruler."
   },
 
   generate: (difficulty = 'foundation', variant = 'foundation_compare_two', type = 'MCQ') => {
@@ -88,19 +92,19 @@ export const lengthComparisonCmBlueprint = {
     let formatInstructions = isMCQ
       ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}`
       : isStructure
-        ? `Format as Structured Multi-step. The "options" field should be null. You MUST fill in the "expectedAnswer" values in the "inputRequirement.steps" array.${hintProtocol}`
+        ? `Format as Structured Multi-step. The "options" field should be null. You MUST fill in the "expectedAnswer" values in the "inputRequirement.steps" array with the specific item lengths and final answer. CRITICAL: The "expectedAnswer" of the final step MUST EXACTLY match the "finalAnswer" string (including units if present)!${hintProtocol}`
         : `Format as Short Answer. The "options" field in your JSON should be null.${hintProtocol}`;
 
     if (activeVariant.startsWith('foundation_')) {
-      return foundationLogic.generate(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText);
+      return foundationLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
     }
 
     if (activeVariant.startsWith('standard_')) {
-      return standardLogic.generate(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText);
+      return standardLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
     }
 
     if (activeVariant.startsWith('advanced_')) {
-      return advancedLogic.generate(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText);
+      return advancedLogic(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText);
     }
 
     throw new Error(`Variant '${finalVariant}' not valid.`);

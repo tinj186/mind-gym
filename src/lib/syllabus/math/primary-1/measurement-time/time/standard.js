@@ -9,7 +9,7 @@ export const standardVariants = {
     const componentData = { hour, minute: 30, displayType: 'analog' };
 
     const questionTextTemplate = getQText(`What time is shown on the clock?`, `Time on analog clock = ?`);
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student featuring a person named ${getRandomNames(1)} that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
 
     let options = [answer, `half past ${hour === 12 ? 1 : hour + 1}`, `${hour} o'clock`, `half past ${hour === 1 ? 12 : hour - 1}`];
     options = getShuffledOptions(answer, options);
@@ -50,13 +50,14 @@ export const standardVariants = {
     };
   },
 
+
   standard_analog_digital: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const hour = Math.floor(Math.random() * 12) + 1;
     const answer = `${hour}:30`;
     const componentData = { hour, minute: 30, displayType: 'analog' };
 
     const questionTextTemplate = getQText(isMCQ ? `Which digital clock shows the same time as the clock face?` : `What is the digital time shown on the clock face?`, `Digital time = ?`);
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student featuring a person named ${getRandomNames(1)} that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
 
     let options = [answer, `${hour === 12 ? 1 : hour + 1}:30`, `${hour}:00`, `${hour === 1 ? 12 : hour - 1}:30`];
     options = getShuffledOptions(answer, options);
@@ -97,13 +98,14 @@ export const standardVariants = {
     };
   },
 
+
   standard_digital_half_hour: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const hour = Math.floor(Math.random() * 12) + 1;
     const answer = `half past ${hour}`;
     const componentData = { hour, minute: 30, displayType: 'digital' };
 
     const questionTextTemplate = getQText(`Look at the digital clock. What is another way to say this time?`, `Time in words = ?`);
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student featuring a person named ${getRandomNames(1)} that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
 
     let options = [answer, `${hour} o'clock`, `half past ${hour === 12 ? 1 : hour + 1}`, `half past ${hour === 1 ? 12 : hour - 1}`];
     options = getShuffledOptions(answer, options);
@@ -144,13 +146,14 @@ export const standardVariants = {
     };
   },
 
+
   standard_half_past_concept: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const hour = Math.floor(Math.random() * 12) + 1;
     const answer = `${hour}:30`;
     const phrase = `half past ${hour}`;
 
     const questionTextTemplate = getQText(isMCQ ? `Which of these is the same as ${phrase}?` : `How do we write ${phrase} on a digital clock (in numbers)?`, `Write ${phrase} as digital time = ?`);
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student featuring a person named ${getRandomNames(1)} that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
 
     let options = [answer, `${hour}:00`, `${hour === 12 ? 1 : hour + 1}:30`, `${hour}:06`];
     options = getShuffledOptions(answer, options);
@@ -191,13 +194,14 @@ export const standardVariants = {
     };
   },
 
+
   standard_hour_hand_placement: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const hour = Math.floor(Math.random() * 11) + 1;
     const nextHour = hour + 1;
     const answer = `Between ${hour} and ${nextHour}`;
 
     const questionTextTemplate = getQText(`Where should the short hour hand point at half past ${hour}?`, `Where does the hour hand point at half past ${hour}?`);
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student featuring a person named ${getRandomNames(1)} that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
 
     let options = [answer, `Exactly at ${hour}`, `Exactly at ${nextHour}`, `Between ${nextHour} and ${nextHour + 1}`];
     options = getShuffledOptions(answer, options);
@@ -238,53 +242,6 @@ export const standardVariants = {
     };
   },
 
-  standard_duration_simple: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const start = Math.floor(Math.random() * 4) + 7; 
-    const duration = Math.floor(Math.random() * 2) + 1; 
-    const end = start + duration;
-    const answer = `${duration} ${duration === 1 ? 'hour' : 'hours'}`;
-
-    const questionTextTemplate = getQText(`Math class starts at ${start} o'clock and ends at ${end} o'clock. How long is the class?`, `Duration from ${start} to ${end} = ?`);
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
-
-    let options = [answer, "3 hours", "half an hour", "5 hours"];
-    options = getShuffledOptions(answer, options);
-
-    let mcqOptions = 'null';
-    let defectMapStr = 'null';
-    if (type === 'MCQ') {
-      options = options.sort(() => Math.random() - 0.5);
-      mcqOptions = JSON.stringify(options);
-      let defectMapObj = {};
-      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CARELESS_CALCULATION"; });
-      defectMapStr = JSON.stringify(defectMapObj);
-    }
-
-    return {
-      aiPrompt: `You are an expert Primary 1 math generator. 
-      ${formatInstructions}
-      ${storyInstruction}
-
-      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
-      {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
-        "content": {
-          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
-          "options": ${mcqOptions},
-          "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`Count how many big jumps the hour hand makes from the start time to the end time.`, `Subtract start from end.`))},
-          "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`We count the hours from ${start} to ${end}. ${end} minus ${start} is ${duration}.`, `Answer is ${answer}.`))}
-        },
-        "visualEngine": {
-          "componentToRender": "NONE",
-          "componentData": {}
-        },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
-      }`,
-      metadata: { difficulty: 'standard', steps: 1, logic: "duration_simple", hideVisual: true }
-    };
-  },
 
   standard_digital_to_analog: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const hour = Math.floor(Math.random() * 12) + 1;
@@ -292,7 +249,7 @@ export const standardVariants = {
     const answer = `half past ${hour}`;
 
     const questionTextTemplate = getQText(`If a digital clock shows ${digital}, what time is it in words?`, `Time in words for ${digital} = ?`);
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student featuring a person named ${getRandomNames(1)} that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
 
     let options = [answer, `${hour} o'clock`, `half past ${hour === 1 ? 12 : hour - 1}`, "6 o'clock"];
     options = getShuffledOptions(answer, options);
@@ -330,192 +287,6 @@ export const standardVariants = {
         "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
       }`,
       metadata: { difficulty: 'standard', steps: 1, logic: "digital_to_analog", hideVisual: true }
-    };
-  },
-
-  standard_timeline_sequence: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const eventSets = [
-      [
-        { text: "Wake up (7:00)", order: 1 },
-        { text: "Breakfast (7:30)", order: 2 },
-        { text: "Recess (10:00)", order: 3 },
-        { text: "Lunch (12:30)", order: 4 }
-      ],
-      [
-        { text: "Reach school (7:30)", order: 1 },
-        { text: "Assembly (8:00)", order: 2 },
-        { text: "PE Class (11:00)", order: 3 },
-        { text: "Go Home (1:30)", order: 4 }
-      ],
-      [
-        { text: "Math Class (8:00)", order: 1 },
-        { text: "Art Class (9:30)", order: 2 },
-        { text: "Recess (10:30)", order: 3 },
-        { text: "Lunch (12:30)", order: 4 }
-      ],
-      [
-        { text: "Leave House (7:00)", order: 1 },
-        { text: "Music Class (9:30)", order: 2 },
-        { text: "Lunch (12:00)", order: 3 },
-        { text: "CCA (2:30)", order: 4 }
-      ]
-    ];
-    const events = eventSets[Math.floor(Math.random() * eventSets.length)];
-    
-    const shuffled = events.sort(() => Math.random() - 0.5);
-    const labeledEvents = shuffled.map((e, i) => ({ ...e, letter: String.fromCharCode(65 + i) })); // A, B, C, D
-    const correctOrder = labeledEvents.slice().sort((a, b) => a.order - b.order).map(e => e.letter).join(", ");
-    
-    let questionText = `Arrange these school day events in the correct order from earliest to latest:\n`;
-    labeledEvents.forEach(e => {
-      questionText += `\n${e.letter}. ${e.text}`;
-    });
-    
-    if (!isMCQ) questionText += `\n\n(Write your answer as letters, e.g., A, B, C, D)`;
-
-    const answer = correctOrder;
-    const distractors = [
-      labeledEvents.slice().sort(() => Math.random() - 0.5).map(e => e.letter).join(", "),
-      labeledEvents.slice().sort(() => Math.random() - 0.5).map(e => e.letter).join(", "),
-      labeledEvents.slice().sort(() => Math.random() - 0.5).map(e => e.letter).join(", ")
-    ];
-
-    const questionTextTemplate = getQText(questionText, questionText);
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
-
-    let options = getShuffledOptions(answer, distractors);
-
-    let mcqOptions = 'null';
-    let defectMapStr = 'null';
-    if (type === 'MCQ') {
-      options = options.sort(() => Math.random() - 0.5);
-      mcqOptions = JSON.stringify(options);
-      let defectMapObj = {};
-      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
-      defectMapStr = JSON.stringify(defectMapObj);
-    }
-
-    return {
-      aiPrompt: `You are an expert Primary 1 math generator. 
-      ${formatInstructions}
-      ${storyInstruction}
-
-      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
-      {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
-        "content": {
-          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
-          "options": ${mcqOptions},
-          "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`Read the times on each event. The smallest hour number comes first!`, `Sort by time.`))},
-          "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`We follow the clock from morning to afternoon. 7:00 comes before 7:30, which comes before 10:00, and lunch is last at 12:30. The correct order of letters is ${answer}.`, `Answer is ${answer}.`))}
-        },
-        "visualEngine": {
-          "componentToRender": "NONE",
-          "componentData": {}
-        },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
-      }`,
-      metadata: { difficulty: 'standard', steps: 2, logic: "timeline_sequence", hideVisual: true }
-    };
-  },
-
-  standard_activity_duration_compare: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const names = getRandomNames(4);
-    const nameA = names[0];
-    const nameB = names[1];
-    const durA = Math.floor(Math.random() * 2) + 1; 
-    const durB = durA + 1; 
-    const answer = nameB;
-
-    const questionTextTemplate = getQText(`${nameA} reads for ${durA} hour. ${nameB} draws for ${durB} hours. Who spent more time on their activity?`, `Who spent more time = ?`);
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
-
-    let options = [nameA, nameB, "They spent the same time", "Cannot tell"];
-    options = getShuffledOptions(answer, options);
-
-    let mcqOptions = 'null';
-    let defectMapStr = 'null';
-    if (type === 'MCQ') {
-      options = options.sort(() => Math.random() - 0.5);
-      mcqOptions = JSON.stringify(options);
-      let defectMapObj = {};
-      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
-      defectMapStr = JSON.stringify(defectMapObj);
-    }
-
-    return {
-      aiPrompt: `You are an expert Primary 1 math generator. 
-      ${formatInstructions}
-      ${storyInstruction}
-
-      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
-      {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
-        "content": {
-          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
-          "options": ${mcqOptions},
-          "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`Compare the number of hours. Which number is bigger?`, `Check the hours.`))},
-          "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`${durB} hours is a longer time than ${durA} hour. Therefore, ${nameB} spent more time.`, `Answer is ${answer}.`))}
-        },
-        "visualEngine": {
-          "componentToRender": "NONE",
-          "componentData": {}
-        },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
-      }`,
-      metadata: { difficulty: 'standard', steps: 1, logic: "activity_duration_compare", hideVisual: true }
-    };
-  },
-
-  standard_half_hour_later_earlier: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const hour = Math.floor(Math.random() * 10) + 1;
-    const isLater = Math.random() > 0.5;
-    const answer = isLater ? `half past ${hour}` : `half past ${hour === 1 ? 12 : hour - 1}`;
-    const componentData = { hour, minute: 0, displayType: 'analog' };
-
-    const questionTextTemplate = getQText(`The clock shows ${hour} o'clock. What time will it be half an hour ${isLater ? 'later' : 'earlier'}?`, `Time half an hour ${isLater ? 'later' : 'earlier'} = ?`);
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
-
-    let options = [answer, `${hour} o'clock`, `half past ${hour === 12 ? 1 : hour + 1}`, `${hour}:00`];
-    options = getShuffledOptions(answer, options);
-
-    let mcqOptions = 'null';
-    let defectMapStr = 'null';
-    if (type === 'MCQ') {
-      options = options.sort(() => Math.random() - 0.5);
-      mcqOptions = JSON.stringify(options);
-      let defectMapObj = {};
-      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
-      defectMapStr = JSON.stringify(defectMapObj);
-    }
-
-    return {
-      aiPrompt: `You are an expert Primary 1 math generator. 
-      ${formatInstructions}
-      ${storyInstruction}
-
-      OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
-      {
-        "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
-        "content": {
-          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
-          "options": ${mcqOptions},
-          "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`Half an hour is the time it takes for the long hand to move from 12 to 6.`, `Move the hand.`))},
-          "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`Moving the minute hand half an hour ${isLater ? 'forward' : 'backward'} from the 12 brings it to the 6, which is 'half past'.`, `Answer is ${answer}.`))}
-        },
-        "visualEngine": {
-          "componentToRender": "CLOCK_DISPLAY",
-          "componentData": ${JSON.stringify(componentData)}
-        },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
-      }`,
-      metadata: { difficulty: 'standard', steps: 1, logic: "half_hour_later_earlier", hideVisual: false }
     };
   }
 };

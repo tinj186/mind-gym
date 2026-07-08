@@ -27,11 +27,11 @@ export default function GenerateModal() {
             quantity: 1, 
             syllabus,
             metadata: {
-              level: syllabus === 'P1_P2' ? 'Primary 1' : syllabus === 'P3_P4' ? 'Primary 3' : 'Primary 5',
-              topic: 'Whole Numbers', // Default for bulk gen until UI expanded
-              subtopic: 'Ordinal Numbers',
+              level: 'Primary 1',
+              topic: 'Whole Numbers - Numbers up to 100', // Default for bulk gen until UI expanded
+              subtopic: '',
               type: 'MCQ',
-              difficulty: 'Foundation'
+              difficulty: 'Foundation',
             }
           }),
         });

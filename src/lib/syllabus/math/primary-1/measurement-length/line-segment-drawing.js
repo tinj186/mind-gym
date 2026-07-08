@@ -4,6 +4,7 @@
 import { getRandomContext } from '@/lib/utils/localization';
 import { foundationLogic } from './line-segment-drawing/foundation';
 import { standardLogic } from './line-segment-drawing/standard';
+import { advancedLogic } from './line-segment-drawing/advanced';
 
 export const lineSegmentDrawingBlueprint = {
   id: 'p1-line-segment-drawing',
@@ -21,12 +22,32 @@ export const lineSegmentDrawingBlueprint = {
       name: 'Drawing Line Segments',
       steps: 1,
       logicDescription: "Determining the correct line segment that measures X cm on a grid."
+    },
+    advanced: {
+      name: 'Complex Line Operations',
+      steps: 2,
+      logicDescription: "Multi-step line drawing and measurement problems involving relative lengths and parts."
     }
   },
 
   variants: {
     foundation_identify_line: "Identifying which line segment has a specific length in cm.",
-    standard_line_drawing: "Determining the correct end point to draw a line segment of X cm."
+    foundation_find_longest: "Identify the longest line segment among a set of 3 lines.",
+    foundation_find_shortest: "Identify the shortest line segment among a set of 3 lines.",
+    foundation_true_false_length: "Evaluate a True/False statement about the length of a specific line segment.",
+    foundation_find_same_length: "Identify which two line segments have the exact same length.",
+
+    standard_line_drawing: "Determining the correct end point to draw a line segment of X cm.",
+    standard_calculate_start_point: "Given the length and the end mark, calculate the starting mark.",
+    standard_calculate_length_from_marks: "Given a misaligned line starting at mark X and ending at mark Y, calculate its total length.",
+    standard_draw_longer_line: "Two-step logic to calculate the end point of a longer line segment.",
+    standard_draw_shorter_line: "Two-step logic to calculate the end point of a shorter line segment.",
+
+    advanced_combined_length_misaligned: "Calculate the total length of two separate misaligned lines.",
+    advanced_missing_part_length: "A whole length is given, and one misaligned part is drawn. Calculate the remaining part.",
+    advanced_draw_equal_parts: "A misaligned line is cut into two equal pieces. Find the length of one piece.",
+    advanced_draw_three_lines: "Complex multi-step relative length logic involving three entities.",
+    advanced_find_longest_misaligned: "Compare two misaligned lines and find the difference in length."
   },
 
   generate: (difficulty = 'foundation', variant = 'foundation_identify_line', type = 'MCQ') => {
@@ -77,6 +98,10 @@ export const lineSegmentDrawingBlueprint = {
 
     if (activeVariant.startsWith('standard_')) {
       return standardLogic.generate(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText);
+    }
+
+    if (activeVariant.startsWith('advanced_')) {
+      return advancedLogic.generate(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText);
     }
 
     return foundationLogic.generate(activeVariant, config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, formatInstructions, context, getQText);

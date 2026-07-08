@@ -243,14 +243,46 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
       // Serialize answer for logs
       submittedAnswer = JSON.stringify(submittedAnswer);
     } else {
-      const studentAns = cleanString(submittedAnswer);
-      const realAns = cleanString(normalizedQuestion.finalAnswer);
-      const accepted = normalizedQuestion.acceptedAnswers ? normalizedQuestion.acceptedAnswers.map(a => cleanString(a)) : [];
+      let studentAns = cleanString(submittedAnswer);
+      let realAns = cleanString(normalizedQuestion.finalAnswer);
+      let accepted = normalizedQuestion.acceptedAnswers ? normalizedQuestion.acceptedAnswers.map(a => cleanString(a)) : [];
+      
+      // Custom grader for Grid Lines to handle swapped points or reordered lines
+      if (normalizedQuestion.inputRequirement?.inputType === 'INTERACTIVE_GRID') {
+        const normalizeLines = (linesString) => {
+          try {
+            const lines = JSON.parse(linesString);
+            if (!Array.isArray(lines)) return linesString;
+            const normalized = lines.map(line => {
+              if (!line.start || !line.end) return line;
+              const [x1, y1] = line.start;
+              const [x2, y2] = line.end;
+              if (x1 > x2 || (x1 === x2 && y1 > y2)) {
+                return { start: [x2, y2], end: [x1, y1] };
+              }
+              return { start: [x1, y1], end: [x2, y2] };
+            });
+            normalized.sort((a, b) => {
+              if (a.start[0] !== b.start[0]) return a.start[0] - b.start[0];
+              if (a.start[1] !== b.start[1]) return a.start[1] - b.start[1];
+              if (a.end[0] !== b.end[0]) return a.end[0] - b.end[0];
+              return a.end[1] - b.end[1];
+            });
+            return JSON.stringify(normalized);
+          } catch (e) {
+            return linesString;
+          }
+        };
+        
+        studentAns = normalizeLines(submittedAnswer);
+        realAns = normalizeLines(normalizedQuestion.finalAnswer);
+        accepted = normalizedQuestion.acceptedAnswers ? normalizedQuestion.acceptedAnswers.map(normalizeLines) : [];
+      }
       
       console.log('🚨 [WorkoutSession Grading Debug] raw submittedAnswer:', submittedAnswer);
-      console.log('🚨 [WorkoutSession Grading Debug] studentAns (cleaned):', `"${studentAns}"`);
-      console.log('🚨 [WorkoutSession Grading Debug] realAns (cleaned):', `"${realAns}"`);
-      console.log('🚨 [WorkoutSession Grading Debug] accepted (cleaned):', accepted);
+      console.log('🚨 [WorkoutSession Grading Debug] studentAns (cleaned/normalized):', `"${studentAns}"`);
+      console.log('🚨 [WorkoutSession Grading Debug] realAns (cleaned/normalized):', `"${realAns}"`);
+      console.log('🚨 [WorkoutSession Grading Debug] accepted (cleaned/normalized):', accepted);
       
       isCorrect = studentAns === realAns || accepted.includes(studentAns);
     }
@@ -390,6 +422,8 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
                 difficulty={normalizedQuestion.difficulty}
                 topic={normalizedQuestion.topic}
                 attempts={attempts}
+                onSubmitGrid={handleAnswer}
+                disabled={feedback === 'correct'}
               />
             </div>
           )}
@@ -408,7 +442,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
                 disabled={feedback === 'correct'}
                 level={level}
               />
-            ) : normalizedQuestion.options && normalizedQuestion.options.length > 0 ? (
+            ) : normalizedQuestion.options && normalizedQuestion.options.length > 0 && normalizedQuestion.inputRequirement?.inputType !== 'INTERACTIVE_GRID' ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
                 {normalizedQuestion.options.map((opt, idx) => (
                   <button
@@ -422,7 +456,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
                   </button>
                 ))}
               </div>
-            ) : (
+            ) : normalizedQuestion.inputRequirement?.inputType === 'INTERACTIVE_GRID' ? null : (
               <div className="w-full flex justify-center">
                 <MathInput
                   key={`input-${currentIndex}-${attempts}`}

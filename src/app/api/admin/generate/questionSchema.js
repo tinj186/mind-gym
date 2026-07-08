@@ -37,6 +37,8 @@ export const UniversalQuestionSchema = z.object({
       'NUMBER_BOND',
       'SHAPE',
       'SHAPE_DISPLAY',
+      'GRID_DISPLAY',
+      'GRID_DRAWING_CANVAS',
       'PICTURE_GRAPH_DISPLAY',
       'MEASUREMENT_UNIT',
       'CLOCK_DISPLAY',
@@ -47,7 +49,7 @@ export const UniversalQuestionSchema = z.object({
 
   // 4. INPUT REQUIREMENT: How the student answers
   inputRequirement: z.object({
-    inputType: z.enum(['STANDARD_TEXT', 'MCQ_BUTTONS', 'MATH_KEYBOARD', 'FRACTION_PAD', 'MULTI_STEP_INPUT']).default('STANDARD_TEXT'),
+    inputType: z.enum(['STANDARD_TEXT', 'MCQ_BUTTONS', 'MATH_KEYBOARD', 'FRACTION_PAD', 'MULTI_STEP_INPUT', 'INTERACTIVE_GRID']).default('STANDARD_TEXT'),
     steps: z.array(z.object({
       label: z.string(),
       expectedAnswer: z.string(),

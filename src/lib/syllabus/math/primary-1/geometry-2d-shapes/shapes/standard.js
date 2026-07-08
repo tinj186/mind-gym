@@ -1,5 +1,5 @@
 import { getRandomContext } from '@/lib/utils/localization';
-import { getRandomShapes, getRandomColors, getRandomGeometrySubjects, SHAPES_POOL, COLORS_POOL } from '@/lib/utils/variable-bank';
+import { getRandomShapes, getRandomColors, getRandomGeometrySubjects, getRandomNames, SHAPES_POOL, COLORS_POOL } from '@/lib/utils/variable-bank';
 const getRandom = (arr, count) => [...arr].sort(() => Math.random() - 0.5).slice(0, count);
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const getShuffledOptions = (correct, distractors) => {
@@ -26,7 +26,7 @@ export const standardVariants = {
       CRITICAL TASK: Build a 2D drawing of a "${selectedSubject.toUpperCase()}" built ENTIRELY out of basic shapes.
       
       1. Generate an array of 5 to 10 shapes inside visualEngine.componentData.parts to create the ${selectedSubject}. Every part MUST have:
-          - shapeType: "circle" | "square" | "triangle" | "rectangle"
+          - shapeType: "circle" | "square" | "triangle" | "rectangle" | "half circle" | "quarter circle"
           - color: a vibrant, child-friendly hex code (e.g., "#ef4444", "#3b82f6", "#eab308")
           - x: number (20 to 80) representing horizontal percentage (50 is center)
           - y: number (20 to 80) representing vertical percentage (50 is center)
@@ -279,7 +279,7 @@ export const standardVariants = {
       CRITICAL TASK: Build a 2D drawing of a "${selectedSubject.toUpperCase()}" built ENTIRELY out of basic shapes.
       
       1. Generate an array of 5 to 10 shapes inside visualEngine.componentData.parts to create the ${selectedSubject}. Every part MUST have:
-          - shapeType: "circle" | "square" | "triangle" | "rectangle"
+          - shapeType: "circle" | "square" | "triangle" | "rectangle" | "half circle" | "quarter circle"
           - color: a vibrant, child-friendly hex code (e.g., "#ef4444", "#3b82f6", "#eab308")
           - x: number (20 to 80) representing horizontal percentage (50 is center)
           - y: number (20 to 80) representing vertical percentage (50 is center)
@@ -314,6 +314,8 @@ export const standardVariants = {
 
   standard_shape_riddles: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const riddles = [
+      { ans: "Half Circle", clue: "I have 1 straight side and 1 curved side. What shape am I?" },
+      { ans: "Quarter Circle", clue: "I have 2 straight sides that meet at a corner, and 1 curved side. What shape am I?" },
       { ans: "Square", clue: "I have 4 straight sides. All my sides are exactly the same length. What shape am I?" },
       { ans: "Rectangle", clue: "I have 4 straight sides. Two of my sides are long, and two are short. What shape am I?" },
       { ans: "Triangle", clue: "I have exactly 3 straight sides and 3 pointy corners. What shape am I?" },
@@ -325,7 +327,7 @@ export const standardVariants = {
     const questionTextTemplate = getQText(selected.clue, selected.clue);
     const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers/shapes MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
 
-    let options = ["Circle", "Triangle", "Square", "Rectangle"];
+    let options = ["Circle", "Triangle", "Square", "Rectangle", "Half Circle", "Quarter Circle"];
     let mcqOptions = 'null';
     let defectMapStr = 'null';
     if (type === 'MCQ') {
@@ -480,7 +482,7 @@ export const standardVariants = {
       CRITICAL TASK: Build a 2D drawing of a "${selectedSubject.toUpperCase()}" built ENTIRELY out of basic shapes.
       
       1. Generate an array of 5 to 10 shapes inside visualEngine.componentData.parts to create the ${selectedSubject}. Every part MUST have:
-          - shapeType: "circle" | "square" | "triangle" | "rectangle"
+          - shapeType: "circle" | "square" | "triangle" | "rectangle" | "half circle" | "quarter circle"
           - color: a vibrant, child-friendly hex code (e.g., "#ef4444", "#3b82f6", "#eab308")
           - x: number (20 to 80) representing horizontal percentage (50 is center)
           - y: number (20 to 80) representing vertical percentage (50 is center)

@@ -119,7 +119,7 @@ export const getRandomHeightSubjects = (count = 1) => {
 // ----------------------------------------------------------------------------
 // 4. GEOMETRY (SHAPES, COLORS, SUBJECTS)
 // ----------------------------------------------------------------------------
-export const SHAPES_POOL = ["circle", "triangle", "square", "rectangle"];
+export const SHAPES_POOL = ["circle", "triangle", "square", "rectangle", "half circle", "quarter circle"];
 export const COLORS_POOL = ["red", "blue", "yellow", "green", "purple", "orange"];
 export const SIZES_POOL = ["small", "medium", "large"];
 export const GEOMETRY_SUBJECTS_POOL = [

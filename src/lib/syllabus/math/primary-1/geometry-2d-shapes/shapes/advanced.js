@@ -1,5 +1,5 @@
 import { getRandomContext } from '@/lib/utils/localization';
-import { getRandomShapes, getRandomColors, getRandomGeometrySubjects, SHAPES_POOL, COLORS_POOL } from '@/lib/utils/variable-bank';
+import { getRandomShapes, getRandomColors, getRandomGeometrySubjects, getRandomNames, SHAPES_POOL, COLORS_POOL } from '@/lib/utils/variable-bank';
 
 const colorNames = { "#ef4444": "red", "#3b82f6": "blue", "#eab308": "yellow", "#22c55e": "green", "#a855f7": "purple", "#f97316": "orange" };
 const sizeTiers = ["small", "medium", "large"];

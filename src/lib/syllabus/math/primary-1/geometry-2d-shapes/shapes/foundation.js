@@ -1,5 +1,5 @@
 import { getRandomContext } from '@/lib/utils/localization';
-import { getRandomShapes, getRandomColors, SHAPES_POOL, COLORS_POOL } from '@/lib/utils/variable-bank';
+import { getRandomShapes, getRandomColors, getRandomNames, SHAPES_POOL, COLORS_POOL } from '@/lib/utils/variable-bank';
 
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const getShuffledOptions = (correct, distractors) => {
@@ -48,7 +48,7 @@ export const foundationVariants = {
           "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Count the number of straight sides or look for curves!`, `Count the sides.`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`This shape is a ${targetShape}. It has ${targetShape === 'circle' ? 'no straight sides' : (targetShape === 'triangle' ? '3 sides' : '4 sides')}.`, `It is a ${targetShape}.`))}
+          "solutionSteps": ${JSON.stringify(getQText(`This shape is a ${targetShape}. It has ${targetShape === 'circle' ? 'no straight sides' : (targetShape === 'triangle' ? '3 straight sides' : (targetShape === 'half circle' ? '1 straight side and 1 curved side' : (targetShape === 'quarter circle' ? '2 straight sides and 1 curved side' : '4 straight sides')))}.`, `It is a ${targetShape}.`))}
         },
         "visualEngine": {
           "componentToRender": "SHAPE_DISPLAY",
@@ -119,9 +119,12 @@ export const foundationVariants = {
   },
 
   foundation_count_sides: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const countShapes = ["triangle", "square", "rectangle"];
-    const targetShape = countShapes[Math.floor(Math.random() * countShapes.length)];
-    const sideCount = targetShape === "triangle" ? 3 : 4;
+    const targetShape = getRandomShapes(1);
+    let sideCount = 4;
+    if (targetShape === "triangle") sideCount = 3;
+    if (targetShape === "half circle") sideCount = 1;
+    if (targetShape === "quarter circle") sideCount = 2;
+    if (targetShape === "circle") sideCount = 0;
 
     const componentData = { 
       shapeType: targetShape, 
@@ -133,12 +136,9 @@ export const foundationVariants = {
 
     const answer = String(sideCount);
     const questionTextTemplate = getQText(`How many straight sides does this ${targetShape} have?`, `Number of straight sides = ?`);
-    const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers/shapes MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
+    const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student featuring a person named ${getRandomNames(1)} that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers/shapes MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
 
-    let options = [answer, "1", "2", "5"];
-    if (sideCount === 3) options.push("4");
-    else options.push("3");
-    options = options.slice(0, 4);
+    let options = [answer, ...["0", "1", "2", "3", "4", "5"].filter(x => x !== answer).slice(0, 3)];
 
     let mcqOptions = 'null';
     let defectMapStr = 'null';
@@ -240,6 +240,7 @@ export const foundationVariants = {
       { name: "window pane", shape: "Square", emoji: "🪟", clue: "It has 4 straight sides that are exactly the same length." },
       { name: "cheese wedge", shape: "Triangle", emoji: "🧀", clue: "It has 3 straight sides and pointy corners." },
       { name: "pizza slice", shape: "Triangle", emoji: "🍕", clue: "It has 3 straight sides and comes to a sharp point." },
+      { name: "bowl", shape: "Half Circle", emoji: "🥣", clue: "It has 1 straight side across the top and 1 curved side at the bottom." }
     ];
 
     const target = realWorldObjects[Math.floor(Math.random() * realWorldObjects.length)];
@@ -249,7 +250,7 @@ export const foundationVariants = {
     const questionTextTemplate = getQText(`A ${target.name} looks like a...`, `What shape is a ${target.name}?`);
     const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers/shapes MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
 
-    let options = ["Circle", "Triangle", "Square", "Rectangle"];
+    let options = ["Circle", "Triangle", "Square", "Rectangle", "Half Circle", "Quarter Circle"];
     let mcqOptions = 'null';
     let defectMapStr = 'null';
     if (type === 'MCQ') {

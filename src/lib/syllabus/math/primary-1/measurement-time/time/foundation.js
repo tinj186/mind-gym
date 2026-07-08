@@ -9,7 +9,7 @@ export const foundationVariants = {
     const componentData = { hour: randomHour, minute: 0, displayType: 'analog' };
     
     const questionTextTemplate = getQText(`Look at the clock. What time is it?`, `Time on analog clock = ?`);
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student featuring a person named ${getRandomNames(1)} that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
 
     let options = [`${randomHour === 12 ? 1 : randomHour + 1} o'clock`, `${randomHour === 1 ? 12 : randomHour - 1} o'clock`, "6 o'clock"];
     options = getShuffledOptions(answer, options);
@@ -50,13 +50,14 @@ export const foundationVariants = {
     };
   },
 
+
   foundation_digital_hour: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const randomHour = Math.floor(Math.random() * 12) + 1;
     const answer = `${randomHour} o'clock`;
     const componentData = { hour: randomHour, minute: 0, displayType: 'digital' };
 
     const questionTextTemplate = getQText(`What time is shown on the digital clock?`, `Time on digital clock = ?`);
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student featuring a person named ${getRandomNames(1)} that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
 
     let options = [`${randomHour === 12 ? 1 : randomHour + 1} o'clock`, "half past 12", "3 o'clock"];
     options = getShuffledOptions(answer, options);
@@ -97,6 +98,7 @@ export const foundationVariants = {
     };
   },
 
+
   foundation_clock_parts: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const subVariant = Math.floor(Math.random() * 3);
     let answer, allOptions, questionText, hint, solutionSteps;
@@ -132,7 +134,7 @@ export const foundationVariants = {
       solutionSteps = getQText(`At any exact 'o'clock', zero minutes have passed. This means the minute hand (the long hand) points straight up to the number 12.`, `Answer is ${answer}.`);
     }
 
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student featuring a person named ${getRandomNames(1)} that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
     
     let mcqOptions = 'null';
     let defectMapStr = 'null';
@@ -170,41 +172,25 @@ export const foundationVariants = {
     };
   },
 
-  foundation_day_night: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const isNightScenario = Math.random() > 0.5;
+  foundation_day_night_activities: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const isDay = Math.random() > 0.5;
     
-    let questionText = getQText(isNightScenario 
-      ? "Which of these activities do you usually do at night when it is dark outside?"
-      : "Which of these activities do you usually do in the morning when the sun comes up?",
-      isNightScenario ? "Night activity = ?" : "Morning activity = ?"
-    );
+    let activity, answer, distractors;
+    if (isDay) {
+      activity = ["eating breakfast", "going to school", "playing in the sun"][Math.floor(Math.random() * 3)];
+      answer = "Day";
+      distractors = ["Night"];
+    } else {
+      activity = ["sleeping in bed", "looking at the stars", "eating supper before bed"][Math.floor(Math.random() * 3)];
+      answer = "Night";
+      distractors = ["Day"];
+    }
 
-    const morningActivities = [
-      "Eating breakfast before school",
-      "Watching the morning sunrise",
-      "Going to school",
-      "Waking up from bed",
-      "Brushing teeth in the morning",
-      "Playing at the school field"
-    ].sort(() => Math.random() - 0.5);
+    let questionTextTemplate = getQText(`Do you usually do this activity during the day or the night: ${activity}?`, `${activity} = Day or Night?`);
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student featuring a person named ${getRandomNames(1)} that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
 
-    const nightActivities = [
-      "Going to sleep in bed",
-      "Looking at stars in the sky",
-      "Having dinner with family",
-      "Sleeping in pajamas",
-      "Reading a bedtime story",
-      "Watching the moon"
-    ].sort(() => Math.random() - 0.5);
-
-    const answer = isNightScenario ? nightActivities[0] : morningActivities[0];
-    const distractors = isNightScenario 
-      ? morningActivities.slice(0, 3)
-      : nightActivities.slice(0, 3);
-
-    let options = getShuffledOptions(answer, distractors);
-
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
+    let options = [answer, ...distractors];
+    options = getShuffledOptions(answer, options);
 
     let mcqOptions = 'null';
     let defectMapStr = 'null';
@@ -215,7 +201,7 @@ export const foundationVariants = {
       options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
       defectMapStr = JSON.stringify(defectMapObj);
     } else {
-      questionText += ` (Choose from: ${options.join(' / ')})`;
+      questionTextTemplate += ` (Choose from: Day, Night)`;
     }
 
     return {
@@ -227,12 +213,12 @@ export const foundationVariants = {
       {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
-          "questionText": ${JSON.stringify(isShort ? questionText : "[STORY] " + questionText)},
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
           "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(isNightScenario ? "Think about what you do when the moon and stars are out!" : "Think about what you do right after you wake up to get ready for school!", `Consider time of day.`))},
+          "hint": ${JSON.stringify(getQText(isDay ? `Does the sun shine when you do this?` : `Is it dark outside when you do this?`, isDay ? `Sun is out?` : `Is it dark?`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(isNightScenario ? "We sleep in bed at night when it is dark outside. Playing on the field and eating breakfast are daytime routines." : "We eat breakfast in the morning to prepare for our day ahead. Sleeping and seeing stars happen at night.", `Answer is ${answer}.`))}
+          "solutionSteps": ${JSON.stringify(getQText(`We usually do this activity during the ${answer.toLowerCase()}.`, `Answer is ${answer}.`))}
         },
         "visualEngine": {
           "componentToRender": "NONE",
@@ -240,30 +226,26 @@ export const foundationVariants = {
         },
         "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
       }`,
-      metadata: { difficulty: 'foundation', steps: 1, logic: "day_night", hideVisual: true }
+      metadata: { difficulty: 'foundation', steps: 1, logic: "day_night_activities", hideVisual: true }
     };
   },
 
-  foundation_sequence_simple: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const scenario = Math.random() > 0.5;
+  foundation_time_word_match: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
+    const numberWords = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"];
+    const randomHour = Math.floor(Math.random() * 12) + 1;
+    const wordForm = numberWords[randomHour - 1];
+    const answer = `${randomHour} o'clock`;
     
-    let questionText = getQText(scenario
-      ? "Choose the correct order of events from morning to night."
-      : "Siti is planning her day. What does she do first when she wakes up in the morning?",
-      scenario ? "Correct chronological order = ?" : "First morning activity = ?"
-    );
-      
-    const answer = scenario 
-      ? "Wake up, Eat lunch, Sleep in bed" 
-      : "Brush her teeth";
-      
-    const distractors = scenario
-      ? ["Sleep in bed, Eat lunch, Wake up", "Eat lunch, Sleep in bed, Wake up"]
-      : ["Pack her school bag to go home", "Have dinner with her family"];
-      
-    let options = getShuffledOptions(answer, distractors);
-    
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
+    let questionTextTemplate = getQText(`Match the time: ${wordForm} o'clock`, `${wordForm} o'clock = ?`);
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student featuring a person named ${getRandomNames(1)} that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
+
+    let distractors = [
+      `${randomHour === 12 ? 1 : randomHour + 1} o'clock`,
+      `${randomHour === 1 ? 12 : randomHour - 1} o'clock`,
+      `${randomHour > 6 ? randomHour - 2 : randomHour + 2} o'clock`
+    ];
+    let options = [answer, ...distractors];
+    options = getShuffledOptions(answer, options);
 
     let mcqOptions = 'null';
     let defectMapStr = 'null';
@@ -271,14 +253,10 @@ export const foundationVariants = {
       options = options.sort(() => Math.random() - 0.5);
       mcqOptions = JSON.stringify(options);
       let defectMapObj = {};
-      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CARELESS_MISTAKE"; });
       defectMapStr = JSON.stringify(defectMapObj);
     } else {
-      if (scenario) {
-        questionText = "Arrange these events in the correct order from morning to night: Sleep in bed, Eat lunch, Wake up.";
-      } else {
-        questionText += ` (Choose from: ${options.join(' / ')})`;
-      }
+      questionTextTemplate += ` (Write the time as a number, e.g., 5 o'clock)`;
     }
 
     return {
@@ -290,12 +268,12 @@ export const foundationVariants = {
       {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
-          "questionText": ${JSON.stringify(isShort ? questionText : "[STORY] " + questionText)},
+          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
           "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`Think about what happens at the very start of your day versus the very end!`, `Consider daily order.`))},
+          "hint": ${JSON.stringify(getQText(`What number is ${wordForm}?`, `Read the number word.`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(scenario ? "Your day always starts with waking up in the morning, followed by having lunch in the afternoon, and ends with sleeping at night." : "Waking up is the absolute start of the day, so brushing teeth happens first before afternoon dismissal or evening routines.", `Answer is ${answer}.`))}
+          "solutionSteps": ${JSON.stringify(getQText(`The word ${wordForm} is the number ${randomHour}. So, it is ${answer}.`, `Answer is ${answer}.`))}
         },
         "visualEngine": {
           "componentToRender": "NONE",
@@ -303,7 +281,7 @@ export const foundationVariants = {
         },
         "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
       }`,
-      metadata: { difficulty: 'foundation', steps: 1, logic: "sequence_simple", hideVisual: true }
+      metadata: { difficulty: 'foundation', steps: 1, logic: "time_word_match", hideVisual: true }
     };
   }
 };

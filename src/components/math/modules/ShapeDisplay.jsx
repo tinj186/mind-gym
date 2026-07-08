@@ -47,6 +47,12 @@ export default function ShapeDisplay({ data, hideCardStyles = false }) {
         {typeKey === 'triangle' && (
           <polygon points={`${center},4 4,${baseSize - 4} ${baseSize - 4},${baseSize - 4}`} fill={fillColor} fillOpacity={fillOpacity} stroke="#0f172a" strokeWidth="4" strokeLinejoin="round" />
         )}
+        {typeKey === 'half circle' && (
+          <path d={`M 2, 74 A 48 48 0 0 1 98, 74 Z`} fill={fillColor} fillOpacity={fillOpacity} stroke="#0f172a" strokeWidth="4" />
+        )}
+        {typeKey === 'quarter circle' && (
+          <path d={`M 26, 74 L 26, 26 A 48 48 0 0 1 74, 74 Z`} fill={fillColor} fillOpacity={fillOpacity} stroke="#0f172a" strokeWidth="4" />
+        )}
       </svg>
     );
   };
@@ -194,6 +200,26 @@ export default function ShapeDisplay({ data, hideCardStyles = false }) {
               </div>
               <div className="absolute top-16">
                 {renderPrimitiveShape({ shapeType: 'square', color: '#3b82f6', size: 'large' })}
+              </div>
+            </div>
+          )}
+          {data.drawingType === 'tree' && (
+            <div className="relative h-48 w-48 mx-auto flex flex-col items-center justify-center">
+              <div className="absolute top-0 z-10">
+                {renderPrimitiveShape({ shapeType: 'triangle', color: '#22c55e', size: 'large' })}
+              </div>
+              <div className="absolute top-16">
+                {renderPrimitiveShape({ shapeType: 'rectangle', color: '#8b5cf6', size: 'large' })}
+              </div>
+            </div>
+          )}
+          {data.drawingType === 'ice cream' && (
+            <div className="relative h-48 w-48 mx-auto flex flex-col items-center justify-center">
+              <div className="absolute top-0 z-10">
+                {renderPrimitiveShape({ shapeType: 'half circle', color: '#f97316', size: 'large' })}
+              </div>
+              <div className="absolute top-16">
+                {renderPrimitiveShape({ shapeType: 'triangle', color: '#eab308', size: 'large', rotation: 180 })}
               </div>
             </div>
           )}

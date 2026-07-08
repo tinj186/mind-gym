@@ -1,6 +1,6 @@
 import { getRandomContext } from '@/lib/utils/localization';
 
-import { getRandomLengthItems, LENGTH_ITEMS_POOL } from '@/lib/utils/variable-bank';
+import { getRandomNames, getRandomLengthItems, LENGTH_ITEMS_POOL } from '@/lib/utils/variable-bank';
 const units = [{ name: "cm", icon: "ruler.svg" }];
 const getShuffledOptions = (correct, distractors) => [correct, ...distractors].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4);
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -16,7 +16,7 @@ export const standardVariants = {
 
     const answer = longestObject;
     const questionTextTemplate = getQText(`Look at the items aligned to the wall line. Which object is the longest?`, `Longest object = ?`);
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!" : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary like "cumulative". Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items in the question (e.g., if the question mentions a Marker, say "Ali bought a Marker."). DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify the "visualEngine" object, "componentData", or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!" : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary like "cumulative". Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items in the question (e.g., if the question mentions a Marker, say "${getRandomNames(1)} bought a Marker."). DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify the "visualEngine" object, "componentData", or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = selection.map(capitalize);
     if (!options.includes(answer)) { options[0] = answer; }
@@ -48,7 +48,7 @@ export const standardVariants = {
           "solutionSteps": ${JSON.stringify(getQText(`All objects share the exact same starting line on the left. Looking across to the right edge, the ${longestObject} measures ${lengths[maxIdx]} ${selectedUnit.name} long, making it the longest.`, `Answer is ${answer}.`))}
         },
         "visualEngine": {
-          "componentToRender": "MEASUREMENT_UNIT",
+          "componentToRender": "MEASUREMENT_RULER",
           "componentData": ${JSON.stringify(componentData)}
         },
         "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
@@ -66,7 +66,7 @@ export const standardVariants = {
 
     const answer = shortestItem;
     const questionTextTemplate = getQText(`Look at the items. Which object is the shortest?`, `Shortest object = ?`);
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!" : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary like "cumulative". Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items in the question (e.g., if the question mentions a Marker, say "Ali bought a Marker."). DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify the "visualEngine" object, "componentData", or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!" : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary like "cumulative". Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items in the question (e.g., if the question mentions a Marker, say "${getRandomNames(1)} bought a Marker."). DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify the "visualEngine" object, "componentData", or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = selection.map(capitalize);
     if (!options.includes(answer)) { options[0] = answer; }
@@ -98,7 +98,7 @@ export const standardVariants = {
           "solutionSteps": ${JSON.stringify(getQText(`All objects share the same left wall. Looking across at the lengths, the ${shortestItem} is only ${Math.min(...lengths)} ${selectedUnit.name} long, making it the shortest object.`, `Answer is ${answer}.`))}
         },
         "visualEngine": {
-          "componentToRender": "MEASUREMENT_UNIT",
+          "componentToRender": "MEASUREMENT_RULER",
           "componentData": ${JSON.stringify(componentData)}
         },
         "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
@@ -125,7 +125,7 @@ export const standardVariants = {
     
     const answer = targetItem.label;
     const questionTextTemplate = getQText(`Look at the ${itemNamesText}. Which one is the ${isAskingTallest ? 'tallest' : 'shortest'}?`, `${isAskingTallest ? 'Tallest' : 'Shortest'} out of ${itemNamesText} = ?`);
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!" : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary like "cumulative". Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items in the question (e.g., if the question mentions a Marker, say "Ali bought a Marker."). DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify the "visualEngine" object, "componentData", or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!" : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary like "cumulative". Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items in the question (e.g., if the question mentions a Marker, say "${getRandomNames(1)} bought a Marker."). DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify the "visualEngine" object, "componentData", or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = [...items.map(i => i.label), `Tall ${distractor.name}`];
     if (!options.includes(answer)) { options[0] = answer; }
@@ -157,7 +157,7 @@ export const standardVariants = {
           "solutionSteps": ${JSON.stringify(getQText(`Since they are all standing on the same ground floor level, we look at their tops. The ${targetItem.label} reaches ${targetHeight} ${selectedUnit.name} high, making it the ${isAskingTallest ? 'tallest' : 'shortest'}.`, `Answer is ${answer}.`))}
         },
         "visualEngine": {
-          "componentToRender": "MEASUREMENT_UNIT",
+          "componentToRender": "MEASUREMENT_RULER",
           "componentData": ${JSON.stringify(componentData)}
         },
         "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
@@ -176,7 +176,7 @@ export const standardVariants = {
     
     const answer = ascendingOrder.join(", ");
     const questionTextTemplate = getQText(`Arrange the objects in order from shortest to longest.`, `Order objects shortest to longest.`);
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!" : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary like "cumulative". Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items in the question (e.g., if the question mentions a Marker, say "Ali bought a Marker."). DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify the "visualEngine" object, "componentData", or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!" : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary like "cumulative". Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items in the question (e.g., if the question mentions a Marker, say "${getRandomNames(1)} bought a Marker."). DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify the "visualEngine" object, "componentData", or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = [
       answer,
@@ -213,7 +213,7 @@ export const standardVariants = {
           "solutionSteps": ${JSON.stringify(getQText(`Let's count each object's units: ${itemsArr.map(i => `${i.label} is ${i.length} units`).join(', ')}. Putting them in order from shortest to longest gives: ${answer}.`, `Answer is ${answer}.`))}
         },
         "visualEngine": {
-          "componentToRender": "MEASUREMENT_UNIT",
+          "componentToRender": "MEASUREMENT_RULER",
           "componentData": ${JSON.stringify(componentData)}
         },
         "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
@@ -232,7 +232,7 @@ export const standardVariants = {
     
     const answer = descendingOrder.join(", ");
     const questionTextTemplate = getQText(`Arrange the objects in order from longest to shortest.`, `Order objects longest to shortest.`);
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!" : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary like "cumulative". Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items in the question (e.g., if the question mentions a Marker, say "Ali bought a Marker."). DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify the "visualEngine" object, "componentData", or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!" : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary like "cumulative". Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items in the question (e.g., if the question mentions a Marker, say "${getRandomNames(1)} bought a Marker."). DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify the "visualEngine" object, "componentData", or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = [
       answer,
@@ -269,7 +269,7 @@ export const standardVariants = {
           "solutionSteps": ${JSON.stringify(getQText(`Counting their units: ${itemsArr.map(i => `${i.label} is ${i.length} units`).join(', ')}. Sorting them from longest to shortest gives: ${answer}.`, `Answer is ${answer}.`))}
         },
         "visualEngine": {
-          "componentToRender": "MEASUREMENT_UNIT",
+          "componentToRender": "MEASUREMENT_RULER",
           "componentData": ${JSON.stringify(componentData)}
         },
         "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
@@ -288,7 +288,7 @@ export const standardVariants = {
     const answer = askLongest ? labels[0] : labels[2];
 
     const questionTextTemplate = getQText(`Read carefully:\n- ${labels[0]} is longer than ${labels[1]}.\n- ${labels[1]} is longer than ${labels[2]}.\n\nWhich object is the ${askLongest ? 'longest' : 'shortest'}?`, `${labels[0]} is longer than ${labels[1]}.\n${labels[1]} is longer than ${labels[2]}.\nWhich is the ${askLongest ? 'longest' : 'shortest'}?`);
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!" : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary like "cumulative". Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items in the question (e.g., if the question mentions a Marker, say "Ali bought a Marker."). DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify the "visualEngine" object, "componentData", or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!" : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary like "cumulative". Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items in the question (e.g., if the question mentions a Marker, say "${getRandomNames(1)} bought a Marker."). DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify the "visualEngine" object, "componentData", or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = [...labels, distractor];
     if (!options.includes(answer)) { options[0] = answer; }
@@ -339,12 +339,12 @@ export const standardVariants = {
 
     const answer = `No. They do not start at the same line, and ${baseName} B is actually shorter.`;
     const questionTextTemplate = getQText(`Look closely at the image alignment. Can we say ${baseName} B is longer than ${baseName} A simply because its right edge sticks out further?`, `Is B longer because its tip is further right?`);
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!" : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary like "cumulative". Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items in the question (e.g., if the question mentions a Marker, say "Ali bought a Marker."). DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify the "visualEngine" object, "componentData", or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!" : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary like "cumulative". Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items in the question (e.g., if the question mentions a Marker, say "${getRandomNames(1)} bought a Marker."). DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify the "visualEngine" object, "componentData", or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = [
       answer,
       "Yes, because its tip is further to the right.",
-      `Yes, because ${selection[1]} B covers more units underneath.`,
+      `Yes, because ${baseName} B covers more units underneath.`,
       "No, because they are exactly the same length."
     ];
     if (!options.includes(answer)) { options[0] = answer; }
@@ -374,10 +374,10 @@ export const standardVariants = {
           "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Look at the starting wall! Do both objects begin at the same spot?`, `Check the start positions.`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`To compare lengths directly, objects must start at the exact same baseline line. Since ${selection[1]} B was pushed forward by ${offsetB} ${selectedUnit.name}, a direct visual edge comparison is incorrect.`, `Answer is ${answer}.`))}
+          "solutionSteps": ${JSON.stringify(getQText(`To compare lengths directly, objects must start at the exact same baseline line. Since ${baseName} B was pushed forward by ${offsetB} ${selectedUnit.name}, a direct visual edge comparison is incorrect.`, `Answer is ${answer}.`))}
         },
         "visualEngine": {
-          "componentToRender": "MEASUREMENT_UNIT",
+          "componentToRender": "MEASUREMENT_RULER",
           "componentData": ${JSON.stringify(componentData)}
         },
         "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' || forceMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
@@ -404,7 +404,7 @@ export const standardVariants = {
     
     const answer = matchingTwin.label;
     const questionTextTemplate = getQText(`Look at the ${referenceItem.label}. Which object is as long as the ${referenceItem.label}?`, `Which object has same length as ${referenceItem.label}?`);
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!" : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary like "cumulative". Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items in the question (e.g., if the question mentions a Marker, say "Ali bought a Marker."). DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify the "visualEngine" object, "componentData", or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!" : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary like "cumulative". Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items in the question (e.g., if the question mentions a Marker, say "${getRandomNames(1)} bought a Marker."). DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify the "visualEngine" object, "componentData", or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
     let options = Array.from(optionsSet);
     if (!options.includes(answer)) { options[0] = answer; }
@@ -436,7 +436,7 @@ export const standardVariants = {
           "solutionSteps": ${JSON.stringify(getQText(`Objects that are 'as long as' each other must have the same number of units. Both the ${referenceItem.label} and the ${matchingTwin.label} are exactly ${baseLen} ${selectedUnit.name} long.`, `Answer is ${answer}.`))}
         },
         "visualEngine": {
-          "componentToRender": "MEASUREMENT_UNIT",
+          "componentToRender": "MEASUREMENT_RULER",
           "componentData": ${JSON.stringify(componentData)}
         },
         "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
@@ -453,11 +453,16 @@ export const standardVariants = {
     const selectedUnit = units[Math.floor(Math.random() * units.length)];
     const componentData = { items: [{ label: selection[0], length: len1 }, { label: selection[1], length: len2 }], unitIcon: selectedUnit.icon };
     
-    const answer = String(diff);
-    const questionTextTemplate = getQText(`How many ${selectedUnit.name} longer is the ${selection[0]} than the ${selection[1]}?`, `Length difference = ?`);
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!" : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary like "cumulative". Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items in the question (e.g., if the question mentions a Marker, say "Ali bought a Marker."). DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify the "visualEngine" object, "componentData", or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
+    const requireUnit = Math.random() > 0.5;
+    const answer = requireUnit ? `${diff} ${selectedUnit.name}` : String(diff);
+    const questionTextTemplate = requireUnit
+      ? getQText(`What is the difference in length between the ${selection[0]} and the ${selection[1]}?`, `Difference in length = ?`)
+      : getQText(`How many ${selectedUnit.name} longer is the ${selection[0]} than the ${selection[1]}?`, `Length difference in ${selectedUnit.name} = ?`);
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!" : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary like "cumulative". Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items in the question (e.g., if the question mentions a Marker, say "${getRandomNames(1)} bought a Marker."). DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify the "visualEngine" object, "componentData", or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
-    let options = [answer, String(len1), String(len2), String(len1 + len2)];
+    let options = requireUnit
+      ? [answer, `${len1} ${selectedUnit.name}`, `${len2} ${selectedUnit.name}`, `${len1 + len2} ${selectedUnit.name}`]
+      : [answer, String(len1), String(len2), String(len1 + len2)];
     if (!options.includes(answer)) { options[0] = answer; }
 
     let mcqOptions = 'null';
@@ -487,7 +492,7 @@ export const standardVariants = {
           "solutionSteps": ${JSON.stringify(getQText(`The ${selection[0]} is ${len1} ${selectedUnit.name}. The ${selection[1]} is ${len2} ${selectedUnit.name}. Subtract to find the difference: ${len1} - ${len2} = ${diff} ${selectedUnit.name}.`, `Answer is ${answer}.`))}
         },
         "visualEngine": {
-          "componentToRender": "MEASUREMENT_UNIT",
+          "componentToRender": "MEASUREMENT_RULER",
           "componentData": ${JSON.stringify(componentData)}
         },
         "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }
@@ -504,11 +509,16 @@ export const standardVariants = {
     const selectedUnit = units[Math.floor(Math.random() * units.length)];
     const componentData = { items: [{ label: `Floating ${selectedItem}`, length: actualLength, startOffset: startMarker }], showFullRuler: true, unitIcon: selectedUnit.icon };
     
-    const answer = String(actualLength);
-    const questionTextTemplate = getQText(`Look at the ${selectedItem.toLowerCase()}. It starts at the ${startMarker} unit marker and ends at the ${endMarker} unit marker. How many units long is the ${selectedItem.toLowerCase()}?`, `Length of ${selectedItem.toLowerCase()} = ?`);
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!" : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary like "cumulative". Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items in the question (e.g., if the question mentions a Marker, say "Ali bought a Marker."). DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify the "visualEngine" object, "componentData", or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
+    const requireUnit = Math.random() > 0.5;
+    const answer = requireUnit ? `${actualLength} ${selectedUnit.name}` : String(actualLength);
+    const questionTextTemplate = requireUnit
+      ? getQText(`Look at the ${selectedItem.toLowerCase()}. It starts at the ${startMarker} unit marker and ends at the ${endMarker} unit marker. What is the length of the ${selectedItem.toLowerCase()}?`, `Length of ${selectedItem.toLowerCase()} = ?`)
+      : getQText(`Look at the ${selectedItem.toLowerCase()}. It starts at the ${startMarker} unit marker and ends at the ${endMarker} unit marker. How many units long is the ${selectedItem.toLowerCase()}?`, `Length of ${selectedItem.toLowerCase()} in units = ?`);
+    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify the 'visualEngine' object, 'componentData', or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!" : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary like "cumulative". Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items in the question (e.g., if the question mentions a Marker, say "${getRandomNames(1)} bought a Marker."). DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify the "visualEngine" object, "componentData", or any existing item names/lengths in the JSON template. They MUST remain exactly as provided!`;
 
-    let options = [answer, String(endMarker), String(startMarker), String(endMarker + 1)];
+    let options = requireUnit
+      ? [answer, `${endMarker} ${selectedUnit.name}`, `${startMarker} ${selectedUnit.name}`, `${endMarker + 1} ${selectedUnit.name}`]
+      : [answer, String(endMarker), String(startMarker), String(endMarker + 1)];
     if (!options.includes(answer)) { options[0] = answer; }
 
     let mcqOptions = 'null';
@@ -538,7 +548,7 @@ export const standardVariants = {
           "solutionSteps": ${JSON.stringify(getQText(`When an object does not start at zero, calculate its true length by subtracting the starting marker position from the ending marker position: ${endMarker} - ${startMarker} = ${actualLength} ${selectedUnit.name}.`, `Answer is ${answer}.`))}
         },
         "visualEngine": {
-          "componentToRender": "MEASUREMENT_UNIT",
+          "componentToRender": "MEASUREMENT_RULER",
           "componentData": ${JSON.stringify(componentData)}
         },
         "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? ', "steps": "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]"' : ''} }

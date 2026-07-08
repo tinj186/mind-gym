@@ -7,13 +7,15 @@ import IconGrid from '@/components/math/modules/IconGrid';
 export const ESSENTIAL_VISUALS = [
   "ORDINAL_LINE", "GROUPING_WORKSPACE", "NUMBER_CARDS", 
   "NUMBER_BOND", "NUMBER_PATTERN", "BASE_TEN_BLOCKS", 
-  "SINGAPORE_MONEY", "MEASUREMENT_UNIT", "CLOCK_DISPLAY",
-  "SHAPE_DISPLAY", "PLACE_VALUE_CHART", "VERTICAL_ALGORITHM"
+  "SINGAPORE_MONEY", "MEASUREMENT_UNIT", "MEASUREMENT_RULER", "CLOCK_DISPLAY",
+  "SHAPE_DISPLAY", "PLACE_VALUE_CHART", "VERTICAL_ALGORITHM",
+  "GRID_DISPLAY", "GRID_DRAWING_CANVAS"
   // "PICTURE_GRAPH_DISPLAY" // Not essential, lazy-loaded
 ];
 
 // 🚀 Lazy-loaded modules (Only downloaded by the browser if the question requires it)
 const MeasurementUnit = lazy(() => import('./modules/MeasurementUnit'));
+const MeasurementRuler = lazy(() => import('./modules/MeasurementRuler'));
 const SingaporeMoney = lazy(() => import('./modules/SingaporeMoney'));
 const CountingObjects = lazy(() => import('./modules/CountingObjects'));
 const NumberCards = lazy(() => import('./modules/NumberCards'));
@@ -32,6 +34,9 @@ const CrossOutGroup = lazy(() => import('./modules/CrossOutGroup'));
 const TwoSetComparison = lazy(() => import('./modules/TwoSetComparison'));
 const TFMatrixTable = lazy(() => import('./modules/TFMatrixTable'));
 const VerticalAlgorithm = lazy(() => import('./modules/VerticalAlgorithm'));
+const DiagramRenderer = lazy(() => import('./modules/DiagramRenderer'));
+const GridDisplay = lazy(() => import('./modules/GridDisplay'));
+const GridDrawingCanvas = lazy(() => import('./modules/GridDrawingCanvas'));
 
 export default function VisualRenderer({ type, ...props }) {
   const activeType = (
@@ -51,6 +56,7 @@ export default function VisualRenderer({ type, ...props }) {
       {(() => {
         switch (activeType) {
           case 'MEASUREMENT_UNIT': return <MeasurementUnit {...props} />;
+          case 'MEASUREMENT_RULER': return <MeasurementRuler {...props} />;
           case 'CLOCK_DISPLAY': return <ClockDisplay {...props} />;
           case 'SINGAPORE_MONEY': return <SingaporeMoney {...props} />;
           case 'COUNTING_OBJECTS': 
@@ -80,6 +86,8 @@ export default function VisualRenderer({ type, ...props }) {
           case 'PLACE_VALUE_CHART': return <PlaceValueChart data={props.visualEngine?.componentData || props.data} />;
           case 'SHAPE': return <Shape {...props} />;
           case 'SHAPE_DISPLAY': return <ShapeDisplay data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
+          case 'GRID_DISPLAY': return <GridDisplay data={props.visualEngine?.componentData || props.data} />;
+          case 'GRID_DRAWING_CANVAS': return <GridDrawingCanvas data={props.visualEngine?.componentData || props.data} onSubmit={props.onSubmitGrid} disabled={props.disabled} />;
           case 'PICTURE_GRAPH_DISPLAY': return <PictureGraphDisplay data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
           case 'CROSS_OUT_GROUP': {
             const data = props.visualEngine?.componentData || props.data || {};

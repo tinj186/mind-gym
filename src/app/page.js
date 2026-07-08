@@ -13,7 +13,7 @@ export default function PublicLandingPage() {
   const router = useRouter();
   
   const [level, setLevel] = useState('Primary 1');
-  const [topic, setTopic] = useState('Whole Numbers');
+  const [topic, setTopic] = useState('Whole Numbers - Numbers up to 100');
   const [isGenerating, setIsGenerating] = useState(false);
   const [worksheet, setWorksheet] = useState(null);
   const [error, setError] = useState('');
@@ -105,9 +105,12 @@ export default function PublicLandingPage() {
                 onChange={(e) => setTopic(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-3 font-medium outline-none"
               >
-                <option value="Whole Numbers">Whole Numbers</option>
-                <option value="Measurement">Measurement</option>
-                <option value="Geometry">Geometry</option>
+                <option value="Whole Numbers - Numbers up to 100">Whole Numbers (up to 100)</option>
+                <option value="Whole Numbers - Addition and Subtraction">Addition & Subtraction</option>
+                <option value="Whole Numbers - Multiplication and Division">Multiplication & Division</option>
+                <option value="Measurement - Length">Length</option>
+                <option value="Measurement - Time">Time</option>
+                <option value="Geometry - 2D Shapes">2D Shapes</option>
               </select>
             </div>
 

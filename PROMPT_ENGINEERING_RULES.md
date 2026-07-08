@@ -68,6 +68,9 @@ Execution: During generation, the engine filters variants. If a variant conceptu
 Law (Multi-Step Associative Flexibility): While final answers must match deterministically, multi-step associative working (e.g., 3+2=5 vs 2+3=5) must be handled flexibly.
 Execution: The client-side `WorkoutSession` executes a strict string-matching "fast path". If strict matching fails for a multi-step input, it securely delegates the check to a deterministic, zero-temperature AI Grader API (`/api/grade-multi-step`) to mathematically evaluate logical equivalence before incorrectly failing the student.
 
+Law (Template Preservation Strictness): When dynamic context or randomized attributes (e.g. random objects like "eraser" or math numbers) are generated deterministically in code, the AI must NEVER be allowed to "autocorrect" or rewrite the template string.
+Execution: To prevent the LLM from taking creative liberty and replacing randomized values with what it perceives to be "better" standard examples, the format instructions MUST explicitly prepend the following directive to the prompt: `CRITICAL INSTRUCTION: You MUST use the EXACT strings provided in the template below for questionText, hint, and solutionSteps. DO NOT rephrase them!`
+
 VI. MathLive & Universal Grading Protocols
 
 To ensure resilient mathematical input and strictly deterministic grading across all components (`WorkoutSession`, `ArenaSession`, `MathInput`):
