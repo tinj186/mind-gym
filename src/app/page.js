@@ -77,7 +77,7 @@ export default function PublicLandingPage() {
           Learning shouldn’t be a guessing game. Our adaptive platform acts as an intelligent coach—isolating specific learning bottlenecks, identifying exact cognitive "defect codes," and generating precise daily workouts to build the right neural pathways.
         </p>
         <p className="text-sm text-slate-500 mb-12 max-w-xl mx-auto print:hidden">
-          Experience the Universal Engine. Generate syllabus-aligned Primary 1 Math worksheets instantly (Primary 2–6 coming soon!), or unlock automated marking and granular performance tracking with the Annual Pass for S$29.90 (No hidden fees).
+          Experience the Universal Engine. Generate syllabus-aligned Primary 1 Math worksheets instantly, or unlock automated marking and granular performance tracking with the Annual Pass for S$29.90 (No hidden fees).
         </p>
 
         {/* Free Worksheet Generator Tool */}
