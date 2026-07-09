@@ -2,6 +2,7 @@ import Script from 'next/script';
 import './globals.css'; // This line is the "Power Switch" for your CSS
 
 import GlobalNavbar from '@/components/layout/GlobalNavbar';
+import GlobalFooter from '@/components/layout/GlobalFooter';
 
 import CookieBanner from '@/components/layout/CookieBanner';
 
@@ -23,6 +24,7 @@ export default function RootLayout({ children }) {
         }} />
         <GlobalNavbar />
         {children}
+        <GlobalFooter />
         <CookieBanner />
       </body>
     </html>
