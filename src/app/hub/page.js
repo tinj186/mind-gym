@@ -118,6 +118,7 @@ export default async function OverallView({ searchParams }) {
       </main>
     );
   } catch (globalError) {
+    if (globalError.message === 'NEXT_REDIRECT') throw globalError;
     return (
       <div className="p-10 bg-red-100 text-red-900">
         <h1>Server Error Caught!</h1>
