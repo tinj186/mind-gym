@@ -26,6 +26,7 @@ export class StripeAdapter extends PaymentGateway {
     const session = await this.stripe.checkout.sessions.create({
       payment_method_types: ['card', 'paynow'], // PayNow added!
       mode: 'payment',
+      allow_promotion_codes: true, // Enable coupon codes on the checkout page
       line_items: [
         {
           price: priceId,
