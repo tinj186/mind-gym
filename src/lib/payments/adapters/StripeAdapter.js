@@ -24,8 +24,8 @@ export class StripeAdapter extends PaymentGateway {
     }
 
     const session = await this.stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'subscription',
+      payment_method_types: ['card', 'paynow'], // PayNow added!
+      mode: 'payment',
       line_items: [
         {
           price: priceId,
