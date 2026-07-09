@@ -36,14 +36,17 @@ export default function GenerateModal() {
           }),
         });
 
-        if (response.ok) {
-          router.refresh(); // Refresh counts after every single question
+        if (!response.ok) {
+          console.error("❌ Generation failed for question", i);
         }
       } catch (err) {
         console.error("❌ Generation Error:", err);
         break;
       }
     }
+    
+    // Refresh the page data ONCE after all questions are done generating
+    router.refresh();
     setIsGenerating(false);
   };
 

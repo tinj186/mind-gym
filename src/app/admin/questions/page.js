@@ -15,11 +15,10 @@ export default async function AdminQuestionsPage({ searchParams }) {
   let groupedSummary = [];
 
   try {
-    // Fetch question metadata once to calculate inventory coverage
-    const allFiltered = await prisma.questionBank.findMany({
-      select: {
-        level: true, topic: true, subtopic: true, type: true, difficulty: true, isApproved: true
-      }
+    // Fetch grouped counts to calculate inventory coverage without pulling raw rows
+    const groupedData = await prisma.questionBank.groupBy({
+      by: ['level', 'topic', 'subtopic', 'type', 'difficulty', 'isApproved'],
+      _count: { _all: true }
     });
 
     // Generate rows for every syllabus combination, filtered by current UI selection
@@ -36,7 +35,7 @@ export default async function AdminQuestionsPage({ searchParams }) {
 
     baseSyllabusRows.forEach(s => {
       difficultiesToProcess.forEach(d => {
-        const matches = allFiltered.filter(q => 
+        const matches = groupedData.filter(q => 
           q.level === s.level && 
           q.topic === s.topic && 
           q.type === s.type &&
@@ -48,8 +47,8 @@ export default async function AdminQuestionsPage({ searchParams }) {
         if (d === 'Advanced' && s.type === 'Short Question') return;
         if (d === 'Foundation' && s.type === 'Short Question' && s.topic === 'Whole Numbers - Multiplication and Division' && s.subtopic === 'Multiplication/Division Concepts') return;
 
-        const pending = matches.filter(m => !m.isApproved).length;
-        const approved = matches.filter(m => m.isApproved).length;
+        const pending = matches.filter(m => !m.isApproved).reduce((acc, curr) => acc + curr._count._all, 0);
+        const approved = matches.filter(m => m.isApproved).reduce((acc, curr) => acc + curr._count._all, 0);
         
         expandedRows.push({
           ...s,
