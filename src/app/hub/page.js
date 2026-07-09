@@ -1,9 +1,12 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { getStudentStatsAction } from '@/app/actions/statsActions';
 import { prisma } from '@/lib/db';
 import { getThemeForLevel } from '@/lib/LevelThemeConfig';
 import { getCurrentStudentId } from '@/lib/auth-utils';
 import HubGridClient from '@/components/hub/HubGridClient';
+import { StripeAdapter } from '@/lib/payments/adapters/StripeAdapter';
+import { sendSubscriptionWelcomeEmail } from '@/lib/email';
 
 function timeAgo(dateInput) {
   if (!dateInput) return 'N/A';
@@ -29,8 +32,45 @@ function timeAgo(dateInput) {
   return Math.floor(seconds) + " seconds ago";
 }
 
-export default async function OverallView() {
+export default async function OverallView({ searchParams }) {
   try {
+    const resolvedParams = await searchParams;
+    const sessionId = resolvedParams?.session_id;
+
+    if (sessionId) {
+      try {
+        const adapter = new StripeAdapter();
+        const verification = await adapter.verifySession(sessionId);
+        
+        if (verification.isPaid && verification.userId) {
+          const existingUser = await prisma.user.findUnique({ where: { id: verification.userId } });
+          
+          if (existingUser && existingUser.subscriptionStatus !== 'ACTIVE') {
+            const updatedUser = await prisma.user.update({
+              where: { id: verification.userId },
+              data: { 
+                subscriptionStatus: 'ACTIVE',
+                stripeCustomerId: verification.stripeCustomerId || existingUser.stripeCustomerId
+              }
+            });
+            
+            if (updatedUser && updatedUser.email) {
+              try {
+                await sendSubscriptionWelcomeEmail(updatedUser.email, updatedUser.name);
+                console.log(`[Fallback] Welcome email sent successfully to ${updatedUser.email}`);
+              } catch (emailError) {
+                console.error(`[Fallback] Failed to send welcome email:`, emailError);
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Fallback verification failed:", err);
+      }
+      // Redirect to clear the session_id from the URL so it's clean and doesn't re-run
+      redirect('/hub');
+    }
+
     const studentId = await getCurrentStudentId() || "default-student";
     let stats;
     

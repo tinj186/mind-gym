@@ -34,7 +34,7 @@ export class StripeAdapter extends PaymentGateway {
         },
       ],
       client_reference_id: userId,
-      success_url: `${redirectUrl}?payment=success`,
+      success_url: `${redirectUrl}?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${redirectUrl}?error=checkout_cancelled`,
     });
 
@@ -58,6 +58,23 @@ export class StripeAdapter extends PaymentGateway {
     } catch (err) {
       console.error("Stripe Webhook Signature Verification Failed:", err.message);
       return null;
+    }
+  }
+
+  async verifySession(sessionId) {
+    try {
+      const session = await this.stripe.checkout.sessions.retrieve(sessionId);
+      if (session && session.payment_status === 'paid') {
+        return {
+          isPaid: true,
+          userId: session.client_reference_id,
+          stripeCustomerId: session.customer
+        };
+      }
+      return { isPaid: false };
+    } catch (err) {
+      console.error("Stripe session verification failed:", err);
+      return { isPaid: false };
     }
   }
 }
