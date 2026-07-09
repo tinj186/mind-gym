@@ -64,7 +64,7 @@ export class StripeAdapter extends PaymentGateway {
   async verifySession(sessionId) {
     try {
       const session = await this.stripe.checkout.sessions.retrieve(sessionId);
-      if (session && session.payment_status === 'paid') {
+      if (session && (session.payment_status === 'paid' || session.payment_status === 'no_payment_required')) {
         return {
           isPaid: true,
           userId: session.client_reference_id,
