@@ -33,7 +33,12 @@ import { _2dShapeIdentificationBlueprint } from './math/primary-1/geometry-2d-sh
 import { figureCopyingGridsBlueprint } from './math/primary-1/geometry-2d-shapes/figure-copying-grids';
 
 // Primary 2 Imports
-import { numbersTo1000Blueprint } from './math/primary-2/whole-numbers-numbers-up-to-1000/numbers-to-1000';
+import { countingByTensHundredsBlueprint } from './math/primary-2/whole-numbers-numbers-up-to-1000/counting-by-tens-hundreds';
+import { placeValuesHundredsBlueprint } from './math/primary-2/whole-numbers-numbers-up-to-1000/place-values-hundreds';
+import { numberNotationBlueprint as p2NumberNotationBlueprint } from './math/primary-2/whole-numbers-numbers-up-to-1000/number-notation';
+import { numberComparisonAndOrderingBlueprint } from './math/primary-2/whole-numbers-numbers-up-to-1000/number-comparison-and-ordering';
+import { numberPatternsBlueprint as p2NumberPatternsBlueprint } from './math/primary-2/whole-numbers-numbers-up-to-1000/number-patterns';
+import { oddAndEvenNumbersBlueprint } from './math/primary-2/whole-numbers-numbers-up-to-1000/odd-and-even-numbers';
 import { additionSubtractionBlueprint as p2AddSubBlueprint } from './math/primary-2/whole-numbers-addition-and-subtraction/addition-subtraction';
 import { multiplicationDivisionBlueprint as p2MultDivBlueprint } from './math/primary-2/whole-numbers-multiplication-and-division/multiplication-division';
 import { lengthBlueprint as p2LengthBlueprint } from './math/primary-2/measurement-length-mass-and-volume/length';
@@ -84,12 +89,12 @@ export const blueprintRegistry = {
   'Primary 1-Geometry - 2D Shapes-2D Shape Classification': shapesBlueprint,
 
   // Primary 2
-  'Primary 2-Whole Numbers - Numbers up to 1000-Counting by Tens/Hundreds': numbersTo1000Blueprint,
-  'Primary 2-Whole Numbers - Numbers up to 1000-Place Values (Hundreds)': numbersTo1000Blueprint,
-  'Primary 2-Whole Numbers - Numbers up to 1000-Number Notation': numbersTo1000Blueprint,
-  'Primary 2-Whole Numbers - Numbers up to 1000-Number Comparison and Ordering': numbersTo1000Blueprint,
-  'Primary 2-Whole Numbers - Numbers up to 1000-Number Patterns': numbersTo1000Blueprint,
-  'Primary 2-Whole Numbers - Numbers up to 1000-Odd and Even Numbers': numbersTo1000Blueprint,
+  'Primary 2-Whole Numbers - Numbers up to 1000-Counting by Tens/Hundreds': countingByTensHundredsBlueprint,
+  'Primary 2-Whole Numbers - Numbers up to 1000-Place Values (Hundreds)': placeValuesHundredsBlueprint,
+  'Primary 2-Whole Numbers - Numbers up to 1000-Number Notation': p2NumberNotationBlueprint,
+  'Primary 2-Whole Numbers - Numbers up to 1000-Number Comparison and Ordering': numberComparisonAndOrderingBlueprint,
+  'Primary 2-Whole Numbers - Numbers up to 1000-Number Patterns': p2NumberPatternsBlueprint,
+  'Primary 2-Whole Numbers - Numbers up to 1000-Odd and Even Numbers': oddAndEvenNumbersBlueprint,
   
   'Primary 2-Whole Numbers - Addition and Subtraction-Addition/Subtraction Algorithms (3-Digit)': p2AddSubBlueprint,
   'Primary 2-Whole Numbers - Addition and Subtraction-Mental Calculation (3-Digit)': p2AddSubBlueprint,

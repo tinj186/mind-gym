@@ -552,27 +552,69 @@ export const SYLLABUS_DATA = {
       "subtopics": [
         {
           "name": "Counting by Tens/Hundreds",
-          "moeDescription": "counting in tens/hundreds"
+          "moeDescription": "counting in tens/hundreds",
+          "allowedTypes": [
+            QUESTION_TYPES.SHORT_QUESTION.label,
+            QUESTION_TYPES.MCQ.label
+          ],
+          "blueprint": "Focus on counting sets of objects or numbers jumping by 10s or 100s up to 1000.",
+          "visualType": "NONE",
+          "vocabulary": ["count", "tens", "hundreds", "next"]
         },
         {
           "name": "Place Values (Hundreds)",
-          "moeDescription": "number notation, representations and place values (hundreds, tens, ones)"
+          "moeDescription": "number notation, representations and place values (hundreds, tens, ones)",
+          "allowedTypes": [
+            QUESTION_TYPES.SHORT_QUESTION.label,
+            QUESTION_TYPES.MCQ.label
+          ],
+          "blueprint": "Focus on hundreds, tens, and ones place value.",
+          "visualType": "BASE_TEN_BLOCKS",
+          "vocabulary": ["hundreds", "tens", "ones", "digit", "value"]
         },
         {
           "name": "Number Notation",
-          "moeDescription": "reading and writing numbers in numerals and in words"
+          "moeDescription": "reading and writing numbers in numerals and in words",
+          "allowedTypes": [
+            QUESTION_TYPES.SHORT_QUESTION.label,
+            QUESTION_TYPES.MCQ.label
+          ],
+          "blueprint": "Convert numbers up to 1000 into words and vice versa.",
+          "visualType": "NONE",
+          "vocabulary": ["write", "words", "numerals"]
         },
         {
           "name": "Number Comparison and Ordering",
-          "moeDescription": "comparing and ordering numbers"
+          "moeDescription": "comparing and ordering numbers",
+          "allowedTypes": [
+            QUESTION_TYPES.SHORT_QUESTION.label,
+            QUESTION_TYPES.MCQ.label
+          ],
+          "blueprint": "Compare and sort numbers up to 1000.",
+          "visualType": "NUMBER_CARDS",
+          "vocabulary": ["greater", "smaller", "greatest", "smallest", "arrange"]
         },
         {
           "name": "Number Patterns",
-          "moeDescription": "patterns in number sequences"
+          "moeDescription": "patterns in number sequences",
+          "allowedTypes": [
+            QUESTION_TYPES.SHORT_QUESTION.label,
+            QUESTION_TYPES.MCQ.label
+          ],
+          "blueprint": "Provide a sequence jumping by 1, 10, or 100.",
+          "visualType": "NUMBER_PATTERN",
+          "vocabulary": ["pattern", "next", "missing"]
         },
         {
           "name": "Odd and Even Numbers",
-          "moeDescription": "odd and even numbers"
+          "moeDescription": "odd and even numbers",
+          "allowedTypes": [
+            QUESTION_TYPES.SHORT_QUESTION.label,
+            QUESTION_TYPES.MCQ.label
+          ],
+          "blueprint": "Identify if a number is odd or even.",
+          "visualType": "NONE",
+          "vocabulary": ["odd", "even"]
         }
       ]
     },
