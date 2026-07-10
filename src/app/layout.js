@@ -7,8 +7,8 @@ import GlobalFooter from '@/components/layout/GlobalFooter';
 import CookieBanner from '@/components/layout/CookieBanner';
 
 export const metadata = {
-  title: 'Learn Reps | Primary 1 Math Auto-marked Worksheets',
-  description: 'Master the new Singapore MOE Syllabus with unlimited, auto-marked math worksheets for Primary 1 students. Focus on conceptual understanding and eliminate careless mistakes.',
+  title: 'The Learn Reps | Free Primary Math Worksheets (Singapore MOE)',
+  description: 'Generate free, syllabus-aligned Primary 1 math worksheets. Upgrade to the S$29.90 Annual Pass for automated marking and granular \'Synapse Strength\' performance tracking.',
   keywords: 'Primary 1 Math, Singapore MOE Syllabus, Auto-marked Worksheets, P1 math time worksheets, How to teach P1 time and duration Singapore',
 };
 
