@@ -16,6 +16,12 @@ export default function GlobalFooter() {
           
           <div className="flex flex-wrap justify-center md:justify-end gap-6 md:gap-8">
             <Link 
+              href="/guides" 
+              className="text-sm font-bold text-slate-400 hover:text-white transition-colors"
+            >
+              Parent Guides
+            </Link>
+            <Link 
               href="/terms-of-service" 
               className="text-sm font-bold text-slate-400 hover:text-white transition-colors"
             >

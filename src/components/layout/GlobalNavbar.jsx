@@ -58,6 +58,7 @@ export default async function GlobalNavbar() {
             <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>
 
             <div className="flex gap-3 items-center">
+              <Link href="/guides" className="hidden lg:block text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors mr-2">Parent Guides</Link>
               <Link href="/parent" className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-colors shadow-sm">
                 <span className="hidden sm:inline">👨‍👩‍👧‍👦</span> Command Center
               </Link>
@@ -66,6 +67,7 @@ export default async function GlobalNavbar() {
           </>
         ) : (
           <div className="flex gap-4 items-center">
+            <Link href="/guides" className="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors">Parent Guides</Link>
             <Link href="/login" className="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors">Sign In</Link>
             <CheckoutButton />
           </div>
