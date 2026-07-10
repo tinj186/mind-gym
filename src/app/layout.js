@@ -5,6 +5,7 @@ import GlobalNavbar from '@/components/layout/GlobalNavbar';
 import GlobalFooter from '@/components/layout/GlobalFooter';
 
 import CookieBanner from '@/components/layout/CookieBanner';
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata = {
   title: 'The Learn Reps | Free Primary Math Worksheets (Singapore MOE)',
@@ -27,6 +28,7 @@ export default function RootLayout({ children }) {
         {children}
         <GlobalFooter />
         <CookieBanner />
+        <Analytics />
       </body>
     </html>
   );
