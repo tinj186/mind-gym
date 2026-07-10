@@ -37,6 +37,10 @@ export const placeValuesHundredsBlueprint = {
     foundation_expanded_form_addition: "Find the total of expanded form addition.",
     
     standard_digit_value: "What is the value of the digit X in Y?",
+    standard_digit_with_value: "Identify the digit with a specific value.",
+    standard_expanded_form_missing: "Find the missing part of expanded form.",
+    standard_greatest_value_digit: "Which digit has the greatest value?",
+    standard_mystery_number_values: "Build a number from jumbled values.",
     advanced_decomposition: "Decompose the number into hundreds, tens, and ones."
   },
 
