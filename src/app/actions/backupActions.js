@@ -6,7 +6,7 @@ export async function getBackupStatusAction() {
     const backup = await prisma.dataFortressBackup.findUnique({
       where: { id: "master_backup" }
     });
-    
+
     const dbCount = await prisma.questionBank.count();
 
     if (!backup) {
@@ -28,31 +28,30 @@ export async function getBackupStatusAction() {
 
 export async function triggerJsonDumpAction() {
   try {
-    const questions = await prisma.questionBank.findMany({
-      orderBy: { id: 'asc' }
+    const result = await prisma.$executeRaw`
+      INSERT INTO "DataFortressBackup" (id, data, count, "sizeKB", "updatedAt")
+      SELECT 
+        'master_backup',
+        json_agg(row_to_json(t))::jsonb,
+        COUNT(*)::int,
+        (LENGTH(json_agg(row_to_json(t))::text) / 1024.0),
+        NOW()
+      FROM "QuestionBank" t
+      ON CONFLICT (id) DO UPDATE SET 
+        data = EXCLUDED.data,
+        count = EXCLUDED.count,
+        "sizeKB" = EXCLUDED."sizeKB",
+        "updatedAt" = EXCLUDED."updatedAt"
+      RETURNING count;
+    `;
+
+    // Fetch the count to return it, since executeRaw might just return the number of affected rows
+    const backup = await prisma.dataFortressBackup.findUnique({
+      where: { id: 'master_backup' },
+      select: { count: true }
     });
 
-    const serializedData = JSON.stringify(questions);
-    
-    // Calculate approximate size in KB
-    const sizeKB = Buffer.byteLength(serializedData, 'utf8') / 1024;
-
-    await prisma.dataFortressBackup.upsert({
-      where: { id: "master_backup" },
-      update: {
-        data: serializedData,
-        count: questions.length,
-        sizeKB: sizeKB
-      },
-      create: {
-        id: "master_backup",
-        data: serializedData,
-        count: questions.length,
-        sizeKB: sizeKB
-      }
-    });
-
-    return { success: true, count: questions.length };
+    return { success: true, count: backup?.count || 0 };
   } catch (error) {
     console.error("Dump failed:", error);
     return { success: false, error: error.message };

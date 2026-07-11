@@ -1,7 +1,73 @@
-export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, levelName, topic, formatInstructions, context, selectedContextItem, getQText) {
-  // ==========================================
-  // FOUNDATION LEVEL
-  // ==========================================
+export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, levelName, topic, getFormatInstructions, context, selectedContextItem, getQText) {
+  if (activeVariant === "foundation_random") {
+    const options = [
+      "foundation_add_3_digit_no_renaming",
+      "foundation_sub_3_digit_no_renaming",
+      "foundation_add_2_digit_renaming",
+      "foundation_sub_2_digit_renaming"
+    ];
+    activeVariant = options[Math.floor(Math.random() * options.length)];
+  }
 
-  throw new Error(`Variant '${activeVariant}' logic block not implemented in foundation.js.`);
+  let num1 = 0;
+  let num2 = 0;
+  let finalAnswer = "";
+  let isAdd = activeVariant.includes("_add_");
+
+  if (activeVariant === "foundation_add_3_digit_no_renaming") {
+    let h1 = Math.floor(Math.random() * 8) + 1; 
+    let h2 = Math.floor(Math.random() * (9 - h1)) + 1;
+    let t1 = Math.floor(Math.random() * 10);
+    let t2 = Math.floor(Math.random() * (10 - t1));
+    let o1 = Math.floor(Math.random() * 10);
+    let o2 = Math.floor(Math.random() * (10 - o1));
+    num1 = h1 * 100 + t1 * 10 + o1;
+    num2 = h2 * 100 + t2 * 10 + o2;
+    finalAnswer = (num1 + num2).toString();
+  } else if (activeVariant === "foundation_sub_3_digit_no_renaming") {
+    let h1 = Math.floor(Math.random() * 8) + 2; 
+    let h2 = Math.floor(Math.random() * (h1 - 1)) + 1;
+    let t1 = Math.floor(Math.random() * 10);
+    let t2 = Math.floor(Math.random() * (t1 + 1));
+    let o1 = Math.floor(Math.random() * 10);
+    let o2 = Math.floor(Math.random() * (o1 + 1));
+    num1 = h1 * 100 + t1 * 10 + o1;
+    num2 = h2 * 100 + t2 * 10 + o2;
+    finalAnswer = (num1 - num2).toString();
+  } else if (activeVariant === "foundation_add_2_digit_renaming") {
+    let t1 = Math.floor(Math.random() * 8) + 1;
+    let t2 = Math.floor(Math.random() * (9 - t1)) + 1;
+    let o1 = Math.floor(Math.random() * 9) + 1; // 1-9
+    let o2 = Math.floor(Math.random() * (10 - (10 - o1))) + (10 - o1); // forces sum >= 10
+    num1 = t1 * 10 + o1;
+    num2 = t2 * 10 + o2;
+    finalAnswer = (num1 + num2).toString();
+  } else if (activeVariant === "foundation_sub_2_digit_renaming") {
+    let t1 = Math.floor(Math.random() * 7) + 3; // 3-9
+    let t2 = Math.floor(Math.random() * (t1 - 2)) + 1; // ensures t1 > t2 + 1
+    let o1 = Math.floor(Math.random() * 8); // 0-7
+    let o2 = Math.floor(Math.random() * (9 - o1)) + o1 + 1; // forces o2 > o1
+    num1 = t1 * 10 + o1;
+    num2 = t2 * 10 + o2;
+    finalAnswer = (num1 - num2).toString();
+  }
+
+  let askText = isAdd ? `What is ${num1} + ${num2}?` : `What is ${num1} - ${num2}?`;
+
+  let aiPrompt = `You are an expert Primary 2 math generator.
+Generate a question for the subtopic: Addition and Subtraction.
+Level: ${levelName}
+Difficulty: ${zodDiff}
+Type: ${zodType}
+
+STRICT CONSTRAINTS:
+- The question stem must clearly ask "${askText}".
+- The finalAnswer must be EXACTLY: "${finalAnswer}".
+- If MCQ, provide 4 options including the correct answer and 3 reasonable distractors. Ensure the correct option matches "${finalAnswer}".
+
+${getFormatInstructions()}`;
+
+  return {
+    aiPrompt: aiPrompt
+  };
 }

@@ -30,9 +30,25 @@ export const numberPatternsBlueprint = {
   },
 
   variants: {
-    foundation_simple_jump: "Missing number in simple +10 or +100 pattern.",
-    standard_cross_boundary: "Missing number in pattern that crosses 100s boundary.",
-    advanced_alternating: "Missing number in an alternating pattern (+10, -5)."
+    foundation_add_10: "Missing number in an ascending +10 sequence (random position).",
+    foundation_subtract_10: "Missing number in a descending -10 sequence (random position).",
+    foundation_add_100: "Missing number in an ascending +100 sequence (random position).",
+    foundation_subtract_100: "Missing number in a descending -100 sequence (random position).",
+    foundation_random_10_or_100: "Missing number in a random sequence (+/-10 or +/-100) (random position).",
+
+    standard_add_10_cross_hundreds: "Missing number in an ascending +10 sequence crossing a hundreds boundary.",
+    standard_subtract_10_cross_hundreds: "Missing number in a descending -10 sequence crossing a hundreds boundary.",
+    standard_add_small_cross_hundreds: "Missing number in an ascending small jump (+2, +3, +4, +5) crossing a hundreds boundary.",
+    standard_subtract_small_cross_hundreds: "Missing number in a descending small jump (-2, -3, -4, -5) crossing a hundreds boundary.",
+    standard_random_cross_hundreds: "Missing number in a random sequence crossing a hundreds boundary.",
+
+    advanced_alternating_add_sub: "Missing number in an alternating pattern (e.g. +10, -5).",
+    advanced_alternating_add_add: "Missing number in an alternating pattern (e.g. +2, +5).",
+    advanced_alternating_sub_sub: "Missing number in an alternating pattern (e.g. -10, -2).",
+    advanced_increasing_jumps: "Missing number in a growing jump pattern (e.g. +2, +4, +6, +8).",
+    advanced_large_jumps: "Missing number in a sequence with large arbitrary jumps (+200, +300, etc.).",
+    advanced_multiples_of_10: "Missing number in a sequence jumping by 20, 30, 40, or 50.",
+    advanced_quarters: "Missing number in a sequence jumping by 25 or 75."
   },
 
   generate: function (difficulty, activeVariant, type) {
@@ -48,7 +64,20 @@ export const numberPatternsBlueprint = {
     
     const context = { name: "Student", setting: "class" };
     const selectedContextItem = "numbers";
-    const formatInstructions = "OUTPUT FORMAT (Return ONLY valid JSON matching this schema):";
+    
+    const getFormatInstructions = (visualEngineStr = `{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }`) => `OUTPUT FORMAT (Return ONLY valid JSON matching this schema):
+{
+  "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
+  "content": {
+    "questionText": "string - the actual question stem",
+    "options": ${isMCQ ? '["option 1", "option 2", "option 3", "option 4"]' : 'null'},
+    "defectMap": ${isMCQ ? '{"wrong_option_1": "CARELESS_CALCULATION", "wrong_option_2": "CONCEPTUAL_ERROR"}' : 'null'},
+    "hint": "string - a conceptual hint",
+    "solutionSteps": "string - step-by-step mathematical explanation formatted strictly as a numbered list (1. ..., 2. ..., 3. ...) with explicit \\n characters between steps",
+    "finalAnswer": "string - the exact final answer string"
+  },
+  "visualEngine": ${visualEngineStr}
+}`;
     
     // Dummy helper to switch text based on type
     const getQText = (structureText, shortText) => {
@@ -57,11 +86,11 @@ export const numberPatternsBlueprint = {
     };
 
     if (difficulty.toLowerCase() === 'foundation') {
-      return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText);
+      return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions, context, selectedContextItem, getQText);
     } else if (difficulty.toLowerCase() === 'standard') {
-      return standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText);
+      return standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions, context, selectedContextItem, getQText);
     } else if (difficulty.toLowerCase() === 'advanced') {
-      return advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText);
+      return advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions, context, selectedContextItem, getQText);
     }
     
     throw new Error(`Unknown difficulty ${difficulty}`);

@@ -35,13 +35,18 @@ export const placeValuesHundredsBlueprint = {
     foundation_identify_place: "Identify the digit in a specific place value.",
     foundation_build_from_parts: "Find the total from hundreds, tens, and ones.",
     foundation_expanded_form_addition: "Find the total of expanded form addition.",
-    
+
     standard_digit_value: "What is the value of the digit X in Y?",
     standard_digit_with_value: "Identify the digit with a specific value.",
     standard_expanded_form_missing: "Find the missing part of expanded form.",
     standard_greatest_value_digit: "Which digit has the greatest value?",
     standard_mystery_number_values: "Build a number from jumbled values.",
-    advanced_decomposition: "Decompose the number into hundreds, tens, and ones."
+
+    advanced_decomposition: "Decompose the number into hundreds, tens, and ones.",
+    advanced_regrouping: "Regroup tens and ones to form a 3-digit number.",
+    advanced_value_riddles: "Solve place value word riddles.",
+    advanced_difference_between_values: "Find sum/difference between digit values.",
+    advanced_forming_numbers: "Form numbers with specific conditions using given digits."
   },
 
   generate: function (difficulty, activeVariant, type) {
@@ -54,7 +59,7 @@ export const placeValuesHundredsBlueprint = {
 
     const zodType = type;
     const zodDiff = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
-    
+
     const context = { name: "Student", setting: "class" };
     const selectedContextItem = "blocks";
     const getFormatInstructions = (visualEngineStr = `{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }`) => `OUTPUT FORMAT (Return ONLY valid JSON matching this schema):
@@ -71,7 +76,7 @@ export const placeValuesHundredsBlueprint = {
   "visualEngine": ${visualEngineStr},
   "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
 }`;
-    
+
     // Dummy helper to switch text based on type
     const getQText = (structureText, shortText) => {
       if (isStructure) return structureText;
@@ -85,7 +90,7 @@ export const placeValuesHundredsBlueprint = {
     } else if (difficulty.toLowerCase() === 'advanced') {
       return advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions, context, selectedContextItem, getQText);
     }
-    
+
     throw new Error(`Unknown difficulty ${difficulty}`);
   }
 };

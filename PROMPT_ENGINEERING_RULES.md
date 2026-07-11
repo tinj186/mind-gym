@@ -125,7 +125,7 @@ Protocol: When requesting a \`[STORY]\` context from the AI, the prompt MUST exp
 IV. Centralized Variable Banks (Decoupled Localization)
 
 Protocol: To ensure consistency across all current and future syllabuses (Primary 1 through Primary 6), all culturally specific variables, names, items, and thematic concepts MUST be decoupled from the individual AI generation prompts.
-Execution: All variable banks (e.g., `localNames`, `singaporeItems`, `schoolContexts`) are centrally stored and managed within `src/lib/utils/localization.js`. The generation engine dynamically imports and selects these variables, injecting them into the locked blueprints *before* sending the prompt to the AI. This prevents duplication of logic and ensures a single, immutable source of truth for the platform's localization identity.
+Execution: All variable banks (e.g., \`localNames\`, \`singaporeItems\`, \`schoolContexts\`) are centrally stored and managed within \`src/lib/utils/variable-bank.js\`. The generation engine dynamically imports and selects these variables, injecting them into the locked blueprints *before* sending the prompt to the AI. This prevents duplication of logic and ensures a single, immutable source of truth for the platform's localization identity.
 
 6. System Architecture
 Frontend: Next.js 15 (React) with MathLive inputs and dynamic SVG Bar Models.
