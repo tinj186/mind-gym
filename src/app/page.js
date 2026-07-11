@@ -80,7 +80,7 @@ export default function PublicLandingPage() {
           Learning shouldn’t be a guessing game. Our adaptive platform acts as an intelligent coach—isolating specific learning bottlenecks, identifying exact cognitive "defect codes," and generating precise daily workouts to build the right neural pathways.
         </p>
         <p className="text-sm text-slate-500 mb-12 max-w-xl mx-auto print:hidden">
-          Experience the Universal Engine. Generate Singapore syllabus-aligned Primary 1 Math worksheets instantly, or unlock automated marking and granular performance tracking with the Annual Pass for S$29.90 (No hidden fees).
+          Experience the Universal Engine. Generate Singapore syllabus-aligned Primary 1 Math worksheets instantly, or unlock automated marking and granular performance tracking with the Annual Pass for S$29.90 (Try it free for 7 days!).
         </p>
 
         {/* Free Worksheet Generator Tool */}
@@ -274,9 +274,9 @@ export default function PublicLandingPage() {
                     onClick={handleCheckout}
                     className="bg-white text-slate-900 font-black px-8 py-4 rounded-xl hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.3)]"
                   >
-                    Unlock P1 Annual Pass for S$29.90 <span className="text-xs font-normal opacity-80">(No hidden fees)</span>
+                    Start 7-Day Free Trial <span className="text-xs font-normal opacity-80">(Then S$29.90/year)</span>
                   </button>
-                  <p className="text-xs text-slate-500 font-bold mt-4 tracking-wide uppercase">30-Day Money-Back Guarantee</p>
+                  <p className="text-xs text-slate-500 font-bold mt-4 tracking-wide uppercase">Cancel Anytime</p>
                 </div>
               </div>
             </motion.div>

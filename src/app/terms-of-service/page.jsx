@@ -34,7 +34,7 @@ export default function TermsOfServicePage() {
 
           <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">4. Subscriptions and Payments</h2>
           <p>
-            Some parts of the Service are billed on a subscription basis. You will be billed in advance on a recurring and periodic basis depending on the type of subscription plan you select. All pricing is displayed transparently and we guarantee there are no hidden fees associated with our standard plans.
+            Some parts of the Service are billed on a subscription basis. We offer a 7-day free trial for new subscribers. If you cancel before the end of the 7-day trial period, you will not be charged. Otherwise, you will be billed in advance on a recurring and periodic basis depending on the type of subscription plan you select. All pricing is displayed transparently and we guarantee there are no hidden fees associated with our standard plans.
           </p>
 
           <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">5. Governing Law & Jurisdiction</h2>
