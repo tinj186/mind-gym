@@ -40,6 +40,7 @@ import { numberComparisonAndOrderingBlueprint } from './math/primary-2/whole-num
 import { numberPatternsBlueprint as p2NumberPatternsBlueprint } from './math/primary-2/whole-numbers-numbers-up-to-1000/number-patterns';
 import { oddAndEvenNumbersBlueprint } from './math/primary-2/whole-numbers-numbers-up-to-1000/odd-and-even-numbers';
 import { additionSubtractionBlueprint as p2AddSubBlueprint } from './math/primary-2/whole-numbers-addition-and-subtraction/addition-subtraction';
+import { mentalCalculationBlueprint as p2MentalCalcBlueprint } from './math/primary-2/whole-numbers-addition-and-subtraction/mental-calculation';
 import { multiplicationDivisionBlueprint as p2MultDivBlueprint } from './math/primary-2/whole-numbers-multiplication-and-division/multiplication-division';
 import { lengthBlueprint as p2LengthBlueprint } from './math/primary-2/measurement-length-mass-and-volume/length';
 import { massBlueprint as p2MassBlueprint } from './math/primary-2/measurement-length-mass-and-volume/mass';
@@ -97,7 +98,7 @@ export const blueprintRegistry = {
   'Primary 2-Whole Numbers - Numbers up to 1000-Odd and Even Numbers': oddAndEvenNumbersBlueprint,
   
   'Primary 2-Whole Numbers - Addition and Subtraction-Addition/Subtraction Algorithms (3-Digit)': p2AddSubBlueprint,
-  'Primary 2-Whole Numbers - Addition and Subtraction-Mental Calculation (3-Digit)': p2AddSubBlueprint,
+  'Primary 2-Whole Numbers - Addition and Subtraction-Mental Calculation (3-Digit)': p2MentalCalcBlueprint,
   
   'Primary 2-Whole Numbers - Multiplication and Division-Multiplication Tables (2-5, 10)': p2MultDivBlueprint,
   'Primary 2-Whole Numbers - Multiplication and Division-Operation Symbols (x, ÷, =)': p2MultDivBlueprint,

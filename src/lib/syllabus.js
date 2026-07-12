@@ -1671,7 +1671,7 @@ export const GET_DISTINCT = (key, filters = {}) => {
     const topics = new Set();
     SYLLABUS_DATA[level].forEach(t => {
       if (strand && t.strand !== strand) return;
-      
+
       // Filter topics: Only show if at least one subtopic supports the selected type
       const hasAllowedType = t.subtopics.some(st => {
         const allowed = st.allowedTypes || DEFAULT_TYPES;

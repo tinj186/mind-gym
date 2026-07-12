@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const dir = '/Users/jwoshiteng/Downloads/mind-gym/src/lib/syllabus/math/primary-2/whole-numbers-numbers-up-to-1000';
+const dir = '/Users/jwoshiteng/Downloads/mind-gym/src/lib/syllabus/math/primary-2';
 
 function walk(currentDir) {
   const files = fs.readdirSync(currentDir);

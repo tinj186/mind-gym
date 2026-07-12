@@ -99,12 +99,10 @@ export default function VisualRenderer({ type, ...props }) {
           }
           case 'TF_MATRIX_TABLE': {
             const data = props.visualEngine?.componentData || props.data || {};
-            return <TFMatrixTable statements={data.statements} entities={data.entities} />;
+            return <TFMatrixTable items={data.items} headers={data.headers} tableType={data.tableType} />;
           }
-          case 'VERTICAL_ALGORITHM': {
-            const data = props.visualEngine?.componentData || props.data || {};
-            return <VerticalAlgorithm data={data} />;
-          }
+          case 'VERTICAL_ALGORITHM': return <VerticalAlgorithm data={props.visualEngine?.componentData || props.data} />;
+          case 'DIAGRAM_RENDERER': return <DiagramRenderer data={props.visualEngine?.componentData || props.data} />;
           
           default:
             return (
