@@ -23,14 +23,28 @@ export default function IconGrid({ data, modelData, visualProps }) {
 
   const cols = Number(source?.cols) || 0;
   
+  // Dynamically scale down sizes for larger arrays to prevent horizontal overflow
+  let gapClass = "gap-4 md:gap-6";
+  let itemSizeClass = "text-4xl md:text-5xl p-4 rounded-2xl border-2";
+  
+  if (cols >= 8 || renderArray.length > 50) {
+    gapClass = "gap-1 md:gap-2";
+    itemSizeClass = "text-xl md:text-2xl p-1 md:p-2 rounded-lg border border-slate-200";
+  } else if (cols >= 5 || renderArray.length > 20) {
+    gapClass = "gap-2 md:gap-3";
+    itemSizeClass = "text-2xl md:text-3xl p-2 md:p-3 rounded-xl border-2 border-slate-200";
+  } else {
+    itemSizeClass = "text-4xl md:text-5xl p-4 rounded-2xl border-2 border-slate-200";
+  }
+  
   const containerClass = cols > 0
-    ? "grid gap-4 md:gap-6 justify-center mx-auto"
-    : "flex flex-wrap justify-center gap-4 md:gap-6 max-w-2xl";
+    ? `grid ${gapClass} justify-center mx-auto max-w-full overflow-x-auto p-2`
+    : `flex flex-wrap justify-center ${gapClass} max-w-2xl`;
     
   const gridStyle = cols > 0 ? { gridTemplateColumns: `repeat(${cols}, max-content)` } : {};
 
   return (
-    <div className="flex flex-col items-center justify-center p-4 w-full">
+    <div className="flex flex-col items-center justify-center p-2 md:p-4 w-full">
       <div className={containerClass} style={gridStyle}>
         {renderArray.map((item, idx) => {
           const displayIcon = typeof item === 'object' ? (item.icon || item.symbol || '🔔') : item;
@@ -38,7 +52,7 @@ export default function IconGrid({ data, modelData, visualProps }) {
           return (
             <div 
               key={idx} 
-              className="flex items-center justify-center text-4xl md:text-5xl drop-shadow-md bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 hover:scale-105 transition-transform"
+              className={`flex items-center justify-center drop-shadow-md bg-slate-50 hover:scale-105 transition-transform ${itemSizeClass}`}
             >
               {displayIcon}
             </div>

@@ -193,8 +193,10 @@ export function processAiQuestion(q, context) {
       isApproved: false,
       finalAnswer: validatedData.content.finalAnswer,
       options: validatedData.meta.type === 'MCQ' ? (validatedData.content.options || []) : [],
-      question: validatedData.content.questionText,
-      solution: validatedData.content.solutionSteps,
+      question: Array.isArray(validatedData.content.questionText) ? validatedData.content.questionText.join('\n') : validatedData.content.questionText,
+      solution: Array.isArray(validatedData.content.solutionSteps) ? 
+        validatedData.content.solutionSteps.map((s, i) => `${i + 1}. ${s}`).join('\n') : 
+        validatedData.content.solutionSteps,
       hint: validatedData.content.hint || null,
       modelData: {
         ...safeData,
@@ -253,7 +255,9 @@ export function processAiQuestion(q, context) {
         isApproved: false,
         finalAnswer: typeof (q.finalAnswer || qContent.finalAnswer) === 'object' ? JSON.stringify(q.finalAnswer || qContent.finalAnswer) : String(q.finalAnswer || qContent.finalAnswer || ""),
         options: (meta?.type === 'MCQ' || type === 'MCQ') ? parseAiOptions(q.options || qContent.options) : null,
-        question: cleanQ.question || questionText || qContent.questionText || q.question || cleanQ.problem || "Problem data missing",
+        question: Array.isArray(cleanQ.question || questionText || qContent.questionText || q.question || cleanQ.problem) 
+          ? (cleanQ.question || questionText || qContent.questionText || q.question || cleanQ.problem).join('\n') 
+          : (cleanQ.question || questionText || qContent.questionText || q.question || cleanQ.problem || "Problem data missing"),
         solution: rawSolution,
         hint: qContent.hint || q.hint || q.conceptualHint || null,
         modelData: prismaModelData

@@ -11,11 +11,11 @@ export const UniversalQuestionSchema = z.object({
 
   // 2. CONTENT: What the student reads and solves
   content: z.object({
-    questionText: z.string(),
+    questionText: z.union([z.string(), z.array(z.string())]),
     options: z.array(z.string()).nullable().optional(),
     finalAnswer: z.string(),
     acceptedAnswers: z.array(z.string()).optional(),
-    solutionSteps: z.string(),
+    solutionSteps: z.union([z.string(), z.array(z.string())]),
     hint: z.string().optional(),
     defectMap: z.record(z.string()).optional().nullable(),
   }),
@@ -55,5 +55,5 @@ export const UniversalQuestionSchema = z.object({
       expectedAnswer: z.string(),
       defectMap: z.record(z.string()).optional().nullable()
     })).optional()
-  })
+  }).nullable().optional()
 });

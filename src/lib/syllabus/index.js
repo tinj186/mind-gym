@@ -42,6 +42,9 @@ import { oddAndEvenNumbersBlueprint } from './math/primary-2/whole-numbers-numbe
 import { additionSubtractionBlueprint as p2AddSubBlueprint } from './math/primary-2/whole-numbers-addition-and-subtraction/addition-subtraction';
 import { mentalCalculationBlueprint as p2MentalCalcBlueprint } from './math/primary-2/whole-numbers-addition-and-subtraction/mental-calculation';
 import { multiplicationDivisionBlueprint as p2MultDivBlueprint } from './math/primary-2/whole-numbers-multiplication-and-division/multiplication-division';
+import { multiplicationDivisionRelationshipBlueprint as p2MultDivRelationshipBlueprint } from './math/primary-2/whole-numbers-multiplication-and-division/multiplication-division-relationship';
+import { multiplicationTablesBlueprint as p2MultTablesBlueprint } from './math/primary-2/whole-numbers-multiplication-and-division/multiplication-tables';
+import { operationSymbolsBlueprint as p2OperationSymbolsBlueprint } from './math/primary-2/whole-numbers-multiplication-and-division/operation-symbols';
 import { lengthBlueprint as p2LengthBlueprint } from './math/primary-2/measurement-length-mass-and-volume/length';
 import { massBlueprint as p2MassBlueprint } from './math/primary-2/measurement-length-mass-and-volume/mass';
 import { volumeBlueprint as p2VolumeBlueprint } from './math/primary-2/measurement-length-mass-and-volume/volume';
@@ -100,9 +103,9 @@ export const blueprintRegistry = {
   'Primary 2-Whole Numbers - Addition and Subtraction-Addition/Subtraction Algorithms (3-Digit)': p2AddSubBlueprint,
   'Primary 2-Whole Numbers - Addition and Subtraction-Mental Calculation (3-Digit)': p2MentalCalcBlueprint,
   
-  'Primary 2-Whole Numbers - Multiplication and Division-Multiplication Tables (2-5, 10)': p2MultDivBlueprint,
-  'Primary 2-Whole Numbers - Multiplication and Division-Operation Symbols (x, ÷, =)': p2MultDivBlueprint,
-  'Primary 2-Whole Numbers - Multiplication and Division-Multiplication/Division Relationship': p2MultDivBlueprint,
+  'Primary 2-Whole Numbers - Multiplication and Division-Multiplication Tables (2-5, 10)': p2MultTablesBlueprint,
+  'Primary 2-Whole Numbers - Multiplication and Division-Operation Symbols (x, ÷, =)': p2OperationSymbolsBlueprint,
+  'Primary 2-Whole Numbers - Multiplication and Division-Multiplication/Division Relationship': p2MultDivRelationshipBlueprint,
   'Primary 2-Whole Numbers - Multiplication and Division-Multiplication/Division (Tables)': p2MultDivBlueprint,
   'Primary 2-Whole Numbers - Multiplication and Division-Mental Calculation (Multiplication/Division)': p2MultDivBlueprint,
   

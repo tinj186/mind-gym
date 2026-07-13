@@ -60,7 +60,7 @@ export default function ReviewCard({
           <div className="flex justify-between items-start gap-4">
             <div className="space-y-1">
               <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">The Question</span>
-              <p className="text-xl font-bold text-slate-900 leading-tight">{q.question}</p>
+              <p className="text-xl font-bold text-slate-900 leading-tight whitespace-pre-line">{q.question}</p>
             </div>
             {visualType && (
               <div className="px-3 py-1 bg-indigo-50 border border-indigo-100 rounded-lg shrink-0">
