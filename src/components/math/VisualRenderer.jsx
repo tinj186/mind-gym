@@ -9,7 +9,7 @@ export const ESSENTIAL_VISUALS = [
   "NUMBER_BOND", "NUMBER_PATTERN", "BASE_TEN_BLOCKS", 
   "SINGAPORE_MONEY", "MEASUREMENT_UNIT", "MEASUREMENT_RULER", "CLOCK_DISPLAY",
   "SHAPE_DISPLAY", "PLACE_VALUE_CHART", "VERTICAL_ALGORITHM",
-  "GRID_DISPLAY", "GRID_DRAWING_CANVAS"
+  "GRID_DISPLAY", "GRID_DRAWING_CANVAS", "FRACTION_DISPLAY"
   // "PICTURE_GRAPH_DISPLAY" // Not essential, lazy-loaded
 ];
 
@@ -37,6 +37,7 @@ const VerticalAlgorithm = lazy(() => import('./modules/VerticalAlgorithm'));
 const DiagramRenderer = lazy(() => import('./modules/DiagramRenderer'));
 const GridDisplay = lazy(() => import('./modules/GridDisplay'));
 const GridDrawingCanvas = lazy(() => import('./modules/GridDrawingCanvas'));
+const FractionDisplay = lazy(() => import('./modules/FractionDisplay'));
 
 export default function VisualRenderer({ type, ...props }) {
   const activeType = (
@@ -69,8 +70,13 @@ export default function VisualRenderer({ type, ...props }) {
             return (
               <div className={`flex flex-col sm:flex-row gap-6 md:gap-12 justify-center items-center ${data.className || ''}`}>
                 {data.components?.map((comp, idx) => (
-                  <div key={idx}>
-                    <VisualRenderer {...props} visualEngine={comp} data={comp.componentData} />
+                  <div key={idx} className={comp.componentData?.className || ""}>
+                    <VisualRenderer 
+                      {...props} 
+                      visualEngine={comp} 
+                      data={comp.componentData} 
+                      hideCardStyles={comp.componentData?.hideCardStyles ?? props.hideCardStyles} 
+                    />
                   </div>
                 ))}
               </div>
@@ -103,6 +109,7 @@ export default function VisualRenderer({ type, ...props }) {
           }
           case 'VERTICAL_ALGORITHM': return <VerticalAlgorithm data={props.visualEngine?.componentData || props.data} />;
           case 'DIAGRAM_RENDERER': return <DiagramRenderer data={props.visualEngine?.componentData || props.data} />;
+          case 'FRACTION_DISPLAY': return <FractionDisplay data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
           
           default:
             return (

@@ -170,6 +170,11 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
     const cleanString = (str) => {
       let s = String(str || '')
         .replace(/\\\s/g, ' ') // MathLive escaped spaces
+        .replace(/\\displaystyle/g, '') // Strip display style
+        .replace(/\\textstyle/g, '') // Strip text style
+        .replace(/\\left/g, '') // Strip left
+        .replace(/\\right/g, '') // Strip right
+        .replace(/\\[dt]?frac\s*\{?([^{}]+)\}?\s*\{?([^{}]+)\}?/g, '$1/$2') // Convert MathLive fractions (frac, dfrac, tfrac) to standard slashes
         .replace(/\\text\{([^}]*)\}/g, '$1') // MathLive text wrappers
         .replace(/\\operatorname\{\\mathrm\{([^}]*)\}\}/g, '$1') // MathLive text wrappers
         .replace(/\\mathrm\{([^}]*)\}/g, '$1') // MathLive text wrappers
@@ -202,7 +207,9 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
         s = s.replace(new RegExp(`\\b${key}\\b`, 'g'), wordMap[key]);
       });
 
-      return s.replace(/\s+/g, ''); // Finally, strip ALL spaces for resilient math grading
+      const finalStr = s.replace(/\s+/g, ''); // Finally, strip ALL spaces for resilient math grading
+      console.log(`[cleanString] input: "${str}" -> output: "${finalStr}"`);
+      return finalStr;
     };
 
     // Handle array of answers from MultiStepInput
@@ -424,6 +431,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
                 attempts={attempts}
                 onSubmitGrid={handleAnswer}
                 disabled={feedback === 'correct'}
+                hideCardStyles={true}
               />
             </div>
           )}

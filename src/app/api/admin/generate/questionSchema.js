@@ -42,6 +42,8 @@ export const UniversalQuestionSchema = z.object({
       'PICTURE_GRAPH_DISPLAY',
       'MEASUREMENT_UNIT',
       'CLOCK_DISPLAY',
+      'MULTI_COMPONENT',
+      'FRACTION_DISPLAY',
       'NONE'
     ]), // Registered native visual engines
     componentData: z.record(z.any()).nullable(),

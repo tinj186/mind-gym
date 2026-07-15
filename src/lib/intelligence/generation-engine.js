@@ -34,7 +34,7 @@ export class GenerationEngine {
       if (isVisualTask) {
         baseSystemInstructions += " IMPORTANT: DO NOT ask the student to 'show your working' in the question text because this is a simple visual observation task.";
       } else {
-        baseSystemInstructions += " IMPORTANT: You MUST also append a clear instruction to the 'question' text asking the student to provide their working (e.g., 'How many altogether? Show your working and the final answer.').";
+        baseSystemInstructions += " IMPORTANT: You MUST also append a clear instruction to the 'question' text asking the student to provide their working (e.g., 'Show your working and the final answer.').";
       }
     }
 

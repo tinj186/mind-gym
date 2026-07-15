@@ -41,16 +41,19 @@ import { numberPatternsBlueprint as p2NumberPatternsBlueprint } from './math/pri
 import { oddAndEvenNumbersBlueprint } from './math/primary-2/whole-numbers-numbers-up-to-1000/odd-and-even-numbers';
 import { additionSubtractionBlueprint as p2AddSubBlueprint } from './math/primary-2/whole-numbers-addition-and-subtraction/addition-subtraction';
 import { mentalCalculationBlueprint as p2MentalCalcBlueprint } from './math/primary-2/whole-numbers-addition-and-subtraction/mental-calculation';
-import { multiplicationDivisionBlueprint as p2MultDivBlueprint } from './math/primary-2/whole-numbers-multiplication-and-division/multiplication-division';
+import { mentalCalculationBlueprint as p2MultDivBlueprint } from './math/primary-2/whole-numbers-multiplication-and-division/mental-calculation';
 import { multiplicationDivisionRelationshipBlueprint as p2MultDivRelationshipBlueprint } from './math/primary-2/whole-numbers-multiplication-and-division/multiplication-division-relationship';
 import { multiplicationTablesBlueprint as p2MultTablesBlueprint } from './math/primary-2/whole-numbers-multiplication-and-division/multiplication-tables';
 import { operationSymbolsBlueprint as p2OperationSymbolsBlueprint } from './math/primary-2/whole-numbers-multiplication-and-division/operation-symbols';
 import { lengthBlueprint as p2LengthBlueprint } from './math/primary-2/measurement-length-mass-and-volume/length';
+import { multiplyingDividingWithinTablesBlueprint as p2MultDivWithinTablesBlueprint } from './math/primary-2/whole-numbers-multiplication-and-division/multiplying-dividing-within-tables';
 import { massBlueprint as p2MassBlueprint } from './math/primary-2/measurement-length-mass-and-volume/mass';
 import { volumeBlueprint as p2VolumeBlueprint } from './math/primary-2/measurement-length-mass-and-volume/volume';
 import { timeBlueprint as p2TimeBlueprint } from './math/primary-2/measurement-time/time';
 import { moneyBlueprint as p2MoneyBlueprint } from './math/primary-2/money-money/money';
-import { fractionsBlueprint as p2FractionsBlueprint } from './math/primary-2/fractions-fraction-of-a-whole/fractions';
+import { fractionAsPartBlueprint } from './math/primary-2/fractions-fraction-of-a-whole/fraction-as-part-of-a-whole';
+import { fractionNotationBlueprint } from './math/primary-2/fractions-fraction-of-a-whole/fraction-notation';
+import { fractionComparisonBlueprint } from './math/primary-2/fractions-fraction-of-a-whole/fraction-comparison-up-to-denominator-12';
 import { d3dShapesBlueprint } from './math/primary-2/geometry-2d-shapes/2d-3d-shapes';
 import { pictureGraphsBlueprint as p2PictureGraphsBlueprint } from './math/primary-2/data-representation-and-interpretation-picture-graphs-with-scales/picture-graphs';
 
@@ -106,7 +109,7 @@ export const blueprintRegistry = {
   'Primary 2-Whole Numbers - Multiplication and Division-Multiplication Tables (2-5, 10)': p2MultTablesBlueprint,
   'Primary 2-Whole Numbers - Multiplication and Division-Operation Symbols (x, ÷, =)': p2OperationSymbolsBlueprint,
   'Primary 2-Whole Numbers - Multiplication and Division-Multiplication/Division Relationship': p2MultDivRelationshipBlueprint,
-  'Primary 2-Whole Numbers - Multiplication and Division-Multiplication/Division (Tables)': p2MultDivBlueprint,
+  'Primary 2-Whole Numbers - Multiplication and Division-Multiplication/Division (Tables)': p2MultDivWithinTablesBlueprint,
   'Primary 2-Whole Numbers - Multiplication and Division-Mental Calculation (Multiplication/Division)': p2MultDivBlueprint,
   
   'Primary 2-Measurement - Length, Mass and Volume-Measurement (Length, Mass, Volume)': p2LengthBlueprint,
@@ -118,11 +121,11 @@ export const blueprintRegistry = {
   'Primary 2-Money - Money-Money Comparison': p2MoneyBlueprint,
   'Primary 2-Money - Money-Money Conversion (Cents/Decimals)': p2MoneyBlueprint,
   
-  'Primary 2-Fractions - Fraction of a Whole-Fraction as Part of a Whole': p2FractionsBlueprint,
-  'Primary 2-Fractions - Fraction of a Whole-Fraction Notation': p2FractionsBlueprint,
-  'Primary 2-Fractions - Fraction of a Whole-Fraction Comparison (Up to Denominator 12)': p2FractionsBlueprint,
+  'Primary 2-Fractions - Fraction of a Whole-Fraction as Part of a Whole': fractionAsPartBlueprint,
+  'Primary 2-Fractions - Fraction of a Whole-Fraction Notation': fractionNotationBlueprint,
+  'Primary 2-Fractions - Fraction of a Whole-Fraction Comparison (Up to Denominator 12)': fractionComparisonBlueprint,
   
-  'Primary 2-Fractions - Addition and Subtraction-Like Fraction Addition/Subtraction': p2FractionsBlueprint,
+  'Primary 2-Fractions - Addition and Subtraction-Like Fraction Addition/Subtraction': fractionAsPartBlueprint,
   
   'Primary 2-Measurement - Time-Time to the Minute': p2TimeBlueprint,
   'Primary 2-Measurement - Time-Time Measurement (Hours/Minutes)': p2TimeBlueprint,
