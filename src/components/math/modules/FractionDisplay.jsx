@@ -23,16 +23,32 @@ const polarToCartesian = (centerX, centerY, radius, angleInDegrees) => {
 export default function FractionDisplay({ data, hideCardStyles = false }) {
   if (!data) return null;
 
-  const { shape = 'rectangle', totalParts = 4, shadedParts = 1, color = '#3b82f6' } = data;
+  const { shape = 'rectangle', totalParts = 4, shadedParts = 1, color = '#3b82f6', shadedSegments } = data;
   
   const baseSize = 200;
   const strokeColor = '#0f172a';
   const unshadedColor = '#ffffff';
 
+  let colorArray = [];
+  if (shadedSegments && Array.isArray(shadedSegments)) {
+    shadedSegments.forEach(seg => {
+      for(let j = 0; j < seg.parts; j++) {
+         colorArray.push(seg.color);
+      }
+    });
+  }
+
+  const getFillColor = (i) => {
+    if (colorArray.length > 0) {
+      return i < colorArray.length ? colorArray[i] : unshadedColor;
+    }
+    return i < shadedParts ? color : unshadedColor;
+  };
+
   const renderCircle = () => {
     if (totalParts <= 1) {
       return (
-        <circle cx={100} cy={100} r={90} fill={shadedParts >= 1 ? color : unshadedColor} stroke={strokeColor} strokeWidth="4" />
+        <circle cx={100} cy={100} r={90} fill={getFillColor(0)} stroke={strokeColor} strokeWidth="4" />
       );
     }
 
@@ -59,7 +75,7 @@ export default function FractionDisplay({ data, hideCardStyles = false }) {
         <path 
           key={i} 
           d={d} 
-          fill={i < shadedParts ? color : unshadedColor} 
+          fill={getFillColor(i)} 
           stroke={strokeColor} 
           strokeWidth="3" 
           strokeLinejoin="round"
@@ -77,7 +93,7 @@ export default function FractionDisplay({ data, hideCardStyles = false }) {
     
     if (totalParts <= 1) {
       return (
-        <rect x={0} y={yOffset} width={rectWidth} height={rectHeight} fill={shadedParts >= 1 ? color : unshadedColor} stroke={strokeColor} strokeWidth="4" />
+        <rect x={0} y={yOffset} width={rectWidth} height={rectHeight} fill={getFillColor(0)} stroke={strokeColor} strokeWidth="4" />
       );
     }
 
@@ -92,7 +108,7 @@ export default function FractionDisplay({ data, hideCardStyles = false }) {
           y={yOffset}
           width={partWidth}
           height={rectHeight}
-          fill={i < shadedParts ? color : unshadedColor}
+          fill={getFillColor(i)}
           stroke={strokeColor}
           strokeWidth="3"
         />
@@ -130,7 +146,7 @@ export default function FractionDisplay({ data, hideCardStyles = false }) {
         <path 
           key={i} 
           d={d} 
-          fill={i < shadedParts ? color : unshadedColor} 
+          fill={getFillColor(i)} 
           stroke={strokeColor} 
           strokeWidth="3"
           strokeLinejoin="round"

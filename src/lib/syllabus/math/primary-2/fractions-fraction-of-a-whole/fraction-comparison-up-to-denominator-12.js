@@ -44,7 +44,7 @@ export const fractionComparisonBlueprint = {
       return shortText || structureText;
     };
 
-    const getFormatInstructions = (visualEngineStr = `{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }`, inputRequirementStr = null) => `OUTPUT FORMAT (Return ONLY valid JSON matching this schema, with NO markdown formatting, NO \`\`\`json blocks, and NO trailing characters/braces):
+    const getFormatInstructions = (visualEngineStr = `{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }`, inputRequirementStr = null, acceptedAnswersStr = null) => `OUTPUT FORMAT (Return ONLY valid JSON matching this schema, with NO markdown formatting, NO \`\`\`json blocks, and NO trailing characters/braces):
 {
   "meta": {
     "level": "${level}",
@@ -59,7 +59,7 @@ export const fractionComparisonBlueprint = {
     "defectMap": { "distractor1": "Error category", "distractor2": "Error category" } (ONLY if MCQ, otherwise empty object),
     "hint": "string (Pedagogical hint)",
     "solutionSteps": "string (step-by-step model solution. You MUST separate steps using the exact characters \\\\n inside the string. Formatted strictly as a numbered list 1. ..., 2. ..., 3. ...)",
-    "finalAnswer": "string (The exact final answer)"
+    "finalAnswer": "string (The exact final answer)"${acceptedAnswersStr ? `,\n    "acceptedAnswers": ${acceptedAnswersStr}` : ''}
   },
   "visualEngine": ${visualEngineStr}${inputRequirementStr ? `,\n  "inputRequirement": ${inputRequirementStr}` : ''}
 }`;

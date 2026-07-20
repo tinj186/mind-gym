@@ -51,9 +51,13 @@ import { massBlueprint as p2MassBlueprint } from './math/primary-2/measurement-l
 import { volumeBlueprint as p2VolumeBlueprint } from './math/primary-2/measurement-length-mass-and-volume/volume';
 import { timeBlueprint as p2TimeBlueprint } from './math/primary-2/measurement-time/time';
 import { moneyBlueprint as p2MoneyBlueprint } from './math/primary-2/money-money/money';
+import { moneyNotationBlueprint as p2MoneyNotationBlueprint } from './math/primary-2/money-money/money-notation';
+import { moneyComparisonBlueprint as p2MoneyComparisonBlueprint } from './math/primary-2/money-money/money-comparison';
+import { moneyConversionBlueprint } from './math/primary-2/money-money/money-conversion';
 import { fractionAsPartBlueprint } from './math/primary-2/fractions-fraction-of-a-whole/fraction-as-part-of-a-whole';
 import { fractionNotationBlueprint } from './math/primary-2/fractions-fraction-of-a-whole/fraction-notation';
 import { fractionComparisonBlueprint } from './math/primary-2/fractions-fraction-of-a-whole/fraction-comparison-up-to-denominator-12';
+import { likeFractionAdditionSubtractionBlueprint } from './math/primary-2/fractions-addition-and-subtraction/like-fraction-addition-subtraction/like-fraction-addition-subtraction';
 import { d3dShapesBlueprint } from './math/primary-2/geometry-2d-shapes/2d-3d-shapes';
 import { pictureGraphsBlueprint as p2PictureGraphsBlueprint } from './math/primary-2/data-representation-and-interpretation-picture-graphs-with-scales/picture-graphs';
 
@@ -117,15 +121,15 @@ export const blueprintRegistry = {
   'Primary 2-Measurement - Length, Mass and Volume-Measurement Comparison': p2VolumeBlueprint,
   
   'Primary 2-Money - Money-Money Counting (Dollars/Cents)': p2MoneyBlueprint,
-  'Primary 2-Money - Money-Money Notation (Decimals)': p2MoneyBlueprint,
-  'Primary 2-Money - Money-Money Comparison': p2MoneyBlueprint,
-  'Primary 2-Money - Money-Money Conversion (Cents/Decimals)': p2MoneyBlueprint,
+  'Primary 2-Money - Money-Money Notation (Decimals)': p2MoneyNotationBlueprint,
+  'Primary 2-Money - Money-Money Comparison': p2MoneyComparisonBlueprint,
+  'Primary 2-Money - Money-Money Conversion (Cents/Decimals)': moneyConversionBlueprint,
   
   'Primary 2-Fractions - Fraction of a Whole-Fraction as Part of a Whole': fractionAsPartBlueprint,
   'Primary 2-Fractions - Fraction of a Whole-Fraction Notation': fractionNotationBlueprint,
   'Primary 2-Fractions - Fraction of a Whole-Fraction Comparison (Up to Denominator 12)': fractionComparisonBlueprint,
   
-  'Primary 2-Fractions - Addition and Subtraction-Like Fraction Addition/Subtraction': fractionAsPartBlueprint,
+  'Primary 2-Fractions - Addition and Subtraction-Like Fraction Addition/Subtraction': likeFractionAdditionSubtractionBlueprint,
   
   'Primary 2-Measurement - Time-Time to the Minute': p2TimeBlueprint,
   'Primary 2-Measurement - Time-Time Measurement (Hours/Minutes)': p2TimeBlueprint,

@@ -7,6 +7,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   let solutionSteps = [];
   let visualEngineStr = `{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }`;
   let inputRequirementStr = null;
+  let acceptedAnswersStr = null;
   let customConstraints = "";
 
   if (activeVariant === 'advanced_compare_missing_numerator') {
@@ -25,10 +26,11 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     // Pick one as the expected answer
     const ansNum = possibleAnswers[Math.floor(Math.random() * possibleAnswers.length)];
     answer = `${ansNum}`;
+    acceptedAnswersStr = JSON.stringify(possibleAnswers.map(String));
 
     questionText = getQText(
-      `A fraction with a missing numerator makes the comparison correct:\n[?]/${denominator} ${askGreater ? '>' : '<'} ${n}/${denominator}\nWhat is one possible number for [?]?`,
-      `[?]/${denominator} ${askGreater ? '>' : '<'} ${n}/${denominator}\nWhat is one possible number for [?]?`
+      `A fraction with a missing numerator makes the comparison correct:\n[?]/${denominator} ${askGreater ? 'is greater than' : 'is smaller than'} ${n}/${denominator}\nWhat is one possible number for [?]?`,
+      `[?]/${denominator} ${askGreater ? 'is greater than' : 'is smaller than'} ${n}/${denominator}\nWhat is one possible number for [?]?`
     );
 
     hint = `Since the denominators are the same, you just need a numerator that is ${askGreater ? 'greater' : 'smaller'} than ${n}.`;
@@ -47,8 +49,9 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       inputRequirementStr = `{
         "inputType": "MULTI_STEP_INPUT",
         "steps": [
-          { "label": "The missing numerator must be ${askGreater ? 'greater' : 'smaller'} than:", "expectedAnswer": "${n}" },
-          { "label": "One possible number for [?]:", "expectedAnswer": "${ansNum}" }
+          { "label": "Smallest possible numerator:", "expectedAnswer": "${possibleAnswers[0]}" },
+          { "label": "Greatest possible numerator:", "expectedAnswer": "${possibleAnswers[possibleAnswers.length - 1]}" },
+          { "label": "One possible number for [?]:", "expectedAnswer": "${ansNum}", "acceptedAnswers": ${acceptedAnswersStr} }
         ]
       }`;
     }
@@ -95,10 +98,11 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     const ansDenom = possibleAnswers[Math.floor(Math.random() * possibleAnswers.length)];
     answer = `${ansDenom}`;
+    acceptedAnswersStr = JSON.stringify(possibleAnswers.map(String));
 
     questionText = getQText(
-      `A unit fraction with a missing denominator makes the comparison correct:\n1/[?] ${askGreater ? '>' : '<'} 1/${d}\nWhat is one possible number for [?] (up to 12)?`,
-      `1/[?] ${askGreater ? '>' : '<'} 1/${d}\nWhat is one possible number for [?] (up to 12)?`
+      `A unit fraction with a missing denominator makes the comparison correct:\n1/[?] ${askGreater ? 'is greater than' : 'is smaller than'} 1/${d}\nWhat is one possible number for [?] (up to 12)?`,
+      `1/[?] ${askGreater ? 'is greater than' : 'is smaller than'} 1/${d}\nWhat is one possible number for [?] (up to 12)?`
     );
 
     hint = `For unit fractions, a ${askGreater ? 'smaller' : 'larger'} denominator makes a ${askGreater ? 'greater' : 'smaller'} fraction.`;
@@ -117,8 +121,9 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       inputRequirementStr = `{
         "inputType": "MULTI_STEP_INPUT",
         "steps": [
-          { "label": "The missing denominator must be ${askGreater ? 'smaller' : 'greater'} than:", "expectedAnswer": "${d}" },
-          { "label": "One possible number for [?]:", "expectedAnswer": "${ansDenom}" }
+          { "label": "Smallest possible denominator:", "expectedAnswer": "${possibleAnswers[0]}" },
+          { "label": "Greatest possible denominator:", "expectedAnswer": "${possibleAnswers[possibleAnswers.length - 1]}" },
+          { "label": "One possible number for [?]:", "expectedAnswer": "${ansDenom}", "acceptedAnswers": ${acceptedAnswersStr} }
         ]
       }`;
     }
@@ -205,7 +210,15 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       `5. Therefore, ${ansName} uses the ${askGreatest ? 'most' : 'least'}.`
     ];
 
-    if (isShort || isStructure) {
+    if (isStructure) {
+      inputRequirementStr = `{
+        "inputType": "MULTI_STEP_INPUT",
+        "steps": [
+          { "label": "${askGreatest ? 'Greatest' : 'Smallest'} fraction:", "expectedAnswer": "${ansFraction}" },
+          { "label": "Who uses the ${askGreatest ? 'most' : 'least'}?", "expectedAnswer": "${ansName}" }
+        ]
+      }`;
+    } else if (isShort) {
       inputRequirementStr = `{ "inputType": "STANDARD_TEXT" }`;
     }
 
@@ -248,6 +261,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     const ansNum = possibleAnswers[Math.floor(Math.random() * possibleAnswers.length)];
     answer = `${ansNum}`;
+    acceptedAnswersStr = JSON.stringify(possibleAnswers.map(String));
 
     questionText = getQText(
       `These fractions are arranged from ${askSmallestToGreatest ? 'smallest to greatest' : 'greatest to smallest'}:\n${sorted[0]}/${denominator}, [?]/${denominator}, ${sorted[2]}/${denominator}\nWhat is one possible number for [?]?`,
@@ -272,8 +286,9 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       inputRequirementStr = `{
         "inputType": "MULTI_STEP_INPUT",
         "steps": [
-          { "label": "The missing numerator must be between ${Math.min(sorted[0], sorted[2])} and ${Math.max(sorted[0], sorted[2])}:", "expectedAnswer": "${ansNum}" },
-          { "label": "One possible number for [?]:", "expectedAnswer": "${ansNum}" }
+          { "label": "Smallest numerator shown:", "expectedAnswer": "${Math.min(sorted[0], sorted[2])}" },
+          { "label": "Greatest numerator shown:", "expectedAnswer": "${Math.max(sorted[0], sorted[2])}" },
+          { "label": "One possible number for [?]:", "expectedAnswer": "${ansNum}", "acceptedAnswers": ${acceptedAnswersStr} }
         ]
       }`;
     }
@@ -330,9 +345,9 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
         let symbol = '';
         if (isStatementCorrect) {
-          symbol = n1 > n2 ? '>' : '<';
+          symbol = n1 > n2 ? 'is greater than' : 'is smaller than';
         } else {
-          symbol = n1 > n2 ? '<' : '>';
+          symbol = n1 > n2 ? 'is smaller than' : 'is greater than';
         }
         statements.push({ text: `${n1}/${denom} ${symbol} ${n2}/${denom}`, isCorrect: isStatementCorrect });
       }
@@ -360,9 +375,9 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         
         let symbol = '';
         if (isStatementCorrect) {
-          symbol = d1 < d2 ? '>' : '<';
+          symbol = d1 < d2 ? 'is greater than' : 'is smaller than';
         } else {
-          symbol = d1 < d2 ? '<' : '>';
+          symbol = d1 < d2 ? 'is smaller than' : 'is greater than';
         }
         statements.push({ text: `1/${d1} ${symbol} 1/${d2}`, isCorrect: isStatementCorrect });
       }
@@ -390,7 +405,17 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       `4. The incorrect comparison is ${answer}.`
     ];
 
-    if (isShort || isStructure) {
+    if (isStructure) {
+      inputRequirementStr = `{
+        "inputType": "MULTI_STEP_INPUT",
+        "steps": [
+          { "label": "Is comparison 1 correct? (yes/no):", "expectedAnswer": "${statements[0].isCorrect ? 'yes' : 'no'}" },
+          { "label": "Is comparison 2 correct? (yes/no):", "expectedAnswer": "${statements[1].isCorrect ? 'yes' : 'no'}" },
+          { "label": "Is comparison 3 correct? (yes/no):", "expectedAnswer": "${statements[2].isCorrect ? 'yes' : 'no'}" },
+          { "label": "The incorrect comparison is:", "expectedAnswer": "${answer}" }
+        ]
+      }`;
+    } else if (isShort) {
       inputRequirementStr = `{ "inputType": "STANDARD_TEXT" }`;
     }
 
@@ -422,7 +447,7 @@ CRITICAL INSTRUCTIONS:
 
 ${customConstraints}
 
-${getFormatInstructions(visualEngineStr, inputRequirementStr)}
+${getFormatInstructions(visualEngineStr, inputRequirementStr, acceptedAnswersStr)}
   `.trim();
 
   return {

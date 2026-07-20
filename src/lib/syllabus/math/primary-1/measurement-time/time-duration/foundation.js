@@ -172,7 +172,7 @@ export const foundationVariants = {
     const startHour = Math.floor(Math.random() * 3) + 1; // 1, 2, or 3
     const duration = Math.floor(Math.random() * 3) + 1; // 1, 2, or 3
     const endHour = startHour + duration;
-    const names = getRandomNames(1);
+    const names = getRandomNames(2);
     
     let questionText = getQText(
       `A cartoon starts at ${startHour}:00 and ends at ${endHour}:00. How many hours did the cartoon last?`,

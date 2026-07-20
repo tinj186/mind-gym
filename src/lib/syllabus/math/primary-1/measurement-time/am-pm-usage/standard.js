@@ -96,7 +96,7 @@ export const standardVariants = {
 
   standard_am_pm_logic: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const isAmStart = Math.random() > 0.5;
-    const names = getRandomNames(1);
+    const names = getRandomNames(2);
     
     // We stay in the same block for this variant (e.g., morning -> morning, or afternoon -> afternoon).
     // The noon boundary variant covers crossing the boundary.
@@ -267,7 +267,7 @@ export const standardVariants = {
 
   standard_clock_context_match: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const isAm = Math.random() > 0.5;
-    const names = getRandomNames(1);
+    const names = getRandomNames(2);
     const hour = isAm ? 7 : 8; 
     const activity = isAm ? "eats breakfast" : "goes to sleep";
     const componentData = { hour, minute: 0, displayType: 'analog' };

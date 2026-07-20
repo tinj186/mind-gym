@@ -8,7 +8,7 @@ const getStrictInstruction = (type, isShort) => {
 
 export const advancedVariants = {
   advanced_elapsed_time_cross_noon: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const names = getRandomNames(1);
+    const names = getRandomNames(2);
     const startHour = Math.floor(Math.random() * 3) + 9; // 9, 10, or 11 a.m.
     const endHour = Math.floor(Math.random() * 3) + 1; // 1, 2, or 3 p.m.
     
@@ -66,7 +66,7 @@ export const advancedVariants = {
 
   advanced_schedule_deduction: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const isAmStart = Math.random() > 0.5;
-    const names = getRandomNames(1);
+    const names = getRandomNames(2);
     
     // Create a scenario that definitively crosses the noon or midnight boundary.
     // e.g. Start at 10 a.m. + 2 hrs = 12, + 1 hr = 1 p.m.
@@ -181,7 +181,7 @@ export const advancedVariants = {
 
   advanced_am_pm_word_problem: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     // Reverse time across noon: 1 p.m. - 2 hours = 11 a.m.
-    const names = getRandomNames(1);
+    const names = getRandomNames(2);
     const endHour = Math.floor(Math.random() * 2) + 1; // 1 or 2 p.m.
     const duration = endHour === 1 ? (Math.random() > 0.5 ? 2 : 3) : 3; // ensure it drops below 12
     

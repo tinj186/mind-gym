@@ -206,6 +206,7 @@ export function processAiQuestion(q, context) {
           : validatedData.visualEngine.componentToRender === 'NONE'),
         inputRequirement: validatedData.inputRequirement,
         finalAnswer: validatedData.content.finalAnswer,
+        acceptedAnswers: validatedData.content.acceptedAnswers || [],
         items: Array.isArray(safeData?.items) ? safeData.items : [],
         defectMap: validatedData.content.defectMap || null
       }

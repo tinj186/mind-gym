@@ -47,6 +47,7 @@ export default async function AdminQuestionsPage({ searchParams }) {
         if (d === 'Advanced' && s.type === 'Short Question') return;
         if (d === 'Foundation' && s.type === 'Short Question' && s.topic === 'Whole Numbers - Multiplication and Division' && s.subtopic === 'Multiplication/Division Concepts') return;
         if (s.type === 'Structured' && s.subtopic === 'Mental Calculation (Multiplication/Division)') return;
+        if (d === 'Foundation' && s.type === 'Structured' && s.subtopic === 'Money Conversion (Cents/Decimals)') return;
 
         const pending = matches.filter(m => !m.isApproved).reduce((acc, curr) => acc + curr._count._all, 0);
         const approved = matches.filter(m => m.isApproved).reduce((acc, curr) => acc + curr._count._all, 0);
@@ -75,6 +76,7 @@ export default async function AdminQuestionsPage({ searchParams }) {
     if (difficulty === 'Advanced' && t === 'Short Question') return false;
     if (difficulty === 'Foundation' && t === 'Short Question' && subtopic === 'Multiplication/Division Concepts') return false;
     if (t === 'Structured' && subtopic === 'Mental Calculation (Multiplication/Division)') return false;
+    if (difficulty === 'Foundation' && t === 'Structured' && subtopic === 'Money Conversion (Cents/Decimals)') return false;
     return true;
   });
   const distinctDifficulties = DEFAULT_DIFFICULTIES;

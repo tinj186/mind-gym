@@ -8,8 +8,17 @@
 export function normalizeAnswer(val) {
   if (val === null || val === undefined) return '';
 
-  // 1. Basic cleaning: Trim and lowercase
   let str = String(val).trim().toLowerCase();
+
+  // Handle thousands separators first (e.g., 1,000,000 -> 1000000)
+  // Run twice to catch overlapping matches like 1,000,000
+  str = str.replace(/(\d),(\d{3})(?!\d)/g, '$1$2');
+  str = str.replace(/(\d),(\d{3})(?!\d)/g, '$1$2');
+
+  // Handle lists by splitting at commas
+  if (str.includes(',')) {
+    return str.split(',').map(part => normalizeAnswer(part)).join(',');
+  }
 
   // 2. Handle LaTeX formats (from MathInput) to standard fraction strings
   // Converts \frac{1}{2} to 1/2
@@ -17,9 +26,9 @@ export function normalizeAnswer(val) {
   // Converts mixed LaTeX like 3\frac{1}{4} to 3 1/4
   str = str.replace(/(\d+)\\frac\{(\d+)\}\{(\d+)\}/g, '$1 $2/$3');
 
-  // 3. Remove currency symbols ($) and common units (cm, kg, m, etc.)
-  // We keep digits, dots (decimal points), slashes (fractions), and spaces (for mixed numbers).
-  str = str.replace(/[^\d./\s-]/g, '').trim();
+  // 3. Remove most units (cm, kg, m, etc.), but PRESERVE currency symbols ($ and ¢)
+  // We keep digits, dots (decimal points), slashes (fractions), spaces (for mixed numbers), and $-/¢.
+  str = str.replace(/[^\d./\s-$¢]/g, '').trim();
 
   // 4. Fraction to Decimal Conversion
 

@@ -55,6 +55,7 @@ export const UniversalQuestionSchema = z.object({
     steps: z.array(z.object({
       label: z.string(),
       expectedAnswer: z.string(),
+      acceptedAnswers: z.array(z.string()).optional(),
       defectMap: z.record(z.string()).optional().nullable()
     })).optional()
   }).nullable().optional()

@@ -102,6 +102,11 @@ export class GenerationEngine {
       }
 
       const stepResult = blueprintMeta.generate(safeDifficulty, loopVariant, type);
+
+      if (!stepResult || !stepResult.aiPrompt) {
+        throw new Error(`Generation failed: Blueprint returned null or missing aiPrompt for variant '${loopVariant}'`);
+      }
+
       let result;
       let retries = 3;
       let currentModelId;

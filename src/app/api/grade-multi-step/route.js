@@ -25,6 +25,7 @@ It is OK if the student chose a different valid associative order for addition/s
 It is OK if they format spaces differently.
 It is NOT OK if they use incorrect numbers or the final answer is wrong.
 IMPORTANT: If the Question explicitly asks to write a fraction or answer "in words", the student MUST provide the answer in text words (e.g., "one half"). If they provide a numeric fraction (e.g., "1/2" or "\\\\frac{1}{2}"), you MUST mark it as incorrect.
+IMPORTANT: If an Expected Step contains a currency symbol ('$' or '¢'), the student's corresponding answer MUST also contain that exact symbol. If the symbol is missing, you MUST mark it as incorrect.
 
 Return ONLY a JSON object: { "isCorrect": true/false }`;
 

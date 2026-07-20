@@ -40,12 +40,26 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
 
     if (isStructure) {
+      const names = getRandomNames(2);
+      const obj = getRandomDivisibleObjects(1);
+      
+      questionText = `${names[0]} has ${n1}/${denominator} of a ${obj}.\\n${names[1]} has ${n2}/${denominator} of a similar ${obj}.\\nWho has ${askGreater ? 'more' : 'less'}?`;
+      const ansName = (ansNumerator === n1) ? names[0] : names[1];
+      answer = ansName;
+      
+      solutionSteps = [
+        `1. ${names[0]} has ${n1}/${denominator} and ${names[1]} has ${n2}/${denominator}.`,
+        `2. Both fractions have the same denominator (${denominator}).`,
+        `3. Compare their numerators: ${n1} and ${n2}.`,
+        `4. ${ansNumerator} is ${askGreater ? 'greater' : 'smaller'} than the other numerator.`,
+        `5. Therefore, ${ansName} has ${askGreater ? 'more' : 'less'}.`
+      ];
+
       inputRequirementStr = `{
         "inputType": "MULTI_STEP_INPUT",
         "steps": [
-          { "label": "Denominator for both fractions:", "expectedAnswer": "${denominator}" },
-          { "label": "${askGreater ? 'Greater' : 'Smaller'} numerator:", "expectedAnswer": "${ansNumerator}" },
-          { "label": "${askGreater ? 'Greater' : 'Smaller'} fraction:", "expectedAnswer": "\\\\frac{${ansNumerator}}{${denominator}}" }
+          { "label": "${askGreater ? 'Greater' : 'Smaller'} fraction:", "expectedAnswer": "${ansNumerator}/${denominator}" },
+          { "label": "Who has ${askGreater ? 'more' : 'less'}?", "expectedAnswer": "${ansName}" }
         ]
       }`;
     }
@@ -98,11 +112,26 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
 
     if (isStructure) {
+      const names = getRandomNames(2);
+      const obj = getRandomDivisibleObjects(1);
+      
+      questionText = `${names[0]} has 1/${d1} of a ${obj}.\\n${names[1]} has 1/${d2} of a similar ${obj}.\\nWho has ${askGreater ? 'more' : 'less'}?`;
+      const ansName = (ansDenom === d1) ? names[0] : names[1];
+      answer = ansName;
+      
+      solutionSteps = [
+        `1. ${names[0]} has 1/${d1} and ${names[1]} has 1/${d2}.`,
+        `2. Both fractions have the same numerator (1).`,
+        `3. Compare their denominators: ${d1} and ${d2}.`,
+        `4. A ${askGreater ? 'smaller' : 'larger'} denominator means the fraction is ${askGreater ? 'greater' : 'smaller'}.`,
+        `5. Therefore, ${ansName} has ${askGreater ? 'more' : 'less'}.`
+      ];
+
       inputRequirementStr = `{
         "inputType": "MULTI_STEP_INPUT",
         "steps": [
-          { "label": "${askGreater ? 'Smaller' : 'Larger'} denominator:", "expectedAnswer": "${ansDenom}" },
-          { "label": "${askGreater ? 'Greater' : 'Smaller'} fraction:", "expectedAnswer": "\\\\frac{1}{${ansDenom}}" }
+          { "label": "${askGreater ? 'Greater' : 'Smaller'} fraction:", "expectedAnswer": "1/${ansDenom}" },
+          { "label": "Who has ${askGreater ? 'more' : 'less'}?", "expectedAnswer": "${ansName}" }
         ]
       }`;
     }
@@ -144,7 +173,14 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     ];
 
     if (isShort || isStructure) {
-      inputRequirementStr = `{ "inputType": "STANDARD_TEXT" }`;
+      inputRequirementStr = `{
+        "inputType": "MULTI_STEP_INPUT",
+        "steps": [
+          { "label": "1st:", "expectedAnswer": "${sorted[0]}/${denominator}" },
+          { "label": "2nd:", "expectedAnswer": "${sorted[1]}/${denominator}" },
+          { "label": "3rd:", "expectedAnswer": "${sorted[2]}/${denominator}" }
+        ]
+      }`;
     }
 
     if (isMCQ) {
@@ -185,7 +221,14 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     ];
 
     if (isShort || isStructure) {
-      inputRequirementStr = `{ "inputType": "STANDARD_TEXT" }`;
+      inputRequirementStr = `{
+        "inputType": "MULTI_STEP_INPUT",
+        "steps": [
+          { "label": "1st:", "expectedAnswer": "1/${sorted[0]}" },
+          { "label": "2nd:", "expectedAnswer": "1/${sorted[1]}" },
+          { "label": "3rd:", "expectedAnswer": "1/${sorted[2]}" }
+        ]
+      }`;
     }
 
     if (isMCQ) {
@@ -267,7 +310,19 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       ];
     }
 
-    if (isShort || isStructure) {
+    if (isStructure) {
+      const ansFraction = isLike 
+        ? (askGreater ? `${Math.max(num1, num2)}/${denom1}` : `${Math.min(num1, num2)}/${denom1}`)
+        : (askGreater ? `1/${Math.min(denom1, denom2)}` : `1/${Math.max(denom1, denom2)}`);
+        
+      inputRequirementStr = `{
+        "inputType": "MULTI_STEP_INPUT",
+        "steps": [
+          { "label": "${askGreater ? 'Greater' : 'Smaller'} fraction:", "expectedAnswer": "${ansFraction}" },
+          { "label": "Who uses ${askGreater ? 'more' : 'less'}?", "expectedAnswer": "${ansName}" }
+        ]
+      }`;
+    } else if (isShort) {
       inputRequirementStr = `{ "inputType": "STANDARD_TEXT" }`;
     }
 

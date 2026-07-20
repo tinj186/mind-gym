@@ -170,6 +170,10 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
     const cleanString = (str) => {
       let s = String(str || '')
         .replace(/\\\s/g, ' ') // MathLive escaped spaces
+        .replace(/\\quad/g, ' ') // MathLive quad space
+        .replace(/\\qquad/g, ' ') // MathLive qquad space
+        .replace(/\\[,;:!]/g, ' ') // MathLive thin/thick spaces
+        .replace(/~/g, ' ') // MathLive tie/non-breaking space
         .replace(/\\displaystyle/g, '') // Strip display style
         .replace(/\\textstyle/g, '') // Strip text style
         .replace(/\\left/g, '') // Strip left
@@ -220,7 +224,8 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
       for (let i = 0; i < steps.length; i++) {
         const studentVal = cleanString(submittedAnswer[i]);
         const expectedVal = cleanString(steps[i].expectedAnswer);
-        if (studentVal !== expectedVal) {
+        const acceptedVals = steps[i].acceptedAnswers ? steps[i].acceptedAnswers.map(a => cleanString(a)) : [];
+        if (studentVal !== expectedVal && !acceptedVals.includes(studentVal)) {
           isCorrect = false;
           break;
         }

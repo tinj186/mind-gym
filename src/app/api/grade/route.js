@@ -44,6 +44,7 @@ export async function POST(req) {
         If the student is incorrect, assign a defectCode from the following list: ['CARELESS_CALCULATION', 'CONCEPTUAL_ERROR', 'CONFUSED_OPERATION', 'MISREAD_QUESTION', 'CONSTANT_VIOLATION', 'UNKNOWN']. If the student is correct, return null.
         
         IMPORTANT: If the Question explicitly asks to write the answer "in words", the student MUST provide the answer in text words (e.g., "one half"). If they provide a numeric fraction (e.g., "1/2" or "\\\\frac{1}{2}"), mark it as incorrect with defectCode "MISREAD_QUESTION".
+        IMPORTANT: If the Correct Answer contains a currency symbol ('$' or '¢'), the Student Answer MUST also contain that exact symbol. If the symbol is missing, mark it as incorrect with defectCode "CONSTANT_VIOLATION".
 
         Return JSON: { "isLogicCorrect": boolean, "hint": "string", "explanation": "string", "defectCode": "string" | null }`;
 

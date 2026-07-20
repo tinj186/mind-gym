@@ -156,7 +156,7 @@ export const standardVariants = {
   
   standard_calculate_start_end_time: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const askEnd = Math.random() > 0.5;
-    const names = getRandomNames(1);
+    const names = getRandomNames(2);
     const duration = Math.floor(Math.random() * 3) + 2; // 2, 3, or 4 hours
     
     // We stay within 1-12 without crossing noon to keep it standard
@@ -217,7 +217,7 @@ export const standardVariants = {
   },
 
   standard_total_duration: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const names = getRandomNames(1);
+    const names = getRandomNames(2);
     const dur1 = Math.floor(Math.random() * 2) + 1; // 1 or 2
     const dur2 = Math.floor(Math.random() * 2) + 2; // 2 or 3
     const total = dur1 + dur2;

@@ -342,7 +342,7 @@ export const foundationVariants = {
 
   foundation_sequence_simple: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const scenario = Math.random() > 0.5;
-    const names = getRandomNames(1);
+    const names = getRandomNames(2);
     
     let questionText = getQText(scenario
       ? "Choose the correct order of events from morning to night."
