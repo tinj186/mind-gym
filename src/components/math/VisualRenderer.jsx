@@ -9,13 +9,16 @@ export const ESSENTIAL_VISUALS = [
   "NUMBER_BOND", "NUMBER_PATTERN", "BASE_TEN_BLOCKS", 
   "SINGAPORE_MONEY", "MEASUREMENT_UNIT", "MEASUREMENT_RULER", "CLOCK_DISPLAY",
   "SHAPE_DISPLAY", "PLACE_VALUE_CHART", "VERTICAL_ALGORITHM",
-  "GRID_DISPLAY", "GRID_DRAWING_CANVAS", "FRACTION_DISPLAY"
+  "GRID_DISPLAY", "GRID_DRAWING_CANVAS", "FRACTION_DISPLAY",
+  "MASS_SCALE", "VOLUME_BEAKER"
   // "PICTURE_GRAPH_DISPLAY" // Not essential, lazy-loaded
 ];
 
 // 🚀 Lazy-loaded modules (Only downloaded by the browser if the question requires it)
 const MeasurementUnit = lazy(() => import('./modules/MeasurementUnit'));
 const MeasurementRuler = lazy(() => import('./modules/MeasurementRuler'));
+const MassScale = lazy(() => import('./modules/MassScale'));
+const VolumeBeaker = lazy(() => import('./modules/VolumeBeaker'));
 const SingaporeMoney = lazy(() => import('./modules/SingaporeMoney'));
 const CountingObjects = lazy(() => import('./modules/CountingObjects'));
 const NumberCards = lazy(() => import('./modules/NumberCards'));
@@ -58,6 +61,8 @@ export default function VisualRenderer({ type, ...props }) {
         switch (activeType) {
           case 'MEASUREMENT_UNIT': return <MeasurementUnit {...props} />;
           case 'MEASUREMENT_RULER': return <MeasurementRuler {...props} />;
+          case 'MASS_SCALE': return <MassScale {...props} />;
+          case 'VOLUME_BEAKER': return <VolumeBeaker {...props} />;
           case 'CLOCK_DISPLAY': return <ClockDisplay {...props} />;
           case 'SINGAPORE_MONEY': return <SingaporeMoney {...props} />;
           case 'COUNTING_OBJECTS': 

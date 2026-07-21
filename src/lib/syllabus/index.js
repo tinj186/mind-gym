@@ -45,7 +45,7 @@ import { mentalCalculationBlueprint as p2MultDivBlueprint } from './math/primary
 import { multiplicationDivisionRelationshipBlueprint as p2MultDivRelationshipBlueprint } from './math/primary-2/whole-numbers-multiplication-and-division/multiplication-division-relationship';
 import { multiplicationTablesBlueprint as p2MultTablesBlueprint } from './math/primary-2/whole-numbers-multiplication-and-division/multiplication-tables';
 import { operationSymbolsBlueprint as p2OperationSymbolsBlueprint } from './math/primary-2/whole-numbers-multiplication-and-division/operation-symbols';
-import { lengthBlueprint as p2LengthBlueprint } from './math/primary-2/measurement-length-mass-and-volume/length';
+import { measurementBlueprint } from './math/primary-2/measurement-length-mass-and-volume/measurement';
 import { multiplyingDividingWithinTablesBlueprint as p2MultDivWithinTablesBlueprint } from './math/primary-2/whole-numbers-multiplication-and-division/multiplying-dividing-within-tables';
 import { massBlueprint as p2MassBlueprint } from './math/primary-2/measurement-length-mass-and-volume/mass';
 import { volumeBlueprint as p2VolumeBlueprint } from './math/primary-2/measurement-length-mass-and-volume/volume';
@@ -116,7 +116,7 @@ export const blueprintRegistry = {
   'Primary 2-Whole Numbers - Multiplication and Division-Multiplication/Division (Tables)': p2MultDivWithinTablesBlueprint,
   'Primary 2-Whole Numbers - Multiplication and Division-Mental Calculation (Multiplication/Division)': p2MultDivBlueprint,
   
-  'Primary 2-Measurement - Length, Mass and Volume-Measurement (Length, Mass, Volume)': p2LengthBlueprint,
+  'Primary 2-Measurement - Length, Mass and Volume-Measurement (Length, Mass, Volume)': measurementBlueprint,
   'Primary 2-Measurement - Length, Mass and Volume-Measurement Abbreviations': p2MassBlueprint,
   'Primary 2-Measurement - Length, Mass and Volume-Measurement Comparison': p2VolumeBlueprint,
   
