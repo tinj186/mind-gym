@@ -46,10 +46,13 @@ import { multiplicationDivisionRelationshipBlueprint as p2MultDivRelationshipBlu
 import { multiplicationTablesBlueprint as p2MultTablesBlueprint } from './math/primary-2/whole-numbers-multiplication-and-division/multiplication-tables';
 import { operationSymbolsBlueprint as p2OperationSymbolsBlueprint } from './math/primary-2/whole-numbers-multiplication-and-division/operation-symbols';
 import { measurementBlueprint } from './math/primary-2/measurement-length-mass-and-volume/measurement';
+import { p2MeasurementAbbreviationsBlueprint } from "./math/primary-2/measurement-length-mass-and-volume/measurement-abbreviations";
+import { p2MeasurementComparisonBlueprint } from "./math/primary-2/measurement-length-mass-and-volume/measurement-comparison";
 import { multiplyingDividingWithinTablesBlueprint as p2MultDivWithinTablesBlueprint } from './math/primary-2/whole-numbers-multiplication-and-division/multiplying-dividing-within-tables';
-import { massBlueprint as p2MassBlueprint } from './math/primary-2/measurement-length-mass-and-volume/mass';
-import { volumeBlueprint as p2VolumeBlueprint } from './math/primary-2/measurement-length-mass-and-volume/volume';
+
 import { timeBlueprint as p2TimeBlueprint } from './math/primary-2/measurement-time/time';
+import { measuringTimeBlueprint } from './math/primary-2/measurement-time/measuring-time';
+import { timeConversionBlueprint } from './math/primary-2/measurement-time/time-conversion';
 import { moneyBlueprint as p2MoneyBlueprint } from './math/primary-2/money-money/money';
 import { moneyNotationBlueprint as p2MoneyNotationBlueprint } from './math/primary-2/money-money/money-notation';
 import { moneyComparisonBlueprint as p2MoneyComparisonBlueprint } from './math/primary-2/money-money/money-comparison';
@@ -117,8 +120,9 @@ export const blueprintRegistry = {
   'Primary 2-Whole Numbers - Multiplication and Division-Mental Calculation (Multiplication/Division)': p2MultDivBlueprint,
   
   'Primary 2-Measurement - Length, Mass and Volume-Measurement (Length, Mass, Volume)': measurementBlueprint,
-  'Primary 2-Measurement - Length, Mass and Volume-Measurement Abbreviations': p2MassBlueprint,
-  'Primary 2-Measurement - Length, Mass and Volume-Measurement Comparison': p2VolumeBlueprint,
+  'Primary 2-Measurement - Length, Mass and Volume-Measurement Abbreviations': p2MeasurementAbbreviationsBlueprint,
+  'Primary 2-Measurement - Length, Mass and Volume-Measurement Comparison': p2MeasurementComparisonBlueprint,
+
   
   'Primary 2-Money - Money-Money Counting (Dollars/Cents)': p2MoneyBlueprint,
   'Primary 2-Money - Money-Money Notation (Decimals)': p2MoneyNotationBlueprint,
@@ -132,8 +136,8 @@ export const blueprintRegistry = {
   'Primary 2-Fractions - Addition and Subtraction-Like Fraction Addition/Subtraction': likeFractionAdditionSubtractionBlueprint,
   
   'Primary 2-Measurement - Time-Time to the Minute': p2TimeBlueprint,
-  'Primary 2-Measurement - Time-Time Measurement (Hours/Minutes)': p2TimeBlueprint,
-  'Primary 2-Measurement - Time-Time Conversion': p2TimeBlueprint,
+  'Primary 2-Measurement - Time-Time Measurement (Hours/Minutes)': measuringTimeBlueprint,
+  'Primary 2-Measurement - Time-Time Conversion': timeConversionBlueprint,
   
   'Primary 2-Geometry - 2D Shapes-2D Shape Patterns': d3dShapesBlueprint,
   'Primary 2-Geometry - 3D Shapes-3D Shape Classification': d3dShapesBlueprint,

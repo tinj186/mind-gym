@@ -134,8 +134,8 @@ solutionSteps: """1. The ${obj.name} is measured using ${obj.unit}.\\n2. Therefo
       const answer = `${length1},${length2}`;
       
       inputRequirementStr = `[
-        {"label": "Length of ${itemLabel1} (cm):", "expectedAnswer": "${length1}"},
-        {"label": "Length of ${itemLabel2} (cm):", "expectedAnswer": "${length2}"}
+        {"label": "Length of ${itemLabel1}:", "expectedAnswer": "${length1} cm", "acceptedAnswers": ["${length1}cm"]},
+        {"label": "Length of ${itemLabel2}:", "expectedAnswer": "${length2} cm", "acceptedAnswers": ["${length2}cm"]}
       ]`;
       inputRequirementStr = `{"inputType": "MULTI_STEP_INPUT", "steps": ${inputRequirementStr}}`;
       
@@ -149,7 +149,7 @@ CRITICAL INSTRUCTION: You MUST use the EXACT strings provided in the template be
 
 Use EXACTLY:
 questionText: """${askText}"""
-finalAnswer: """${answer}"""
+finalAnswer: """${answer} cm"""
 hint: """Look at where each object ends on its ruler."""
 solutionSteps: """1. The ${itemLabel1} ends at ${length1} cm.\\n2. The ${itemLabel2} ends at ${length2} cm."""
 `;
@@ -183,7 +183,7 @@ CRITICAL INSTRUCTION: You MUST use the EXACT strings provided in the template be
 
 Use EXACTLY:
 questionText: """${askText}"""
-finalAnswer: """${answer}"""
+finalAnswer: """${answer} cm"""
 hint: """Look at where the ${itemLabel} ends on the ruler. The ruler is in cm."""
 solutionSteps: """1. The ${itemLabel} starts at 0.\\n2. It ends at ${length}.\\n3. The length is ${length} cm."""
 
@@ -202,7 +202,7 @@ CRITICAL INSTRUCTION: You MUST use the EXACT strings provided in the template be
 
 Use EXACTLY:
 questionText: """${askText}"""
-finalAnswer: """${answer}"""
+finalAnswer: """${answer} cm"""
 hint: """Look at where the ${itemLabel} ends on the ruler."""
 solutionSteps: """1. The ${itemLabel} starts at 0.\\n2. It ends at ${length}.\\n3. The length is ${length} cm."""
 `;
@@ -256,8 +256,8 @@ solutionSteps: """1. The ${itemLabel} starts at 0.\\n2. It ends at ${length}.\\n
       const answer = `${mass1},${mass2}`;
       
       inputRequirementStr = `[
-        {"label": "Mass of ${itemLabel1} (g):", "expectedAnswer": "${mass1}"},
-        {"label": "Mass of ${itemLabel2} (g):", "expectedAnswer": "${mass2}"}
+        {"label": "Mass of ${itemLabel1}:", "expectedAnswer": "${mass1} g", "acceptedAnswers": ["${mass1}g"]},
+        {"label": "Mass of ${itemLabel2}:", "expectedAnswer": "${mass2} g", "acceptedAnswers": ["${mass2}g"]}
       ]`;
       inputRequirementStr = `{"inputType": "MULTI_STEP_INPUT", "steps": ${inputRequirementStr}}`;
       
@@ -271,7 +271,7 @@ CRITICAL INSTRUCTION: You MUST use the EXACT strings provided in the template be
 
 Use EXACTLY:
 questionText: """${askText}"""
-finalAnswer: """${answer}"""
+finalAnswer: """${answer} g"""
 hint: """Look at the number the needle is pointing to on each scale."""
 solutionSteps: """1. The ${itemLabel1} scale points to ${mass1} g.\\n2. The ${itemLabel2} scale points to ${mass2} g."""
 `;
@@ -310,7 +310,7 @@ CRITICAL INSTRUCTION: You MUST use the EXACT strings provided in the template be
 
 Use EXACTLY:
 questionText: """${askText}"""
-finalAnswer: """${answer}"""
+finalAnswer: """${answer} g"""
 hint: """Look at the number the needle is pointing to."""
 solutionSteps: """1. The needle on the scale points to ${mass}.\\n2. The unit is in grams (g).\\n3. The mass is ${mass} g."""
 
@@ -329,7 +329,7 @@ CRITICAL INSTRUCTION: You MUST use the EXACT strings provided in the template be
 
 Use EXACTLY:
 questionText: """${askText}"""
-finalAnswer: """${answer}"""
+finalAnswer: """${answer} g"""
 hint: """Look at the number the needle is pointing to."""
 solutionSteps: """1. The needle on the scale points to ${mass}.\\n2. The mass is ${mass} g."""
 `;
@@ -396,8 +396,8 @@ solutionSteps: """1. The needle on the scale points to ${mass}.\\n2. The mass is
       const answer = `${vol1},${vol2}`;
       
       inputRequirementStr = `[
-        {"label": "Volume in Beaker A (l):", "expectedAnswer": "${vol1}"},
-        {"label": "Volume in Beaker B (l):", "expectedAnswer": "${vol2}"}
+        {"label": "Volume in Beaker A:", "expectedAnswer": "${vol1} l", "acceptedAnswers": ["${vol1}l", "${vol1} L", "${vol1}L"]},
+        {"label": "Volume in Beaker B:", "expectedAnswer": "${vol2} l", "acceptedAnswers": ["${vol2}l", "${vol2} L", "${vol2}L"]}
       ]`;
       inputRequirementStr = `{"inputType": "MULTI_STEP_INPUT", "steps": ${inputRequirementStr}}`;
       
@@ -411,7 +411,7 @@ CRITICAL INSTRUCTION: You MUST use the EXACT strings provided in the template be
 
 Use EXACTLY:
 questionText: """${askText}"""
-finalAnswer: """${answer}"""
+finalAnswer: """${answer} l"""
 hint: """Look at the water level on the markings of each beaker."""
 solutionSteps: """1. The water level in Beaker A reaches ${vol1} l.\\n2. The water level in Beaker B reaches ${vol2} l."""
 `;
@@ -451,7 +451,7 @@ CRITICAL INSTRUCTION: You MUST use the EXACT strings provided in the template be
 
 Use EXACTLY:
 questionText: """${askText}"""
-finalAnswer: """${answer}"""
+finalAnswer: """${answer} l"""
 hint: """Look at the water level on the beaker markings."""
 solutionSteps: """1. The water level reaches the number ${vol}.\\n2. The unit is in litres (l).\\n3. The volume is ${vol} l."""
 
@@ -470,7 +470,7 @@ CRITICAL INSTRUCTION: You MUST use the EXACT strings provided in the template be
 
 Use EXACTLY:
 questionText: """${askText}"""
-finalAnswer: """${answer}"""
+finalAnswer: """${answer} l"""
 hint: """Look at the water level on the beaker markings."""
 solutionSteps: """1. The water level reaches the number ${vol}.\\n2. The volume is ${vol} l."""
 `;

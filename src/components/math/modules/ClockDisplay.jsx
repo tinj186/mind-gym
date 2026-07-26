@@ -3,11 +3,12 @@ import React from 'react';
 export default function ClockDisplay({ data, hideCardStyles = false }) {
   if (!data) return null;
 
-  const { hour = 12, minute = 0, displayType = 'analog' } = data;
+  const { hour = 12, minute = 0, displayType = 'analog', hourHandMinute } = data;
 
   // 📐 Precise Angular Rotations
   const minuteAngle = minute * 6; // 360 degrees / 60 minutes = 6 degrees per min
-  const hourAngle = (hour % 12) * 30 + minute * 0.5; // 30 degrees per hour + 0.5 degrees per elapsed minute
+  const effectiveHourMinute = hourHandMinute !== undefined ? hourHandMinute : minute;
+  const hourAngle = (hour % 12) * 30 + effectiveHourMinute * 0.5; // 30 degrees per hour + 0.5 degrees per elapsed minute
 
   // Helper to place clock numbers 1-12 accurately around the circle radius
   const getNumberCoordinates = (num, radius = 70) => {

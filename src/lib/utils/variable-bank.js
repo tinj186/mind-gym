@@ -6,6 +6,31 @@
  */
 
 // ----------------------------------------------------------------------------
+/**
+ * Helper to ensure a single item is returned as an array for standard API design,
+ * while using a Proxy to maintain backward compatibility with legacy variant code 
+ * that expects a string primitive or single object.
+ */
+const makeCompatibleArray = (singleItem) => {
+  const arr = [singleItem];
+  return new Proxy(arr, {
+    get(target, prop) {
+      if (prop === 'length' || (typeof prop === 'string' && !isNaN(Number(prop)))) {
+        return target[prop];
+      }
+      if (typeof target[prop] === 'function' && prop !== 'toString' && prop !== 'valueOf') {
+        return target[prop].bind(target);
+      }
+      if (singleItem == null) return target[prop];
+      const itemVal = singleItem[prop];
+      if (typeof itemVal === 'function') {
+        return itemVal.bind(singleItem);
+      }
+      return itemVal !== undefined ? itemVal : target[prop];
+    }
+  });
+};
+
 export const CONTEXT_TIERS = {
   LOWER_BLOCK: { // P1-P2: Familiar and tangible
     NAMES: [
@@ -110,7 +135,7 @@ export const NAMES_POOL = [
 
 export const getRandomNames = (count = 1) => {
   const shuffled = [...NAMES_POOL].sort(() => 0.5 - Math.random());
-  return count === 1 ? shuffled[0] : shuffled.slice(0, count);
+  return count === 1 ? makeCompatibleArray(shuffled[0]) : shuffled.slice(0, count);
 };
 
 // ----------------------------------------------------------------------------
@@ -152,12 +177,12 @@ export const HEIGHT_SUBJECTS_POOL = [
 
 export const getRandomLengthItems = (count = 1) => {
   const shuffled = [...LENGTH_ITEMS_POOL].sort(() => 0.5 - Math.random());
-  return count === 1 ? shuffled[0] : shuffled.slice(0, count);
+  return count === 1 ? makeCompatibleArray(shuffled[0]) : shuffled.slice(0, count);
 };
 
 export const getRandomHeightSubjects = (count = 1) => {
   const shuffled = [...HEIGHT_SUBJECTS_POOL].sort(() => 0.5 - Math.random());
-  return count === 1 ? shuffled[0] : shuffled.slice(0, count);
+  return count === 1 ? makeCompatibleArray(shuffled[0]) : shuffled.slice(0, count);
 };
 
 // ----------------------------------------------------------------------------
@@ -223,7 +248,7 @@ export const DIVISIBLE_FOODS_POOL = [
 
 export const getRandomDivisibleFoods = (count = 1) => {
   const shuffled = [...DIVISIBLE_FOODS_POOL].sort(() => 0.5 - Math.random());
-  return count === 1 ? shuffled[0] : shuffled.slice(0, count);
+  return count === 1 ? makeCompatibleArray(shuffled[0]) : shuffled.slice(0, count);
 };
 
 // ----------------------------------------------------------------------------
@@ -291,7 +316,7 @@ export const DIVISIBLE_OBJECTS_POOL = [
 
 export const getRandomDivisibleObjects = (count = 1) => {
   const shuffled = [...DIVISIBLE_OBJECTS_POOL].sort(() => 0.5 - Math.random());
-  return count === 1 ? shuffled[0] : shuffled.slice(0, count);
+  return count === 1 ? makeCompatibleArray(shuffled[0]) : shuffled.slice(0, count);
 };
 
 // ----------------------------------------------------------------------------
@@ -308,17 +333,17 @@ export const GEOMETRY_SUBJECTS_POOL = [
 
 export const getRandomShapes = (count = 1) => {
   const shuffled = [...SHAPES_POOL].sort(() => 0.5 - Math.random());
-  return count === 1 ? shuffled[0] : shuffled.slice(0, count);
+  return count === 1 ? makeCompatibleArray(shuffled[0]) : shuffled.slice(0, count);
 };
 
 export const getRandomColors = (count = 1) => {
   const shuffled = [...COLORS_POOL].sort(() => 0.5 - Math.random());
-  return count === 1 ? shuffled[0] : shuffled.slice(0, count);
+  return count === 1 ? makeCompatibleArray(shuffled[0]) : shuffled.slice(0, count);
 };
 
 export const getRandomGeometrySubjects = (count = 1) => {
   const shuffled = [...GEOMETRY_SUBJECTS_POOL].sort(() => 0.5 - Math.random());
-  return count === 1 ? shuffled[0] : shuffled.slice(0, count);
+  return count === 1 ? makeCompatibleArray(shuffled[0]) : shuffled.slice(0, count);
 };
 
 export const getSizesPool = () => [...SIZES_POOL];
@@ -335,7 +360,7 @@ export const getGramItems = (count = 1) => {
     { item: 'shoe', icon: '👞' }
   ];
   const shuffled = [...gramItems].sort(() => 0.5 - Math.random());
-  return count === 1 ? shuffled[0] : shuffled.slice(0, count);
+  return count === 1 ? makeCompatibleArray(shuffled[0]) : shuffled.slice(0, count);
 };
 
 export const getKgItems = (count = 1) => {
@@ -350,11 +375,11 @@ export const getKgItems = (count = 1) => {
     { item: 'suitcase', icon: '🧳' }
   ];
   const shuffled = [...kgItems].sort(() => 0.5 - Math.random());
-  return count === 1 ? shuffled[0] : shuffled.slice(0, count);
+  return count === 1 ? makeCompatibleArray(shuffled[0]) : shuffled.slice(0, count);
 };
 
-export const getMeasurementAppropriateUnits = () => {
-  const objects = [
+export const getMeasurementAppropriateUnits = (type = null) => {
+  let objects = [
     // Original 15
     { name: "length of a pencil", unit: "cm", wrong: "m", val: 15 },
     { name: "length of an eraser", unit: "cm", wrong: "m", val: 4 },
@@ -409,27 +434,32 @@ export const getMeasurementAppropriateUnits = () => {
     { name: "volume of medicine in an eyedropper", unit: "ml", wrong: "l", val: 2 },
     { name: "volume of water in a kettle", unit: "l", wrong: "ml", val: 2 },
     { name: "volume of fuel in a car tank", unit: "l", wrong: "ml", val: 50 },
-    { name: "volume of a small bottle of Yakult", unit: "ml", wrong: "l", val: 100 }
+    { name: "volume of a swimming pool", unit: "l", wrong: "ml", val: 50000 }
   ];
+
+  if (type === 'length') objects = objects.filter(o => o.unit === 'cm' || o.unit === 'm');
+  else if (type === 'mass') objects = objects.filter(o => o.unit === 'g' || o.unit === 'kg');
+  else if (type === 'volume') objects = objects.filter(o => o.unit === 'ml' || o.unit === 'l');
+
   const baseObj = objects[Math.floor(Math.random() * objects.length)];
-  
+
   // Vary the value by up to +/- 10% to create dynamic values
-  const variation = (Math.random() * 0.2) - 0.1; 
+  const variation = (Math.random() * 0.2) - 0.1;
   let newVal = Math.round(baseObj.val * (1 + variation));
-  
+
   // Ensure it doesn't drop to 0 or change if the base value is very small (like 1 or 2)
   if (baseObj.val <= 2) {
     newVal = baseObj.val;
   }
-  
+
   return {
     ...baseObj,
     val: newVal
   };
 };
 
-export const getMeasurementEstimationPairs = () => {
-  const pairs = [
+export const getMeasurementEstimationPairs = (type = null) => {
+  let pairs = [
     // Original 12
     { name: "length of a new pencil", correct: "15 cm", wrong: "15 m" },
     { name: "height of a tree", correct: "5 m", wrong: "5 cm" },
@@ -486,6 +516,11 @@ export const getMeasurementEstimationPairs = () => {
     { name: "volume of a garden fish pond", correct: "1000 l", wrong: "1000 ml" },
     { name: "volume of a bottle of chili sauce", correct: "300 ml", wrong: "300 l" }
   ];
+
+  if (type === 'length') pairs = pairs.filter(p => p.correct.includes('cm') || p.correct.includes('m'));
+  else if (type === 'mass') pairs = pairs.filter(p => p.correct.includes('g') || p.correct.includes('kg'));
+  else if (type === 'volume') pairs = pairs.filter(p => p.correct.includes('ml') || p.correct.includes('l'));
+
   return pairs[Math.floor(Math.random() * pairs.length)];
 };
 
@@ -535,3 +570,142 @@ export const emojiObjects = [
   { name: 'fire', icon: '🔥' }, { name: 'water drops', icon: '💧' }, { name: 'leaves', icon: '🍂' },
   { name: 'mushrooms', icon: '🍄' }, { name: 'cactuses', icon: '🌵' }, { name: 'palm trees', icon: '🌴' }
 ];
+
+export const getTimeActivities = (count = 1, isMorning = true) => {
+  const morningActivities = [
+    { text: "eating breakfast", min: 6, max: 8 },
+    { text: "waking up for school", min: 6, max: 7 },
+    { text: "having morning assembly", min: 7, max: 8 },
+    { text: "going to the market in the morning", min: 8, max: 11 },
+    { text: "brushing teeth in the morning", min: 6, max: 7 },
+    { text: "waiting for the school bus", min: 6, max: 7 },
+    { text: "reading a book in the morning", min: 8, max: 11 },
+    { text: "having recess at school", min: 9, max: 11 },
+    { text: "attending a math lesson", min: 8, max: 11 },
+    { text: "watching a morning cartoon", min: 7, max: 10 },
+    { text: "waterings the plants in the morning", min: 7, max: 9 },
+    { text: "going for a morning walk", min: 6, max: 9 },
+    { text: "packing the school bag", min: 6, max: 7 },
+    { text: "eating a morning snack", min: 9, max: 11 },
+    { text: "going to swimming class in the morning", min: 8, max: 11 },
+    { text: "helping parents with morning chores", min: 8, max: 11 },
+    { text: "having a music lesson", min: 9, max: 11 },
+    { text: "visiting the library in the morning", min: 10, max: 11 },
+    { text: "baking cookies with mom", min: 9, max: 11 },
+    { text: "playing with toys before school", min: 6, max: 7 },
+    { text: "doing morning exercises", min: 6, max: 8 },
+    { text: "feeding the pet dog", min: 6, max: 8 },
+    { text: "taking a morning shower", min: 6, max: 8 },
+    { text: "walking to school", min: 6, max: 7 },
+    { text: "listening to a morning story", min: 8, max: 11 },
+    { text: "practicing piano in the morning", min: 9, max: 11 },
+    { text: "cleaning the room", min: 8, max: 11 },
+    { text: "going for a jog", min: 6, max: 8 },
+    { text: "making the bed", min: 6, max: 7 },
+    { text: "having a family breakfast", min: 7, max: 8 }
+  ];
+
+  const pmActivities = [
+    { text: "eating dinner", min: 6, max: 8 },
+    { text: "doing homework after school", min: 2, max: 5 },
+    { text: "going to sleep at night", min: 8, max: 10 },
+    { text: "playing in the park in the afternoon", min: 4, max: 6 },
+    { text: "eating a late lunch", min: 1, max: 2 },
+    { text: "watching an evening movie", min: 7, max: 9 },
+    { text: "taking an afternoon nap", min: 1, max: 3 },
+    { text: "having afternoon tea", min: 3, max: 4 },
+    { text: "attending tuition class", min: 3, max: 6 },
+    { text: "playing football with friends", min: 4, max: 6 },
+    { text: "brushing teeth before bed", min: 8, max: 10 },
+    { text: "reading a bedtime story", min: 8, max: 9 },
+    { text: "taking an evening stroll", min: 6, max: 8 },
+    { text: "washing the dishes after dinner", min: 7, max: 9 },
+    { text: "having football practice", min: 4, max: 6 },
+    { text: "packing the school bag for tomorrow", min: 7, max: 9 },
+    { text: "playing board games with family", min: 7, max: 9 },
+    { text: "taking out the trash at night", min: 7, max: 9 },
+    { text: "feeding the pet cat in the evening", min: 5, max: 7 },
+    { text: "coming home from school", min: 1, max: 3 },
+    { text: "visiting the playground", min: 4, max: 6 },
+    { text: "eating supper", min: 9, max: 10 },
+    { text: "chatting with parents after dinner", min: 7, max: 9 },
+    { text: "drawing and coloring", min: 2, max: 5 },
+    { text: "practicing spelling words", min: 3, max: 6 },
+    { text: "watching the sunset", min: 6, max: 7 },
+    { text: "cleaning up toys", min: 7, max: 9 },
+    { text: "having dinner at a restaurant", min: 6, max: 8 },
+    { text: "listening to music in the afternoon", min: 2, max: 5 },
+    { text: "getting ready for bed", min: 8, max: 9 }
+  ];
+
+  const pool = isMorning ? morningActivities : pmActivities;
+
+  // Shuffle pool to pick count elements
+  const shuffled = [...pool].sort(() => 0.5 - Math.random());
+  const selected = shuffled.slice(0, count);
+
+  return makeCompatibleArray(count === 1 ? selected[0] : selected);
+};
+
+export const getPairedActivities = () => {
+  const pairs = [
+    // Original 6
+    { main: "lesson", break: "spelling test" },
+    { main: "exam", break: "rest break" },
+    { main: "movie", break: "intermission" },
+    { main: "training", break: "warm-up" },
+    { main: "workshop", break: "short recess" },
+    { main: "concert", break: "intermission" },
+
+    // School & Academic (12)
+    { main: "PE lesson", break: "water break" },
+    { main: "school assembly", break: "principal's speech" },
+    { main: "math class", break: "mental sums test" },
+    { main: "art lesson", break: "clean-up time" },
+    { main: "science experiment", break: "safety briefing" },
+    { main: "English lesson", break: "silent reading time" },
+    { main: "Chinese lesson", break: "spelling quiz" },
+    { main: "CCA session", break: "attendance taking" },
+    { main: "learning journey", break: "bus ride" },
+    { main: "computer lesson", break: "login time" },
+    { main: "tuition class", break: "homework marking" },
+    { main: "school camp", break: "tent pitching briefing" },
+
+    // Sports & Hobbies (16)
+    { main: "swimming lesson", break: "safety drill" },
+    { main: "piano lesson", break: "finger warm-up" },
+    { main: "ballet class", break: "stretching time" },
+    { main: "taekwondo class", break: "cool-down routine" },
+    { main: "football match", break: "half-time break" },
+    { main: "badminton game", break: "warm-up rally" },
+    { main: "coding workshop", break: "screen break" },
+    { main: "robotics class", break: "packing up time" },
+    { main: "choir practice", break: "vocal warm-up" },
+    { main: "band practice", break: "tuning time" },
+    { main: "drama rehearsal", break: "costume change" },
+    { main: "gymnastics class", break: "mat setup" },
+    { main: "chess tournament", break: "rules briefing" },
+    { main: "scout meeting", break: "uniform inspection" },
+    { main: "cooking class", break: "washing up time" },
+    { main: "magic show", break: "volunteer selection" },
+
+    // Family, Leisure & Daily Life (16)
+    { main: "birthday party", break: "cake cutting time" },
+    { main: "zoo visit", break: "animal feeding show" },
+    { main: "library visit", break: "storytelling session" },
+    { main: "grocery trip", break: "queueing at the cashier" },
+    { main: "baking session", break: "measuring ingredients" },
+    { main: "theatre play", break: "stage setup" },
+    { main: "hiking trip", break: "snack break" },
+    { main: "cycling trip", break: "safety check" },
+    { main: "family dinner", break: "waiting for food" },
+    { main: "playdate", break: "cleaning up time" },
+    { main: "sports day", break: "prize presentation" },
+    { main: "bus tour", break: "photo stop" },
+    { main: "shopping trip", break: "parking the car" },
+    { main: "museum visit", break: "bag check" },
+    { main: "field trip", break: "toilet break" },
+    { main: "art gallery tour", break: "introductory video" }
+  ];
+  return pairs[Math.floor(Math.random() * pairs.length)];
+};

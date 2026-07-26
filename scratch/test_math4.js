@@ -1,0 +1,53 @@
+function normalizeAnswer(val) {
+  if (val === null || val === undefined) return '';
+
+  let str = String(val).trim().toLowerCase();
+
+  // Strip thousands separators first
+  // E.g., 1,000 -> 1000. It handles multiple like 1,000,000 via a loop or regex.
+  // Actually, replacing /(\d),(\d{3})(?!\d)/g doesn't easily handle 1,000,000 in one pass without lookbehind.
+  // A simpler way: if comma is followed by exactly 3 digits and then end of string or non-digit, it's a thousands separator.
+  // But wait, what if the list is "1, 200, 300"? Then 200 has 3 digits but has space before it.
+  
+  // Let's just remove commas that are surrounded by digits with exactly 3 digits after.
+  str = str.replace(/(\d),(\d{3})(?!\d)/g, '$1$2');
+  str = str.replace(/(\d),(\d{3})(?!\d)/g, '$1$2'); // Run twice for 1,000,000
+
+  // Handle lists by splitting at commas
+  if (str.includes(',')) {
+    return str.split(',').map(part => normalizeAnswer(part)).join(',');
+  }
+
+  str = str.replace(/\\frac\{(\d+)\}\{(\d+)\}/g, '$1/$2');
+  str = str.replace(/(\d+)\\frac\{(\d+)\}\{(\d+)\}/g, '$1 $2/$3');
+
+  str = str.replace(/[^\d./\s-]/g, '').trim();
+
+  const mixedPattern = /^(\d+)\s+(\d+)\/(\d+)$/;
+  const mixedMatch = str.match(mixedPattern);
+  if (mixedMatch) {
+    const whole = parseFloat(mixedMatch[1]);
+    const num = parseFloat(mixedMatch[2]);
+    const den = parseFloat(mixedMatch[3]);
+    return den !== 0 ? String(whole + num / den) : str;
+  }
+
+  const fractionPattern = /^(\d+)\/(\d+)$/;
+  const fractionMatch = str.match(fractionPattern);
+  if (fractionMatch) {
+    const num = parseFloat(fractionMatch[1]);
+    const den = parseFloat(fractionMatch[2]);
+    return den !== 0 ? String(num / den) : str;
+  }
+
+  const singleNum = str.replace(/\s/g, '');
+  const parsed = parseFloat(singleNum);
+  
+  return !isNaN(parsed) && isFinite(parsed) ? String(parsed) : singleNum;
+}
+
+console.log("1,000:", normalizeAnswer("1,000"));
+console.log("1,000,000:", normalizeAnswer("1,000,000"));
+console.log("list:", normalizeAnswer("4/5, 3/5, 2/5"));
+console.log("list latex:", normalizeAnswer("\\frac{4}{5},\\frac{3}{5},\\frac{2}{5}"));
+console.log("list numbers:", normalizeAnswer("10, 200, 300"));

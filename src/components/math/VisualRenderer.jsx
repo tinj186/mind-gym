@@ -41,6 +41,8 @@ const DiagramRenderer = lazy(() => import('./modules/DiagramRenderer'));
 const GridDisplay = lazy(() => import('./modules/GridDisplay'));
 const GridDrawingCanvas = lazy(() => import('./modules/GridDrawingCanvas'));
 const FractionDisplay = lazy(() => import('./modules/FractionDisplay'));
+const TimeLine = lazy(() => import('./modules/TimeLine'));
+const Timetable = lazy(() => import('./modules/Timetable'));
 
 export default function VisualRenderer({ type, ...props }) {
   const activeType = (
@@ -59,6 +61,8 @@ export default function VisualRenderer({ type, ...props }) {
     }>
       {(() => {
         switch (activeType) {
+          case 'TIMETABLE': return <Timetable data={props.visualEngine?.componentData || props.data} />;
+          case 'TIMELINE': return <TimeLine data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
           case 'MEASUREMENT_UNIT': return <MeasurementUnit {...props} />;
           case 'MEASUREMENT_RULER': return <MeasurementRuler {...props} />;
           case 'MASS_SCALE': return <MassScale {...props} />;

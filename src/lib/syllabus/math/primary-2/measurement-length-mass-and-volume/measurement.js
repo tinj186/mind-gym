@@ -14,10 +14,9 @@ export const measurementBlueprint = {
     'foundation_estimate_measurement': 'Estimate the measurement of an object',
     
     'standard_reading_ruler_offset': 'Read measurement from ruler not starting at 0',
-    'standard_compare_two_lengths': 'Compare two lengths',
-    'standard_compare_two_masses': 'Compare two masses',
-    'standard_compare_two_volumes': 'Compare two volumes',
-    'standard_total_mass': 'Find total mass of two items',
+    'standard_compare_two_lengths': 'Add or subtract two lengths',
+    'standard_compare_two_masses': 'Add or subtract two masses',
+    'standard_compare_two_volumes': 'Add or subtract two volumes',
     
     'advanced_difference_length': 'Find difference in lengths',
     'advanced_find_start_point_ruler': 'Find start point on a ruler given end and length',
@@ -62,7 +61,7 @@ export const measurementBlueprint = {
 }`;
 
     // Universal Engine localization
-    const context = { name: getRandomNames(1)[0], setting: "the store" };
+    const context = { name: getRandomNames(1), setting: "the store" };
     const selectedContextItem = getRandomLengthItems();
 
     if (difficulty.toLowerCase() === 'foundation') {
