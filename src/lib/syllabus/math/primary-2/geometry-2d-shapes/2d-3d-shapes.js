@@ -33,11 +33,12 @@ export const d3dShapesBlueprint = {
     const context = { name: "Ahmad", setting: "the library" };
     const selectedContextItem = "books";
 
-    if (difficulty === 'foundation') {
+    const diffKey = difficulty.toLowerCase();
+    if (diffKey === 'foundation') {
       return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText);
-    } else if (difficulty === 'standard') {
+    } else if (diffKey === 'standard') {
       return standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText);
-    } else if (difficulty === 'advanced') {
+    } else if (diffKey === 'advanced') {
       return advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, selectedContextItem, getQText);
     }
     

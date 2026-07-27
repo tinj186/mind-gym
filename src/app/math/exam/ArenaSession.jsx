@@ -19,6 +19,8 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [scoreSummary, setScoreSummary] = useState(null);
+  const [isGrading, setIsGrading] = useState(false);
+  const [finalAnswersLog, setFinalAnswersLog] = useState(null);
 
   // Normalize entire exam paper ONCE on mount so that random variables 
   // and final answers are stable for grading and review.
@@ -94,64 +96,15 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
   };
 
   const handleExamSubmission = async () => {
-    // Calculate scores across all sections
-    const calculateScore = (questions) => {
-      if (!questions.length) return { correct: 0, total: 0 };
-      const correctCount = questions.filter(q => {
-        const inputType = q.inputRequirement?.inputType || 'STANDARD_TEXT';
-        const rawAns = answers[q.id];
+    setIsGrading(true);
 
-        const cleanString = (str) => {
-          return String(str || '')
-            .replace(/\\\s/g, ' ')
-            .replace(/\\text\{([^\}]+)\}/g, '$1')
-            .replace(/\\operatorname\{\\mathrm\{([^\}]+)\}\}/g, '$1')
-            .replace(/\\mathrm\{([^\}]+)\}/g, '$1')
-            .replace(/\\/g, '')
-            .replace(/\s+/g, '')
-            .toLowerCase();
-        };
-
-        if (inputType === 'MULTI_STEP_INPUT') {
-          const steps = q.inputRequirement?.steps || [];
-          const studentObj = typeof rawAns === 'object' && rawAns !== null ? rawAns : {};
-          return steps.every((step, idx) => {
-            let sAns = cleanString(studentObj[idx]);
-            let rAns = cleanString(step.expectedAnswer);
-            return sAns === rAns;
-          });
-        } else {
-          const studentAns = cleanString(rawAns);
-          const realAns = cleanString(q.finalAnswer);
-          const accepted = q.acceptedAnswers ? q.acceptedAnswers.map(a => cleanString(a)) : [];
-          return studentAns === realAns || accepted.includes(studentAns);
-        }
-      }).length;
-      return { correct: correctCount, total: questions.length };
-    };
-
-    const mcq = calculateScore(normalizedExamPaper.mcq);
-    const short = calculateScore(normalizedExamPaper.short);
-    const structured = calculateScore(normalizedExamPaper.structured);
-    
-    const totalCorrect = mcq.correct + short.correct + structured.correct;
-    const totalQuestions = mcq.total + short.total + structured.total;
-
-    const scoreSummaryData = {
-      total: { correct: totalCorrect, total: totalQuestions, percent: Math.round((totalCorrect / totalQuestions) * 100) },
-      sections: { mcq, short, structured }
-    };
-
-    setScoreSummary(scoreSummaryData);
-
-    // Prepare data to send to database
     const flattenedQuestions = [
       ...normalizedExamPaper.mcq.map(q => ({ ...q, type: 'MULTIPLE_CHOICE' })),
       ...normalizedExamPaper.short.map(q => ({ ...q, type: 'SHORT_ANSWER' })),
       ...normalizedExamPaper.structured.map(q => ({ ...q, type: 'STRUCTURED' }))
     ];
-    
-    const generatedAnswersLog = flattenedQuestions.map(q => {
+
+    const generatedAnswersLog = await Promise.all(flattenedQuestions.map(async (q) => {
       const inputType = q.inputRequirement?.inputType || 'STANDARD_TEXT';
       const rawAns = answers[q.id];
       let isCorrect = false;
@@ -198,12 +151,39 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
       if (inputType === 'MULTI_STEP_INPUT') {
         const steps = q.inputRequirement?.steps || [];
         const studentObj = typeof rawAns === 'object' && rawAns !== null ? rawAns : {};
-        isCorrect = steps.every((step, idx) => {
-          let sAns = cleanString(studentObj[idx]);
-          let rAns = cleanString(step.expectedAnswer);
-          return sAns === rAns;
-        });
         
+        // Fast-path strict matching
+        isCorrect = true;
+        for (let i = 0; i < steps.length; i++) {
+          let sAns = cleanString(studentObj[i]);
+          let rAns = cleanString(steps[i].expectedAnswer);
+          if (sAns !== rAns) {
+            isCorrect = false;
+            break;
+          }
+        }
+        
+        // AI Fallback for Multi-Step
+        if (!isCorrect && Object.keys(studentObj).length > 0) {
+          try {
+            const res = await fetch('/api/grade-multi-step', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                studentAnswers: studentObj,
+                expectedSteps: steps,
+                questionText: q.question
+              })
+            });
+            if (res.ok) {
+              const data = await res.json();
+              isCorrect = data.isCorrect;
+            }
+          } catch (e) {
+            console.error("AI grading failed", e);
+          }
+        }
+
         displayAnswer = steps.map((step, idx) => {
           const label = step.stepLabel || `Step ${idx + 1}`;
           const val = cleanString(studentObj[idx]);
@@ -221,80 +201,54 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
       return {
         questionId: q.id,
         studentAnswer: displayAnswer,
-        actualCorrect: isCorrect
+        actualCorrect: isCorrect,
+        type: q.type
       };
-    });
+    }));
+
+    // Calculate Scores from the generatedAnswersLog
+    const calculateScore = (type) => {
+      const logs = generatedAnswersLog.filter(l => l.type === type);
+      const correct = logs.filter(l => l.actualCorrect).length;
+      return { correct, total: logs.length };
+    };
+
+    const mcq = calculateScore('MULTIPLE_CHOICE');
+    const short = calculateScore('SHORT_ANSWER');
+    const structured = calculateScore('STRUCTURED');
+    
+    const totalCorrect = mcq.correct + short.correct + structured.correct;
+    const totalQuestions = mcq.total + short.total + structured.total;
+
+    const scoreSummaryData = {
+      total: { correct: totalCorrect, total: totalQuestions, percent: Math.round((totalCorrect / totalQuestions) * 100) },
+      sections: { mcq, short, structured }
+    };
+
+    setScoreSummary(scoreSummaryData);
+    setFinalAnswersLog(generatedAnswersLog);
 
     // Save to PostgreSQL backend
     saveMockExamAction(studentId, scoreSummaryData, flattenedQuestions, generatedAnswersLog).catch(console.error);
 
     setIsSubmitted(true);
+    setIsGrading(false);
     setShowReport(true);
   };
 
-  if (showReport && scoreSummary) {
+  if (showReport && scoreSummary && finalAnswersLog) {
     const flattenedQuestions = [
       ...normalizedExamPaper.mcq.map(q => ({ ...q, type: 'MULTIPLE_CHOICE' })),
       ...normalizedExamPaper.short.map(q => ({ ...q, type: 'SHORT_ANSWER' })),
       ...normalizedExamPaper.structured.map(q => ({ ...q, type: 'STRUCTURED' }))
     ];
-    
-    const generatedAnswersLog = flattenedQuestions.map(q => {
-      const inputType = q.inputRequirement?.inputType || 'STANDARD_TEXT';
-      const rawAns = answers[q.id];
-      let isCorrect = false;
-      let displayAnswer = rawAns || '';
-
-      const cleanString = (str) => {
-        return String(str || '')
-          .replace(/\\\s/g, ' ')
-          .replace(/\\text\{([^\}]+)\}/g, '$1')
-          .replace(/\\operatorname\{\\mathrm\{([^\}]+)\}\}/g, '$1')
-          .replace(/\\mathrm\{([^\}]+)\}/g, '$1')
-          .replace(/\\times/g, '*')
-          .replace(/\\div/g, '/')
-          .replace(/\\cdot/g, '*')
-          .replace(/\\/g, '')
-          .replace(/\s+/g, '')
-          .toLowerCase();
-      };
-
-      if (inputType === 'MULTI_STEP_INPUT') {
-        const steps = q.inputRequirement?.steps || [];
-        const studentObj = typeof rawAns === 'object' && rawAns !== null ? rawAns : {};
-        isCorrect = steps.every((step, idx) => {
-          let sAns = cleanString(studentObj[idx]);
-          let rAns = cleanString(step.expectedAnswer);
-          return sAns === rAns;
-        });
-        
-        displayAnswer = steps.map((step, idx) => {
-          const label = step.stepLabel || `Step ${idx + 1}`;
-          const val = cleanString(studentObj[idx]);
-          return `${label}: ${val}`;
-        }).join(' | ');
-        
-      } else {
-        const studentAns = cleanString(rawAns);
-        const realAns = cleanString(q.finalAnswer);
-        const accepted = q.acceptedAnswers ? q.acceptedAnswers.map(a => cleanString(a)) : [];
-        isCorrect = studentAns === realAns || accepted.includes(studentAns);
-        displayAnswer = cleanString(rawAns);
-      }
-
-      return {
-        questionId: q.id,
-        studentAnswer: displayAnswer,
-        actualCorrect: isCorrect
-      };
-    });
 
     return (
       <div className="animate-in fade-in zoom-in-95 duration-500 w-full">
         <ExamReviewBoard 
           summary={null} 
           initialQuestions={flattenedQuestions}
-          answersLog={generatedAnswersLog}
+          answersLog={finalAnswersLog}
           mode="mock_exam"
         />
       </div>
@@ -480,9 +434,10 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
 
         <button
           onClick={handleExamSubmission}
-          className="w-full bg-rose-600 text-white py-4 font-black uppercase text-sm border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all mt-12"
+          disabled={isGrading}
+          className="w-full bg-rose-600 text-white py-4 font-black uppercase text-sm border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all mt-12 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Finalize Simulation
+          {isGrading ? 'Grading... Please Wait' : 'Finalize Simulation'}
         </button>
       </div>
 

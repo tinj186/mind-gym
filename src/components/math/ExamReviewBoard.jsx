@@ -126,7 +126,10 @@ export default function ExamReviewBoard({ summary, initialQuestions, answersLog,
                               {/* Question Details */}
                               <div className="flex-grow space-y-4">
                                 <div>
-                                  <span className="text-xs font-black text-slate-400 uppercase tracking-widest block mb-1">Question {idx + 1}</span>
+                                  <span className="text-xs font-black text-slate-400 uppercase tracking-widest block mb-1">
+                                    Question {idx + 1}
+                                    {q.id && <span className="lowercase font-normal text-slate-300 ml-2 tracking-normal">({q.id})</span>}
+                                  </span>
                                   <p className="text-lg font-bold text-slate-800">{q.question}</p>
                                 </div>
                                 
