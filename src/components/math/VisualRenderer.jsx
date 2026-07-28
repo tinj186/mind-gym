@@ -8,9 +8,9 @@ export const ESSENTIAL_VISUALS = [
   "ORDINAL_LINE", "GROUPING_WORKSPACE", "NUMBER_CARDS", 
   "NUMBER_BOND", "NUMBER_PATTERN", "BASE_TEN_BLOCKS", 
   "SINGAPORE_MONEY", "MEASUREMENT_UNIT", "MEASUREMENT_RULER", "CLOCK_DISPLAY",
-  "SHAPE_DISPLAY", "PLACE_VALUE_CHART", "VERTICAL_ALGORITHM",
+  "SHAPE_DISPLAY", "SHAPE_3D", "SHAPE_3D_PATTERN", "PLACE_VALUE_CHART", "VERTICAL_ALGORITHM",
   "GRID_DISPLAY", "GRID_DRAWING_CANVAS", "FRACTION_DISPLAY",
-  "MASS_SCALE", "VOLUME_BEAKER"
+  "MASS_SCALE", "VOLUME_BEAKER", "STATIC_IMAGE", "HTML_CONTENT"
   // "PICTURE_GRAPH_DISPLAY" // Not essential, lazy-loaded
 ];
 
@@ -32,6 +32,9 @@ const Shape = lazy(() => import('./modules/Shape'));
 const PlaceValueChart = lazy(() => import('./modules/PlaceValueChart'));
 const ClockDisplay = lazy(() => import('./modules/ClockDisplay'));
 const ShapeDisplay = lazy(() => import('./modules/ShapeDisplay'));
+const Shape3D = lazy(() => import('./modules/Shape3D'));
+const Shape3DPattern = lazy(() => import('./modules/Shape3DPattern'));
+const CompositeShape3D = lazy(() => import('./modules/CompositeShape3D'));
 const PictureGraphDisplay = lazy(() => import('./modules/PictureGraphDisplay'));
 const CrossOutGroup = lazy(() => import('./modules/CrossOutGroup'));
 const TwoSetComparison = lazy(() => import('./modules/TwoSetComparison'));
@@ -77,7 +80,7 @@ export default function VisualRenderer({ type, ...props }) {
           case 'MULTI_COMPONENT': {
             const data = props.visualEngine?.componentData || props.data || {};
             return (
-              <div className={`flex flex-col sm:flex-row gap-6 md:gap-12 justify-center items-center ${data.className || ''}`}>
+              <div className={`flex flex-col sm:flex-row gap-6 md:gap-12 justify-center items-center flex-wrap ${data.className || ''}`}>
                 {data.components?.map((comp, idx) => (
                   <div key={idx} className={comp.componentData?.className || ""}>
                     <VisualRenderer 
@@ -100,6 +103,9 @@ export default function VisualRenderer({ type, ...props }) {
           case 'NUMBER_BOND': return <NumberBond {...props} />;
           case 'PLACE_VALUE_CHART': return <PlaceValueChart data={props.visualEngine?.componentData || props.data} />;
           case 'SHAPE': return <Shape {...props} />;
+          case 'SHAPE_3D': return <Shape3D data={props.visualEngine?.componentData || props.data} />;
+          case 'SHAPE_3D_PATTERN': return <Shape3DPattern data={props.visualEngine?.componentData || props.data} />;
+          case 'COMPOSITE_SHAPE_3D': return <CompositeShape3D data={props.visualEngine?.componentData || props.data} />;
           case 'SHAPE_DISPLAY': return <ShapeDisplay data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
           case 'GRID_DISPLAY': return <GridDisplay data={props.visualEngine?.componentData || props.data} />;
           case 'GRID_DRAWING_CANVAS': return <GridDrawingCanvas data={props.visualEngine?.componentData || props.data} onSubmit={props.onSubmitGrid} disabled={props.disabled} />;
@@ -119,6 +125,23 @@ export default function VisualRenderer({ type, ...props }) {
           case 'VERTICAL_ALGORITHM': return <VerticalAlgorithm data={props.visualEngine?.componentData || props.data} />;
           case 'DIAGRAM_RENDERER': return <DiagramRenderer data={props.visualEngine?.componentData || props.data} />;
           case 'FRACTION_DISPLAY': return <FractionDisplay data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
+          case 'STATIC_IMAGE': {
+            const data = props.visualEngine?.componentData || props.data || {};
+            return (
+              <div className="flex justify-center items-center p-4">
+                <img src={data.src} alt={data.alt} className={data.className || "max-h-48 object-contain"} />
+              </div>
+            );
+          }
+          case 'HTML_CONTENT': {
+            const data = props.visualEngine?.componentData || props.data || {};
+            return (
+              <div 
+                className={data.className || "flex justify-center items-center p-4"}
+                dangerouslySetInnerHTML={{ __html: data.html || "" }}
+              />
+            );
+          }
           
           default:
             return (

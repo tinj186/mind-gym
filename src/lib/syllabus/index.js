@@ -61,7 +61,7 @@ import { fractionAsPartBlueprint } from './math/primary-2/fractions-fraction-of-
 import { fractionNotationBlueprint } from './math/primary-2/fractions-fraction-of-a-whole/fraction-notation';
 import { fractionComparisonBlueprint } from './math/primary-2/fractions-fraction-of-a-whole/fraction-comparison-up-to-denominator-12';
 import { likeFractionAdditionSubtractionBlueprint } from './math/primary-2/fractions-addition-and-subtraction/like-fraction-addition-subtraction/like-fraction-addition-subtraction';
-import { d3dShapesBlueprint } from './math/primary-2/geometry-2d-shapes/2d-3d-shapes';
+import { identifying3DShapesBlueprint } from './math/primary-2/geometry-3d-shapes/identifying-3d-shapes';
 import { patternsWith2DShapesBlueprint } from './math/primary-2/geometry-2d-shapes/patterns-with-2d-shapes';
 import { pictureGraphsBlueprint as p2PictureGraphsBlueprint } from './math/primary-2/data-representation-and-interpretation-picture-graphs-with-scales/picture-graphs';
 
@@ -141,7 +141,7 @@ export const blueprintRegistry = {
   'Primary 2-Measurement - Time-Time Conversion': timeConversionBlueprint,
   
   'Primary 2-Geometry - 2D Shapes-2D Shape Patterns': patternsWith2DShapesBlueprint,
-  'Primary 2-Geometry - 3D Shapes-3D Shape Classification': d3dShapesBlueprint,
+  'Primary 2-Geometry - 3D Shapes-Identifying 3D Shapes': identifying3DShapesBlueprint,
   
   'Primary 2-Data Representation and Interpretation - Picture Graphs with Scales-Picture Graph Interpretation (With Scales)': p2PictureGraphsBlueprint,
 };

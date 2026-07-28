@@ -759,7 +759,7 @@ export const SYLLABUS_DATA = {
       "topic": "Geometry - 3D Shapes",
       "subtopics": [
         {
-          "name": "3D Shape Classification",
+          "name": "Identifying 3D Shapes",
           "moeDescription": "identifying, naming, describing and classifying 3D shapes (cube, cuboid, cone, cylinder, sphere)"
         }
       ]
