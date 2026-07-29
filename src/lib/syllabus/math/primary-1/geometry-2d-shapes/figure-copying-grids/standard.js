@@ -78,7 +78,11 @@ const standardLogic = {
             },
             "inputRequirement": { "inputType": "INTERACTIVE_GRID" }
           }`,
-          metadata: { difficulty: 'standard', steps: 1, logic: "standard_diagonal_line", hideVisual: false }
+          metadata: { difficulty: 'standard', steps: 1, logic: "standard_diagonal_line", hideVisual: false },
+          visualEngine: {
+            componentToRender: "GRID_DRAWING_CANVAS",
+            componentData
+          }
         };
       },
 
@@ -166,7 +170,11 @@ const standardLogic = {
             },
             "inputRequirement": { "inputType": "INTERACTIVE_GRID" }
           }`,
-          metadata: { difficulty: 'standard', steps: 1, logic: "standard_triangle_copy", hideVisual: false }
+          metadata: { difficulty: 'standard', steps: 1, logic: "standard_triangle_copy", hideVisual: false },
+          visualEngine: {
+            componentToRender: "GRID_DRAWING_CANVAS",
+            componentData
+          }
         };
       },
 
@@ -326,7 +334,11 @@ const standardLogic = {
             },
             "inputRequirement": { "inputType": "INTERACTIVE_GRID" }
           }`,
-          metadata: { difficulty: 'standard', steps: 1, logic: "standard_composite_shape", hideVisual: false }
+          metadata: { difficulty: 'standard', steps: 1, logic: "standard_composite_shape", hideVisual: false },
+          visualEngine: {
+            componentToRender: "GRID_DRAWING_CANVAS",
+            componentData
+          }
         };
       },
 
@@ -386,7 +398,11 @@ const standardLogic = {
             },
             "inputRequirement": { "inputType": "INTERACTIVE_GRID" }
           }`,
-          metadata: { difficulty: 'standard', steps: 1, logic: "standard_complete_composite", hideVisual: false }
+          metadata: { difficulty: 'standard', steps: 1, logic: "standard_complete_composite", hideVisual: false },
+          visualEngine: {
+            componentToRender: "GRID_DRAWING_CANVAS",
+            componentData
+          }
         };
       },
 
@@ -536,7 +552,11 @@ const standardLogic = {
             },
             "inputRequirement": { "inputType": "MCQ_BUTTONS" }
           }`,
-          metadata: { difficulty: 'standard', steps: 1, logic: "standard_identify_incorrect_copy", hideVisual: false }
+          metadata: { difficulty: 'standard', steps: 1, logic: "standard_identify_incorrect_copy", hideVisual: false },
+          visualEngine: {
+            componentToRender: "GRID_DISPLAY",
+            componentData
+          }
         };
       }
     };

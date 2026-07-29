@@ -11,10 +11,17 @@ import { getCurrentStudentId } from '@/lib/auth-utils';
  * StudentGymView: The primary neuro-trainer dashboard for students.
  * Handles data fetching for profile, mastery, and syllabus mapping.
  */
-export default async function StudentGymView() {
+export default async function StudentGymView({ levelOverride }) {
   // 1. Fetch real student data from your updated Prisma schema
   const studentId = await getCurrentStudentId() || "default-student"; // In production, this comes from your session
   
+  if (levelOverride) {
+    await prisma.studentProfile.update({
+      where: { id: studentId },
+      data: { primaryLevel: levelOverride }
+    });
+  }
+
   const profile = await prisma.studentProfile.findUnique({
     where: { id: studentId },
     include: { mastery: true }

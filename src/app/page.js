@@ -12,8 +12,8 @@ import ContactForm from '@/components/support/ContactForm';
 export default function PublicLandingPage() {
   const router = useRouter();
   
-  const [level, setLevel] = useState('Primary 1');
-  const [topic, setTopic] = useState('Whole Numbers - Numbers up to 100');
+  const [level, setLevel] = useState('Primary 2');
+  const [topic, setTopic] = useState('Data Representation and Interpretation - Picture Graphs with Scales');
   const [isGenerating, setIsGenerating] = useState(false);
   const [worksheet, setWorksheet] = useState(null);
   const [error, setError] = useState('');
@@ -65,6 +65,38 @@ export default function PublicLandingPage() {
     }
   };
 
+  const topicsByLevel = {
+    "Primary 1": [
+      { value: "Whole Numbers - Numbers up to 100", label: "Whole Numbers (up to 100)" },
+      { value: "Whole Numbers - Addition and Subtraction", label: "Addition & Subtraction" },
+      { value: "Whole Numbers - Multiplication and Division", label: "Multiplication & Division" },
+      { value: "Money - Money", label: "Money" },
+      { value: "Measurement - Length", label: "Length" },
+      { value: "Measurement - Time", label: "Time" },
+      { value: "Geometry - 2D Shapes", label: "2D Shapes" },
+      { value: "Data Representation and Interpretation - Picture Graphs", label: "Picture Graphs" }
+    ],
+    "Primary 2": [
+      { value: "Whole Numbers - Numbers up to 1000", label: "Whole Numbers (up to 1000)" },
+      { value: "Whole Numbers - Addition and Subtraction", label: "Addition & Subtraction" },
+      { value: "Whole Numbers - Multiplication and Division", label: "Multiplication & Division" },
+      { value: "Fractions - Fraction of a Whole", label: "Fractions (Whole)" },
+      { value: "Fractions - Addition and Subtraction", label: "Fractions (Addition/Subtraction)" },
+      { value: "Money - Money", label: "Money" },
+      { value: "Measurement - Length, Mass and Volume", label: "Length, Mass & Volume" },
+      { value: "Measurement - Time", label: "Time" },
+      { value: "Geometry - 2D Shapes", label: "2D Shapes" },
+      { value: "Geometry - 3D Shapes", label: "3D Shapes" },
+      { value: "Data Representation and Interpretation - Picture Graphs with Scales", label: "Picture Graphs with Scales" }
+    ]
+  };
+
+  const handleLevelChange = (e) => {
+    const newLevel = e.target.value;
+    setLevel(newLevel);
+    setTopic(topicsByLevel[newLevel][0].value);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
 
@@ -80,7 +112,7 @@ export default function PublicLandingPage() {
           Learning shouldn’t be a guessing game. Our adaptive platform acts as an intelligent coach—isolating specific learning bottlenecks, identifying exact cognitive "defect codes," and generating precise daily workouts to build the right neural pathways.
         </p>
         <p className="text-sm text-slate-500 mb-12 max-w-xl mx-auto print:hidden">
-          Experience the Universal Engine. Generate Singapore syllabus-aligned Primary 1 Math worksheets instantly, or unlock automated marking and granular performance tracking with the Annual Pass for S$29.90 (Try it free for 7 days!).
+          Experience the Universal Engine. Generate Singapore syllabus-aligned Math worksheets instantly, or unlock automated marking and granular performance tracking with the Annual Pass for S$29.90 (Try it free for 7 days!).
         </p>
 
         {/* Free Worksheet Generator Tool */}
@@ -94,10 +126,11 @@ export default function PublicLandingPage() {
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Select Level</label>
               <select 
                 value={level} 
-                onChange={(e) => setLevel(e.target.value)}
+                onChange={handleLevelChange}
                 className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-3 font-medium outline-none"
               >
                 <option value="Primary 1">Primary 1</option>
+                <option value="Primary 2">Primary 2</option>
               </select>
             </div>
             
@@ -108,12 +141,9 @@ export default function PublicLandingPage() {
                 onChange={(e) => setTopic(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-3 font-medium outline-none"
               >
-                <option value="Whole Numbers - Numbers up to 100">Whole Numbers (up to 100)</option>
-                <option value="Whole Numbers - Addition and Subtraction">Addition & Subtraction</option>
-                <option value="Whole Numbers - Multiplication and Division">Multiplication & Division</option>
-                <option value="Measurement - Length">Length</option>
-                <option value="Measurement - Time">Time</option>
-                <option value="Geometry - 2D Shapes">2D Shapes</option>
+                {topicsByLevel[level].map(t => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
               </select>
             </div>
 

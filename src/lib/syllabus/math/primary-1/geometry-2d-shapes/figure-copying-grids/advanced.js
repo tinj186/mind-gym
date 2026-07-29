@@ -118,7 +118,11 @@ export const advancedLogic = {
           },
           "inputRequirement": { "inputType": "MCQ_BUTTONS" }
         }`,
-        metadata: { difficulty: 'advanced', steps: 1, logic: "advanced_symmetric_copy", hideVisual: false }
+        metadata: { difficulty: 'advanced', steps: 1, logic: "advanced_symmetric_copy", hideVisual: false },
+        visualEngine: {
+          componentToRender: "GRID_DISPLAY",
+          componentData
+        }
       };
     },
 
@@ -214,56 +218,97 @@ export const advancedLogic = {
           },
           "inputRequirement": { "inputType": "MCQ_BUTTONS" }
         }`,
-        metadata: { difficulty: 'advanced', steps: 1, logic: "advanced_scaled_copy", hideVisual: false }
+        metadata: { difficulty: 'advanced', steps: 1, logic: "advanced_scaled_copy", hideVisual: false },
+        visualEngine: {
+          componentToRender: "GRID_DISPLAY",
+          componentData
+        }
       };
     },
 
     advanced_translation_copy: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
       const gridType = Math.random() > 0.5 ? "SQUARE" : "DOT";
       
-      const referenceTri = [
-        { start: [1, 1], end: [3, 1] },
-        { start: [3, 1], end: [3, 3] },
-        { start: [3, 3], end: [1, 1] }
+      const shapes = [
+        {
+          name: "triangle",
+          coords: [
+            { start: [2, 2], end: [4, 2] },
+            { start: [4, 2], end: [4, 4] },
+            { start: [4, 4], end: [2, 2] }
+          ]
+        },
+        {
+          name: "rectangle",
+          coords: [
+            { start: [2, 2], end: [4, 2] },
+            { start: [4, 2], end: [4, 3] },
+            { start: [4, 3], end: [2, 3] },
+            { start: [2, 3], end: [2, 2] }
+          ]
+        },
+        {
+          name: "square",
+          coords: [
+            { start: [2, 2], end: [4, 2] },
+            { start: [4, 2], end: [4, 4] },
+            { start: [4, 4], end: [2, 4] },
+            { start: [2, 4], end: [2, 2] }
+          ]
+        },
+        {
+          name: "arrow shape",
+          coords: [
+            { start: [2, 3], end: [3, 2] },
+            { start: [3, 2], end: [4, 3] },
+            { start: [4, 3], end: [3, 4] },
+            { start: [3, 4], end: [2, 3] }
+          ]
+        }
       ];
+      const chosenShape = shapes[Math.floor(Math.random() * shapes.length)];
+      const referenceTri = chosenShape.coords;
 
-      const dxCorrect = Math.floor(Math.random() * 3) + 2; 
-      const dyCorrect = Math.floor(Math.random() * 3) + 2; 
+      // Safe slots to place the 4 options so they never overlap with the Target or each other
+      const safeSlots = [
+        { x: 2, y: 7 }, { x: 2, y: 12 },
+        { x: 7, y: 2 }, { x: 7, y: 7 }, { x: 7, y: 12 },
+        { x: 12, y: 2 }, { x: 12, y: 7 }, { x: 12, y: 12 }
+      ].sort(() => Math.random() - 0.5);
 
-      const transCorrect = [ { dx: dxCorrect, dy: dyCorrect } ]; 
-      const transD1 = [ { dx: dyCorrect, dy: dxCorrect } ]; 
-      const transD2 = [ { dx: dxCorrect, dy: 0 } ]; 
-      const transD3 = [ { dx: dxCorrect + 1, dy: dyCorrect } ]; 
+      const chosenSlots = safeSlots.slice(0, 4);
 
-      const origins = [ [1, 5], [7, 5], [1, 10], [7, 10] ];
       const labels = ['A', 'B', 'C', 'D'].sort(() => Math.random() - 0.5);
       const correctIndex = Math.floor(Math.random() * 4);
       const correctLabel = labels[correctIndex];
+      const correctSlot = chosenSlots[correctIndex];
+
+      const dxCorrect = correctSlot.x - 2;
+      const dyCorrect = correctSlot.y - 2;
 
       let workspaceLines = [];
       let referenceLines = referenceTri.map(l => ({ start: [l.start[0], l.start[1]], end: [l.end[0], l.end[1]], color: "blue" }));
-      referenceLines.push({ start: [2, 0.5], end: [2, 0.5], label: "Target", color: "transparent" });
-
-      const distractors = [transD1, transD2, transD3];
-      let distIdx = 0;
+      referenceLines.push({ start: [3, 1.5], end: [3, 1.5], label: "Target", color: "transparent" });
 
       for (let i = 0; i < 4; i++) {
-        const trans = (i === correctIndex) ? transCorrect[0] : distractors[distIdx++][0];
-        const [ox, oy] = origins[i];
+        const slot = chosenSlots[i];
         const labelText = "Option " + labels[i];
         
-        workspaceLines.push({ start: [ox + trans.dx + 1, oy + trans.dy - 0.5], end: [ox + trans.dx + 1, oy + trans.dy - 0.5], label: labelText, color: "transparent" });
+        workspaceLines.push({ start: [slot.x + 1, slot.y - 0.5], end: [slot.x + 1, slot.y - 0.5], label: labelText, color: "transparent" });
 
         referenceTri.forEach(l => {
-          workspaceLines.push({ start: [l.start[0] - 1 + ox + trans.dx, l.start[1] - 1 + oy + trans.dy], end: [l.end[0] - 1 + ox + trans.dx, l.end[1] - 1 + oy + trans.dy] });
+          workspaceLines.push({ 
+            start: [l.start[0] - 2 + slot.x, l.start[1] - 2 + slot.y], 
+            end: [l.end[0] - 2 + slot.x, l.end[1] - 2 + slot.y] 
+          });
         });
       }
 
-      const componentData = { gridType, gridSize: { cols: 15, rows: 17 }, referenceLines, workspaceLines };
+      const componentData = { gridType, gridSize: { cols: 17, rows: 17 }, referenceLines, workspaceLines };
       const options = ["Option A", "Option B", "Option C", "Option D"];
       const finalAnswerStr = `Option ${correctLabel}`;
 
-      const questionTextTemplate = getQText(`Look at the blue Target triangle. Which of the labelled shapes shows the Target moved exactly ${dxCorrect} squares to the RIGHT and ${dyCorrect} squares DOWN?`, `Find the translated shape.`);
+      const questionTextTemplate = getQText(`Look at the blue Target ${chosenShape.name}. Which of the labelled shapes shows the Target moved exactly ${dxCorrect} squares to the RIGHT and ${dyCorrect} squares DOWN?`, `Find the translated shape.`);
       const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student featuring a person named \${getRandomNames(1)}.`;
 
       return {
@@ -278,9 +323,9 @@ export const advancedLogic = {
             "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
             "options": ${JSON.stringify(options)},
             "defectMap": null,
-            "hint": "Pick the top-left point of the Target. Count ${dxCorrect} squares right and ${dyCorrect} squares down.",
+            "hint": "Pick a corner of the Target (like the top-left corner). Count ${dxCorrect} squares right and ${dyCorrect} squares down.",
             "finalAnswer": "${finalAnswerStr}",
-            "solutionSteps": "${finalAnswerStr} has been moved exactly ${dxCorrect} squares right and ${dyCorrect} squares down."
+            "solutionSteps": "${finalAnswerStr} has been moved exactly ${dxCorrect} squares right and ${dyCorrect} squares down from the Target."
           },
           "visualEngine": {
             "componentToRender": "GRID_DISPLAY",
@@ -288,7 +333,11 @@ export const advancedLogic = {
           },
           "inputRequirement": { "inputType": "MCQ_BUTTONS" }
         }`,
-        metadata: { difficulty: 'advanced', steps: 1, logic: "advanced_translation_copy", hideVisual: false }
+        metadata: { difficulty: 'advanced', steps: 1, logic: "advanced_translation_copy", hideVisual: false },
+        visualEngine: {
+          componentToRender: "GRID_DISPLAY",
+          componentData
+        }
       };
     },
 
@@ -373,7 +422,11 @@ export const advancedLogic = {
           },
           "inputRequirement": { "inputType": "MCQ_BUTTONS" }
         }`,
-        metadata: { difficulty: 'advanced', steps: 1, logic: "advanced_pattern_extension", hideVisual: false }
+        metadata: { difficulty: 'advanced', steps: 1, logic: "advanced_pattern_extension", hideVisual: false },
+        visualEngine: {
+          componentToRender: "GRID_DISPLAY",
+          componentData
+        }
       };
     },
 
@@ -491,7 +544,11 @@ export const advancedLogic = {
           },
           "inputRequirement": { "inputType": "MCQ_BUTTONS" }
         }`,
-        metadata: { difficulty: 'advanced', steps: 1, logic: "advanced_rotated_copy_mcq", hideVisual: false }
+        metadata: { difficulty: 'advanced', steps: 1, logic: "advanced_rotated_copy_mcq", hideVisual: false },
+        visualEngine: {
+          componentToRender: "GRID_DISPLAY",
+          componentData
+        }
       };
     }
   },

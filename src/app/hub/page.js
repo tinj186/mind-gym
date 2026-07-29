@@ -90,13 +90,14 @@ export default async function OverallView({ searchParams }) {
 
     const subjects = [
       {
-        id: 'math-p1',
-        name: 'Primary 1 Math',
+        id: 'math',
+        name: 'Math Gym',
         icon: '📐',
         status: 'Available Now',
         progress: progressScore,
         lastSession: lastSessionText,
         isActive: true,
+        href: '/math',
       }
     ];
 

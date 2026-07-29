@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { updateStudentDivision } from '@/app/actions/studentActions';
 
 export default function DivisionModal({ studentId, isOpen, onClose }) {
   const divisions = ['Primary 1', 'Primary 2', 'Primary 3', 'Primary 4', 'Primary 5', 'Primary 6'];
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   if (!isOpen) return null;
 
@@ -14,6 +16,7 @@ export default function DivisionModal({ studentId, isOpen, onClose }) {
     try {
       await updateStudentDivision(studentId, level);
       onClose();
+      router.refresh();
     } catch (error) {
       console.error("Failed to save division", error);
     } finally {
@@ -25,14 +28,19 @@ export default function DivisionModal({ studentId, isOpen, onClose }) {
     <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex items-center justify-center p-4">
       <div className="bg-white rounded-[3rem] p-12 max-w-4xl w-full shadow-2xl text-center space-y-12 border-4 border-slate-100">
         <div className="space-y-4">
-          <span className="text-[12px] font-black text-blue-500 uppercase tracking-[0.3em] block">Training Initialization</span>
+          <button 
+            onClick={() => router.push('/math/mental-calculation')}
+            className="text-[12px] font-black text-blue-500 uppercase tracking-[0.3em] block mx-auto hover:text-amber-400 hover:drop-shadow-[0_0_12px_rgba(251,191,36,1)] transition-all cursor-pointer"
+          >
+            Training Initialization
+          </button>
           <h2 className="text-5xl font-black text-slate-900">Select Your Division</h2>
           <p className="text-slate-400 font-bold max-w-md mx-auto">Your personal trainer curates daily workouts based on your school level logic.</p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
           {divisions.map((level) => {
-            const isAvailable = level === 'Primary 1';
+            const isAvailable = level === 'Primary 1' || level === 'Primary 2';
             return (
               <button
                 key={level}

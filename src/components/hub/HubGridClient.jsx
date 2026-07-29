@@ -74,7 +74,7 @@ export default function HubGridClient({ subjects, themePrimaryBg, themePrimaryCo
                   style={{ width: `${subj.progress}%` }}
                 />
               </div>
-              <Link href="/math">
+              <Link href={subj.href || "/math"}>
                 <button 
                   onClick={() => playClickSound()}
                   className={`w-full mt-6 py-4 rounded-2xl font-bold transition-all cursor-pointer ${isP6 ? 'bg-amber-500 text-slate-900 hover:bg-amber-400' : 'bg-slate-900 text-white hover:bg-sky-600'}`}

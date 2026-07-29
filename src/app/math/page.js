@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic';
 export default async function GymPage({ searchParams }) {
   const params = await searchParams;
   const previewId = params.previewId;
+  const levelOverride = params.level;
 
   // 👑 ARCHITECTURAL FORK: If an admin requested a specific question preview
   if (previewId) {
@@ -21,5 +22,5 @@ export default async function GymPage({ searchParams }) {
   }
 
   // 🏋️ STUDENT MODE: Default view when a child is practicing normal syllabus objectives
-  return <StudentGymView />;
+  return <StudentGymView levelOverride={levelOverride} />;
 }

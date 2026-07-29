@@ -61,7 +61,11 @@ const foundationVariants = {
         },
         "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
       }`,
-      metadata: { difficulty: 'foundation', steps: 1, logic: "count_grid_units", hideVisual: false }
+      metadata: { difficulty: 'foundation', steps: 1, logic: "count_grid_units", hideVisual: false },
+      visualEngine: {
+        componentToRender: "GRID_DISPLAY",
+        componentData
+      }
     };
   },
 
@@ -129,7 +133,11 @@ const foundationVariants = {
         },
         "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
       }`,
-      metadata: { difficulty: 'foundation', steps: 2, logic: "identify_correct_copy", hideVisual: false }
+      metadata: { difficulty: 'foundation', steps: 2, logic: "identify_correct_copy", hideVisual: false },
+      visualEngine: {
+        componentToRender: "GRID_DISPLAY",
+        componentData
+      }
     };
   },
 
@@ -178,7 +186,11 @@ const foundationVariants = {
         },
         "inputRequirement": { "inputType": "INTERACTIVE_GRID" }
       }`,
-      metadata: { difficulty: 'foundation', steps: 1, logic: "copy_simple_line", hideVisual: false }
+      metadata: { difficulty: 'foundation', steps: 1, logic: "copy_simple_line", hideVisual: false },
+      visualEngine: {
+        componentToRender: "GRID_DRAWING_CANVAS",
+        componentData
+      }
     };
   },
 
@@ -272,7 +284,11 @@ const foundationVariants = {
         },
         "inputRequirement": { "inputType": "INTERACTIVE_GRID" }
       }`,
-      metadata: { difficulty: 'foundation', steps: 2, logic: "copy_basic_shape", hideVisual: false }
+      metadata: { difficulty: 'foundation', steps: 2, logic: "copy_basic_shape", hideVisual: false },
+      visualEngine: {
+        componentToRender: "GRID_DRAWING_CANVAS",
+        componentData
+      }
     };
   },
 
@@ -333,7 +349,11 @@ const foundationVariants = {
         },
         "inputRequirement": { "inputType": "INTERACTIVE_GRID" }
       }`,
-      metadata: { difficulty: 'foundation', steps: 1, logic: "complete_the_shape", hideVisual: false }
+      metadata: { difficulty: 'foundation', steps: 1, logic: "complete_the_shape", hideVisual: false },
+      visualEngine: {
+        componentToRender: "GRID_DRAWING_CANVAS",
+        componentData
+      }
     };
   }
 };

@@ -181,7 +181,8 @@ export function processAiQuestion(q, context) {
   try {
     // Try strict Zod validation first
     const validatedData = UniversalQuestionSchema.parse(q);
-    const safeData = sanitizeComponentData(validatedData.visualEngine.componentData);
+    const resolvedVisualEngine = stepResult?.visualEngine || validatedData.visualEngine;
+    const safeData = sanitizeComponentData(resolvedVisualEngine.componentData);
     
     return {
       level, topic, subtopic: subtopic || "", heuristic: heuristic || null,
@@ -200,10 +201,10 @@ export function processAiQuestion(q, context) {
       hint: validatedData.content.hint || null,
       modelData: {
         ...safeData,
-        type: validatedData.visualEngine.componentToRender,
+        type: resolvedVisualEngine.componentToRender,
         hideVisual: stepResult?.metadata?.hideVisual ? true : (safeData?.hideVisual !== undefined 
           ? safeData.hideVisual 
-          : validatedData.visualEngine.componentToRender === 'NONE'),
+          : resolvedVisualEngine.componentToRender === 'NONE'),
         inputRequirement: validatedData.inputRequirement,
         finalAnswer: validatedData.content.finalAnswer,
         acceptedAnswers: validatedData.content.acceptedAnswers || [],
@@ -217,7 +218,7 @@ export function processAiQuestion(q, context) {
     
     // Safely extract from nested schema if present
     const qContent = content || {};
-    const qVisual = visualEngine || {};
+    const qVisual = stepResult?.visualEngine || visualEngine || {};
     const safeModelData = modelData || qVisual.componentData || {};
 
     const hideVisualVal = stepResult?.metadata?.hideVisual ? true : !!safeModelData?.hideVisual;

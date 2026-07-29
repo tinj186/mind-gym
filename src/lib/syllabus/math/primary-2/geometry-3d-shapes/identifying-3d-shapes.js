@@ -17,7 +17,13 @@ export const identifying3DShapesBlueprint = {
     'standard_extend_multiple_elements': 'Extend the pattern by selecting the next TWO or THREE consecutive shapes in the sequence instead of just one.',
     'standard_composite_shape_counting': 'Analyze a composite 3D figure (e.g., a robot made of 3D shapes) and count the exact number of a specific shape or surface type used.',
     'standard_fractional_shape_composition': 'Calculate how many smaller 3D blocks (e.g., unit cubes) are needed to completely build a provided larger 3D structure.',
-    'standard_identify_net_to_shape': 'Identify the 2D shape of the shadow cast when a flashlight shines from the TOP or SIDE of a given 3D shape.'
+    'standard_identify_net_to_shape': 'Identify the 2D shape of the shadow cast when a flashlight shines from the TOP or SIDE of a given 3D shape.',
+
+    // Advanced
+    'advanced_2d_stacking_extrusion': 'Randomized questions about stacking 2D shapes to make 3D shapes (or vice versa), masked with everyday objects.',
+    'advanced_elimination_riddle': 'Identify a 3D shape based on 2-3 randomized clues about its properties (movement, faces, tracing).',
+    'advanced_hidden_block_difference': 'Compare two 3D coordinate grids of blocks (one with hidden blocks) and calculate how many to add or remove.',
+    'advanced_trace_and_manipulate': 'Mentally trace the flat faces of 2-3 randomized everyday 3D objects and evaluate a randomized geometric rule based on those traces.'
   },
   generate: function (difficulty, activeVariant, type) {
     const level = 'Primary 2';

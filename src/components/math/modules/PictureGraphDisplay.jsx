@@ -33,11 +33,22 @@ export default function PictureGraphDisplay({ data, hideCardStyles = false }) {
               </span>
               
               <div className="flex flex-wrap gap-2 justify-start items-center flex-1 min-h-[32px]">
-                {Array.from({ length: cat.count || 0 }).map((_, sIdx) => (
-                  <span key={sIdx} className="text-2xl select-none drop-shadow-[1px_1px_0px_rgba(0,0,0,1)] transform hover:scale-110 transition-transform">
-                    {cat.emoji || defaultEmoji}
-                  </span>
-                ))}
+                {cat.count === '?' ? (
+                  <span className="text-2xl font-black text-slate-400">?</span>
+                ) : (
+                  <>
+                    {Array.from({ length: Math.floor(cat.count || 0) }).map((_, sIdx) => (
+                      <span key={sIdx} className="text-2xl select-none drop-shadow-[1px_1px_0px_rgba(0,0,0,1)] transform hover:scale-110 transition-transform">
+                        {cat.emoji || defaultEmoji}
+                      </span>
+                    ))}
+                    {(cat.count % 1 !== 0) && (
+                      <span className="text-2xl select-none drop-shadow-[1px_1px_0px_rgba(0,0,0,1)] transform hover:scale-110 transition-transform" style={{ clipPath: 'inset(0 50% 0 0)' }}>
+                        {cat.emoji || defaultEmoji}
+                      </span>
+                    )}
+                  </>
+                )}
               </div>
             </div>
           ))}
@@ -48,12 +59,23 @@ export default function PictureGraphDisplay({ data, hideCardStyles = false }) {
         <div className="w-full flex items-end justify-center gap-4 pt-8 border-b-4 border-slate-900 min-h-[250px] relative">
           {categories.map((category, idx) => (
             <div key={idx} className="flex flex-col items-center justify-end h-full relative">
-              <div className="flex flex-col-reverse items-center gap-1">
-                {Array.from({ length: category.count }).map((_, i) => (
-                  <span key={i} className="text-3xl select-none drop-shadow-[1px_1px_0px_rgba(0,0,0,1)]">
-                    {category.emoji}
-                  </span>
-                ))}
+              <div className="flex flex-col-reverse items-center gap-1 min-h-[40px]">
+                {category.count === '?' ? (
+                  <span className="text-3xl font-black text-slate-400">?</span>
+                ) : (
+                  <>
+                    {Array.from({ length: Math.floor(category.count || 0) }).map((_, i) => (
+                      <span key={i} className="text-3xl select-none drop-shadow-[1px_1px_0px_rgba(0,0,0,1)]">
+                        {category.emoji || defaultEmoji}
+                      </span>
+                    ))}
+                    {(category.count % 1 !== 0) && (
+                      <span className="text-3xl select-none drop-shadow-[1px_1px_0px_rgba(0,0,0,1)]" style={{ clipPath: 'inset(0 50% 0 0)' }}>
+                        {category.emoji || defaultEmoji}
+                      </span>
+                    )}
+                  </>
+                )}
               </div>
               <span className="mt-2 text-sm font-bold text-slate-800 text-center whitespace-nowrap">
                 {category.label}
