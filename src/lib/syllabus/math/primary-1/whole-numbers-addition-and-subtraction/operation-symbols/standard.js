@@ -256,8 +256,8 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       correctOpStr = `Subtract ${diff}`;
     }
 
-    const questionTextRaw = `You have ${start}. You want to have exactly ${target}. What must you do?`;
-    const questionTextShort = `Start: ${start}, Target: ${target} -> Action:`;
+    const questionTextRaw = `You have ${start}. You want to have exactly ${target}. Must you Add or Subtract, and by how much?`;
+    const questionTextShort = `To get from ${start} to ${target}, must you Add or Subtract, and by how much?`;
     const questionText = getQText(questionTextRaw, questionTextShort);
 
     let options = null;

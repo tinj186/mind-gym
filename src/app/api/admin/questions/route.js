@@ -8,6 +8,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');
+  const heuristic = searchParams.get('heuristic');
   const level = searchParams.get('level');
   const topic = searchParams.get('topic');
   const subtopic = searchParams.get('subtopic');
@@ -16,8 +17,12 @@ export async function GET(req) {
   const approved = searchParams.get('approved') === 'true';
 
   let where = {};
+  let takeAmount = undefined;
   if (id) {
-    where = { id: id.toLowerCase() };
+    where = { id: { equals: id, mode: 'insensitive' } };
+  } else if (heuristic) {
+    where = { heuristic: heuristic };
+    takeAmount = 50; // Match the limit from the Server Component to prevent DB overload
   } else {
     where = { isApproved: approved };
     if (level) where.level = level;
@@ -30,6 +35,7 @@ export async function GET(req) {
   try {
     const questions = await prisma.questionBank.findMany({ 
       where,
+      take: takeAmount, // Limit results if searching by heuristic
       orderBy: { createdAt: 'desc' }, // Ensure newest generations appear at the top
       include: {
         attempts: {

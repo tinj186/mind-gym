@@ -3,6 +3,7 @@ import React from 'react';
 export default function BaseTenBlocks({ data }) {
   if (!data) return null;
   const modelData = typeof data === 'string' ? JSON.parse(data) : data;
+  const thousands = parseInt(modelData.thousands) || 0;
   const hundreds = parseInt(modelData.hundreds) || 0;
   const tens = parseInt(modelData.tens) || 0;
   const ones = parseInt(modelData.ones) || 0;
@@ -10,6 +11,24 @@ export default function BaseTenBlocks({ data }) {
   return (
     <div className="my-8 w-full p-4 md:p-8 bg-white rounded-[2rem] border-2 border-slate-100 flex flex-col items-center justify-center select-none min-h-[160px]">
       <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12 w-full">
+      
+      {/* THOUSANDS (Cubes) */}
+      {thousands > 0 && (
+        <div className="flex flex-col items-center gap-2">
+          <span className="text-[10px] font-black uppercase tracking-widest text-purple-600">Thousands</span>
+          <div className="flex gap-4 flex-wrap max-w-[350px]">
+            {Array.from({ length: thousands }).map((_, i) => (
+              <div key={i} className="w-24 h-24 bg-purple-500 border-2 border-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] flex items-center justify-center relative overflow-hidden">
+                <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000), linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000)', backgroundSize: '10px 10px', backgroundPosition: '0 0, 5px 5px' }}></div>
+                <span className="relative font-black text-white text-xl z-10 drop-shadow-md">1000</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {thousands > 0 && (hundreds > 0 || tens > 0 || ones > 0) && <div className="hidden md:block h-24 w-px bg-slate-100 mx-2" />}
+
       {/* HUNDREDS (Flats) */}
       {hundreds > 0 && (
         <div className="flex flex-col items-center gap-2">

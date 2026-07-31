@@ -50,6 +50,42 @@ import { p2MeasurementAbbreviationsBlueprint } from "./math/primary-2/measuremen
 import { p2MeasurementComparisonBlueprint } from "./math/primary-2/measurement-length-mass-and-volume/measurement-comparison";
 import { multiplyingDividingWithinTablesBlueprint as p2MultDivWithinTablesBlueprint } from './math/primary-2/whole-numbers-multiplication-and-division/multiplying-dividing-within-tables';
 
+// Primary 3 Imports
+import { p3CountingByHundredsThousandsBlueprint } from './math/primary-3/whole-numbers-numbers-up-to-10000/counting-by-hundreds-thousands';
+import { p3PlaceValuesThousandsBlueprint } from './math/primary-3/whole-numbers-numbers-up-to-10000/place-values-thousands';
+import { p3NumberNotationBlueprint } from './math/primary-3/whole-numbers-numbers-up-to-10000/number-notation';
+import { p3NumberComparisonAndOrderingBlueprint } from './math/primary-3/whole-numbers-numbers-up-to-10000/number-comparison-and-ordering';
+import { p3NumberPatternsBlueprint } from './math/primary-3/whole-numbers-numbers-up-to-10000/number-patterns';
+import { p3AdditionSubtractionAlgorithms4DigitBlueprint } from './math/primary-3/whole-numbers-addition-and-subtraction/addition-subtraction-algorithms-4-digit';
+import { p3MentalCalculation2DigitAddSubBlueprint } from './math/primary-3/whole-numbers-addition-and-subtraction/mental-calculation-2-digit-add-sub';
+import { p3MultiplicationTables69Blueprint } from './math/primary-3/whole-numbers-multiplication-and-division/multiplication-tables-6-9';
+import { p3MultiplicationDivisionTablesBlueprint } from './math/primary-3/whole-numbers-multiplication-and-division/multiplication-division-tables';
+import { p3DivisionWithRemainderBlueprint } from './math/primary-3/whole-numbers-multiplication-and-division/division-with-remainder';
+import { p3MultiplicationDivisionAlgorithmsBlueprint } from './math/primary-3/whole-numbers-multiplication-and-division/multiplication-division-algorithms';
+import { p3MentalCalculationMultiplicationTablesBlueprint } from './math/primary-3/whole-numbers-multiplication-and-division/mental-calculation-multiplication-tables';
+import { p3EquivalentFractionsBlueprint } from './math/primary-3/fractions-equivalent-fractions/equivalent-fractions';
+import { p3FractionsInSimplestFormBlueprint } from './math/primary-3/fractions-equivalent-fractions/fractions-in-simplest-form';
+import { p3UnlikeFractionComparisonBlueprint } from './math/primary-3/fractions-equivalent-fractions/unlike-fraction-comparison';
+import { p3EquivalentFractionWritingBlueprint } from './math/primary-3/fractions-equivalent-fractions/equivalent-fraction-writing';
+import { p3RelatedFractionAdditionSubtractionBlueprint } from './math/primary-3/fractions-addition-and-subtraction/related-fraction-addition-subtraction';
+import { p3MoneyAdditionSubtractionDecimalsBlueprint } from './math/primary-3/money-money/money-addition-subtraction-decimals';
+import { p3MeasurementKmMlBlueprint } from './math/primary-3/measurement-length-mass-and-volume/measurement-km-ml';
+import { p3CompoundUnitMeasurementBlueprint } from './math/primary-3/measurement-length-mass-and-volume/compound-unit-measurement';
+import { p3CompoundUnitConversionBlueprint } from './math/primary-3/measurement-length-mass-and-volume/compound-unit-conversion';
+import { p3TimeMeasurementSecondsBlueprint } from './math/primary-3/measurement-time/time-measurement-seconds';
+import { p3TimeDurationCalculationBlueprint } from './math/primary-3/measurement-time/time-duration-calculation';
+import { p324HourClockBlueprint } from './math/primary-3/measurement-time/24-hour-clock';
+import { p3AreaPerimeterConceptsBlueprint } from './math/primary-3/area-and-perimeter-area-and-perimeter/area-perimeter-concepts';
+import { p3AreaMeasurementCm2M2Blueprint } from './math/primary-3/area-and-perimeter-area-and-perimeter/area-measurement-cm2-m2';
+import { p3PerimeterCalculationBlueprint } from './math/primary-3/area-and-perimeter-area-and-perimeter/perimeter-calculation';
+import { p3AreaCalculationRectangleSquareBlueprint } from './math/primary-3/area-and-perimeter-area-and-perimeter/area-calculation-rectangle-square';
+import { p3AngleConceptsBlueprint } from './math/primary-3/geometry-angles/angle-concepts';
+import { p3AngleComparisonBlueprint } from './math/primary-3/geometry-angles/angle-comparison';
+import { p3PerpendicularParallelLinesBlueprint } from './math/primary-3/geometry-perpendicular-and-parallel-lines/perpendicular-parallel-lines';
+import { p3LineDrawingPerpendicularParallelBlueprint } from './math/primary-3/geometry-perpendicular-and-parallel-lines/line-drawing-perpendicular-parallel';
+import { p3BarGraphInterpretationBlueprint } from './math/primary-3/data-representation-and-interpretation-bar-graphs/bar-graph-interpretation';
+import { p3GraphAxisScalesBlueprint } from './math/primary-3/data-representation-and-interpretation-bar-graphs/graph-axis-scales';
+
 import { timeBlueprint as p2TimeBlueprint } from './math/primary-2/measurement-time/time';
 import { measuringTimeBlueprint } from './math/primary-2/measurement-time/measuring-time';
 import { timeConversionBlueprint } from './math/primary-2/measurement-time/time-conversion';
@@ -144,6 +180,53 @@ export const blueprintRegistry = {
   'Primary 2-Geometry - 3D Shapes-Identifying 3D Shapes': identifying3DShapesBlueprint,
   
   'Primary 2-Data Representation and Interpretation - Picture Graphs with Scales-Picture Graph Interpretation (With Scales)': p2PictureGraphsBlueprint,
+
+  // Primary 3
+  'Primary 3-Whole Numbers - Numbers up to 10 000-Counting by Hundreds/Thousands': p3CountingByHundredsThousandsBlueprint,
+  'Primary 3-Whole Numbers - Numbers up to 10 000-Place Values (Thousands)': p3PlaceValuesThousandsBlueprint,
+  'Primary 3-Whole Numbers - Numbers up to 10 000-Number Notation': p3NumberNotationBlueprint,
+  'Primary 3-Whole Numbers - Numbers up to 10 000-Number Comparison and Ordering': p3NumberComparisonAndOrderingBlueprint,
+  'Primary 3-Whole Numbers - Numbers up to 10 000-Number Patterns': p3NumberPatternsBlueprint,
+  
+  'Primary 3-Whole Numbers - Addition and Subtraction-Addition/Subtraction Algorithms (4-Digit)': p3AdditionSubtractionAlgorithms4DigitBlueprint,
+  'Primary 3-Whole Numbers - Addition and Subtraction-Mental Calculation (2-Digit Add/Sub)': p3MentalCalculation2DigitAddSubBlueprint,
+  
+  'Primary 3-Whole Numbers - Multiplication and Division-Multiplication Tables (6-9)': p3MultiplicationTables69Blueprint,
+  'Primary 3-Whole Numbers - Multiplication and Division-Multiplication/Division (Tables)': p3MultiplicationDivisionTablesBlueprint,
+  'Primary 3-Whole Numbers - Multiplication and Division-Division with Remainder': p3DivisionWithRemainderBlueprint,
+  'Primary 3-Whole Numbers - Multiplication and Division-Multiplication/Division Algorithms': p3MultiplicationDivisionAlgorithmsBlueprint,
+  'Primary 3-Whole Numbers - Multiplication and Division-Mental Calculation (Multiplication Tables)': p3MentalCalculationMultiplicationTablesBlueprint,
+
+  'Primary 3-Fractions - Equivalent fractions-Equivalent Fractions': p3EquivalentFractionsBlueprint,
+  'Primary 3-Fractions - Equivalent fractions-Fractions in Simplest Form': p3FractionsInSimplestFormBlueprint,
+  'Primary 3-Fractions - Equivalent fractions-Unlike Fraction Comparison': p3UnlikeFractionComparisonBlueprint,
+  'Primary 3-Fractions - Equivalent fractions-Equivalent Fraction Writing': p3EquivalentFractionWritingBlueprint,
+
+  'Primary 3-Fractions - Addition and Subtraction-Related Fraction Addition/Subtraction': p3RelatedFractionAdditionSubtractionBlueprint,
+
+  'Primary 3-Money - Money-Money Addition/Subtraction (Decimals)': p3MoneyAdditionSubtractionDecimalsBlueprint,
+
+  'Primary 3-Measurement - Length, Mass and Volume-Measurement (km, ml)': p3MeasurementKmMlBlueprint,
+  'Primary 3-Measurement - Length, Mass and Volume-Compound Unit Measurement': p3CompoundUnitMeasurementBlueprint,
+  'Primary 3-Measurement - Length, Mass and Volume-Compound Unit Conversion': p3CompoundUnitConversionBlueprint,
+
+  'Primary 3-Measurement - Time-Time Measurement (Seconds)': p3TimeMeasurementSecondsBlueprint,
+  'Primary 3-Measurement - Time-Time Duration Calculation': p3TimeDurationCalculationBlueprint,
+  'Primary 3-Measurement - Time-24-Hour Clock': p324HourClockBlueprint,
+
+  'Primary 3-Area and Perimeter - Area and Perimeter-Area/Perimeter Concepts': p3AreaPerimeterConceptsBlueprint,
+  'Primary 3-Area and Perimeter - Area and Perimeter-Area Measurement (cm², m²)': p3AreaMeasurementCm2M2Blueprint,
+  'Primary 3-Area and Perimeter - Area and Perimeter-Perimeter Calculation': p3PerimeterCalculationBlueprint,
+  'Primary 3-Area and Perimeter - Area and Perimeter-Area Calculation (Rectangle/Square)': p3AreaCalculationRectangleSquareBlueprint,
+
+  'Primary 3-Geometry - Angles-Angle Concepts': p3AngleConceptsBlueprint,
+  'Primary 3-Geometry - Angles-Angle Comparison': p3AngleComparisonBlueprint,
+
+  'Primary 3-Geometry - Perpendicular and Parallel Lines-Perpendicular/Parallel Lines': p3PerpendicularParallelLinesBlueprint,
+  'Primary 3-Geometry - Perpendicular and Parallel Lines-Line Drawing (Perpendicular/Parallel)': p3LineDrawingPerpendicularParallelBlueprint,
+
+  'Primary 3-Statistics - Data Representation and Interpretation - Bar Graphs-Bar Graph Interpretation': p3BarGraphInterpretationBlueprint,
+  'Primary 3-Statistics - Data Representation and Interpretation - Bar Graphs-Graph Axis Scales': p3GraphAxisScalesBlueprint
 };
 
 /**

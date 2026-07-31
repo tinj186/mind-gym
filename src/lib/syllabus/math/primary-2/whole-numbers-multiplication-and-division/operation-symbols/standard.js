@@ -97,7 +97,7 @@ export const standardLogic = function (
         r2 = [2, 3, 4, 5, 10][Math.floor(Math.random() * 5)];
         r1 = target * r2;
       }
-      return { r1, r2, ans: useMultiply ? 'x' : '÷' };
+      return { r1, r2, ans: useMultiply ? '\\times' : '\\div', displayAns: useMultiply ? 'x' : '÷' };
     };
 
     let rightSide = generateRightSide(isMultiply);
@@ -115,18 +115,25 @@ export const standardLogic = function (
     const rightPart1 = rightSide.r1;
     const rightPart2 = rightSide.r2;
     answer = rightSide.ans;
+    const displayAnswer = rightSide.displayAns;
 
     askText = `Find the missing symbol to make the equation true: ${leftPart1} ${leftOp} ${leftPart2} = ${rightPart1} [?] ${rightPart2}`;
 
     if (isStructure) {
-      inputRequirementStr = `{\n    "inputType": "MULTI_STEP_INPUT",\n    "steps": [\n      { "label": "What is the value of ${leftPart1} ${leftOp} ${leftPart2}?", "expectedAnswer": "${target}" },\n      { "label": "What symbol makes ${rightPart1} and ${rightPart2} equal ${target}?", "expectedAnswer": "${answer}" }\n    ]\n  }`;
+      inputRequirementStr = JSON.stringify({
+        inputType: "MULTI_STEP_INPUT",
+        steps: [
+          { label: `What is the value of ${leftPart1} ${leftOp} ${leftPart2}?`, expectedAnswer: `${target}` },
+          { label: `What symbol makes ${rightPart1} and ${rightPart2} equal ${target}?`, expectedAnswer: answer }
+        ]
+      }, null, 2);
     }
 
-    customConstraints = `
-      1. Provide exactly these 4 options in MCQ: "x", "÷", "+", "-"
-      2. Set defectMap for the incorrect symbols to "CONFUSED_OPERATION".
-      3. Solution should evaluate the left side first, then test symbols on the right side to balance it.
-    `;
+    customConstraints = 
+      '1. Provide exactly these 4 options in MCQ: "\\times", "\\div", "+", "-"\n' +
+      '2. Set defectMap for the incorrect symbols to "CONFUSED_OPERATION".\n' +
+      '3. Solution should evaluate the left side first, then test symbols on the right side to balance it.\n' +
+      '4. CRITICAL: For finalAnswer and any steps, you MUST use the exact string "' + answer + '" for the correct symbol, NOT \'' + displayAnswer + '\'.';
   }
   else if (activeVariant === 'standard_equals_meaning') {
     const isTrue = Math.random() > 0.5;

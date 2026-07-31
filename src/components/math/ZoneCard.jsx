@@ -1,7 +1,7 @@
 "use client";
 import Link from 'next/link';
 
-export default function ZoneCard({ title, description, href, icon, variant, onClick, isActive, isPrimary, themeVariants, resumeProgress, isLocked }) {
+export default function ZoneCard({ title, description, href, icon, variant = 'blue', onClick, isActive, isPrimary, themeVariants, resumeProgress, isLocked }) {
   const defaultVariants = {
     blue: "bg-sky-50 border-sky-100 text-sky-900 hover:border-sky-400 hover:bg-sky-100",
     amber: "bg-yellow-50 border-yellow-200 text-yellow-900 hover:border-yellow-400 hover:bg-yellow-100",
@@ -28,14 +28,16 @@ export default function ZoneCard({ title, description, href, icon, variant, onCl
         {description && <p className={`text-xl font-bold opacity-80 leading-relaxed max-w-[240px]`}>{description}</p>}
       </div>
 
-      <div className={`mt-auto pt-8 flex items-center gap-4 px-6 py-3 rounded-xl transition-all font-bold ${
-        isLocked ? 'bg-slate-100 text-slate-400' : 
-        resumeProgress ? 'bg-amber-50 text-amber-600 border border-amber-200 animate-pulse' : 'bg-slate-900 text-white hover:bg-slate-800'
-      }`}>
-        <span className="text-sm font-black uppercase tracking-widest">
-          {isLocked ? "🔒 Session In Progress" : resumeProgress ? `Resume (${resumeProgress}/10)` : "Let's Go!"}
-        </span>
-        {!isLocked && <span className="group-hover:translate-x-2 transition-transform text-xl">→</span>}
+      <div className="mt-auto pt-8 w-full flex justify-center">
+        <div className={`flex items-center justify-center gap-4 px-6 py-3 rounded-xl transition-all font-bold ${
+          isLocked ? 'bg-slate-100 text-slate-400' : 
+          resumeProgress ? 'bg-amber-50 text-amber-600 border border-amber-200 animate-pulse' : 'bg-slate-900 text-white hover:bg-slate-800'
+        }`}>
+          <span className="text-sm font-black uppercase tracking-widest">
+            {isLocked ? "🔒 Session In Progress" : resumeProgress ? `Resume (${resumeProgress}/10)` : "Let's Go!"}
+          </span>
+          {!isLocked && <span className="group-hover:translate-x-2 transition-transform text-xl">→</span>}
+        </div>
       </div>
     </div>
   );

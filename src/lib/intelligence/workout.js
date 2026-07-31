@@ -57,6 +57,13 @@ export async function getDailyWorkout(studentId, primaryLevel, options = { mode:
             }
           }
 
+          // Check if the student changed their primary level
+          const sessionLevel = ordered[0]?.level;
+          if (sessionLevel && sessionLevel !== primaryLevel) {
+            console.log(`[Trainer] Discarding locked session because level changed from ${sessionLevel} to ${primaryLevel}`);
+            sessionMatchesRequest = false;
+          }
+
           if (sessionMatchesRequest) {
             console.log(`[Trainer] Resuming locked session for student ${studentId}`);
             return ordered.map(formatWorkoutQuestion);

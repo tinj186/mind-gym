@@ -108,8 +108,8 @@ export const foundationVariants = {
       isAm ? "'a.m.' stands for = ?" : "'p.m.' stands for = ?"
     );
 
-    const answer = isAm ? "morning" : "afternoon/evening/night";
-    const distractors = isAm ? ["afternoon/evening/night"] : ["morning"];
+    const answer = isAm ? "morning" : "afternoon";
+    const distractors = isAm ? ["afternoon"] : ["morning"];
 
     let options = getShuffledOptions(answer, distractors);
     let mcqOptions = 'null';
@@ -137,9 +137,9 @@ export const foundationVariants = {
           "questionText": ${JSON.stringify(questionText)},
           "options": ${mcqOptions},
           "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`Think about when a.m. and p.m. are used. a.m. is before lunch!`, `a.m. is morning, p.m. is afternoon/night.`))},
+          "hint": ${JSON.stringify(getQText(`Think about when a.m. and p.m. are used. a.m. is before lunch!`, `a.m. is morning, p.m. is afternoon.`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(isAm ? "The letters 'a.m.' stand for times in the morning (before 12 noon)." : "The letters 'p.m.' stand for times in the afternoon, evening, and night (after 12 noon).", `Answer is ${answer}.`))}
+          "solutionSteps": ${JSON.stringify(getQText(isAm ? "The letters 'a.m.' stand for times in the morning (before 12 noon)." : "The letters 'p.m.' stand for times in the afternoon (after 12 noon).", `Answer is ${answer}.`))}
         },
         "visualEngine": {
           "componentToRender": "NONE",

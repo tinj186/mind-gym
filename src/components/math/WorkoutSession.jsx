@@ -183,7 +183,9 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
         .replace(/\\operatorname\{\\mathrm\{([^}]*)\}\}/g, '$1') // MathLive text wrappers
         .replace(/\\mathrm\{([^}]*)\}/g, '$1') // MathLive text wrappers
         .replace(/\\times/g, '*') // Normalize multiplication
+        .replace(/×/g, '*') // Normalize unicode cross
         .replace(/\\div/g, '/') // Normalize division
+        .replace(/÷/g, '/') // Normalize unicode divide
         .replace(/\\cdot/g, '*') // Normalize multiplication dot
         .replace(/[\u200B-\u200D\uFEFF]/g, '') // Strip zero-width invisible characters
         .replace(/’/g, "'") // Normalize typographic apostrophes from MathInput bypass
@@ -297,6 +299,11 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
       console.log('🚨 [WorkoutSession Grading Debug] accepted (cleaned/normalized):', accepted);
       
       isCorrect = studentAns === realAns || accepted.includes(studentAns);
+      
+      // Legacy fallback for old questions where the LLM generated the letter "x" for multiplication
+      if (!isCorrect && ((realAns === 'x' && studentAns === '*') || (realAns === '*' && studentAns === 'x'))) {
+        isCorrect = true;
+      }
     }
     if (isCorrect) {
       setFeedback('correct');

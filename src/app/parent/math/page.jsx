@@ -5,10 +5,13 @@ import VariantAnalysis from '@/components/parent/math/VariantAnalysis';
 import AssessmentReadinessMap from '@/components/parent/math/AssessmentReadinessMap';
 import { getCurrentStudentId } from '@/lib/auth-utils';
 import AnalyticsTour from '@/components/parent/math/AnalyticsTour';
+import LevelFilter from '@/components/parent/math/LevelFilter';
 
-export default async function MathAnalyticsDashboard() {
+export default async function MathAnalyticsDashboard({ searchParams }) {
+  const params = await searchParams;
+  const levelFilter = params?.level || 'Overall';
   const studentId = await getCurrentStudentId() || "default-student";
-  const stats = await getStudentStatsAction(studentId);
+  const stats = await getStudentStatsAction(studentId, levelFilter);
 
   return (
     <div className="min-h-screen bg-indigo-50/50">
@@ -19,6 +22,7 @@ export default async function MathAnalyticsDashboard() {
             <span className="text-[10px] font-black text-violet-700 uppercase tracking-widest px-3 py-1 rounded-full border bg-violet-50 border-violet-200 mb-4 inline-block">Analytics Engine</span>
             <div className="flex items-center gap-6">
               <h1 className="text-4xl font-black text-indigo-950 tracking-tight uppercase">Mathematics Analytics</h1>
+              <LevelFilter />
               <Link 
                 href="/parent/math/help" 
                 className="px-6 py-2 bg-indigo-100 text-indigo-900 font-bold rounded-xl hover:bg-indigo-200 transition-colors text-sm"

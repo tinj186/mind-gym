@@ -508,7 +508,9 @@ export const standardVariants = {
           "componentToRender": "SHAPE_DISPLAY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": ${type === 'MCQ' 
+          ? '{ "inputType": "MCQ_BUTTONS" }' 
+          : `{ "inputType": "MULTI_STEP_INPUT", "steps": [{ "instruction": "List the shapes used to build this picture.", "expectedType": "string", "expectedAnswer": "{inventory}" }] }`}
       }`,
       metadata: { difficulty: 'standard', steps: 2, logic: "match_composite_parts", hideVisual: false }
     };

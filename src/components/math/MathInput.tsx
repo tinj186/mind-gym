@@ -243,10 +243,12 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
     // We only define the specific physical keyboard shortcuts we want to allow.
     currentMf.mathModeInlineShortcuts = { 
       '*': '\\times',
+      '/': '\\div',
       "'": "’" // Prevent apostrophe from turning into a math prime
     };
     currentMf.inlineShortcuts = { 
       '*': '\\times',
+      '/': '\\div',
       "'": "’"
     };
 

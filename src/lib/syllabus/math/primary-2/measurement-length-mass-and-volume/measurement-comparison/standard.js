@@ -133,17 +133,18 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
     const firstObj = displayAFirst ? objA : objB;
     const firstVal = displayAFirst ? valA : valB;
     const firstUnit = displayAFirst ? unitA : unitB;
+    const firstBaseVal = displayAFirst ? baseValA : compareValB;
+    
     const secondObj = displayAFirst ? objB : objA;
     const secondVal = displayAFirst ? valB : valA;
     const secondUnit = displayAFirst ? unitB : unitA;
+    const secondBaseVal = displayAFirst ? compareValB : baseValA;
 
     // Pick a subject for the question
     // "How much longer is A than B?"
-    const askA = Math.random() > 0.5;
-    const subjectObj = askA ? objA : objB;
-    const targetObj = askA ? objB : objA;
-    const subjectBaseVal = askA ? baseValA : compareValB;
-    const targetBaseVal = askA ? compareValB : baseValA;
+    const askFirst = Math.random() > 0.5;
+    const subjectBaseVal = askFirst ? firstBaseVal : secondBaseVal;
+    const targetBaseVal = askFirst ? secondBaseVal : firstBaseVal;
 
     // Fix the adjective if they asked a specific way that violates truth
     // If A is 150cm and B is 1m (100cm). A > B. If subject is A, A is longer.
@@ -155,14 +156,14 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
     let structureText, shortText, actualAnswer, equation;
 
     if (activeVariant === 'standard_difference_volumes') {
-      structureText = `Container A is a ${firstObj} that holds ${firstVal} ${firstUnit} of water. Container B is a ${secondObj} that holds ${secondVal} ${secondUnit} of water. How much ${finalAdj} water does Container ${askA ? 'A' : 'B'} hold than Container ${askA ? 'B' : 'A'}?`;
-      shortText = `A: ${firstObj} (${firstVal} ${firstUnit}), B: ${secondObj} (${secondVal} ${secondUnit}). Container ${askA ? 'A' : 'B'} holds ___ ${baseUnit} ${finalAdj} water than Container ${askA ? 'B' : 'A'}.`;
+      structureText = `Container A is a ${firstObj} that holds ${firstVal} ${firstUnit} of water. Container B is a ${secondObj} that holds ${secondVal} ${secondUnit} of water. How much ${finalAdj} water does Container ${askFirst ? 'A' : 'B'} hold than Container ${askFirst ? 'B' : 'A'}?`;
+      shortText = `A: ${firstObj} (${firstVal} ${firstUnit}), B: ${secondObj} (${secondVal} ${secondUnit}). Container ${askFirst ? 'A' : 'B'} holds ___ ${baseUnit} ${finalAdj} water than Container ${askFirst ? 'B' : 'A'}.`;
     } else {
-      structureText = `Object A is a ${firstObj} that is ${firstVal} ${firstUnit}. Object B is a ${secondObj} that is ${secondVal} ${secondUnit}. How much ${finalAdj} is Object ${askA ? 'A' : 'B'} than Object ${askA ? 'B' : 'A'}?`;
-      shortText = `A: ${firstObj} (${firstVal} ${firstUnit}), B: ${secondObj} (${secondVal} ${secondUnit}). Object ${askA ? 'A' : 'B'} is ___ ${baseUnit} ${finalAdj} than Object ${askA ? 'B' : 'A'}.`;
+      structureText = `Object A is a ${firstObj} that is ${firstVal} ${firstUnit}. Object B is a ${secondObj} that is ${secondVal} ${secondUnit}. How much ${finalAdj} is Object ${askFirst ? 'A' : 'B'} than Object ${askFirst ? 'B' : 'A'}?`;
+      shortText = `A: ${firstObj} (${firstVal} ${firstUnit}), B: ${secondObj} (${secondVal} ${secondUnit}). Object ${askFirst ? 'A' : 'B'} is ___ ${baseUnit} ${finalAdj} than Object ${askFirst ? 'B' : 'A'}.`;
     }
 
-    actualAnswer = `${diff} ${baseUnit}`;
+    actualAnswer = isMCQ ? `${diff} ${baseUnit}` : `${diff}`;
     equation = `${Math.max(baseValA, compareValB)} ${baseUnit} - ${Math.min(baseValA, compareValB)} ${baseUnit} = ${actualAnswer}`;
 
     const askText = getQText(structureText, shortText);

@@ -1,5 +1,6 @@
 @import "tailwindcss";
-
+@source "../lib";
+@source "../components";
 @theme {
   --color-gym-blue: #2563eb;
   --color-gym-slate: #0f172a;

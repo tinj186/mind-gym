@@ -29,15 +29,15 @@ const MAP_KEY = (key) => {
   return mapping[key] || key.charAt(0).toUpperCase() + key.slice(1);
 };
 
-export default function ReviewCard({ 
-  q, 
-  processingId, 
-  isViewOnly, 
-  handleApprove, 
-  handleDelete, 
-  handleRegenerate, 
-  mutate, 
-  setActiveTool 
+export default function ReviewCard({
+  q,
+  processingId,
+  isViewOnly,
+  handleApprove,
+  handleDelete,
+  handleRegenerate,
+  mutate,
+  setActiveTool
 }) {
   // Normalize question data once to get consistent visualEngine and modelData
   const normalizedQuestion = normalizeQuestionData(q);
@@ -50,11 +50,10 @@ export default function ReviewCard({
   const isArchived = q.isArchived === true;
 
   return (
-    <div className={`p-6 rounded-3xl border-2 transition-all duration-300 relative ${
-      isArchived
+    <div className={`p-6 rounded-3xl border-2 transition-all duration-300 relative ${isArchived
         ? 'bg-slate-100/70 border-slate-200/80 text-slate-400 opacity-60 shadow-none filter grayscale'
         : 'bg-white border-slate-100 shadow-sm hover:shadow-md'
-    } ${isBusy ? 'opacity-50 pointer-events-none' : ''}`}>
+      } ${isBusy ? 'opacity-50 pointer-events-none' : ''}`}>
       <div className="p-8 space-y-6">
         <div className="space-y-4">
           <div className="flex justify-between items-start gap-4">
@@ -70,7 +69,7 @@ export default function ReviewCard({
               </div>
             )}
           </div>
-          
+
           {/* Question-level Visuals (Concrete) */}
           {isQuestionVisual && (
             <div className="pt-4">
@@ -164,13 +163,12 @@ export default function ReviewCard({
               const isCorrect = cleanOpt !== '' && cleanOpt === cleanFinal;
 
               return (
-                <div 
-                  key={i} 
-                  className={`p-4 rounded-2xl border text-sm font-bold transition-all ${
-                    isCorrect 
-                      ? 'bg-green-50 border-green-200 text-green-700 shadow-sm' 
+                <div
+                  key={i}
+                  className={`p-4 rounded-2xl border text-sm font-bold transition-all ${isCorrect
+                      ? 'bg-green-50 border-green-200 text-green-700 shadow-sm'
                       : 'bg-slate-50 border-slate-100 text-slate-600'
-                  }`}
+                    }`}
                 >
                   {opt}
                 </div>
@@ -183,7 +181,7 @@ export default function ReviewCard({
           <div className="space-y-2">
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Model Solution</span>
             <p className="text-sm text-slate-600 leading-relaxed italic whitespace-pre-line">{q.solution}</p>
-            
+
             {q.hint && (
               <div className="mt-4 p-4 bg-amber-50 border-2 border-amber-100 rounded-2xl animate-in fade-in slide-in-from-bottom-2">
                 <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-1 flex items-center gap-1">
@@ -233,48 +231,47 @@ export default function ReviewCard({
       <div className="bg-slate-50 px-8 py-4 flex justify-between items-center border-t border-slate-100">
         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">ID: {q.id}</span>
         <div className="flex gap-3">
-          <button 
+          <button
             onClick={async () => {
               const actionLabel = isArchived ? 'unarchive' : 'archive';
               if (confirm(`Are you sure you want to ${actionLabel} this question?`)) {
                 const res = await toggleArchiveQuestionAction(q.id, q.isArchived);
                 if (res.success) {
-                  mutate(); 
+                  mutate();
                 } else {
                   alert("Failed to update question status: " + res.error);
                 }
               }
             }}
-            className={`px-3 py-1.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all border-2 ${
-              isArchived
+            className={`px-3 py-1.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all border-2 ${isArchived
                 ? 'bg-slate-200 text-slate-600 border-slate-300 hover:bg-slate-300'
                 : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
-            }`}
+              }`}
           >
             {isArchived ? '📁 Unarchive' : '📦 Archive'}
           </button>
-          <button 
+          <button
             onClick={() => handleDelete(q.id)}
             className="px-4 py-2 text-[10px] font-black uppercase text-red-500 hover:bg-red-50 rounded-xl transition-colors"
           >
             Delete
           </button>
-          <a 
-            href={`/math?previewId=${q.id}`} 
-            target="_blank" 
+          <a
+            href={`/math?previewId=${q.id}`}
+            target="_blank"
             rel="noopener noreferrer"
             className="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl text-[10px] font-black uppercase transition-all inline-flex items-center gap-1"
           >
             👁️ Test Visual Canvas
           </a>
-          <button 
+          <button
             onClick={() => handleRegenerate(q)}
             className="px-4 py-2 text-[10px] font-black uppercase text-amber-600 hover:bg-amber-50 rounded-xl transition-colors"
           >
             Regenerate
           </button>
           {!isViewOnly && (
-            <button 
+            <button
               onClick={() => handleApprove(q.id)}
               className="px-6 py-2 bg-slate-900 text-white text-[10px] font-black uppercase rounded-xl hover:bg-green-600 transition-all shadow-lg active:scale-95"
             >

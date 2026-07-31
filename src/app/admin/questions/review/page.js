@@ -8,13 +8,15 @@ export const dynamic = 'force-dynamic';
 
 export default async function QuestionReviewPage({ searchParams }) {
   const resolvedSearchParams = await searchParams;
-  const { id, level, strand, topic, subtopic, type, difficulty, approved } = resolvedSearchParams;
+  const { id, heuristic, level, strand, topic, subtopic, type, difficulty, approved } = resolvedSearchParams;
   const isApprovedFilter = approved === 'true';
 
   let whereClause = {};
 
   if (id) {
-    whereClause = { id: id.toLowerCase() };
+    whereClause = { id: { equals: id, mode: 'insensitive' } };
+  } else if (heuristic) {
+    whereClause = { heuristic: heuristic };
   } else {
     // Keep the query mapping focus cleanly on approval status, allowing archived questions through for admin tracking
     whereClause = { isApproved: isApprovedFilter };
@@ -36,6 +38,7 @@ export default async function QuestionReviewPage({ searchParams }) {
   try {
     questions = await prisma.questionBank.findMany({
       where: whereClause,
+      take: heuristic ? 50 : undefined, // Limit to 50 if searching by variant to prevent huge data flow
       orderBy: { createdAt: 'desc' },
       include: {
         attempts: {
@@ -70,6 +73,10 @@ export default async function QuestionReviewPage({ searchParams }) {
     console.error("❌ Failed to fetch questions for review:", err);
   }
 
+  const headerSubtitle = id && questions.length > 0
+    ? [questions[0].level, questions[0].topic, questions[0].subtopic?.replace(/\s+to\s+\d+/, ''), questions[0].type, questions[0].difficulty].filter(Boolean).join(' • ')
+    : [level, topic, subtopic?.replace(/\s+to\s+\d+/, ''), type, difficulty].filter(Boolean).join(' • ');
+
   return (
     <div>
       <div className="max-w-7xl mx-auto">
@@ -87,10 +94,10 @@ export default async function QuestionReviewPage({ searchParams }) {
                   ← Back to Inventory
                 </Link>
                 <h1 className="text-4xl font-extrabold text-white uppercase tracking-tighter">
-                  {isApprovedFilter ? 'Approved Content' : 'Pending Review'}
+                  {id ? 'Single Question View' : (isApprovedFilter ? 'Approved Content' : 'Pending Review')}
                 </h1>
                 <p className="text-slate-400 font-medium">
-                  {[level, topic, subtopic?.replace(/\s+to\s+\d+/, ''), type, difficulty].filter(Boolean).join(' • ')}
+                  {headerSubtitle || 'No metadata available'}
                 </p>
               </div>
             </div>

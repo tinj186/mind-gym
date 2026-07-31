@@ -84,23 +84,37 @@ export default function QuestionFilter({ levels, topics, subtopics, types, diffi
       </div>
 
       <div className="pt-6 border-t border-slate-600">
-        <label htmlFor="questionId" className="block text-sm font-bold text-slate-300 mb-2">Quick Lookup (Question ID)</label>
+        <label htmlFor="questionId" className="block text-sm font-bold text-slate-300 mb-2">Quick Lookup (ID or Variant)</label>
         <div className="flex gap-4">
           <input 
             type="text" 
             id="questionId" 
-            placeholder="Paste ID here (e.g., e7f304f5...)" 
+            placeholder="Paste ID or Logic Variant..." 
             className="flex-1 p-3 border border-slate-300 rounded-lg bg-white text-slate-900 font-mono text-sm"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && e.target.value.trim()) {
-                router.push(`/admin/questions/review?id=${e.target.value.trim()}`);
+                let val = e.target.value.trim().replace(/:$/, '');
+                const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+                if (isUuid) {
+                  router.push(`/admin/questions/review?id=${val}`);
+                } else {
+                  router.push(`/admin/questions/review?heuristic=${encodeURIComponent(val)}`);
+                }
               }
             }}
           />
           <button 
             onClick={() => {
-              const val = document.getElementById('questionId').value.trim();
-              if (val) router.push(`/admin/questions/review?id=${val}`);
+              const inputVal = document.getElementById('questionId').value;
+              if (inputVal && inputVal.trim()) {
+                let val = inputVal.trim().replace(/:$/, '');
+                const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+                if (isUuid) {
+                  router.push(`/admin/questions/review?id=${val}`);
+                } else {
+                  router.push(`/admin/questions/review?heuristic=${encodeURIComponent(val)}`);
+                }
+              }
             }}
             className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors"
           >
