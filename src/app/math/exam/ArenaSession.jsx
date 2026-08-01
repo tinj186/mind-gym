@@ -130,16 +130,23 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
           .replace(/\\div/g, '/') // Normalize division
           .replace(/÷/g, '/') // Normalize unicode divide
           .replace(/\\cdot/g, '*') // Normalize multiplication dot
+          .replace(/(?<=\d)\s*[xX]\s*(?=\d)/g, '*') // Normalize letter x used as multiplication between numbers
           .replace(/[\u200B-\u200D\uFEFF]/g, '') // Strip zero-width invisible characters
           .replace(/’/g, "'") // Normalize typographic apostrophes from MathInput bypass
           .replace(/\\/g, '') // Any remaining latex slashes
           .toLowerCase();
 
-        // 1. Protect and standardize place values and conjunctions first
+        // 1. Protect and standardize place values, money, and conjunctions first
         s = s.replace(/\band\b/g, '');
         s = s.replace(/,/g, '');
         s = s.replace(/\bten\b/g, 'tens');
         s = s.replace(/\bone\b/g, 'ones');
+        
+        // Money normalization
+        s = s.replace(/\bdollars?\b/g, '$');
+        s = s.replace(/\bcents?\b/g, 'c');
+        s = s.replace(/¢/g, 'c');
+        s = s.replace(/(\d+)\s*\$/g, '$$$1'); // e.g. 2$ -> $2
 
         // 2. Map English word numbers to digits for robust grading
         const wordMap = {
@@ -202,11 +209,44 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
         }).join(' | ');
         
       } else {
-        const studentAns = cleanString(rawAns);
-        const realAns = cleanString(q.finalAnswer);
-        const accepted = q.acceptedAnswers ? q.acceptedAnswers.map(a => cleanString(a)) : [];
+        let studentAns = cleanString(rawAns);
+        let realAns = cleanString(q.finalAnswer);
+        let accepted = q.acceptedAnswers ? q.acceptedAnswers.map(a => cleanString(a)) : [];
+        
+        // Custom grader for Grid Lines to handle swapped points or reordered lines
+        if (q.inputRequirement?.inputType === 'INTERACTIVE_GRID') {
+          const normalizeLines = (linesString) => {
+            try {
+              const lines = JSON.parse(linesString);
+              if (!Array.isArray(lines)) return linesString;
+              const normalized = lines.map(line => {
+                if (!line.start || !line.end) return line;
+                const [x1, y1] = line.start;
+                const [x2, y2] = line.end;
+                if (x1 > x2 || (x1 === x2 && y1 > y2)) {
+                  return { start: [x2, y2], end: [x1, y1] };
+                }
+                return { start: [x1, y1], end: [x2, y2] };
+              });
+              normalized.sort((a, b) => {
+                if (a.start[0] !== b.start[0]) return a.start[0] - b.start[0];
+                if (a.start[1] !== b.start[1]) return a.start[1] - b.start[1];
+                if (a.end[0] !== b.end[0]) return a.end[0] - b.end[0];
+                return a.end[1] - b.end[1];
+              });
+              return JSON.stringify(normalized);
+            } catch (e) {
+              return linesString;
+            }
+          };
+          
+          studentAns = normalizeLines(rawAns);
+          realAns = normalizeLines(q.finalAnswer);
+          accepted = q.acceptedAnswers ? q.acceptedAnswers.map(normalizeLines) : [];
+        }
+        
         isCorrect = studentAns === realAns || accepted.includes(studentAns);
-        displayAnswer = cleanString(rawAns);
+        displayAnswer = typeof rawAns === 'string' && rawAns.startsWith('[') ? rawAns : cleanString(rawAns);
       }
 
       return {
@@ -316,6 +356,7 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
                     topic={normalizedQuestion.topic}
                     attempts={0} // Reset to zero so it stays un-highlighted
                     isExam={true} // NEW EXAM ENVIRONMENT FIREWALL
+                    onChangeGrid={(val) => handleSelectAnswer(activeQuestion.id, val)}
                   />
                 </div>
               )}
@@ -365,7 +406,7 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
                         );
                       })}
                     </div>
-                  ) : (
+                  ) : normalizedQuestion?.inputRequirement?.inputType === 'INTERACTIVE_GRID' ? null : (
                     <div>
                       <label className="block text-[10px] font-black mb-2 uppercase text-slate-400 tracking-tighter">Student Workspace Input Response</label>
                       <MathInput

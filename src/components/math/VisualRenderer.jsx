@@ -108,7 +108,7 @@ export default function VisualRenderer({ type, ...props }) {
           case 'COMPOSITE_SHAPE_3D': return <CompositeShape3D data={props.visualEngine?.componentData || props.data} />;
           case 'SHAPE_DISPLAY': return <ShapeDisplay data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
           case 'GRID_DISPLAY': return <GridDisplay data={props.visualEngine?.componentData || props.data} />;
-          case 'GRID_DRAWING_CANVAS': return <GridDrawingCanvas data={props.visualEngine?.componentData || props.data} onSubmit={props.onSubmitGrid} disabled={props.disabled} />;
+          case 'GRID_DRAWING_CANVAS': return <GridDrawingCanvas data={props.visualEngine?.componentData || props.data} onSubmit={props.onSubmitGrid} onChange={props.onChangeGrid} disabled={props.disabled} />;
           case 'PICTURE_GRAPH_DISPLAY': return <PictureGraphDisplay data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
           case 'CROSS_OUT_GROUP': {
             const data = props.visualEngine?.componentData || props.data || {};

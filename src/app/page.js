@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { normalizeQuestionData, deriveVisualProps } from '@/lib/intelligence/workout-utils';
@@ -91,11 +91,27 @@ export default function PublicLandingPage() {
     ]
   };
 
+  const [availableTopics, setAvailableTopics] = useState(topicsByLevel['Primary 2'].slice(0, 3));
+
+  // Randomize topics on mount to prevent hydration mismatch while still providing randomness
+  useEffect(() => {
+    const shuffled = [...topicsByLevel['Primary 2']].sort(() => 0.5 - Math.random());
+    const initialRandom = shuffled.slice(0, 3);
+    setAvailableTopics(initialRandom);
+    setTopic(initialRandom[0].value);
+  }, []);
+
   const handleLevelChange = (e) => {
     const newLevel = e.target.value;
     setLevel(newLevel);
-    setTopic(topicsByLevel[newLevel][0].value);
+    
+    const shuffled = [...topicsByLevel[newLevel]].sort(() => 0.5 - Math.random());
+    const random3 = shuffled.slice(0, 3);
+    
+    setAvailableTopics(random3);
+    setTopic(random3[0].value);
   };
+
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -141,7 +157,7 @@ export default function PublicLandingPage() {
                 onChange={(e) => setTopic(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-3 font-medium outline-none"
               >
-                {topicsByLevel[level].map(t => (
+                {availableTopics.map(t => (
                   <option key={t.value} value={t.value}>{t.label}</option>
                 ))}
               </select>

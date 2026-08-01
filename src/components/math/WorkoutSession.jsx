@@ -187,16 +187,23 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
         .replace(/\\div/g, '/') // Normalize division
         .replace(/÷/g, '/') // Normalize unicode divide
         .replace(/\\cdot/g, '*') // Normalize multiplication dot
+        .replace(/(?<=\d)\s*[xX]\s*(?=\d)/g, '*') // Normalize letter x used as multiplication between numbers
         .replace(/[\u200B-\u200D\uFEFF]/g, '') // Strip zero-width invisible characters
         .replace(/’/g, "'") // Normalize typographic apostrophes from MathInput bypass
         .replace(/\\/g, '') // Any remaining latex slashes
         .toLowerCase();
 
-      // 1. Protect and standardize place values and conjunctions first
+      // 1. Protect and standardize place values, money, and conjunctions first
       s = s.replace(/\band\b/g, '');
       s = s.replace(/,/g, '');
       s = s.replace(/\bten\b/g, 'tens');
       s = s.replace(/\bone\b/g, 'ones');
+
+      // Money normalization
+      s = s.replace(/\bdollars?\b/g, '$');
+      s = s.replace(/\bcents?\b/g, 'c');
+      s = s.replace(/¢/g, 'c');
+      s = s.replace(/(\d+)\s*\$/g, '$$$1'); // e.g. 2$ -> $2
 
       // 2. Map English word numbers to digits for robust grading (e.g. fourth -> 4th)
       const wordMap = {
@@ -522,7 +529,10 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
           {feedback === 'solution_revealed' && (
             <div className="p-6 bg-rose-50 rounded-2xl border-2 border-rose-200 animate-in zoom-in-95">
               <p className="text-rose-900 font-black text-xs uppercase tracking-widest mb-2">Form Check: Let's see the steps</p>
-              <p className="text-slate-700 text-sm italic leading-relaxed whitespace-pre-wrap">{normalizedQuestion.solution}</p>
+              <div 
+                className="text-slate-700 text-sm italic leading-relaxed whitespace-pre-wrap font-mono"
+                dangerouslySetInnerHTML={{ __html: normalizedQuestion.solution }}
+              />
             </div>
           )}
         </motion.div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export default function GridDrawingCanvas({ data, onSubmit, disabled }) {
+export default function GridDrawingCanvas({ data, onSubmit, onChange, disabled }) {
   const [drawnLines, setDrawnLines] = useState([]);
   const [activePoint, setActivePoint] = useState(null);
 
@@ -33,7 +33,14 @@ export default function GridDrawingCanvas({ data, onSubmit, disabled }) {
           (l.start[0] === x && l.start[1] === y && l.end[0] === activePoint.x && l.end[1] === activePoint.y)
         );
         if (!exists) {
-          setDrawnLines(prev => [...prev, { start: [activePoint.x, activePoint.y], end: [x, y] }]);
+          setDrawnLines(prev => {
+            const newLines = [...prev, { start: [activePoint.x, activePoint.y], end: [x, y] }];
+            if (onChange) {
+              const minCount = data?.workspaceLines ? data.workspaceLines.length : 0;
+              onChange(JSON.stringify(newLines.slice(minCount)));
+            }
+            return newLines;
+          });
         }
       }
       setActivePoint(null); // Reset after drawing or clicking same point
@@ -49,7 +56,11 @@ export default function GridDrawingCanvas({ data, onSubmit, disabled }) {
     // If we want to prevent deleting initial lines, we'd check against data.workspaceLines.length.
     const minLines = data.workspaceLines ? data.workspaceLines.length : 0;
     if (drawnLines.length > minLines) {
-      setDrawnLines(prev => prev.slice(0, -1));
+      setDrawnLines(prev => {
+        const newLines = prev.slice(0, -1);
+        if (onChange) onChange(JSON.stringify(newLines.slice(minLines)));
+        return newLines;
+      });
     }
     setActivePoint(null);
   };
@@ -58,6 +69,7 @@ export default function GridDrawingCanvas({ data, onSubmit, disabled }) {
     if (disabled) return;
     const minLines = data.workspaceLines ? data.workspaceLines : [];
     setDrawnLines(minLines);
+    if (onChange) onChange(JSON.stringify([]));
     setActivePoint(null);
   };
 

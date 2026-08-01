@@ -138,6 +138,20 @@ export const getRandomNames = (count = 1) => {
   return count === 1 ? makeCompatibleArray(shuffled[0]) : shuffled.slice(0, count);
 };
 
+export const getRandomCountableItems = (count = 1) => {
+  const pool = [
+    ...CONTEXT_TIERS.LOWER_BLOCK.GENERAL,
+    ...CONTEXT_TIERS.MIDDLE_BLOCK.GENERAL,
+    ...CONTEXT_TIERS.UPPER_BLOCK.GENERAL,
+    ...CONTEXT_TIERS.LOWER_BLOCK.FOOD,
+    ...CONTEXT_TIERS.MIDDLE_BLOCK.FOOD,
+    ...CONTEXT_TIERS.UPPER_BLOCK.FOOD
+  ];
+  const shuffled = pool.sort(() => 0.5 - Math.random());
+  return count === 1 ? makeCompatibleArray(shuffled[0]) : shuffled.slice(0, count);
+};
+
+
 // ----------------------------------------------------------------------------
 // 2. PICTURE GRAPH THEMES
 // ----------------------------------------------------------------------------
@@ -570,6 +584,11 @@ export const emojiObjects = [
   { name: 'fire', icon: '🔥' }, { name: 'water drops', icon: '💧' }, { name: 'leaves', icon: '🍂' },
   { name: 'mushrooms', icon: '🍄' }, { name: 'cactuses', icon: '🌵' }, { name: 'palm trees', icon: '🌴' }
 ];
+
+export const getRandomEmojiObjects = (count = 1) => {
+  const shuffled = [...emojiObjects].sort(() => 0.5 - Math.random());
+  return count === 1 ? makeCompatibleArray(shuffled[0]) : shuffled.slice(0, count);
+};
 
 export const getTimeActivities = (count = 1, isMorning = true) => {
   const morningActivities = [

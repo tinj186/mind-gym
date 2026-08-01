@@ -180,7 +180,10 @@ export default function ReviewCard({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-slate-50">
           <div className="space-y-2">
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Model Solution</span>
-            <p className="text-sm text-slate-600 leading-relaxed italic whitespace-pre-line">{q.solution}</p>
+            <div 
+              className="text-sm text-slate-600 leading-relaxed italic whitespace-pre-line font-mono overflow-x-auto"
+              dangerouslySetInnerHTML={{ __html: q.solution }}
+            />
 
             {q.hint && (
               <div className="mt-4 p-4 bg-amber-50 border-2 border-amber-100 rounded-2xl animate-in fade-in slide-in-from-bottom-2">
