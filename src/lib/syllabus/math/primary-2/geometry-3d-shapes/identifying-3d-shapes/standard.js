@@ -10,6 +10,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   let visualEngineStr = `{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }`;
   let mcqOptions = [];
   let structureSteps = [];
+  let acceptedAnswersArray = [];
 
   const SHAPES_3D = ['cube', 'cuboid', 'cone', 'cylinder', 'sphere'];
   const COLORS = ['#ef4444', '#3b82f6', '#22c55e', '#eab308', '#a855f7', '#ec4899', '#f97316'];
@@ -140,6 +141,10 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     };
     
     actualAnswer = formatItemName(missingItem);
+    
+    if (isSizeChanging) {
+      acceptedAnswersArray.push(actualAnswer.replace('Big', 'Large'));
+    }
     
     const attrNames = changingAttrs.map(a => a.charAt(0).toUpperCase() + a.slice(1).replace('Color', 'Colour')).join(' and ');
 
@@ -781,6 +786,7 @@ CRITICAL INSTRUCTIONS:
 - hint: Use exact string "${hintStr}".
 ${isMCQ ? `- options: Use exact array ${JSON.stringify(mcqOptions)}.` : ''}
 ${isMCQ ? `- defectMap: Use exact object ${JSON.stringify(defectMap)}.` : ''}
+- acceptedAnswers: Use exact array ${JSON.stringify(acceptedAnswersArray)}.
 `;
 
   return { aiPrompt };

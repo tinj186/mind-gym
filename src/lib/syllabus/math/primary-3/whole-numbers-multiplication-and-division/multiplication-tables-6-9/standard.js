@@ -16,63 +16,14 @@ export const standardLogic = function (
 ) {
   let askText = '';
   let answer = '';
-  let visualEngineStr = `{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }`;
+  let visualEngineStr = JSON.stringify({ componentToRender: "NONE", componentData: { hideVisual: true } });
   let inputRequirementStr = null;
   let customConstraints = "";
 
   let questionStemConstraint = `- The question stem must clearly ask exactly: "${askText}".`;
 
-  if (activeVariant === 'standard_missing_factor_2_5_10') {
-    const table = [2, 5, 10][Math.floor(Math.random() * 3)];
-    const missing = Math.floor(Math.random() * 10) + 1; // 1 to 10
-    const total = table * missing;
-    
-    const isFirstMissing = Math.random() > 0.5;
-    
-    answer = String(missing);
-
-    if (isFirstMissing) {
-      if (isStructure) {
-        askText = `Write a creative 1-step word problem where ${context.name} has an unknown number of containers, sets, or groups. Each container has exactly ${table} ${selectedContextItem}. ${context.name} has a total of ${total} ${selectedContextItem}. Ask for the number of containers.`;
-        questionStemConstraint = `- The question stem must be a creative word problem following these instructions: ${askText}`;
-        
-        inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: "Write the multiplication equation with a question mark (e.g., ? x B = C)", expectedAnswer: `? x ${table} = ${total}` },
-            { label: "What is the missing number of groups?", expectedAnswer: `${missing}` }
-          ]
-        });
-      } else {
-        askText = getQText(
-          `${context.name} has some boxes. There are ${table} ${selectedContextItem} in each box. ${context.name} has ${total} ${selectedContextItem} altogether. How many boxes does ${context.name} have?`,
-          `? boxes of ${table}. Total is ${total}. How many boxes?`
-        );
-        questionStemConstraint = `- The question stem must clearly ask exactly: "${askText}".`;
-      }
-    } else {
-      if (isStructure) {
-        askText = `Write a creative 1-step word problem where ${context.name} has exactly ${table} containers, sets, or groups. They distribute ${total} ${selectedContextItem} equally among them. Ask for the number of ${selectedContextItem} in each container.`;
-        questionStemConstraint = `- The question stem must be a creative word problem following these instructions: ${askText}`;
-        
-        inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: "Write the multiplication equation with a question mark (e.g., A x ? = C)", expectedAnswer: `${table} x ? = ${total}` },
-            { label: `What is the missing number of ${selectedContextItem} per group?`, expectedAnswer: `${missing}` }
-          ]
-        });
-      } else {
-        askText = getQText(
-          `${context.name} has ${table} boxes. There are an equal number of ${selectedContextItem} in each box. ${context.name} has ${total} ${selectedContextItem} altogether. How many ${selectedContextItem} are in each box?`,
-          `${table} boxes with equal amount. Total is ${total}. How many per box?`
-        );
-        questionStemConstraint = `- The question stem must clearly ask exactly: "${askText}".`;
-      }
-    }
-  }
-  else if (activeVariant === 'standard_missing_factor_3_4') {
-    const table = [3, 4][Math.floor(Math.random() * 2)];
+  if (activeVariant === 'standard_missing_factor_6_9') {
+    const table = [6, 7, 8, 9][Math.floor(Math.random() * 4)];
     const missing = Math.floor(Math.random() * 10) + 1; // 1 to 10
     const total = table * missing;
     
@@ -122,7 +73,7 @@ export const standardLogic = function (
   }
   else if (activeVariant === 'standard_word_problem_grouping') {
     const groups = Math.floor(Math.random() * 9) + 2; // 2 to 10
-    const itemsPerGroup = [2, 3, 4, 5, 10][Math.floor(Math.random() * 5)];
+    const itemsPerGroup = [6, 7, 8, 9][Math.floor(Math.random() * 4)];
     const total = groups * itemsPerGroup;
 
     answer = String(total);
@@ -147,7 +98,7 @@ export const standardLogic = function (
     }
   }
   else if (activeVariant === 'standard_word_problem_rate') {
-    const rate = [2, 3, 4, 5, 10][Math.floor(Math.random() * 5)];
+    const rate = [6, 7, 8, 9][Math.floor(Math.random() * 4)];
     const quantity = Math.floor(Math.random() * 9) + 2; // 2 to 10
     const total = rate * quantity;
 
@@ -173,7 +124,7 @@ export const standardLogic = function (
     }
   }
   else if (activeVariant === 'standard_commutativity') {
-    const num1 = [2, 3, 4, 5, 10][Math.floor(Math.random() * 5)];
+    const num1 = [6, 7, 8, 9][Math.floor(Math.random() * 4)];
     let num2;
     do {
       num2 = Math.floor(Math.random() * 9) + 2; // 2 to 10
@@ -191,11 +142,18 @@ export const standardLogic = function (
     }
 
     if (isStructure) {
-      inputRequirementStr = `{\n    "inputType": "MULTI_STEP_INPUT",\n    "steps": [\n      { "label": "Work out the equation on the left.", "expectedAnswer": "${num1} x ${num2} = ${total}" },\n      { "label": "Work out the equation on the right with ?.", "expectedAnswer": "? x ${num1} = ${total}" },\n      { "label": "Work out '?'.", "expectedAnswer": "${num2}" }\n    ]\n  }`;
+      inputRequirementStr = JSON.stringify({
+        inputType: "MULTI_STEP_INPUT",
+        steps: [
+          { label: "Work out the equation on the left.", expectedAnswer: `${num1} x ${num2} = ${total}` },
+          { label: "Work out the equation on the right with ?.", expectedAnswer: `? x ${num1} = ${total}` },
+          { label: "Work out '?'.", expectedAnswer: `${num2}` }
+        ]
+      });
     }
   }
   else if (activeVariant === 'standard_true_false_equation') {
-    const table = [2, 3, 4, 5, 10][Math.floor(Math.random() * 5)];
+    const table = [6, 7, 8, 9][Math.floor(Math.random() * 4)];
     const multiplier = Math.floor(Math.random() * 9) + 2; // 2 to 10
     const correctTotal = table * multiplier;
     
@@ -215,15 +173,21 @@ export const standardLogic = function (
       askText = `Write a creative word problem where ${context.name} claims that having ${table} groups, sets, or containers of ${selectedContextItem} (with ${multiplier} in each) gives a total of ${displayedTotal} ${selectedContextItem}. Ask the student if ${context.name}'s claim is True or False.`;
       questionStemConstraint = `- The question stem must be a creative word problem following these instructions: ${askText}`;
       
-      inputRequirementStr = `{\n    "inputType": "MULTI_STEP_INPUT",\n    "steps": [\n      { "label": "Write the multiplication equation to find the true total", "expectedAnswer": "${table} x ${multiplier} = ${correctTotal}" },\n      { "label": "Is the claim True or False?", "expectedAnswer": "${answer}" }\n    ]\n  }`;
+      inputRequirementStr = JSON.stringify({
+        inputType: "MULTI_STEP_INPUT",
+        steps: [
+          { label: "Write the multiplication equation to find the true total", expectedAnswer: `${table} x ${multiplier} = ${correctTotal}` },
+          { label: "Is the claim True or False?", expectedAnswer: `${answer}` }
+        ]
+      });
     } else {
       askText = `Is the following equation true or false?\n${table} x ${multiplier} = ${displayedTotal}`;
       questionStemConstraint = `- The question stem must clearly ask exactly: "${askText.replace('\n', ' ')}". DO NOT add any word problem context or extra sentences.`;
     }
   }
 
-  let aiPrompt = `You are an expert Primary 2 math generator.
-Generate a question for the subtopic: Multiplication Tables (2-5, 10).
+  let aiPrompt = `You are an expert Primary 3 math generator.
+Generate a question for the subtopic: Multiplication Tables (6-9).
 Level: ${levelName}
 Difficulty: ${zodDiff}
 Type: ${zodType}

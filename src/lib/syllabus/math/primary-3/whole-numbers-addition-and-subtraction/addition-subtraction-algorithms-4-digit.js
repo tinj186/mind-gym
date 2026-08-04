@@ -57,7 +57,8 @@ export const p3AdditionSubtractionAlgorithms4DigitBlueprint = {
     // Advanced Level Variants
     advanced_algo_missing_digit_add: "Vertical addition of 4-digit numbers with missing digits.",
     advanced_algo_missing_digit_sub: "Vertical subtraction of 4-digit numbers with missing digits.",
-    advanced_algo_add_three_4_digit_numbers: "Vertical addition of three 4-digit numbers.",
+    advanced_word_add_three_4_digit_numbers: "Word problem involving the addition of three 4-digit numbers.",
+    advanced_word_add_sub_4_digit_numbers: "Word problem involving addition of two 4-digit numbers and subtraction from a third.",
     advanced_algo_missing_two_digits_add: "Vertical addition of 4-digit numbers with 2 missing digits.",
     advanced_algo_missing_two_digits_sub: "Vertical subtraction of 4-digit numbers with 2 missing digits.",
   },

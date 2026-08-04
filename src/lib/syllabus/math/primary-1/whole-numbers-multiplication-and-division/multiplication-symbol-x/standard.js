@@ -689,10 +689,12 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       };
     }
 
+    const suffixSentence = isMCQ ? "Which multiplication equation matches the story?" : "Write the multiplication equation for the story.";
+
     const promptObject = {
       meta: commonMeta,
       content: {
-        questionText: getQText(`[STORY] Which multiplication equation matches the story?`, `Ahmad has ${groups} boxes. There are ${num} items in each box. Which equation matches the story?`),
+        questionText: getQText(`[STORY] ${suffixSentence}`, `Ahmad has ${groups} boxes. There are ${num} items in each box. ${suffixSentence}`),
         options,
         defectMap,
         hint: "Count the number of groups first. Then find the number in each group.",
@@ -710,7 +712,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         : `STRICT: Write a creative 1-sentence localized Singaporean math story about ${extract(context.name)} having ${groups} groups (e.g. bags, boxes, plates) with ${num} ${extract(selectedContextItem)} (visually represented by the emoji "${selectedIcon}") in each group. 
         MANDATORY: You MUST use the name "${extract(context.name)}" and the item "${extract(selectedContextItem)}".
         MANDATORY: You MUST use the words 'each' or 'every'.
-        CRITICAL: For "questionText", you MUST output your story followed EXACTLY by the sentence: "Which multiplication equation matches the story?"`
+        CRITICAL: For "questionText", you MUST output your story followed EXACTLY by the sentence: "${suffixSentence}"`
       }
       JSON TEMPLATE:\n${JSON.stringify(promptObject)}`,
       metadata: { difficulty: 'standard', logic: activeVariant, hideVisual: true }

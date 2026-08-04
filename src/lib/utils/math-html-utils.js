@@ -1,15 +1,18 @@
-export function generateAlgorithmTables(num1, num2, isAdd) {
-  const ans = isAdd ? num1 + num2 : num1 - num2;
+export function generateAlgorithmTables(num1, num2, isAdd, num3 = null) {
+  const hasNum3 = num3 !== null && num3 !== undefined;
+  const ans = isAdd ? num1 + num2 + (hasNum3 ? num3 : 0) : num1 - num2;
   
   // Pad strings to 4 digits for alignment
   const s1 = num1.toString().padStart(4, ' ');
   const s2 = num2.toString().padStart(4, ' ');
+  const s3 = hasNum3 ? num3.toString().padStart(4, ' ') : null;
   const sAns = ans.toString().padStart(4, ' ');
 
   let step1 = `
 <table class="table-fixed text-right font-mono mx-auto w-32 text-sm">
   <tr><td></td> <td>${s1[0].trim()}</td> <td>${s1[1].trim()}</td> <td>${s1[2].trim()}</td> <td>${s1[3].trim()}</td></tr>
-  <tr class="border-b-2 border-slate-400"><td>${isAdd ? '+' : '-'}</td> <td>${s2[0].trim()}</td> <td>${s2[1].trim()}</td> <td>${s2[2].trim()}</td> <td>${s2[3].trim()}</td></tr>
+${hasNum3 ? `  <tr><td></td> <td>${s2[0].trim()}</td> <td>${s2[1].trim()}</td> <td>${s2[2].trim()}</td> <td>${s2[3].trim()}</td></tr>
+  <tr class="border-b-2 border-slate-400"><td>+</td> <td>${s3[0].trim()}</td> <td>${s3[1].trim()}</td> <td>${s3[2].trim()}</td> <td>${s3[3].trim()}</td></tr>` : `  <tr class="border-b-2 border-slate-400"><td>${isAdd ? '+' : '-'}</td> <td>${s2[0].trim()}</td> <td>${s2[1].trim()}</td> <td>${s2[2].trim()}</td> <td>${s2[3].trim()}</td></tr>`}
   <tr class="h-6"><td></td> <td></td> <td></td> <td></td> <td></td></tr>
 </table>`;
 
@@ -20,10 +23,11 @@ export function generateAlgorithmTables(num1, num2, isAdd) {
     for (let i = 3; i >= 1; i--) {
        let d1 = parseInt(s1[i]) || 0;
        let d2 = parseInt(s2[i]) || 0;
-       let sum = d1 + d2 + carry;
+       let d3 = hasNum3 ? (parseInt(s3[i]) || 0) : 0;
+       let sum = d1 + d2 + d3 + carry;
        if (sum >= 10) {
-         carry = 1;
-         carries[i-1] = '1';
+         carry = Math.floor(sum / 10);
+         carries[i-1] = carry.toString();
        } else {
          carry = 0;
        }
@@ -33,7 +37,8 @@ export function generateAlgorithmTables(num1, num2, isAdd) {
 <table class="table-fixed text-right font-mono mx-auto w-32 text-sm">
   <tr class="text-blue-600 font-bold text-xs"><td></td> <td>${carries[0].trim()}</td> <td>${carries[1].trim()}</td> <td>${carries[2].trim()}</td> <td>${carries[3].trim()}</td></tr>
   <tr><td></td> <td>${s1[0].trim()}</td> <td>${s1[1].trim()}</td> <td>${s1[2].trim()}</td> <td>${s1[3].trim()}</td></tr>
-  <tr class="border-b-2 border-slate-400"><td>+</td> <td>${s2[0].trim()}</td> <td>${s2[1].trim()}</td> <td>${s2[2].trim()}</td> <td>${s2[3].trim()}</td></tr>
+${hasNum3 ? `  <tr><td></td> <td>${s2[0].trim()}</td> <td>${s2[1].trim()}</td> <td>${s2[2].trim()}</td> <td>${s2[3].trim()}</td></tr>
+  <tr class="border-b-2 border-slate-400"><td>+</td> <td>${s3[0].trim()}</td> <td>${s3[1].trim()}</td> <td>${s3[2].trim()}</td> <td>${s3[3].trim()}</td></tr>` : `  <tr class="border-b-2 border-slate-400"><td>+</td> <td>${s2[0].trim()}</td> <td>${s2[1].trim()}</td> <td>${s2[2].trim()}</td> <td>${s2[3].trim()}</td></tr>`}
   <tr class="font-bold"><td></td> <td>${sAns[0].trim()}</td> <td>${sAns[1].trim()}</td> <td>${sAns[2].trim()}</td> <td>${sAns[3].trim()}</td></tr>
 </table>`;
   } else {

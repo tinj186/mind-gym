@@ -16,7 +16,7 @@ export const foundationLogic = function (
 ) {
   let askText = '';
   let answer = '';
-  let visualEngineStr = `{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }`;
+  let visualEngineStr = JSON.stringify({ componentToRender: "NONE", componentData: { hideVisual: true } });
   let inputRequirementStr = null;
   let customConstraints = "";
 
@@ -24,7 +24,7 @@ export const foundationLogic = function (
 
   if (activeVariant === 'foundation_groups_of') {
     const groups = Math.floor(Math.random() * 9) + 2; // 2 to 10
-    const itemsPerGroup = [2, 3, 4, 5, 10][Math.floor(Math.random() * 5)];
+    const itemsPerGroup = [6, 7, 8, 9][Math.floor(Math.random() * 4)];
     const total = groups * itemsPerGroup;
 
     answer = String(total);
@@ -47,7 +47,7 @@ export const foundationLogic = function (
     }
   }
   else if (activeVariant === 'foundation_repeated_addition') {
-    const num = [2, 3, 4, 5, 10][Math.floor(Math.random() * 5)];
+    const num = [6, 7, 8, 9][Math.floor(Math.random() * 4)];
     const count = Math.floor(Math.random() * 5) + 3; // 3 to 7 times
     const total = num * count;
     
@@ -76,7 +76,7 @@ export const foundationLogic = function (
   }
   else if (activeVariant === 'foundation_arrays') {
     const rows = Math.floor(Math.random() * 9) + 2; // 2 to 10
-    const cols = [2, 3, 4, 5, 10][Math.floor(Math.random() * 5)];
+    const cols = [6, 7, 8, 9][Math.floor(Math.random() * 4)];
     const total = rows * cols;
 
     answer = String(total);
@@ -97,8 +97,8 @@ export const foundationLogic = function (
       });
     }
   }
-  else if (activeVariant === 'foundation_direct_multiply_2_5_10') {
-    const num = [2, 5, 10][Math.floor(Math.random() * 3)];
+  else if (activeVariant === 'foundation_direct_multiply_6_9') {
+    const num = [6, 7, 8, 9][Math.floor(Math.random() * 4)];
     const multiplier = Math.floor(Math.random() * 10) + 1; // 1 to 10
     const total = num * multiplier;
 
@@ -127,38 +127,8 @@ export const foundationLogic = function (
       });
     }
   }
-  else if (activeVariant === 'foundation_direct_multiply_3_4') {
-    const num = [3, 4][Math.floor(Math.random() * 2)];
-    const multiplier = Math.floor(Math.random() * 10) + 1; // 1 to 10
-    const total = num * multiplier;
-
-    const isFlipped = Math.random() > 0.5;
-    const equation = isFlipped ? `${num} x ${multiplier}` : `${multiplier} x ${num}`;
-    const groups = isFlipped ? num : multiplier;
-    const items = isFlipped ? multiplier : num;
-
-    answer = String(total);
-    
-    if (isStructure) {
-      askText = `Write a creative 1-step word problem where ${context.name} has ${groups} sets, boxes, or collections of ${selectedContextItem}, and there are ${items} ${selectedContextItem} in each set. Ask for the total number of ${selectedContextItem}.`;
-      questionStemConstraint = `- The question stem must be a creative word problem following these instructions: ${askText}`;
-    } else {
-      askText = getQText(`What is ${equation}?`, `${equation} = ?`);
-      questionStemConstraint = `- The question stem must clearly ask exactly: "${askText}".`;
-    }
-
-    if (isStructure) {
-      inputRequirementStr = JSON.stringify({
-        inputType: "MULTI_STEP_INPUT",
-        steps: [
-          { label: "Write this as a multiplication equation (e.g., A x B)", expectedAnswer: `${groups} x ${items}` },
-          { label: "What is the total?", expectedAnswer: `${total}` }
-        ]
-      });
-    }
-  }
-  else if (activeVariant === 'foundation_skip_counting') {
-    const num = [2, 3, 4, 5, 10][Math.floor(Math.random() * 5)];
+  else if (activeVariant === 'foundation_skip_counting_6_9') {
+    const num = [6, 7, 8, 9][Math.floor(Math.random() * 4)];
     const startMultiplier = Math.floor(Math.random() * 5) + 1; // 1 to 5
     const sequence = [];
     let missingIndex = Math.floor(Math.random() * 5); // 0 to 4
@@ -194,8 +164,8 @@ export const foundationLogic = function (
     }
   }
 
-  let aiPrompt = `You are an expert Primary 2 math generator.
-Generate a question for the subtopic: Multiplication Tables (2, 3, 4, 5, 10).
+  let aiPrompt = `You are an expert Primary 3 math generator.
+Generate a question for the subtopic: Multiplication Tables (6-9).
 Level: ${levelName}
 Difficulty: ${zodDiff}
 Type: ${zodType}

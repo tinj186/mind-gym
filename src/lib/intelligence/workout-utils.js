@@ -38,6 +38,8 @@ export function normalizeQuestionData(raw) {
     ? { inputType: rawInputReq } 
     : rawInputReq;
 
+  const acceptedAnswers = modelData?.acceptedAnswers || raw.acceptedAnswers || [];
+
   return {
     ...raw,
     modelData,
@@ -46,7 +48,8 @@ export function normalizeQuestionData(raw) {
     question: questionText,
     solution: solutionText,
     hint: hintText,
-    inputRequirement
+    inputRequirement,
+    acceptedAnswers
   };
 }
 

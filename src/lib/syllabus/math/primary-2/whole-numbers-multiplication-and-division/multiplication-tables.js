@@ -1,7 +1,7 @@
 import { foundationLogic } from './multiplication-tables/foundation';
 import { standardLogic } from './multiplication-tables/standard';
 import { advancedLogic } from './multiplication-tables/advanced';
-import { getRandomNames, getRandomLengthItems } from '@/lib/utils/variable-bank';
+import { getRandomNames, getRandomCountableItems } from '@/lib/utils/variable-bank';
 
 export const multiplicationTablesBlueprint = {
   id: 'p2-multiplication-tables',
@@ -36,12 +36,14 @@ export const multiplicationTablesBlueprint = {
     foundation_arrays: "Find total using a conceptual array format.",
     foundation_direct_multiply_2_5_10: "Direct multiplication facts for 2, 5, and 10.",
     foundation_direct_multiply_3_4: "Direct multiplication facts for 3 and 4.",
+    foundation_skip_counting: "Find the missing number in a skip counting sequence.",
 
     standard_missing_factor_2_5_10: "Find the missing factor for tables 2, 5, 10.",
     standard_missing_factor_3_4: "Find the missing factor for tables 3, 4.",
     standard_word_problem_grouping: "1-step word problem finding total objects in groups.",
     standard_word_problem_rate: "1-step word problem finding total cost or amount (rate).",
     standard_commutativity: "Use commutative property (e.g., 4 x 3 = 3 x ?).",
+    standard_true_false_equation: "Identify if a given multiplication equation is true or false.",
 
     advanced_2_step_word_problem: "2-step word problem involving multiplication and addition/subtraction.",
     advanced_comparing_products: "Compare two multiplication expressions to find the larger/smaller product.",
@@ -62,9 +64,9 @@ export const multiplicationTablesBlueprint = {
     const zodDiff = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
 
     const contextName = getRandomNames(1);
-    const contextItem = getRandomLengthItems(1); 
+    const contextItemObj = getRandomCountableItems(1); 
     const context = { name: contextName, setting: "the store" };
-    const selectedContextItem = contextItem;
+    const selectedContextItem = contextItemObj.item;
 
     const getFormatInstructions = (visualEngineStr = `{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }`, inputRequirementStr = null) => `OUTPUT FORMAT (Return ONLY valid JSON matching this schema, with NO markdown formatting, NO \`\`\`json blocks, and NO trailing characters/braces):
 {

@@ -96,16 +96,24 @@ export async function getDailyWorkout(studentId, primaryLevel, options = { mode:
       ...(difficultyFilter ? { difficulty: difficultyFilter } : {})
     };
 
-    const count = await prisma.questionBank.count({ where: whereClause });
+    const allIds = await prisma.questionBank.findMany({
+      where: whereClause,
+      select: { id: true }
+    });
     
-    if (count > 0) {
-      const randomSkip = Math.floor(Math.random() * Math.max(0, count - 10));
+    if (allIds.length > 0) {
+      // Fisher-Yates shuffle for true randomness
+      for (let i = allIds.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allIds[i], allIds[j]] = [allIds[j], allIds[i]];
+      }
+      
+      const selectedIds = allIds.slice(0, 10).map(item => item.id);
       const questions = await prisma.questionBank.findMany({
-        where: whereClause,
-        skip: randomSkip,
-        take: 10
+        where: { id: { in: selectedIds } }
       });
-      workout.push(...questions);
+      const ordered = selectedIds.map(id => questions.find(q => q.id === id)).filter(Boolean);
+      workout.push(...ordered);
     }
   } else {
     // 1. Fetch Student Mastery records
@@ -120,7 +128,7 @@ export async function getDailyWorkout(studentId, primaryLevel, options = { mode:
 
     console.log(`[Trainer Logic] Warmup: ${warmUpTopics.length}, Core: ${coreTopics.length}, Challenge: ${challengeTopics.length}`);
 
-    // ENHANCED: Fetch with Random Offset to prevent static repetition
+    // ENHANCED: Fetch IDs and shuffle them in memory to prevent consecutive row selection
     const fetchRandomQuestions = async (subtopicIds, limit, excludeIds = []) => {
       if (subtopicIds.length === 0) return [];
       
@@ -132,16 +140,25 @@ export async function getDailyWorkout(studentId, primaryLevel, options = { mode:
         subtopic: { in: subtopicIds }
       };
 
-      const count = await prisma.questionBank.count({ where });
-      if (count === 0) return [];
-
-      const randomSkip = Math.floor(Math.random() * Math.max(0, count - limit));
-
-      return prisma.questionBank.findMany({
+      const allIds = await prisma.questionBank.findMany({
         where,
-        skip: randomSkip,
-        take: limit
+        select: { id: true }
       });
+      
+      if (allIds.length === 0) return [];
+
+      // Fisher-Yates shuffle
+      for (let i = allIds.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allIds[i], allIds[j]] = [allIds[j], allIds[i]];
+      }
+
+      const selectedIds = allIds.slice(0, limit).map(item => item.id);
+
+      const questions = await prisma.questionBank.findMany({
+        where: { id: { in: selectedIds } }
+      });
+      return selectedIds.map(id => questions.find(q => q.id === id)).filter(Boolean);
     };
 
     // 2. 20% Warm-up (2 Reps)
@@ -177,17 +194,26 @@ export async function getDailyWorkout(studentId, primaryLevel, options = { mode:
   // ONLY for daily mode! Isolation mode should never mix in random topics.
   if (options?.mode !== 'isolation' && workout.length < totalQuestions) {
     const remaining = totalQuestions - workout.length;
-    const fallbackCount = await prisma.questionBank.count({
-      where: { level: primaryLevel, isApproved: true, id: { notIn: workout.map(q => q.id) } }
+    const fallbackWhere = { level: primaryLevel, isApproved: true, id: { notIn: workout.map(q => q.id) } };
+    
+    const fallbackIds = await prisma.questionBank.findMany({
+      where: fallbackWhere,
+      select: { id: true }
     });
-    const fallbackSkip = Math.floor(Math.random() * Math.max(0, fallbackCount - remaining));
 
-    const fillers = await prisma.questionBank.findMany({
-      where: { level: primaryLevel, isApproved: true, id: { notIn: workout.map(q => q.id) } },
-      skip: fallbackSkip,
-      take: remaining
-    });
-    workout.push(...fillers);
+    if (fallbackIds.length > 0) {
+      for (let i = fallbackIds.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [fallbackIds[i], fallbackIds[j]] = [fallbackIds[j], fallbackIds[i]];
+      }
+
+      const selectedFallbackIds = fallbackIds.slice(0, remaining).map(item => item.id);
+      const fillers = await prisma.questionBank.findMany({
+        where: { id: { in: selectedFallbackIds } }
+      });
+      const orderedFillers = selectedFallbackIds.map(id => fillers.find(q => q.id === id)).filter(Boolean);
+      workout.push(...orderedFillers);
+    }
   }
 
   const finalWorkout = workout.map(formatWorkoutQuestion);
