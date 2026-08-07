@@ -1,8 +1,11 @@
 'use client';
 
+import React from 'react';
+import { motion } from 'framer-motion';
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import GroupingWorkspace from '@/components/tools/GroupingWorkspace';
+import BarModelWorkspace from '@/components/tools/BarModelWorkspace';
 import useSWR from 'swr';
 import ReviewCard from './ReviewCard';
 
@@ -268,20 +271,46 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
         </div>
       )}
 
-      {/* Interactive Tool Modal Overlay for Admin Inspection */}
+      {/* Interactive Tool Overlay for Admin Inspection */}
       {activeTool && (
-        <GroupingWorkspace
-          modelData={activeTool.modelData}
-          onClose={() => setActiveTool(null)}
-          questionId={activeTool.id}
-          difficulty={activeTool.difficulty}
-          mode={activeTool.visualProps.mode}
-          totalItems={activeTool.visualProps.totalItems}
-          icon={activeTool.visualProps.icon}
-          expectedGroups={activeTool.visualProps.expectedGroups}
-          targetGroupSize={activeTool.visualProps.targetSize}
-          showTargetSize={activeTool.topic !== 'Division'}
-        />
+        <div className="fixed inset-0 z-[100] pointer-events-none flex items-center justify-center p-4">
+          <motion.div 
+            drag
+            dragMomentum={false}
+            initial={{ scale: 0.9, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.9, y: 20 }}
+            className="bg-white rounded-[3rem] w-full max-w-5xl max-h-[90vh] overflow-hidden relative border-8 border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.3)] pointer-events-auto cursor-grab active:cursor-grabbing"
+          >
+            <button 
+              onClick={() => setActiveTool(null)}
+              className="absolute top-8 right-8 w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center font-black hover:bg-slate-200 z-50 text-xl"
+            >
+              ✕
+            </button>
+            <div className="p-12 overflow-y-auto max-h-[85vh]">
+              {activeTool.type === 'BAR_MODEL' ? (
+                <BarModelWorkspace
+                  modelData={activeTool.modelData}
+                  onClose={() => setActiveTool(null)}
+                />
+              ) : (
+                <GroupingWorkspace
+                  modelData={activeTool.modelData}
+                  onClose={() => setActiveTool(null)}
+                  questionId={activeTool.id}
+                  difficulty={activeTool.difficulty}
+                  mode={activeTool.visualProps.mode}
+                  totalItems={activeTool.visualProps.totalItems}
+                  icon={activeTool.visualProps.icon}
+                  expectedGroups={activeTool.visualProps.expectedGroups}
+                  targetGroupSize={activeTool.visualProps.targetSize}
+                  showTargetSize={activeTool.topic !== 'Division'}
+                />
+              )}
+            </div>
+          </motion.div>
+        </div>
       )}
     </div>
   );

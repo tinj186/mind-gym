@@ -65,9 +65,32 @@ export async function getStudentStatsAction(studentId, levelFilter = 'Overall') 
   // Fetch or mock exam results
   let examResults = [];
   try {
-    examResults = await prisma.mockExamResult.findMany({
+    const rawExamResults = await prisma.mockExamResult.findMany({
       where: { studentId },
       orderBy: { createdAt: 'desc' } // Fetch most recent exams
+    });
+
+    // Aggregate exam results by topic
+    const aggregatedExamResultsMap = new Map();
+    for (const exam of rawExamResults) {
+      if (!aggregatedExamResultsMap.has(exam.topic)) {
+        aggregatedExamResultsMap.set(exam.topic, {
+          ...exam,
+          totalAccuracy: exam.accuracy,
+          count: 1
+        });
+      } else {
+        const existing = aggregatedExamResultsMap.get(exam.topic);
+        existing.totalAccuracy += exam.accuracy;
+        existing.count += 1;
+        // The first encountered exam is the latest, so we keep its metadata (like speedAnalysis)
+      }
+    }
+
+    examResults = Array.from(aggregatedExamResultsMap.values()).map(exam => {
+      const avgAccuracy = Math.round(exam.totalAccuracy / exam.count);
+      const { totalAccuracy, count, ...rest } = exam;
+      return { ...rest, accuracy: avgAccuracy };
     });
 
     // If a specific level is selected, filter examResults to only include topics present in the filtered mastery data

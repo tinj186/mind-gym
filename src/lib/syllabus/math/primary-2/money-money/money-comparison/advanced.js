@@ -16,7 +16,7 @@ export const generateAdvanced = (activeVariant, isMCQ, isShort, isStructure, zod
   let customConstraints = "";
 
   const names = getRandomNames(2);
-  const items = [getRandomDivisibleObjects(1), getRandomDivisibleObjects(1), getRandomDivisibleObjects(1), getRandomDivisibleObjects(1)];
+  const items = getRandomDivisibleObjects(4);
 
   const getQText = (structureQ, shortQ) => {
     return isStructure ? structureQ : shortQ;
@@ -75,17 +75,23 @@ export const generateAdvanced = (activeVariant, isMCQ, isShort, isStructure, zod
   } else if (activeVariant === 'advanced_compare_sums') {
     const a1 = Math.floor(Math.random() * 200) + 100;
     const a2 = Math.floor(Math.random() * 200) + 100;
-    const a3 = Math.floor(Math.random() * 400) + 200;
+    let a3 = Math.floor(Math.random() * 400) + 200;
     
-    const sumAB = a1 + a2;
-    const sumC = a3;
-    const diff = Math.abs(sumAB - sumC) || 10;
+    let sumAB = a1 + a2;
+    let sumC = a3;
+    
+    if (sumAB === sumC) {
+      a3 += 10; // Adjust a3 to ensure there is a difference
+      sumC = a3;
+    }
+    
+    const diff = Math.abs(sumAB - sumC);
     
     answer = generateMoneyString(diff);
     
     questionText = getQText(
       `A ${items[0]} costs ${generateMoneyString(a1)} and a ${items[1]} costs ${generateMoneyString(a2)}.\nA ${items[2]} costs ${generateMoneyString(a3)}.\nWhat is the difference in price between buying the first two items together, compared to buying the third item alone?\nShow your working and the final answer.`,
-      `Find the difference between the sum of ${generateMoneyString(a1)} and ${generateMoneyString(a2)}, and ${generateMoneyString(a3)}.`
+      `A ${items[0]} costs ${generateMoneyString(a1)} and a ${items[1]} costs ${generateMoneyString(a2)}. A ${items[2]} costs ${generateMoneyString(a3)}. What is the difference in price between buying the first two items together, compared to buying the third item alone?`
     );
     
     hint = `First, find the total cost of the first two items. Then, subtract the smaller amount from the larger amount to find the difference.`;

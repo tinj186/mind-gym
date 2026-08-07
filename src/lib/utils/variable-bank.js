@@ -151,6 +151,53 @@ export const getRandomCountableItems = (count = 1) => {
   return count === 1 ? makeCompatibleArray(shuffled[0]) : shuffled.slice(0, count);
 };
 
+export const getPackingAndShoppingItems = (count = 1) => {
+  const pool = [
+    // Localized & Food Items
+    { item: 'ang pows', icon: '🧧' }, { item: 'satay sticks', icon: '🍢' }, { item: 'curry puffs', icon: '🥟' },
+    { item: 'fishball sticks', icon: '🍡' }, { item: 'mooncakes', icon: '🥮' }, { item: 'bento sets', icon: '🍱' },
+    { item: 'dumplings', icon: '🥟' }, { item: 'kueh lapis', icon: '🍰' }, { item: 'roti prata', icon: '🥞' },
+    { item: 'mangosteens', icon: '🍎' }, { item: 'durians', icon: '🍈' }, { item: 'pineapples', icon: '🍍' },
+    { item: 'croissants', icon: '🥐' }, { item: 'coconuts', icon: '🥥' }, { item: 'doughnuts', icon: '🍩' },
+    { item: 'drum sticks', icon: '🍗' }, { item: 'pancakes', icon: '🥞' }, { item: 'waffles', icon: '🧇' },
+    { item: 'kaya toasts', icon: '🥪' }, { item: 'cake slices', icon: '🍰' }, { item: 'loaves of bread', icon: '🍞' },
+    { item: 'burgers', icon: '🍔' }, { item: 'pizzas', icon: '🍕' }, { item: 'cookies', icon: '🍪' },
+    { item: 'strawberries', icon: '🍓' }, { item: 'grapes', icon: '🍇' }, { item: 'bananas', icon: '🍌' },
+    { item: 'cherries', icon: '🍒' }, { item: 'ice creams', icon: '🍦' },
+    
+    // School, Toys & Stationary
+    { item: 'storybooks', icon: '📚' }, { item: 'game cards', icon: '🃏' }, { item: 'teddy bears', icon: '🧸' },
+    { item: 'pencils', icon: '✏️' }, { item: 'erasers', icon: '🧽' }, { item: 'stickers', icon: '🌟' },
+    { item: 'keychains', icon: '🔑' }, { item: 'toy cars', icon: '🚗' }, { item: 'marbles', icon: '🪩' },
+    { item: 'notebooks', icon: '📓' }, { item: 'paper clips', icon: '📎' }, { item: 'straight rulers', icon: '📏' },
+    { item: 'scissors', icon: '✂️' }, { item: 'crayons', icon: '🖍️' }, { item: 'paint palettes', icon: '🎨' },
+    { item: 'magnets', icon: '🧲' }, { item: 'backpacks', icon: '🎒' }, { item: 'name badges', icon: '📛' },
+    { item: 'yo-yos', icon: '🪀' }, { item: 'kites', icon: '🪁' }, { item: 'puzzle pieces', icon: '🧩' },
+    { item: 'game dice', icon: '🎲' }, { item: 'admission tickets', icon: '🎟️' }, { item: 'coins', icon: '🪙' },
+    { item: 'balls', icon: '⚽' }, { item: 'robots', icon: '🤖' }, { item: 'toy trains', icon: '🚂' },
+    
+    // Clothing & Accessories
+    { item: 'shirts', icon: '👕' }, { item: 'shoes', icon: '👞' }, { item: 'hats', icon: '🎩' },
+    { item: 'socks', icon: '🧦' }, { item: 'pants', icon: '👖' }, { item: 'dresses', icon: '👗' },
+    { item: 'rings', icon: '💍' }, { item: 'crowns', icon: '👑' }, { item: 'diamonds', icon: '💎' },
+    { item: 'watches', icon: '⌚' }, { item: 'sunglasses', icon: '🕶️' }, { item: 'umbrellas', icon: '☂️' },
+    
+    // General Objects & Party
+    { item: 'balloons', icon: '🎈' }, { item: 'candies', icon: '🍬' }, { item: 'presents', icon: '🎁' },
+    { item: 'bottles', icon: '🧴' }, { item: 'vouchers', icon: '🎫' }, { item: 'shipping containers', icon: '📦' },
+    { item: 'parcels', icon: '📦' }, { item: 'clocks', icon: '🕰️' }, { item: 'phones', icon: '📱' },
+    { item: 'computers', icon: '💻' }, { item: 'stars', icon: '⭐' }, { item: 'cups', icon: '☕' },
+    
+    // Nature & Animals (As toys or figurines to pack)
+    { item: 'toy cats', icon: '🐱' }, { item: 'toy dogs', icon: '🐶' }, { item: 'toy rabbits', icon: '🐰' },
+    { item: 'potted plants', icon: '🪴' }, { item: 'flowers', icon: '🌸' }, { item: 'leaves', icon: '🍃' },
+    { item: 'toy butterflies', icon: '🦋' }, { item: 'toy birds', icon: '🐦' }, { item: 'toy fish', icon: '🐟' },
+    { item: 'sunflowers', icon: '🌻' }, { item: 'mushrooms', icon: '🍄' }, { item: 'cactuses', icon: '🌵' }
+  ];
+  const shuffled = pool.sort(() => 0.5 - Math.random());
+  return count === 1 ? makeCompatibleArray(shuffled[0]) : shuffled.slice(0, count);
+};
+
 
 // ----------------------------------------------------------------------------
 // 2. PICTURE GRAPH THEMES

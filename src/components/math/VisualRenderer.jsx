@@ -8,9 +8,9 @@ export const ESSENTIAL_VISUALS = [
   "ORDINAL_LINE", "GROUPING_WORKSPACE", "NUMBER_CARDS", 
   "NUMBER_BOND", "NUMBER_PATTERN", "BASE_TEN_BLOCKS", 
   "SINGAPORE_MONEY", "MEASUREMENT_UNIT", "MEASUREMENT_RULER", "CLOCK_DISPLAY",
-  "SHAPE_DISPLAY", "SHAPE_3D", "SHAPE_3D_PATTERN", "PLACE_VALUE_CHART", "VERTICAL_ALGORITHM",
+  "SHAPE_DISPLAY", "SHAPE_3D", "SHAPE_3D_PATTERN", "PLACE_VALUE_CHART", "VERTICAL_ALGORITHM", "LONG_DIVISION",
   "GRID_DISPLAY", "GRID_DRAWING_CANVAS", "FRACTION_DISPLAY",
-  "MASS_SCALE", "VOLUME_BEAKER", "STATIC_IMAGE", "HTML_CONTENT"
+  "MASS_SCALE", "VOLUME_BEAKER", "STATIC_IMAGE", "HTML_CONTENT", "BAR_MODEL"
   // "PICTURE_GRAPH_DISPLAY" // Not essential, lazy-loaded
 ];
 
@@ -40,7 +40,9 @@ const CrossOutGroup = lazy(() => import('./modules/CrossOutGroup'));
 const TwoSetComparison = lazy(() => import('./modules/TwoSetComparison'));
 const TFMatrixTable = lazy(() => import('./modules/TFMatrixTable'));
 const VerticalAlgorithm = lazy(() => import('./modules/VerticalAlgorithm'));
+const LongDivision = lazy(() => import('./modules/LongDivision'));
 const DiagramRenderer = lazy(() => import('./modules/DiagramRenderer'));
+const BarModelRenderer = lazy(() => import('./modules/BarModelRenderer'));
 const GridDisplay = lazy(() => import('./modules/GridDisplay'));
 const GridDrawingCanvas = lazy(() => import('./modules/GridDrawingCanvas'));
 const FractionDisplay = lazy(() => import('./modules/FractionDisplay'));
@@ -123,7 +125,9 @@ export default function VisualRenderer({ type, ...props }) {
             return <TFMatrixTable items={data.items} headers={data.headers} tableType={data.tableType} />;
           }
           case 'VERTICAL_ALGORITHM': return <VerticalAlgorithm data={props.visualEngine?.componentData || props.data} />;
+          case 'LONG_DIVISION': return <LongDivision data={props.visualEngine?.componentData || props.data} />;
           case 'DIAGRAM_RENDERER': return <DiagramRenderer data={props.visualEngine?.componentData || props.data} />;
+          case 'BAR_MODEL': return <BarModelRenderer data={props.visualEngine?.componentData || props.data} setIsToolOpen={props.setIsToolOpen} toolState={props.toolState} />;
           case 'FRACTION_DISPLAY': return <FractionDisplay data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
           case 'STATIC_IMAGE': {
             const data = props.visualEngine?.componentData || props.data || {};

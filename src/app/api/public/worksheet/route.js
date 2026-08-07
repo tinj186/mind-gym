@@ -20,17 +20,17 @@ export async function POST(req) {
 
     // Fetch from the question bank by specific types to create the 5-3-1 mix
     const mcqs = await prisma.questionBank.findMany({
-      where: { ...whereClause, type: 'MCQ' },
+      where: { ...whereClause, type: 'MCQ', isArchived: false },
       take: 30, // Fetch pool to shuffle
     });
 
     const shortQs = await prisma.questionBank.findMany({
-      where: { ...whereClause, type: 'Short Question' },
+      where: { ...whereClause, type: 'Short Question', isArchived: false },
       take: 20, 
     });
 
     const structuredQs = await prisma.questionBank.findMany({
-      where: { ...whereClause, type: 'Structured' },
+      where: { ...whereClause, type: 'Structured', isArchived: false },
       take: 10, 
     });
 

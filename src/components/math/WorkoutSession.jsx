@@ -7,6 +7,7 @@ import { finalizeWorkoutAction, updateWorkoutProgressAction, saveAttemptAction }
 import { normalizeQuestionData, deriveVisualProps } from '@/lib/intelligence/workout-utils';
 import VisualRenderer, { ESSENTIAL_VISUALS } from '@/components/math/VisualRenderer';
 import GroupingWorkspace from '@/components/tools/GroupingWorkspace'; // Import the interactive tool
+import BarModelWorkspace from '@/components/tools/BarModelWorkspace';
 import MultiStepInput from '@/components/math/MultiStepInput'; // Multi-Step Input
 import MathInput from '@/components/math/MathInput'; // Advanced Math Input
 import confetti from 'canvas-confetti';
@@ -23,6 +24,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
   const [showSolution, setShowSolution] = useState(false);
   const [showBarModel, setShowBarModel] = useState(false);
   const [isToolOpen, setIsToolOpen] = useState(false);
+  const [toolState, setToolState] = useState({});
   const [hasAutoOpened, setHasAutoOpened] = useState(false);
   const [feedback, setFeedback] = useState(null); // 'correct' | 'wrong'
   const [isPending, startTransition] = useTransition();
@@ -143,24 +145,37 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
     setShowSolution(false);
     setShowBarModel(false);
     setFeedback(null);
+    setHasAutoOpened(false);
+    setToolState({});
     setSingleInputAnswer("");
 
     // Part 2: Real-Time Saving & Persistence
     if (!isSandbox) {
-      startTransition(async () => {
-        try {
-          await saveAttemptAction(studentId, result);
-          if (nextIndex < initialQuestions.length) {
+      if (nextIndex < initialQuestions.length) {
+        startTransition(async () => {
+          try {
+            await saveAttemptAction(studentId, result);
             await updateWorkoutProgressAction(studentId, { currentIndex: nextIndex, answersLog: newLog });
-          }
-        } catch (e) { console.error("Real-time save failed:", e); }
-      });
-    }
-
-    if (nextIndex < initialQuestions.length) {
-      setCurrentIndex(nextIndex);
+          } catch (e) { console.error("Real-time save failed:", e); }
+        });
+        setCurrentIndex(nextIndex);
+      } else {
+        // It's the last question, we must await the save BEFORE finalization
+        startTransition(async () => {
+          try {
+            await saveAttemptAction(studentId, result);
+            const summaryData = await finalizeWorkoutAction(studentId, newLog);
+            await updateWorkoutProgressAction(studentId, null);
+            setSummary(summaryData);
+          } catch (e) { console.error("Finalization failed:", e); }
+        });
+      }
     } else {
-      handleFinish(newLog);
+      if (nextIndex < initialQuestions.length) {
+        setCurrentIndex(nextIndex);
+      } else {
+        setSummary({ averageGrowth: 0, rankUps: [] });
+      }
     }
   }, [currentIndex, answersLog, initialQuestions.length, studentId]);
 
@@ -343,7 +358,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
         if (isP1) setShowBarModel(true);
         
         // Automatically open the grouping tool for relevant question types
-        if (!hasAutoOpened && ['COUNTING_OBJECTS', 'EQUAL_GROUPS', 'GROUPING_WORKSPACE'].includes(currentVisual)) {
+        if (!hasAutoOpened && ['COUNTING_OBJECTS', 'EQUAL_GROUPS', 'GROUPING_WORKSPACE', 'BAR_MODEL'].includes(currentVisual)) {
           setIsToolOpen(true);
           setHasAutoOpened(true);
         }
@@ -356,19 +371,6 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
         setFeedback('solution_revealed');
       }
     }
-  };
-
-  const handleFinish = (finalLog) => {
-    if (isSandbox) {
-      setSummary({ averageGrowth: 0, rankUps: [] });
-      return;
-    }
-    startTransition(async () => {
-      const summaryData = await finalizeWorkoutAction(studentId, finalLog);
-      // Clear the session from the backend database
-      await updateWorkoutProgressAction(studentId, null);
-      setSummary(summaryData);
-    });
   };
 
   if (summary) {
@@ -443,6 +445,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
                 data={normalizedQuestion?.visualEngine?.componentData || {}}
                 modelData={normalizedQuestion.modelData} // Pass the full modelData
                 visualProps={visualProps}
+                toolState={toolState}
                 setIsToolOpen={setIsToolOpen}
                 questionId={normalizedQuestion.id}
                 difficulty={normalizedQuestion.difficulty}
@@ -545,13 +548,15 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+            className="fixed inset-0 z-[100] pointer-events-none flex items-center justify-center p-4"
           >
             <motion.div 
+              drag
+              dragMomentum={false}
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-white rounded-[3rem] w-full max-w-5xl max-h-[90vh] overflow-hidden relative border-8 border-slate-100 shadow-2xl"
+              className="bg-white rounded-[3rem] w-full max-w-5xl max-h-[90vh] overflow-hidden relative border-8 border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.3)] pointer-events-auto cursor-grab active:cursor-grabbing"
             >
               <button 
                 onClick={() => setIsToolOpen(false)}
@@ -560,18 +565,43 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
                 ✕
               </button>
               <div className="p-12 overflow-y-auto max-h-[85vh]">
-                <GroupingWorkspace
-                  modelData={normalizedQuestion.modelData}
-                  onClose={() => setIsToolOpen(false)}
-                  questionId={normalizedQuestion.id}
-                  difficulty={normalizedQuestion.difficulty}
-                  mode={visualProps.mode}
-                  totalItems={visualProps.totalItems}
-                  icon={visualProps.icon}
-                  expectedGroups={visualProps.expectedGroups}
-                  targetGroupSize={visualProps.targetSize}
-                  showTargetSize={normalizedQuestion.topic !== 'Division'}
-                />
+                {(() => {
+                  let toolEngine = normalizedQuestion?.visualEngine;
+                  if (toolEngine?.componentToRender === 'MULTI_COMPONENT') {
+                    toolEngine = toolEngine.componentData?.components?.find(c => ['BAR_MODEL', 'GROUPING_WORKSPACE', 'EQUAL_GROUPS', 'COUNTING_OBJECTS'].includes(c.componentToRender)) || toolEngine;
+                  }
+                  const activeType = toolEngine?.componentToRender;
+                  const activeData = toolEngine?.componentData || {};
+                  
+                  if (activeType === 'BAR_MODEL') {
+                    return (
+                      <BarModelWorkspace
+                        modelData={activeData}
+                        initialState={toolState}
+                        onClose={(newState) => {
+                          if (newState) setToolState(newState);
+                          setIsToolOpen(false);
+                        }}
+                      />
+                    );
+                  } else {
+                    const toolProps = deriveVisualProps({ visualEngine: toolEngine, modelData: normalizedQuestion.modelData });
+                    return (
+                      <GroupingWorkspace
+                        modelData={activeData}
+                        onClose={() => setIsToolOpen(false)}
+                        questionId={normalizedQuestion.id}
+                        difficulty={normalizedQuestion.difficulty}
+                        mode={toolProps.mode}
+                        totalItems={toolProps.totalItems}
+                        icon={toolProps.icon}
+                        expectedGroups={toolProps.expectedGroups}
+                        targetGroupSize={toolProps.targetSize}
+                        showTargetSize={normalizedQuestion.topic !== 'Division'}
+                      />
+                    );
+                  }
+                })()}
               </div>
             </motion.div>
           </motion.div>

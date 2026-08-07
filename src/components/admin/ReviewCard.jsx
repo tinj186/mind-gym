@@ -81,6 +81,7 @@ export default function ReviewCard({
                   visualProps={visualProps}
                   attempts={0}
                   setIsToolOpen={() => setActiveTool({
+                    type: normalizedQuestion.visualEngine?.componentToRender,
                     modelData: normalizedQuestion.modelData,
                     id: normalizedQuestion.id,
                     difficulty: normalizedQuestion.difficulty,

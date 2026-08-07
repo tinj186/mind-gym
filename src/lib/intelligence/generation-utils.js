@@ -213,6 +213,7 @@ export function processAiQuestion(q, context) {
       }
     };
   } catch (zodError) {
+    console.error("Zod Validation Error:", zodError);
     // Fallback manual mapping to prevent crash on slight Zod mismatches
     const { visualItems, modelData, questionText, solutionSteps, meta, content, visualEngine, inputRequirement, defectMap, ...cleanQ } = q;
     

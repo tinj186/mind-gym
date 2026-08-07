@@ -61,6 +61,8 @@ export const p3AdditionSubtractionAlgorithms4DigitBlueprint = {
     advanced_word_add_sub_4_digit_numbers: "Word problem involving addition of two 4-digit numbers and subtraction from a third.",
     advanced_algo_missing_two_digits_add: "Vertical addition of 4-digit numbers with 2 missing digits.",
     advanced_algo_missing_two_digits_sub: "Vertical subtraction of 4-digit numbers with 2 missing digits.",
+    advanced_word_part_whole: "Part-Whole bar model word problems for addition or finding missing parts.",
+    advanced_word_comparison: "Comparison bar model word problems using more than/less than terminology."
   },
 
   generate: function (difficulty, activeVariant, type) {
@@ -71,7 +73,7 @@ export const p3AdditionSubtractionAlgorithms4DigitBlueprint = {
     const isShort = type === 'Short Question';
     const isStructure = type === 'Structured';
 
-    const zodType = type;
+    const zodType = type === 'Short Question' ? 'SHORT_QUESTION' : type.toUpperCase();
     const zodDiff = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
 
     const contextName = getRandomNames(1);

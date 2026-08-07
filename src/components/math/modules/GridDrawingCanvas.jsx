@@ -32,38 +32,34 @@ export default function GridDrawingCanvas({ data, onSubmit, onChange, disabled }
           (l.start[0] === activePoint.x && l.start[1] === activePoint.y && l.end[0] === x && l.end[1] === y) ||
           (l.start[0] === x && l.start[1] === y && l.end[0] === activePoint.x && l.end[1] === activePoint.y)
         );
-        if (!exists) {
-          setDrawnLines(prev => {
-            const newLines = [...prev, { start: [activePoint.x, activePoint.y], end: [x, y] }];
+          if (!exists) {
+            const newLines = [...drawnLines, { start: [activePoint.x, activePoint.y], end: [x, y] }];
+            setDrawnLines(newLines);
             if (onChange) {
               const minCount = data?.workspaceLines ? data.workspaceLines.length : 0;
               onChange(JSON.stringify(newLines.slice(minCount)));
             }
-            return newLines;
-          });
+          }
         }
+        setActivePoint(null); // Reset after drawing or clicking same point
+      } else {
+        setActivePoint({ x, y });
       }
-      setActivePoint(null); // Reset after drawing or clicking same point
-    } else {
-      setActivePoint({ x, y });
-    }
-  };
-
-  const handleUndo = () => {
-    if (disabled || drawnLines.length === 0) return;
-    // Don't undo the initial workspace lines provided by the AI payload if we can help it,
-    // but for simplicity, we'll just pop the last one.
-    // If we want to prevent deleting initial lines, we'd check against data.workspaceLines.length.
-    const minLines = data.workspaceLines ? data.workspaceLines.length : 0;
-    if (drawnLines.length > minLines) {
-      setDrawnLines(prev => {
-        const newLines = prev.slice(0, -1);
-        if (onChange) onChange(JSON.stringify(newLines.slice(minLines)));
-        return newLines;
-      });
-    }
-    setActivePoint(null);
-  };
+    };
+  
+    const handleUndo = () => {
+      if (disabled || drawnLines.length === 0) return;
+      // Don't undo the initial workspace lines provided by the AI payload if we can help it,
+      // but for simplicity, we'll just pop the last one.
+      // If we want to prevent deleting initial lines, we'd check against data.workspaceLines.length.
+      const minLinesCount = data.workspaceLines ? data.workspaceLines.length : 0;
+      if (drawnLines.length > minLinesCount) {
+        const newLines = drawnLines.slice(0, -1);
+        setDrawnLines(newLines);
+        if (onChange) onChange(JSON.stringify(newLines.slice(minLinesCount)));
+      }
+      setActivePoint(null);
+    };
 
   const handleClear = () => {
     if (disabled) return;

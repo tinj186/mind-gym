@@ -186,13 +186,18 @@ Topic: ${topic}
 Type: ${zodType}
 Difficulty: ${zodDiff}
 
-CRITICAL INSTRUCTION: You MUST use the EXACT strings provided in the template below for questionText, hint, and solutionSteps. DO NOT rephrase them!
+CRITICAL INSTRUCTION: You MUST use the EXACT JSON provided below for questionText, hint, and solutionSteps. DO NOT rephrase them!
 
-Use EXACTLY:
-questionText: """${askText}"""
-finalAnswer: """${actualAnswer}"""
-hint: """${isCrossUnit ? 'First, convert both measurements to ' + baseUnit + '. Then, f' : 'F'}ind the difference by subtracting the smaller number from the larger number."""
-solutionSteps: """${conversionStep ? conversionStep : ''}\\n${stepOffset + 1}. Subtract the smaller measurement from the larger measurement.\\n${stepOffset + 2}. ${Math.max(baseValA, compareValB)} - ${Math.min(baseValA, compareValB)} = ${diff}.\\n${stepOffset + 3}. It is ${diff} ${baseUnit} ${finalAdj}."""
+Use EXACTLY these JSON values:
+"questionText": ${JSON.stringify(askText.split(/(?<=\.|\?) /).map(s => s.trim()))},
+"finalAnswer": ${JSON.stringify(actualAnswer)},
+"hint": ${JSON.stringify(isCrossUnit ? 'First, convert both measurements to ' + baseUnit + '. Then, find the difference by subtracting the smaller number from the larger number.' : 'Find the difference by subtracting the smaller number from the larger number.')},
+"solutionSteps": ${JSON.stringify(
+  (conversionStep ? conversionStep + '\\n' : '') +
+  `${stepOffset + 1}. Subtract the smaller measurement from the larger measurement.\\n` +
+  `${stepOffset + 2}. ${Math.max(baseValA, compareValB)} - ${Math.min(baseValA, compareValB)} = ${diff}.\\n` +
+  `${stepOffset + 3}. It is ${diff} ${baseUnit} ${finalAdj}.`
+).replace(/\\\\n/g, '\\n')}
 
 Generate options around ${diff} ${baseUnit}.
 The defectMap should map incorrect options to "CALCULATION_ERROR".
@@ -205,13 +210,18 @@ Topic: ${topic}
 Type: ${zodType}
 Difficulty: ${zodDiff}
 
-CRITICAL INSTRUCTION: You MUST use the EXACT strings provided in the template below for questionText, hint, and solutionSteps. DO NOT rephrase them!
+CRITICAL INSTRUCTION: You MUST use the EXACT JSON provided below for questionText, hint, and solutionSteps. DO NOT rephrase them!
 
-Use EXACTLY:
-questionText: """${askText}"""
-finalAnswer: """${actualAnswer}"""
-hint: """${isCrossUnit ? 'First, convert both measurements to ' + baseUnit + '. Then, f' : 'F'}ind the difference by subtracting the smaller number from the larger number."""
-solutionSteps: """${conversionStep ? conversionStep : ''}\\n${stepOffset + 1}. Subtract the smaller measurement from the larger measurement.\\n${stepOffset + 2}. ${Math.max(baseValA, compareValB)} - ${Math.min(baseValA, compareValB)} = ${diff}.\\n${stepOffset + 3}. It is ${diff} ${baseUnit} ${finalAdj}."""
+Use EXACTLY these JSON values:
+"questionText": ${JSON.stringify(askText.split(/(?<=\.|\?) /).map(s => s.trim()))},
+"finalAnswer": ${JSON.stringify(actualAnswer)},
+"hint": ${JSON.stringify(isCrossUnit ? 'First, convert both measurements to ' + baseUnit + '. Then, find the difference by subtracting the smaller number from the larger number.' : 'Find the difference by subtracting the smaller number from the larger number.')},
+"solutionSteps": ${JSON.stringify(
+  (conversionStep ? conversionStep + '\\n' : '') +
+  `${stepOffset + 1}. Subtract the smaller measurement from the larger measurement.\\n` +
+  `${stepOffset + 2}. ${Math.max(baseValA, compareValB)} - ${Math.min(baseValA, compareValB)} = ${diff}.\\n` +
+  `${stepOffset + 3}. It is ${diff} ${baseUnit} ${finalAdj}.`
+).replace(/\\\\n/g, '\\n')}
 `;
     }
   } else if (activeVariant.includes('order')) {

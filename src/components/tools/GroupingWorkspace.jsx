@@ -86,6 +86,7 @@ export default function GroupingWorkspace({ modelData, onClose, questionId, diff
   }, [modelData, questionId, difficulty, safeTotalItems, safeIcon]);
 
   const handlePointerDown = (e) => {
+    e.stopPropagation(); // Prevent the parent modal from dragging when interacting with the workspace
     const rect = containerRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -95,6 +96,7 @@ export default function GroupingWorkspace({ modelData, onClose, questionId, diff
 
   const handlePointerMove = (e) => {
     if (!dragStart) return;
+    e.stopPropagation();
     const rect = containerRef.current.getBoundingClientRect();
     setCurrentDrag({
       x: e.clientX - rect.left,
@@ -102,7 +104,8 @@ export default function GroupingWorkspace({ modelData, onClose, questionId, diff
     });
   };
 
-  const handlePointerUp = () => {
+  const handlePointerUp = (e) => {
+    e.stopPropagation();
     if (!dragStart || !currentDrag) {
       setDragStart(null);
       setCurrentDrag(null);
@@ -213,20 +216,18 @@ export default function GroupingWorkspace({ modelData, onClose, questionId, diff
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-6">
-      <div className="bg-white w-full max-w-4xl h-[80vh] rounded-[3rem] shadow-2xl border-4 border-white flex flex-col overflow-hidden">
-        <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center min-h-[100px]">
-          <div className="space-y-1">
-            <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Grouping Workspace</h2>
-            <p className="text-xs font-bold text-slate-400 min-h-[1rem]">
-              {safeMode === 'SHARING' 
-                ? `Drag a box to form ${safeExpectedGroups} equal groups!` 
-                : showTargetSize ? <span>Drag a box around <span className="text-blue-500">{safeTargetGroupSize} items</span> to group them!</span> : null}
-            </p>
-          </div>
-          <button onClick={onClose} className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center font-black hover:bg-red-50 hover:text-red-500 transition-colors">✕</button>
+    <div className="w-full min-h-[600px] bg-white rounded-[2rem] border-4 border-slate-100 flex flex-col overflow-hidden shadow-inner relative">
+      <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center min-h-[100px]">
+        <div className="space-y-1">
+          <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Grouping Workspace</h2>
+          <p className="text-xs font-bold text-slate-400 min-h-[1rem]">
+            {safeMode === 'SHARING' 
+              ? `Drag a box to form ${safeExpectedGroups} equal groups!` 
+              : showTargetSize ? <span>Drag a box around <span className="text-blue-500">{safeTargetGroupSize} items</span> to group them!</span> : null}
+          </p>
         </div>
-        <div ref={containerRef} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} className="flex-1 relative bg-slate-50 overflow-hidden cursor-crosshair touch-none">
+      </div>
+      <div ref={containerRef} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} className="flex-1 relative bg-slate-50 overflow-hidden cursor-crosshair touch-none">
           {dragStart && currentDrag && (
             <div className="absolute border-2 border-blue-400 bg-blue-400/10 rounded-lg pointer-events-none z-50" style={{ left: Math.min(dragStart.x, currentDrag.x), top: Math.min(dragStart.y, currentDrag.y), width: Math.abs(currentDrag.x - dragStart.x), height: Math.abs(currentDrag.y - dragStart.y) }} />
           )}
@@ -304,7 +305,6 @@ export default function GroupingWorkspace({ modelData, onClose, questionId, diff
             <button onClick={onClose} className="px-8 py-3 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-500 shadow-xl transition-all active:scale-95">I'm Ready!</button>
           </div>
         </div>
-      </div>
     </div>
   );
 }

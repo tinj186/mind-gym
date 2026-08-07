@@ -47,16 +47,16 @@ Here is the student's error data:
 ${promptData}`;
 
     // 4. Call Gemini
-    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY || '');
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     let diagnosticText = "Pattern recognition failing. Form repair required.";
     
-    if (process.env.GOOGLE_GEMINI_API_KEY) {
+    if (process.env.GEMINI_API_KEY) {
       const result = await model.generateContent(systemPrompt);
       diagnosticText = result.response.text().trim();
     } else {
-      diagnosticText = "AI Diagnostics Offline: Missing GOOGLE_GEMINI_API_KEY. Please add your key to enable auto-diagnostics.";
+      diagnosticText = "AI Diagnostics Offline: Missing GEMINI_API_KEY. Please add your key to enable auto-diagnostics.";
     }
 
     // 5. Update ALL StudentMastery records for this topic

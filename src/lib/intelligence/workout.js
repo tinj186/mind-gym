@@ -48,12 +48,36 @@ export async function getDailyWorkout(studentId, primaryLevel, options = { mode:
         const existingQuestions = await prisma.questionBank.findMany({ where: { id: { in: active.questionIds } } });
         const ordered = active.questionIds.map(id => existingQuestions.find(q => q.id === id)).filter(Boolean);
         if (ordered.length === active.questionIds.length) {
-          // Check if we are requesting a specific isolation target that conflicts with the locked session
           let sessionMatchesRequest = true;
-          if (options?.mode === 'isolation' && options?.subtopicId) {
-            const isMatchingIsolation = ordered.every(q => q.subtopic === options.subtopicId);
-            if (!isMatchingIsolation) {
+          
+          const requestedMode = options?.mode || 'daily';
+          const activeMode = active.mode; // Will be undefined for legacy sessions
+
+          if (activeMode) {
+            if (activeMode !== requestedMode) {
+              console.log(`[Trainer] Discarding locked session because mode changed from ${activeMode} to ${requestedMode}`);
               sessionMatchesRequest = false;
+            } else if (requestedMode === 'isolation' && options?.subtopicId) {
+              if (active.subtopicId !== options.subtopicId) {
+                console.log(`[Trainer] Discarding locked session because isolation target changed`);
+                sessionMatchesRequest = false;
+              }
+            }
+          } else {
+            // Legacy handling for old sessions without a mode
+            if (requestedMode === 'isolation' && options?.subtopicId) {
+              const isMatchingIsolation = ordered.every(q => q.subtopic === options.subtopicId);
+              if (!isMatchingIsolation) {
+                console.log(`[Trainer] Discarding legacy locked session to start new isolation target: ${options.subtopicId}`);
+                sessionMatchesRequest = false;
+              }
+            } else if (requestedMode === 'daily') {
+              // If requested mode is daily, discard legacy isolation sessions
+              const isAllSameSubtopic = ordered.length > 3 && ordered.every(q => q.subtopic === ordered[0].subtopic);
+              if (isAllSameSubtopic) {
+                console.log(`[Trainer] Discarding legacy locked session because it appears to be an isolation session, but daily was requested`);
+                sessionMatchesRequest = false;
+              }
             }
           }
 
@@ -68,7 +92,6 @@ export async function getDailyWorkout(studentId, primaryLevel, options = { mode:
             console.log(`[Trainer] Resuming locked session for student ${studentId}`);
             return ordered.map(formatWorkoutQuestion);
           } else {
-            console.log(`[Trainer] Discarding locked session to start new isolation target: ${options.subtopicId}`);
             // Let it fall through to generate a new workout
           }
         } else {
@@ -92,6 +115,7 @@ export async function getDailyWorkout(studentId, primaryLevel, options = { mode:
     const whereClause = {
       level: primaryLevel,
       isApproved: true,
+      isArchived: false,
       subtopic: options.subtopicId,
       ...(difficultyFilter ? { difficulty: difficultyFilter } : {})
     };
@@ -135,6 +159,7 @@ export async function getDailyWorkout(studentId, primaryLevel, options = { mode:
       const where = {
         level: primaryLevel,
         isApproved: true,
+        isArchived: false,
         difficulty: { in: ['Foundation', 'Standard', 'Advanced'] },
         id: { notIn: excludeIds },
         subtopic: { in: subtopicIds }
@@ -174,6 +199,7 @@ export async function getDailyWorkout(studentId, primaryLevel, options = { mode:
       where: { 
         level: primaryLevel, 
         isApproved: true,
+        isArchived: false,
         difficulty: { in: ['Foundation', 'Standard', 'Advanced'] }
       },
       distinct: ['subtopic'],
@@ -194,7 +220,7 @@ export async function getDailyWorkout(studentId, primaryLevel, options = { mode:
   // ONLY for daily mode! Isolation mode should never mix in random topics.
   if (options?.mode !== 'isolation' && workout.length < totalQuestions) {
     const remaining = totalQuestions - workout.length;
-    const fallbackWhere = { level: primaryLevel, isApproved: true, id: { notIn: workout.map(q => q.id) } };
+    const fallbackWhere = { level: primaryLevel, isApproved: true, isArchived: false, id: { notIn: workout.map(q => q.id) } };
     
     const fallbackIds = await prisma.questionBank.findMany({
       where: fallbackWhere,
@@ -225,7 +251,9 @@ export async function getDailyWorkout(studentId, primaryLevel, options = { mode:
         // Ensure all fields are explicitly set to prevent partial updates
         questionIds: finalWorkout.map(q => q.id), 
         currentIndex: 0,
-        answersLog: []
+        answersLog: [],
+        mode: options?.mode || 'daily',
+        subtopicId: options?.subtopicId || null
       }
     },
     create: {
@@ -236,7 +264,9 @@ export async function getDailyWorkout(studentId, primaryLevel, options = { mode:
       activeWorkout: {
         questionIds: finalWorkout.map(q => q.id),
         currentIndex: 0,
-        answersLog: []
+        answersLog: [],
+        mode: options?.mode || 'daily',
+        subtopicId: options?.subtopicId || null
       }
     }
   });

@@ -66,7 +66,9 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     'advanced_word_add_three_4_digit_numbers',
     'advanced_word_add_sub_4_digit_numbers',
     'advanced_algo_missing_two_digits_add',
-    'advanced_algo_missing_two_digits_sub'
+    'advanced_algo_missing_two_digits_sub',
+    'advanced_word_part_whole',
+    'advanced_word_comparison'
   ];
 
   if (activeVariant === 'advanced_random' || !variants.includes(activeVariant)) {
@@ -211,6 +213,197 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       const diffTens = Math.floor(diff / 10) % 10;
       inputRequirementStr = `{\n    "inputType": "MULTI_STEP_INPUT",\n    "steps": [\n      { "label": "Look at the ones column. Form an equation to find the missing digit.", "expectedAnswer": "1${o1} - ${o2} = ${(10 + o1) - o2}" },\n      { "label": "Look at the tens column. Form an equation to find the missing digit.", "expectedAnswer": "${t1} - 1 - ${t2} = ${diffTens}" },\n      { "label": "What are the two missing digits?", "expectedAnswer": "${answer}" }\n    ]\n  }`;
     }
+  } else if (activeVariant === 'advanced_word_part_whole') {
+    const scenario = Math.floor(Math.random() * 3); // 0 = find whole, 1 = find part1, 2 = find part2
+    const part1 = Math.floor(Math.random() * 4000) + 1000;
+    const part2 = Math.floor(Math.random() * 4000) + 1000;
+    const whole = part1 + part2;
+    
+    askText = "AI_GENERATED";
+    
+    if (scenario === 0) {
+      answer = String(whole);
+      customConstraints = `- Write a creative word problem about combining two quantities to find a total.
+- Use the character name "${context.name[0]}" and the item "${selectedContextItem}".
+- The two quantities must be exactly ${part1} and ${part2}.
+- The question must ask for the total amount.`;
+      
+      visualEngineStr = `{
+        "componentToRender": "BAR_MODEL",
+        "componentData": {
+          "modelType": "PART_WHOLE",
+          "parts": ["?", "?"],
+          "whole": "?",
+          "barLabel": "string - short label (max 2 words) describing what the total represents (e.g. Total Books, Cars)"
+        }
+      }`;
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: "Step 1 (Equation)", expectedAnswer: `${part1} + ${part2} = ${whole}` },
+            { label: "Step 2 (Final Answer)", expectedAnswer: String(whole) }
+          ]
+        });
+      }
+    } else if (scenario === 1) {
+      answer = String(part1);
+      customConstraints = `- Write a creative word problem where a total amount is broken into two parts, and one part is unknown.
+- Use the character name "${context.name[0]}" and the item "${selectedContextItem}".
+- The total amount must be exactly ${whole}.
+- The known part must be exactly ${part2}.
+- The question must ask for the remaining unknown part.`;
+      
+      visualEngineStr = `{
+        "componentToRender": "BAR_MODEL",
+        "componentData": {
+          "modelType": "PART_WHOLE",
+          "parts": ["?", "?"],
+          "whole": "?",
+          "barLabel": "string - short label (max 2 words) describing what the total represents (e.g. Total Books, Cars)"
+        }
+      }`;
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: "Step 1 (Equation)", expectedAnswer: `${whole} - ${part2} = ${part1}` },
+            { label: "Step 2 (Final Answer)", expectedAnswer: String(part1) }
+          ]
+        });
+      }
+    } else {
+      answer = String(part2);
+      customConstraints = `- Write a creative word problem where a total amount is broken into two parts, and one part is unknown.
+- Use the character name "${context.name[0]}" and the item "${selectedContextItem}".
+- The total amount must be exactly ${whole}.
+- The known part must be exactly ${part1}.
+- The question must ask for the remaining unknown part.`;
+      
+      visualEngineStr = `{
+        "componentToRender": "BAR_MODEL",
+        "componentData": {
+          "modelType": "PART_WHOLE",
+          "parts": ["?", "?"],
+          "whole": "?",
+          "barLabel": "string - short label (max 2 words) describing what the total represents (e.g. Total Books, Cars)"
+        }
+      }`;
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: "Step 1 (Equation)", expectedAnswer: `${whole} - ${part1} = ${part2}` },
+            { label: "Step 2 (Final Answer)", expectedAnswer: String(part2) }
+          ]
+        });
+      }
+    }
+  } else if (activeVariant === 'advanced_word_comparison') {
+    const isMoreThan = Math.random() > 0.5;
+    const scenario = Math.floor(Math.random() * 3); // 0 = find target, 1 = find base, 2 = find difference
+    const baseValue = Math.floor(Math.random() * 4000) + 1000;
+    const difference = Math.floor(Math.random() * 1000) + 100;
+    const secondName = getRandomNames(1)[0];
+    const firstName = context.name[0];
+    
+    askText = "AI_GENERATED";
+
+    if (isMoreThan) {
+      const targetValue = baseValue + difference;
+      
+      let questionConstraint = "";
+      let steps = [];
+      if (scenario === 0) {
+        answer = String(targetValue);
+        questionConstraint = `- The question must ask for the amount ${secondName} has.`;
+        steps = [
+          { label: "Step 1 (Equation)", expectedAnswer: `${baseValue} + ${difference} = ${targetValue}` },
+          { label: "Step 2 (Final Answer)", expectedAnswer: String(targetValue) }
+        ];
+      } else if (scenario === 1) {
+        answer = String(baseValue);
+        questionConstraint = `- The question must ask for the amount ${firstName} has.`;
+        steps = [
+          { label: "Step 1 (Equation)", expectedAnswer: `${targetValue} - ${difference} = ${baseValue}` },
+          { label: "Step 2 (Final Answer)", expectedAnswer: String(baseValue) }
+        ];
+      } else {
+        answer = String(difference);
+        questionConstraint = `- The question must ask for how many more ${selectedContextItem} ${secondName} has than ${firstName}.`;
+        steps = [
+          { label: "Step 1 (Equation)", expectedAnswer: `${targetValue} - ${baseValue} = ${difference}` },
+          { label: "Step 2 (Final Answer)", expectedAnswer: String(difference) }
+        ];
+      }
+      
+      customConstraints = `- Write a creative word problem about comparing two quantities of ${selectedContextItem}.
+- ${firstName} has exactly ${baseValue} ${selectedContextItem}.
+- ${secondName} has exactly ${difference} MORE ${selectedContextItem} than ${firstName}.
+${questionConstraint}`;
+      
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL",
+        componentData: {
+          modelType: "COMPARISON",
+          bar1: { name: firstName, value: String(baseValue) },
+          bar2: { name: secondName, value: String(targetValue) }
+        }
+      });
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: steps
+        });
+      }
+    } else {
+      const targetValue = baseValue - difference;
+      
+      let questionConstraint = "";
+      let steps = [];
+      if (scenario === 0) {
+        answer = String(targetValue);
+        questionConstraint = `- The question must ask for the amount ${secondName} has.`;
+        steps = [
+          { label: "Step 1 (Equation)", expectedAnswer: `${baseValue} - ${difference} = ${targetValue}` },
+          { label: "Step 2 (Final Answer)", expectedAnswer: String(targetValue) }
+        ];
+      } else if (scenario === 1) {
+        answer = String(baseValue);
+        questionConstraint = `- The question must ask for the amount ${firstName} has.`;
+        steps = [
+          { label: "Step 1 (Equation)", expectedAnswer: `${targetValue} + ${difference} = ${baseValue}` },
+          { label: "Step 2 (Final Answer)", expectedAnswer: String(baseValue) }
+        ];
+      } else {
+        answer = String(difference);
+        questionConstraint = `- The question must ask for how many fewer ${selectedContextItem} ${secondName} has than ${firstName}.`;
+        steps = [
+          { label: "Step 1 (Equation)", expectedAnswer: `${baseValue} - ${targetValue} = ${difference}` },
+          { label: "Step 2 (Final Answer)", expectedAnswer: String(difference) }
+        ];
+      }
+
+      customConstraints = `- Write a creative word problem about comparing two quantities of ${selectedContextItem}.
+- ${firstName} has exactly ${baseValue} ${selectedContextItem}.
+- ${secondName} has exactly ${difference} FEWER ${selectedContextItem} than ${firstName}.
+${questionConstraint}`;
+      
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL",
+        componentData: {
+          modelType: "COMPARISON",
+          bar1: { name: firstName, value: String(baseValue) },
+          bar2: { name: secondName, value: String(targetValue) }
+        }
+      });
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: steps
+        });
+      }
+    }
   }
 
   const { generateAlgorithmTables } = require('@/lib/utils/math-html-utils');
@@ -233,6 +426,9 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   4. "Solving the subtraction:" followed by this exact HTML: \\n${subStep2}
   CRITICAL: DO NOT modify the HTML strings. Use them EXACTLY as provided above!
   separate steps using the exact characters \\\\n inside the string.for line breaks inside the JSON string.`;
+  } else if (activeVariant === 'advanced_word_part_whole' || activeVariant === 'advanced_word_comparison') {
+    solutionStepsRule = `- For \`solutionSteps\`, provide a BRIEF 2-3 sentence explanation of how to solve the word problem using the information given. Keep it very short. Do NOT draw an HTML table in the solution steps.
+  CRITICAL: You MUST separate steps using the exact literal characters \\\\n inside the string. Do NOT use raw newlines!`;
   } else {
     // Missing digit variants
     const [step1HTML, step2HTML] = generateAlgorithmTables(num1, num2, isAdd, num3);
@@ -247,7 +443,7 @@ Difficulty: ${zodDiff}
 Type: ${zodType}
 
 STRICT CONSTRAINTS:
-- You MUST use the exact string "${askText}" as the \`questionText\`.
+${askText === "AI_GENERATED" ? "" : `- You MUST use the exact string "${askText}" as the \`questionText\`.`}
 - You MUST use the exact string "${answer}" as the \`finalAnswer\`.
 - You MUST explicitly generate a \`solutionSteps\` and a \`hint\`.
 ${solutionStepsRule}

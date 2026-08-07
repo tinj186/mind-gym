@@ -5,6 +5,7 @@ import { refreshModelPriority } from '@/lib/ai-config';
 
 export async function POST(request) {
   try {
+    console.log("Forcing hot reload for generate route");
     await refreshModelPriority();
     const body = await request.json();
     const { quantity, metadata, variant = 'visual_line' } = body;
