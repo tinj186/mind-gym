@@ -1,5 +1,5 @@
 import { foundationLogic } from './multiplication-division-algorithms/foundation';
-// import { standardLogic } from './multiplication-division-algorithms/standard';
+import { standardLogic } from './multiplication-division-algorithms/standard';
 // import { advancedLogic } from './multiplication-division-algorithms/advanced';
 import { getRandomNames, getRandomCountableItems } from '@/lib/utils/variable-bank';
 
@@ -35,7 +35,12 @@ export const p3MultiplicationDivisionAlgorithmsBlueprint = {
     foundation_direct_division: "Direct Division (Exact, No Remainder)",
     foundation_single_step_renaming_mult: "Single-Step Renaming (Multiplication)",
     foundation_missing_factor: "Finding the Missing Factor (Basic Inverse)",
-    foundation_zero_in_ones: "Zero in the Ones Place (Multiplication)"
+    foundation_zero_in_ones: "Zero in the Ones Place (Multiplication)",
+    standard_complex_renaming_mult: "Complex Renaming (Multiplication)",
+    standard_division_remainder: "Division with Remainder (3-Digit)",
+    standard_multiplicative_comparison: "Multiplicative Comparison (Finding the Larger Quantity)",
+    standard_zero_in_quotient: "Zero in the Quotient",
+    standard_multistep_grouping: "Multi-step Grouping (Addition then Division)"
   },
 
   generate: function (difficulty, activeVariant, type) {
@@ -89,6 +94,26 @@ Your task is to generate a JSON response following this strict schema.
         inputRequirementStr,
         answer
       } = foundationLogic(difficulty, activeVariant, type, context, selectedContextItem, getFormatInstructions);
+
+      aiPrompt += `
+${getFormatInstructions(visualEngineStr, inputRequirementStr)}
+
+CRITICAL INSTRUCTIONS:
+${questionStemConstraint}
+- The final answer MUST exactly match: "${answer}".
+${solutionStepsConstraint ? solutionStepsConstraint : ''}
+${customConstraints ? customConstraints : ''}
+`;
+    } else if (difficulty.toLowerCase() === 'standard') {
+      const {
+        askText,
+        questionStemConstraint,
+        customConstraints,
+        solutionStepsConstraint,
+        visualEngineStr,
+        inputRequirementStr,
+        answer
+      } = standardLogic(difficulty, activeVariant, type, context, selectedContextItem, getFormatInstructions);
 
       aiPrompt += `
 ${getFormatInstructions(visualEngineStr, inputRequirementStr)}
