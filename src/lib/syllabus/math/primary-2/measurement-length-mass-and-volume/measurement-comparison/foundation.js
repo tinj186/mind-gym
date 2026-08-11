@@ -107,8 +107,8 @@ export const foundationLogic = (activeVariant, difficulty, type, isMCQ, isShort,
       inputRequirementStr = `null`;
       const mcqAnswer = `${expectedWinner === 'A' ? objA : objB} (${expectedWinner === 'A' ? valA : valB} ${unit})`;
       const mcqAskText = activeVariant === 'foundation_compare_two_volumes'
-        ? `Which container holds ${comparisonAdj} water?`
-        : `Which object is ${comparisonAdj}?`;
+        ? `Compare the two containers: ${objA} (${valA} ${unit}) and ${objB} (${valB} ${unit}). Which container holds ${comparisonAdj} water?`
+        : `Compare the two objects: ${objA} (${valA} ${unit}) and ${objB} (${valB} ${unit}). Which object is ${comparisonAdj}?`;
 
       systemPrompt = `
 You are generating a Primary 2 Math question.
@@ -117,15 +117,15 @@ Type: ${zodType}
 Difficulty: ${zodDiff}
 
 CRITICAL INSTRUCTION: You MUST use the EXACT strings provided in the template below for questionText, hint, and solutionSteps. DO NOT rephrase them!
-DO NOT ADD ANY CONTEXT OR EXTRA SENTENCES to the questionText. It must ONLY contain the single question asked.
+CRITICAL INSTRUCTION: The 'options' array MUST contain EXACTLY 2 elements. DO NOT generate 3 or 4 options!
 
 Use EXACTLY:
-questionText: ["${mcqAskText}"]
-finalAnswer: """${mcqAnswer}"""
-hint: """Compare the numbers ${valA} and ${valB}. The one with the ${isShorterLighterLess ? 'smaller' : 'larger'} number is the ${comparisonAdj} one."""
-solutionSteps: """1. Compare the measurements: ${valA} ${unit} and ${valB} ${unit}.\\n2. Since ${isShorterLighterLess ? Math.min(valA, valB) + ' is less than ' + Math.max(valA, valB) : Math.max(valA, valB) + ' is more than ' + Math.min(valA, valB)}, the ${comparisonAdj} one is ${mcqAnswer}."""
+questionText: "${mcqAskText}"
+finalAnswer: "${mcqAnswer}"
+hint: "Compare the numbers ${valA} and ${valB}. The one with the ${isShorterLighterLess ? 'smaller' : 'larger'} number is the ${comparisonAdj} one."
+solutionSteps: "1. Compare the measurements: ${valA} ${unit} and ${valB} ${unit}.\\n2. Since ${isShorterLighterLess ? Math.min(valA, valB) + ' is less than ' + Math.max(valA, valB) : Math.max(valA, valB) + ' is more than ' + Math.min(valA, valB)}, the ${comparisonAdj} one is ${mcqAnswer}."
 
-Generate exactly 2 options: "${objA} (${valA} ${unit})" and "${objB} (${valB} ${unit})".
+Generate EXACTLY 2 options: "${objA} (${valA} ${unit})" and "${objB} (${valB} ${unit})".
 The defectMap should map the incorrect option to "COMPARISON_ERROR".
 `;
     } else {

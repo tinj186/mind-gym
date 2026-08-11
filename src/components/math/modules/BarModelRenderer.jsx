@@ -8,30 +8,30 @@ const CurlyBracket = () => (
   </svg>
 );
 
-function UnitSegments({ value }) {
+function UnitSegments({ value, segments }) {
   if (typeof value === 'string' && value.startsWith('?:')) {
     const label = value.split(':')[1] || '?';
     return (
-      <div className="absolute inset-0 flex items-center justify-between text-white/90 text-lg font-black pointer-events-none">
-        <div className="flex h-full w-[50%]">
-          <div className="w-[50%] border-r-2 border-white/30 flex items-center justify-center">{label}</div>
-          <div className="w-[50%] border-r-2 border-white/30 flex items-center justify-center">{label}</div>
+      <div className="absolute inset-0 flex items-center justify-between text-white/90 text-xl font-black pointer-events-none">
+        <div className="flex h-full">
+          <div className="w-16 border-r-2 border-white/50 flex items-center justify-center">{label}</div>
+          <div className="w-16 border-r-2 border-white/50 flex items-center justify-center">{label}</div>
         </div>
-        <div className="text-white/60 tracking-widest text-2xl -mt-2">...</div>
-        <div className="flex h-full w-[25%]">
-          <div className="w-full border-l-2 border-white/30 flex items-center justify-center">{label}</div>
+        <div className="text-white tracking-widest text-3xl -mt-2">...</div>
+        <div className="flex h-full">
+          <div className="w-16 border-l-2 border-white/50 flex items-center justify-center">{label}</div>
         </div>
       </div>
     );
   }
 
-  const num = parseInt(value);
+  const num = segments !== undefined ? parseInt(segments) : parseInt(value);
   if (isNaN(num) || num <= 0 || num > 20) return null;
 
   return (
-    <div className="absolute inset-0 flex pointer-events-none">
+    <div className="absolute inset-0 flex pointer-events-none z-20">
       {[...Array(num)].map((_, i) => (
-        <div key={i} className="flex-1 border-r-[3px] border-white/50 last:border-r-0" />
+        <div key={i} className="flex-1 border-r-4 border-white/60 last:border-r-0 shadow-[1px_0_0_rgba(0,0,0,0.1)]" />
       ))}
     </div>
   );
@@ -41,40 +41,44 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
   if (!data) return null;
   const model = typeof data === 'string' ? JSON.parse(data) : data;
 
-  let content = null;
-  
-  if (model.modelType === 'PART_WHOLE' || model.type === 'PART_WHOLE') {
-    const knownSum = model.parts.reduce((sum, p) => sum + (parseFloat(p) || 0), 0);
-    const hasUnknownWhole = isNaN(parseFloat(model.whole));
-    const unknownCount = model.parts.filter(p => isNaN(parseFloat(p))).length;
+  const modelsToRender = Array.isArray(model) ? model : (model.models ? model.models : [model]);
+
+  let content = (
+    <div className="space-y-6">
+      {modelsToRender.map((m, index) => {
+        if (m.modelType === 'PART_WHOLE' || m.type === 'PART_WHOLE') {
+    const knownSum = m.parts.reduce((sum, p) => sum + (parseFloat(p.layoutSize || p.value || p) || 0), 0);
+    const hasUnknownWhole = isNaN(parseFloat(m.whole));
+    const unknownCount = m.parts.filter(p => isNaN(parseFloat(p.layoutSize || p.value || p))).length;
     
     let remainingForUnknown = 0;
-    let calculatedWhole = parseFloat(model.whole);
+    let calculatedWhole = parseFloat(m.whole);
     
     if (hasUnknownWhole) {
-       const knownCount = model.parts.length - unknownCount;
+       const knownCount = m.parts.length - unknownCount;
        const avgKnown = knownCount > 0 ? (knownSum / knownCount) : 1;
        remainingForUnknown = unknownCount > 0 ? (unknownCount * avgKnown) : 0;
-       calculatedWhole = knownSum + remainingForUnknown || model.parts.length;
+       calculatedWhole = knownSum + remainingForUnknown || m.parts.length;
     } else {
        remainingForUnknown = Math.max(0, calculatedWhole - knownSum);
     }
     
     const fallbackPartVal = unknownCount > 0 ? (remainingForUnknown / unknownCount) : 0;
 
-    content = (
-      <div className="my-6 p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-4 shadow-sm">
+        return (
+          <div key={index} className="my-6 p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-4 shadow-sm">
         <div className="flex items-center gap-4">
-          {(toolState['bar_label'] || model.barLabel) && (
+          {(toolState['bar_label'] || m.barLabel) && (
             <span className="w-32 text-right text-xs font-black text-slate-400 uppercase leading-tight">
-              {toolState['bar_label'] || model.barLabel}
+              {toolState['bar_label'] || m.barLabel}
             </span>
           )}
           <div className="flex-1 relative">
             <div className="flex h-12 w-full rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-white">
-              {model.parts.map((part, idx) => {
-                const partVal = parseFloat(part) || fallbackPartVal;
-                const width = (partVal / calculatedWhole) * 100;
+              {m.parts.map((part, idx) => {
+                const partValue = part.value !== undefined ? part.value : part;
+                const partLayoutVal = parseFloat(part.layoutSize || partValue) || fallbackPartVal;
+                const width = (partLayoutVal / calculatedWhole) * 100;
                 const inputKey = `part_${idx}`;
                 const userVal = toolState[inputKey];
                 
@@ -86,8 +90,10 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
                       idx % 2 === 0 ? 'bg-blue-500 text-white' : 'bg-blue-400 text-white'
                     }`}
                   >
-                    <UnitSegments value={part} />
-                    {userVal ? <span className="text-yellow-200 px-2 drop-shadow-md text-lg">{userVal}</span> : (part === "?" ? "?" : <span className="text-white drop-shadow-sm">{part}</span>)}
+                    <UnitSegments value={typeof partValue === 'string' && partValue.startsWith('?:') ? `?:${userVal || partValue.split(':')[1] || '?'}` : partValue} segments={part.segments} />
+                    {!(typeof partValue === 'string' && partValue.startsWith('?:')) && (
+                      userVal ? <span className="text-yellow-200 px-2 drop-shadow-md text-lg">{userVal}</span> : (partValue === "?" ? "?" : <span className="text-white drop-shadow-sm">{partValue}</span>)
+                    )}
                   </div>
                 );
               })}
@@ -95,7 +101,7 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
             <div className="mt-2 flex flex-col items-center">
               <div className="w-full h-3 border-x-2 border-b-2 border-slate-300 rounded-b-xl"></div>
               <span className="text-sm font-black text-slate-500 uppercase mt-2 tracking-widest bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm">
-                Total: {toolState['whole'] ? <span className="text-indigo-600">{toolState['whole']}</span> : (model.whole === "?" ? "?" : <span className="text-indigo-600">{model.whole}</span>)}
+                Total: {toolState['whole'] ? <span className="text-indigo-600">{toolState['whole']}</span> : (m.whole === "?" ? "?" : <span className="text-indigo-600">{m.whole}</span>)}
               </span>
             </div>
           </div>
@@ -104,11 +110,11 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
     );
   }
 
-  if (model.modelType === 'COMPARISON') {
-    const hasSegments = model.bar1?.segments || model.bar2?.segments;
+      if (m.modelType === 'COMPARISON' || m.type === 'COMPARISON') {
+        const hasSegments = m.bar1?.segments || m.bar2?.segments;
     
-    const getLayoutValue = (bar) => {
-        if (!bar) return 0;
+        const getLayoutValue = (bar) => {
+            if (!bar) return 0;
         if (bar.layoutSize) return parseFloat(bar.layoutSize);
         if (hasSegments) {
             return parseFloat(bar.segments) || 1;
@@ -118,16 +124,16 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
         }
     };
 
-    const v1 = getLayoutValue(model.bar1);
-    const v2 = getLayoutValue(model.bar2);
+        const v1 = getLayoutValue(m.bar1);
+        const v2 = getLayoutValue(m.bar2);
     const maxVal = Math.max(v1, v2, 1);
 
-    content = (
-      <div className="relative my-6 p-6 bg-slate-50 rounded-3xl border border-slate-100 shadow-sm">
-        <div className="relative pr-48">
-          <div className="space-y-4">
-            {[model.bar1, model.bar2].map((bar, idx) => {
-          if (!bar) return null;
+        return (
+          <div key={index} className="relative my-6 p-6 bg-slate-50 rounded-3xl border border-slate-100 shadow-sm">
+        <div className="flex w-full items-start">
+          <div className="flex-1 space-y-4 min-w-[200px]">
+              {[m.bar1, m.bar2].map((bar, idx) => {
+            if (!bar) return null;
           const inputKey = `bar_${idx}`;
           const userVal = toolState[inputKey];
           
@@ -166,7 +172,7 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
               
               {/* Bracket Below */}
               {bar.segments && parseInt(bar.segments) > 1 && (
-                <div className="flex items-center gap-4 mt-1 relative z-0">
+                <div className="flex items-center gap-4 mt-1 mb-6 relative z-0">
                   <span className="w-16"></span>
                   <div className="flex-1 flex">
                     <div style={{ width: `${(getLayoutValue(bar) / maxVal) * 100}%` }} className="flex flex-col items-center">
@@ -182,17 +188,15 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
           </div>
           
           {/* Total Bracket for Comparison */}
-          {model.whole !== undefined && (
-            <div className="absolute top-0 right-0 h-full flex flex-col pointer-events-none pr-6">
-              <div className="flex items-center h-[6rem]">
-                <div className="w-12 h-full py-0.5">
-                  <CurlyBracket />
-                </div>
-                <div className="ml-1 flex flex-col items-start pointer-events-auto">
-                  <span className="text-sm font-black text-slate-500 uppercase mt-2 tracking-widest bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm">
-                    Total: {toolState['whole'] ? <span className="text-indigo-600">{toolState['whole']}</span> : (model.whole === "?" ? "?" : <span className="text-indigo-600">{model.whole}</span>)}
-                  </span>
-                </div>
+          {m.whole !== undefined && (
+            <div className="w-[180px] flex-shrink-0 flex items-center ml-4 h-[9.5rem]">
+              <div className="w-10 h-full py-1 pointer-events-none">
+                <CurlyBracket />
+              </div>
+              <div className="ml-1 flex flex-col items-start pointer-events-auto">
+                <span className="text-sm font-black text-slate-500 uppercase mt-2 tracking-widest bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm">
+                  Total: {toolState['whole'] ? <span className="text-indigo-600">{toolState['whole']}</span> : (m.whole === "?" ? "?" : <span className="text-indigo-600">{m.whole}</span>)}
+                </span>
               </div>
             </div>
           )}
@@ -200,15 +204,19 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
       </div>
     );
   }
+  return null;
+})}
+</div>
+);
 
   if (!content) return null;
 
   return (
-    <div className="flex flex-col items-center gap-6">
-      <div className="w-full max-w-xl mx-auto">
+    <div className="flex flex-col items-center gap-6 w-full">
+      <div className="w-full max-w-4xl mx-auto">
         {content}
       </div>
-      {setIsToolOpen && !model.isStatic && (
+      {setIsToolOpen && !modelsToRender.some(m => m.isStatic) && (
         <button 
           onClick={() => setIsToolOpen(true)}
           className="px-8 py-3 bg-indigo-600 text-white text-sm font-black uppercase rounded-full shadow-[0_4px_0_0_rgba(67,56,202,1)] hover:translate-y-1 hover:shadow-[0_2px_0_0_rgba(67,56,202,1)] active:translate-y-2 active:shadow-none transition-all"

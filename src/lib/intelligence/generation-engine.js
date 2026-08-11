@@ -136,6 +136,11 @@ export class GenerationEngine {
         const aiBatch = Array.isArray(aiResponse) ? aiResponse : [aiResponse];
 
         for (const q of aiBatch) {
+          // IMPORTANT: Override the LLM's generated visualEngine with the pristine one from the blueprint!
+          // This entirely prevents the LLM from hallucinating structural changes to the UI components.
+          if (stepResult.visualEngine) {
+            q.visualEngine = stepResult.visualEngine;
+          }
           parsedQuestions.push(processAiQuestion(q, { ...context, blueprintMeta, stepResult, heuristic: loopVariant }));
         }
         

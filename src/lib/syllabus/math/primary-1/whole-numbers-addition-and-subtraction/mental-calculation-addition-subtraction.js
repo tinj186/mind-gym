@@ -49,7 +49,7 @@ export const mentalCalculationAdditionSubtractionBlueprint = {
     const level = 'Primary 1';
     const topic = 'Whole Numbers - Addition and Subtraction';
 
-    const zodType = type;
+    const zodType = type === 'Short Question' ? 'SHORT_QUESTION' : type.toUpperCase();
     const zodDiff = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
 
     const getQText = (structureText, shortText) => {

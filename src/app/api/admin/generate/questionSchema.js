@@ -35,6 +35,7 @@ export const UniversalQuestionSchema = z.object({
       'ORDINAL_LINE',
       'BASE_TEN_BLOCKS',
       'NUMBER_BOND',
+      'FACT_TRIANGLE',
       'SHAPE',
       'SHAPE_DISPLAY',
       'GRID_DISPLAY',

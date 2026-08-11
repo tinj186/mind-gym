@@ -49,8 +49,8 @@ export const standardVariants = {
           "solutionSteps": "${startPoint} + ${targetLength} = ${endPoint}. ${name} should stop at the ${endPoint} cm mark."
         },
         "visualEngine": {
-          "componentToRender": "MEASUREMENT_RULER",
-          "componentData": ${JSON.stringify(componentData)}
+          "componentToRender": "NONE",
+          "componentData": { "hideVisual": true }
         },
         "inputRequirement": { "inputType": "${isStructure ? 'STANDARD_TEXT' : (type === 'MCQ' || forceMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}" }
       }`,
@@ -104,8 +104,8 @@ export const standardVariants = {
           "solutionSteps": "${endPoint} - ${targetLength} = ${startPoint}. It started at the ${startPoint} cm mark."
         },
         "visualEngine": {
-          "componentToRender": "MEASUREMENT_RULER",
-          "componentData": ${JSON.stringify(componentData)}
+          "componentToRender": "NONE",
+          "componentData": { "hideVisual": true }
         },
         "inputRequirement": { "inputType": "${isStructure ? 'STANDARD_TEXT' : (type === 'MCQ' || forceMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}" }
       }`,
@@ -159,8 +159,8 @@ export const standardVariants = {
           "solutionSteps": "${endPoint} - ${startPoint} = ${targetLength}. The line segment is ${targetLength} cm long."
         },
         "visualEngine": {
-          "componentToRender": "MEASUREMENT_RULER",
-          "componentData": ${JSON.stringify(componentData)}
+          "componentToRender": "NONE",
+          "componentData": { "hideVisual": true }
         },
         "inputRequirement": { "inputType": "${isStructure ? 'STANDARD_TEXT' : (type === 'MCQ' || forceMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}" }
       }`,
@@ -222,8 +222,8 @@ export const standardVariants = {
           "solutionSteps": "${len1} + ${diff} = ${len2}. ${name2}'s line is ${len2} cm long.\\n${startPoint} + ${len2} = ${endPoint}. ${name2} should stop at the ${endPoint} cm mark."
         },
         "visualEngine": {
-          "componentToRender": "MEASUREMENT_RULER",
-          "componentData": ${JSON.stringify(componentData)}
+          "componentToRender": "NONE",
+          "componentData": { "hideVisual": true }
         },
         "inputRequirement": { "inputType": "${isStructure ? 'STANDARD_TEXT' : (type === 'MCQ' || forceMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}" }
       }`,
@@ -285,8 +285,8 @@ export const standardVariants = {
           "solutionSteps": "${len1} - ${diff} = ${len2}. ${name2}'s line is ${len2} cm long.\\n${startPoint} + ${len2} = ${endPoint}. ${name2} should stop at the ${endPoint} cm mark."
         },
         "visualEngine": {
-          "componentToRender": "MEASUREMENT_RULER",
-          "componentData": ${JSON.stringify(componentData)}
+          "componentToRender": "NONE",
+          "componentData": { "hideVisual": true }
         },
         "inputRequirement": { "inputType": "${isStructure ? 'STANDARD_TEXT' : (type === 'MCQ' || forceMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}" }
       }`,

@@ -55,7 +55,7 @@ export const divisionWithin20Blueprint = {
     const level = 'Primary 1';
     const topic = 'Whole Numbers - Multiplication and Division';
 
-    const zodType = type;
+    const zodType = type === 'Short Question' ? 'SHORT_QUESTION' : type.toUpperCase();
     const zodDiff = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
 
     const getQText = (structureText, shortText) => {

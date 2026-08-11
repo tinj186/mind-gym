@@ -197,6 +197,7 @@ solutionSteps: """1. The two weights are ${knownMass} g and ${diff} g.\\n2. Tota
           {
             "componentToRender": "VOLUME_BEAKER",
             "componentData": {
+              "label": "Beaker A",
               "value": ${vol1},
               "maxScale": 10,
               "unit": "l",
@@ -207,6 +208,7 @@ solutionSteps: """1. The two weights are ${knownMass} g and ${diff} g.\\n2. Tota
           {
             "componentToRender": "VOLUME_BEAKER",
             "componentData": {
+              "label": "Beaker B",
               "value": ${vol2},
               "maxScale": 10,
               "unit": "l",

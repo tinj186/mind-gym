@@ -568,7 +568,10 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
                 {(() => {
                   let toolEngine = normalizedQuestion?.visualEngine;
                   if (toolEngine?.componentToRender === 'MULTI_COMPONENT') {
-                    toolEngine = toolEngine.componentData?.components?.find(c => ['BAR_MODEL', 'GROUPING_WORKSPACE', 'EQUAL_GROUPS', 'COUNTING_OBJECTS'].includes(c.componentToRender)) || toolEngine;
+                    toolEngine = toolEngine.componentData?.components?.find(c => 
+                      !c.componentData?.isStatic && 
+                      ['BAR_MODEL', 'GROUPING_WORKSPACE', 'EQUAL_GROUPS', 'COUNTING_OBJECTS'].includes(c.componentToRender)
+                    ) || toolEngine;
                   }
                   const activeType = toolEngine?.componentToRender;
                   const activeData = toolEngine?.componentData || {};

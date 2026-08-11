@@ -370,6 +370,7 @@ solutionSteps: """1. The needle on the scale points to ${mass}.\\n2. The mass is
             {
               "componentToRender": "VOLUME_BEAKER",
               "componentData": {
+                "label": "Beaker A",
                 "value": ${vol1},
                 "maxScale": ${maxScale1},
                 "unit": "l",
@@ -379,6 +380,7 @@ solutionSteps: """1. The needle on the scale points to ${mass}.\\n2. The mass is
             {
               "componentToRender": "VOLUME_BEAKER",
               "componentData": {
+                "label": "Beaker B",
                 "value": ${vol2},
                 "maxScale": ${maxScale2},
                 "unit": "l",

@@ -33,7 +33,7 @@ export const mentalCalculationBlueprint = {
     }
     
     // Zod formatting strings
-    const zodType = type;
+    const zodType = type === 'Short Question' ? 'SHORT_QUESTION' : type.toUpperCase();
     const zodDiff = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
     
     // Helper to switch text based on type

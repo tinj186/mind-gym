@@ -16,7 +16,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>
+      <head>
         <Script id="mathlive-config" strategy="beforeInteractive" dangerouslySetInnerHTML={{
           __html: `
             window.MathfieldElement = window.MathfieldElement || {};
@@ -24,6 +24,8 @@ export default function RootLayout({ children }) {
             window.MathfieldElement.soundsDirectory = "https://unpkg.com/mathlive@0.109.1/dist/sounds/";
           `
         }} />
+      </head>
+      <body>
         <GlobalNavbar />
         {children}
         <GlobalFooter />

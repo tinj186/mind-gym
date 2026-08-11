@@ -289,14 +289,31 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
               ✕
             </button>
             <div className="p-12 overflow-y-auto max-h-[85vh]">
-              {activeTool.type === 'BAR_MODEL' ? (
-                <BarModelWorkspace
-                  modelData={activeTool.modelData}
-                  onClose={() => setActiveTool(null)}
-                />
-              ) : (
-                <GroupingWorkspace
-                  modelData={activeTool.modelData}
+              {(() => {
+                let toolEngine = activeTool?.type === 'MULTI_COMPONENT' 
+                  ? { componentToRender: 'MULTI_COMPONENT', componentData: activeTool.modelData } 
+                  : { componentToRender: activeTool?.type, componentData: activeTool?.modelData };
+                  
+                if (toolEngine?.componentToRender === 'MULTI_COMPONENT') {
+                  toolEngine = toolEngine.componentData?.components?.find(c => 
+                    !c.componentData?.isStatic && 
+                    ['BAR_MODEL', 'GROUPING_WORKSPACE', 'EQUAL_GROUPS', 'COUNTING_OBJECTS'].includes(c.componentToRender)
+                  ) || toolEngine;
+                }
+                const renderType = toolEngine?.componentToRender;
+                const renderData = toolEngine?.componentData || {};
+
+                if (renderType === 'BAR_MODEL') {
+                  return (
+                    <BarModelWorkspace
+                      modelData={renderData}
+                      onClose={() => setActiveTool(null)}
+                    />
+                  );
+                } else {
+                  return (
+                    <GroupingWorkspace
+                      modelData={renderData}
                   onClose={() => setActiveTool(null)}
                   questionId={activeTool.id}
                   difficulty={activeTool.difficulty}
@@ -305,9 +322,11 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
                   icon={activeTool.visualProps.icon}
                   expectedGroups={activeTool.visualProps.expectedGroups}
                   targetGroupSize={activeTool.visualProps.targetSize}
-                  showTargetSize={activeTool.topic !== 'Division'}
-                />
-              )}
+                      showTargetSize={activeTool.topic !== 'Division'}
+                    />
+                  );
+                }
+              })()}
             </div>
           </motion.div>
         </div>

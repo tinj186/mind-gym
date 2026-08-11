@@ -63,7 +63,7 @@ export const p3NumberPatternsBlueprint = {
       throw new Error('Structured questions are not supported for Number Patterns. Please use MCQ or Short Question.');
     }
 
-    const zodType = type;
+    const zodType = type === 'Short Question' ? 'SHORT_QUESTION' : type.toUpperCase();
     const zodDiff = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
     
     const context = { name: "Student", setting: "class" };

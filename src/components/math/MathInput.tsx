@@ -339,8 +339,12 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
           if (mfRef.current) {
             mfRef.current.focus();
           }
-        } catch (e) {
-          console.warn('⚠️ [MathInput] Auto-focus skipped (likely blocked by mobile Safari security policy):', e);
+        } catch (e: any) {
+          if (e?.message && e.message.includes('mathfield')) {
+            // Silently ignore: Mathfield internal focus error on initial mount
+          } else {
+            console.warn('⚠️ [MathInput] Auto-focus skipped (likely blocked by mobile Safari security policy):', e);
+          }
         }
       }, 100);
     }

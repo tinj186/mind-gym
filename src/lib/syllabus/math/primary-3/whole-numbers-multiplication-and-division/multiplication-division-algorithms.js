@@ -1,6 +1,6 @@
 import { foundationLogic } from './multiplication-division-algorithms/foundation';
 import { standardLogic } from './multiplication-division-algorithms/standard';
-// import { advancedLogic } from './multiplication-division-algorithms/advanced';
+import { advancedLogic } from './multiplication-division-algorithms/advanced';
 import { getRandomNames, getRandomCountableItems } from '@/lib/utils/variable-bank';
 
 export const p3MultiplicationDivisionAlgorithmsBlueprint = {
@@ -38,9 +38,14 @@ export const p3MultiplicationDivisionAlgorithmsBlueprint = {
     foundation_zero_in_ones: "Zero in the Ones Place (Multiplication)",
     standard_complex_renaming_mult: "Complex Renaming (Multiplication)",
     standard_division_remainder: "Division with Remainder (3-Digit)",
-    standard_multiplicative_comparison: "Multiplicative Comparison (Finding the Larger Quantity)",
+    standard_multiplicative_comparison: "Multiplicative Comparison",
     standard_zero_in_quotient: "Zero in the Quotient",
-    standard_multistep_grouping: "Multi-step Grouping (Addition then Division)"
+    standard_multistep_grouping: "Multi-step Grouping (Addition then Division)",
+    advanced_multiplicative_comparison_total: "Multiplicative Comparison (Finding the Total)",
+    advanced_unitary_method: "Unitary Method (Division then Multiplication)",
+    advanced_money_change: "Money Strand (Multiplication then Subtraction for Change)",
+    advanced_multiplicative_comparison_diff: "Multiplicative Comparison (Finding the Difference)",
+    advanced_leftover_capacity: "The Leftover Capacity Heuristic"
   },
 
   generate: function (difficulty, activeVariant, type) {
@@ -84,6 +89,8 @@ Variant: ${activeVariant}
 Your task is to generate a JSON response following this strict schema.
 `;
 
+    let finalVisualEngine = null;
+
     if (difficulty.toLowerCase() === 'foundation') {
       const {
         askText,
@@ -104,6 +111,7 @@ ${questionStemConstraint}
 ${solutionStepsConstraint ? solutionStepsConstraint : ''}
 ${customConstraints ? customConstraints : ''}
 `;
+      finalVisualEngine = visualEngineStr ? JSON.parse(visualEngineStr) : null;
     } else if (difficulty.toLowerCase() === 'standard') {
       const {
         askText,
@@ -124,10 +132,32 @@ ${questionStemConstraint}
 ${solutionStepsConstraint ? solutionStepsConstraint : ''}
 ${customConstraints ? customConstraints : ''}
 `;
+      finalVisualEngine = visualEngineStr ? JSON.parse(visualEngineStr) : null;
+    } else if (difficulty.toLowerCase() === 'advanced') {
+      const {
+        askText,
+        questionStemConstraint,
+        customConstraints,
+        solutionStepsConstraint,
+        visualEngineStr,
+        inputRequirementStr,
+        answer
+      } = advancedLogic(difficulty, activeVariant, type, context, selectedContextItem, getFormatInstructions);
+
+      aiPrompt += `
+${getFormatInstructions(visualEngineStr, inputRequirementStr)}
+
+CRITICAL INSTRUCTIONS:
+${questionStemConstraint}
+- The final answer MUST exactly match: "${answer}".
+${solutionStepsConstraint ? solutionStepsConstraint : ''}
+${customConstraints ? customConstraints : ''}
+`;
+      finalVisualEngine = visualEngineStr ? JSON.parse(visualEngineStr) : null;
     } else {
       throw new Error("Variant logic not implemented for this difficulty yet.");
     }
 
-    return { aiPrompt };
+    return { aiPrompt, visualEngine: finalVisualEngine };
   }
 };

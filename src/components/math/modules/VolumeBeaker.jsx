@@ -11,6 +11,7 @@ export default function VolumeBeaker({ data, hideCardStyles = false }) {
     unit = 'l',
     color = '#3b82f6', // blue-500
     intervals = 1,
+    label,
   } = data || {};
 
   const headroom = 40; // Empty space above the top scale line
@@ -78,6 +79,12 @@ export default function VolumeBeaker({ data, hideCardStyles = false }) {
         </div>
 
       </div>
+      
+      {label && (
+        <div className="mt-8 text-xl font-bold text-slate-800 bg-white/80 px-6 py-2 rounded-xl shadow-sm border-2 border-slate-200">
+          {label}
+        </div>
+      )}
     </div>
   );
 }

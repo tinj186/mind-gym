@@ -112,8 +112,12 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
     const boxes = [2, 3, 4, 5][Math.floor(Math.random() * 4)];
     const perBox = Math.floor(Math.random() * 5) + 2;
     const totalBoxes = boxes * perBox;
-    const extra = Math.floor(Math.random() * 10) + 2;
+    let extra = Math.floor(Math.random() * 10) + 2;
     const isAdd = Math.random() > 0.5;
+
+    if (!isAdd && extra >= totalBoxes) {
+      extra = Math.floor(Math.random() * (totalBoxes - 1)) + 1;
+    }
 
     if (isAdd) {
       const finalVal = totalBoxes + extra;
@@ -130,8 +134,17 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
         `${totalBoxes} + ${extra} = ${finalVal}`,
         `${context.name} has ${finalVal} ${selectedContextItem} now.`
       ];
+      
+      let opts = Array.from(new Set([finalVal, Math.max(1, totalBoxes - extra), totalBoxes + extra + perBox, boxes + perBox + extra]));
+      let counter = 1;
+      while (opts.length < 4) {
+        if (!opts.includes(finalVal + counter)) opts.push(finalVal + counter);
+        else if (!opts.includes(Math.max(0, finalVal - counter))) opts.push(Math.max(0, finalVal - counter));
+        counter++;
+      }
+      
       customConstraints = `
-        1. Provide exactly these 4 options in MCQ: "${finalVal}", "${Math.max(1, totalBoxes - extra)}", "${totalBoxes + extra + perBox}", "${boxes + perBox + extra}"
+        1. Provide exactly these 4 options in MCQ: "${opts[0]}", "${opts[1]}", "${opts[2]}", "${opts[3]}"
         2. Set defectMap for incorrect options to "COMPUTATION_ERROR".
       `;
 
@@ -153,8 +166,17 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
         `${totalBoxes} - ${extra} = ${finalVal}`,
         `${context.name} has ${finalVal} ${selectedContextItem} left.`
       ];
+      
+      let opts = Array.from(new Set([finalVal, totalBoxes + extra, Math.max(0, finalVal - perBox), Math.max(0, boxes + perBox - extra)]));
+      let counter = 1;
+      while (opts.length < 4) {
+        if (!opts.includes(finalVal + counter)) opts.push(finalVal + counter);
+        else if (!opts.includes(Math.max(0, finalVal - counter))) opts.push(Math.max(0, finalVal - counter));
+        counter++;
+      }
+
       customConstraints = `
-        1. Provide exactly these 4 options in MCQ: "${finalVal}", "${totalBoxes + extra}", "${Math.max(1, finalVal - perBox)}", "${Math.max(1, boxes + perBox - extra)}"
+        1. Provide exactly these 4 options in MCQ: "${opts[0]}", "${opts[1]}", "${opts[2]}", "${opts[3]}"
         2. Set defectMap for incorrect options to "COMPUTATION_ERROR".
       `;
 

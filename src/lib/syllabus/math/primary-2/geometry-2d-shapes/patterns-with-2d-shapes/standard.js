@@ -456,14 +456,14 @@ export const standardLogic = (activeVariant, isMCQ, isShort, isStructure, getQTe
     
     structureText = `Look at the pattern of shapes below. What is the missing shape in the pattern?`;
     shortText = `What is the missing shape in the pattern?`;
-    actualAnswer = `${nextShape.size} ${shape} ${getDirection(nextShape.rotation)}`;
+    actualAnswer = `${nextShape.size} ${getDirection(nextShape.rotation)}`;
     hintStr = `Notice how BOTH the size and the orientation change. Find the repeating group!`;
     
-    const coreString = core.map(s => `${s.size} ${shape} ${getDirection(s.rotation)}`).join(', ');
+    const coreString = core.map(s => `${s.size} ${getDirection(s.rotation)}`).join(', ');
     stepsStr = JSON.stringify([
       `Identify the repeating core of the pattern: ${coreString}.`,
       `The pattern repeats this sequence over and over.`,
-      `The shape right before the missing one is a ${pattern[gapIndex - 1].size} ${shape} ${getDirection(pattern[gapIndex - 1].rotation)}.`,
+      `The shape right before the missing one is a ${pattern[gapIndex - 1].size} ${getDirection(pattern[gapIndex - 1].rotation)}.`,
       `According to the core, the shape that comes after that is a ${actualAnswer}.`,
       `So the missing shape is a ${actualAnswer}.`
     ]);

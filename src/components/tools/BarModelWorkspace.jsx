@@ -9,32 +9,39 @@ const CurlyBracket = () => (
   </svg>
 );
 
-function UnitSegments({ value }) {
+function UnitSegments({ value, children }) {
   if (typeof value === 'string' && value.startsWith('?:')) {
     const label = value.split(':')[1] || '?';
     return (
-      <div className="absolute inset-0 flex items-center justify-between text-white/90 text-lg font-black pointer-events-none">
-        <div className="flex h-full w-[50%]">
-          <div className="w-[50%] border-r-2 border-white/30 flex items-center justify-center">{label}</div>
-          <div className="w-[50%] border-r-2 border-white/30 flex items-center justify-center">{label}</div>
+      <div className="absolute inset-0 flex items-center justify-between text-white/90 text-xl font-black pointer-events-none">
+        <div className="flex h-full">
+          <div className="w-24 border-r-2 border-white/50 flex items-center justify-center pointer-events-auto">
+            {children || label}
+          </div>
+          <div className="w-24 border-r-2 border-white/50 flex items-center justify-center">{label}</div>
         </div>
-        <div className="text-white/60 tracking-widest text-2xl -mt-2">...</div>
-        <div className="flex h-full w-[25%]">
-          <div className="w-full border-l-2 border-white/30 flex items-center justify-center">{label}</div>
+        <div className="text-white tracking-widest text-3xl -mt-2">...</div>
+        <div className="flex h-full">
+          <div className="w-24 border-l-2 border-white/50 flex items-center justify-center">{label}</div>
         </div>
       </div>
     );
   }
 
   const num = parseInt(value);
-  if (isNaN(num) || num <= 0 || num > 20) return null;
+  if (isNaN(num) || num <= 0 || num > 20) return (
+    <>{children}</>
+  );
 
   return (
-    <div className="absolute inset-0 flex pointer-events-none">
-      {[...Array(num)].map((_, i) => (
-        <div key={i} className="flex-1 border-r-2 border-white/30 last:border-r-0" />
-      ))}
-    </div>
+    <>
+      <div className="absolute inset-0 flex pointer-events-none z-20">
+        {[...Array(num)].map((_, i) => (
+          <div key={i} className="flex-1 border-r-4 border-white/60 last:border-r-0 shadow-[1px_0_0_rgba(0,0,0,0.1)]" />
+        ))}
+      </div>
+      {children}
+    </>
   );
 }
 
@@ -50,9 +57,9 @@ export default function BarModelWorkspace({ modelData, onClose, initialState }) 
   };
 
   const renderPartWhole = () => {
-    const knownSum = modelData.parts.reduce((sum, p) => sum + (parseFloat(p) || 0), 0);
+    const knownSum = modelData.parts.reduce((sum, p) => sum + (parseFloat(p.layoutSize || p.value || p) || 0), 0);
     const hasUnknownWhole = isNaN(parseFloat(modelData.whole));
-    const unknownCount = modelData.parts.filter(p => isNaN(parseFloat(p))).length;
+    const unknownCount = modelData.parts.filter(p => isNaN(parseFloat(p.layoutSize || p.value || p))).length;
     
     let remainingForUnknown = 0;
     let calculatedWhole = parseFloat(modelData.whole);
@@ -86,8 +93,9 @@ export default function BarModelWorkspace({ modelData, onClose, initialState }) 
             {/* The Bar */}
             <div className="flex h-20 w-full rounded-2xl overflow-hidden border-4 border-slate-200 shadow-lg bg-white relative z-10">
               {modelData.parts.map((part, idx) => {
-                const partVal = parseFloat(part) || fallbackPartVal;
-                const width = (partVal / calculatedWhole) * 100;
+                const partValue = part.value !== undefined ? part.value : part;
+                const partLayoutVal = parseFloat(part.layoutSize || partValue) || fallbackPartVal;
+                const width = (partLayoutVal / calculatedWhole) * 100;
                 const inputKey = `part_${idx}`;
                 
                 return (
@@ -98,16 +106,15 @@ export default function BarModelWorkspace({ modelData, onClose, initialState }) 
                       idx % 2 === 0 ? 'bg-blue-500' : 'bg-blue-400'
                     }`}
                   >
-                    <UnitSegments value={part} />
-                    
-                    {/* Interactive Input for Part */}
-                    <input
-                      type="text"
-                      value={inputs[inputKey] || ''}
-                      onChange={(e) => handleInputChange(inputKey, e.target.value)}
-                      placeholder=""
-                      className="w-24 h-12 text-center text-xl font-black bg-white/90 border-2 border-slate-800 rounded-xl focus:outline-none focus:ring-4 focus:ring-yellow-400 z-20 text-slate-900 shadow-sm placeholder:text-slate-300"
-                    />
+                    <UnitSegments value={typeof partValue === 'string' && partValue.startsWith('?:') ? `?:${inputs[inputKey] || ''}` : partValue}>
+                      <input
+                        type="text"
+                        value={inputs[inputKey] || ''}
+                        onChange={(e) => handleInputChange(inputKey, e.target.value)}
+                        placeholder=""
+                        className="w-full h-full text-center text-xl font-black bg-transparent border-none focus:outline-none focus:bg-black/10 text-white placeholder:text-white/50 caret-white cursor-text"
+                      />
+                    </UnitSegments>
                   </div>
                 );
               })}
@@ -155,62 +162,63 @@ export default function BarModelWorkspace({ modelData, onClose, initialState }) 
       <div className="relative my-12 p-8 bg-slate-50 rounded-[3rem] border-4 border-slate-100 space-y-8 shadow-inner">
         <h3 className="text-xl font-black text-slate-800 text-center mb-8 uppercase tracking-widest">Comparison Model</h3>
         
-        <div className="relative max-w-2xl mx-auto pr-48">
-          <div className="space-y-6">
-            {[modelData.bar1, modelData.bar2].map((bar, idx) => {
-              if (!bar) return null;
-              const layoutVal = getLayoutValue(bar);
-              const width = (layoutVal / maxVal) * 100;
-              const inputKey = `bar_${idx}`;
-              
-              return (
-                <div key={idx} className="flex flex-col">
-                  <div className="flex items-center gap-6">
-                    <span className="w-24 text-sm font-black text-slate-400 uppercase text-right truncate">
-                      {bar.name}
-                    </span>
-                    <div className="flex-1 h-16 bg-white rounded-2xl border-4 border-slate-200 overflow-hidden flex relative z-10">
-                      <div
-                        style={{ width: `${width}%` }}
-                        className={`relative h-full flex items-center justify-center px-2 shadow-sm ${
-                          idx === 0 ? 'bg-blue-500' : 'bg-amber-500'
-                        }`}
-                      >
-                        <UnitSegments value={bar.segments || bar.value} />
-                        
-                        {/* Interactive Input for Bar */}
-                        {(!bar.segments || parseInt(bar.segments) <= 1) && (
-                          <input
-                            type="text"
-                            value={inputs[inputKey] || ''}
-                            onChange={(e) => handleInputChange(inputKey, e.target.value)}
-                            placeholder=""
-                            className="min-w-[40px] w-full max-w-[6rem] h-10 text-center text-lg font-black bg-white/90 border-2 border-slate-800 rounded-xl focus:outline-none focus:ring-4 focus:ring-yellow-400 z-20 text-slate-900 shadow-sm placeholder:text-slate-300"
-                          />
+        <div className="relative my-6 p-6 bg-slate-50 rounded-3xl border border-slate-100 shadow-sm">
+          <div className="flex w-full items-start">
+            <div className="flex-1 space-y-4 min-w-[200px]">
+              {[modelData.bar1, modelData.bar2].map((bar, idx) => {
+                if (!bar) return null;
+                const layoutVal = getLayoutValue(bar);
+                const width = (layoutVal / maxVal) * 100;
+                const inputKey = `bar_${idx}`;
+                
+                return (
+                  <div key={idx} className="flex flex-col">
+                    <div className="flex items-center gap-6">
+                      <span className="w-24 text-sm font-black text-slate-400 uppercase text-right truncate">
+                        {bar.name}
+                      </span>
+                      <div className="flex-1 h-16 bg-white rounded-2xl border-4 border-slate-200 overflow-hidden flex relative z-10">
+                        <div
+                          style={{ width: `${width}%` }}
+                          className={`relative h-full flex items-center justify-center px-2 shadow-sm ${
+                            idx === 0 ? 'bg-blue-500' : 'bg-amber-500'
+                          }`}
+                        >
+                          <UnitSegments value={bar.segments || bar.value} />
+                          
+                          {/* Interactive Input for Bar */}
+                          {(!bar.segments || parseInt(bar.segments) <= 1) && (
+                            <input
+                              type="text"
+                              value={inputs[inputKey] || ''}
+                              onChange={(e) => handleInputChange(inputKey, e.target.value)}
+                              placeholder=""
+                              className="min-w-[40px] w-full max-w-[6rem] h-10 text-center text-lg font-black bg-white/90 border-2 border-slate-800 rounded-xl focus:outline-none focus:ring-4 focus:ring-yellow-400 z-20 text-slate-900 shadow-sm placeholder:text-slate-300"
+                            />
+                          )}
+                        </div>
+                      
+                        {/* Difference Box (if this is the shorter bar) */}
+                        {width < 100 && (
+                          <div 
+                            style={{ width: `${100 - width}%` }}
+                            className="h-full flex items-center justify-center bg-slate-50/50 border-l-4 border-dashed border-slate-300 px-2"
+                          >
+                            <input
+                              type="text"
+                              value={inputs['diff'] || ''}
+                              onChange={(e) => handleInputChange('diff', e.target.value)}
+                              placeholder=""
+                              className="min-w-[40px] w-full max-w-[6rem] h-10 text-center text-sm font-black bg-white border-2 border-slate-300 text-slate-600 rounded-xl focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 shadow-sm placeholder:text-slate-300"
+                            />
+                          </div>
                         )}
                       </div>
-                    
-                    {/* Difference Box (if this is the shorter bar) */}
-                    {width < 100 && (
-                      <div 
-                        style={{ width: `${100 - width}%` }}
-                        className="h-full flex items-center justify-center bg-slate-50/50 border-l-4 border-dashed border-slate-300 px-2"
-                      >
-                        <input
-                          type="text"
-                          value={inputs['diff'] || ''}
-                          onChange={(e) => handleInputChange('diff', e.target.value)}
-                          placeholder=""
-                          className="min-w-[40px] w-full max-w-[6rem] h-10 text-center text-sm font-black bg-white border-2 border-slate-300 text-slate-600 rounded-xl focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 shadow-sm placeholder:text-slate-300"
-                        />
-                      </div>
-                    )}
                   </div>
-                </div>
                   
-                {/* Bracket Input for multi-segment bars */}
+                  {/* Bracket Input for multi-segment bars */}
                   {bar.segments && parseInt(bar.segments) > 1 && (
-                    <div className="flex items-center gap-6 mt-1 relative z-0">
+                    <div className="flex items-center gap-6 mt-1 mb-6 relative z-0">
                       <span className="w-24"></span>
                       <div className="flex-1 flex">
                         <div style={{ width: `${width}%` }} className="flex flex-col items-center">
@@ -229,30 +237,28 @@ export default function BarModelWorkspace({ modelData, onClose, initialState }) 
                     </div>
                   )}
                 </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
 
-          {/* Total Bracket for Comparison */}
-          {modelData.whole !== undefined && (
-            <div className="absolute top-0 right-0 h-full flex flex-col pointer-events-none pr-8">
-              <div className="flex items-center h-[9.5rem]">
-                <div className="w-12 h-full py-1">
+            {/* Total Bracket for Comparison */}
+            {modelData.whole !== undefined && (
+              <div className="w-[180px] flex-shrink-0 flex items-center ml-4 h-[6rem]">
+                <div className="w-10 h-full py-0.5 pointer-events-none">
                   <CurlyBracket />
                 </div>
-                <div className="ml-1 flex flex-col items-start pointer-events-auto">
-                  <span className="text-sm font-black text-slate-400 uppercase mb-2 tracking-widest">Total</span>
+                <div className="ml-1 flex flex-col items-start z-20">
                   <input
                     type="text"
                     value={inputs['whole'] || ''}
                     onChange={(e) => handleInputChange('whole', e.target.value)}
                     placeholder=""
-                    className="w-28 h-12 text-center text-xl font-black bg-white border-2 border-slate-800 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-400 z-20 text-slate-900 shadow-sm"
+                    className="w-28 h-12 text-center text-xl font-black bg-white border-2 border-slate-800 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-400 text-slate-900 shadow-sm"
                   />
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     );

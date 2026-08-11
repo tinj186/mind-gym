@@ -36,7 +36,7 @@ export const fractionComparisonBlueprint = {
     const isShort = type === 'Short Question';
     const isStructure = type === 'Structured';
 
-    const zodType = type;
+    const zodType = type === 'Short Question' ? 'SHORT_QUESTION' : type.toUpperCase();
     const zodDiff = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
 
     const getQText = (structureText, shortText) => {

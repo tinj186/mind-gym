@@ -160,7 +160,17 @@ export const standardLogic = function (
       inputRequirementStr = JSON.stringify({
         inputType: "MULTI_STEP_INPUT",
         steps: [
-          { label: "Write the multiplication equation to find the total cost", expectedAnswer: `${quantity} x ${rate} = ${total}` },
+          { 
+            label: "Write the multiplication equation to find the total cost", 
+            expectedAnswer: `${quantity} x ${rate} = ${total}`,
+            acceptedAnswers: [
+              `${quantity} x $${rate} = $${total}`,
+              `${quantity} x $${rate} = ${total}`,
+              `$${rate} x ${quantity} = $${total}`,
+              `$${rate} x ${quantity} = ${total}`,
+              `${rate} x ${quantity} = ${total}`
+            ]
+          },
           { label: "What is the total cost?", expectedAnswer: `$${total}` }
         ]
       });

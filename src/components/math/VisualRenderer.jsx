@@ -10,7 +10,7 @@ export const ESSENTIAL_VISUALS = [
   "SINGAPORE_MONEY", "MEASUREMENT_UNIT", "MEASUREMENT_RULER", "CLOCK_DISPLAY",
   "SHAPE_DISPLAY", "SHAPE_3D", "SHAPE_3D_PATTERN", "PLACE_VALUE_CHART", "VERTICAL_ALGORITHM", "LONG_DIVISION",
   "GRID_DISPLAY", "GRID_DRAWING_CANVAS", "FRACTION_DISPLAY",
-  "MASS_SCALE", "VOLUME_BEAKER", "STATIC_IMAGE", "HTML_CONTENT", "BAR_MODEL"
+  "MASS_SCALE", "VOLUME_BEAKER", "STATIC_IMAGE", "HTML_CONTENT", "BAR_MODEL", "FACT_TRIANGLE"
   // "PICTURE_GRAPH_DISPLAY" // Not essential, lazy-loaded
 ];
 
@@ -28,6 +28,7 @@ const GroupingWorkspaceModule = lazy(() => import('./modules/GroupingWorkspace')
 const OrdinalLine = lazy(() => import('./modules/OrdinalLine'));
 const BaseTenBlocks = lazy(() => import('./modules/BaseTenBlocks'));
 const NumberBond = lazy(() => import('./modules/NumberBond'));
+const FactTriangle = lazy(() => import('./modules/FactTriangle'));
 const Shape = lazy(() => import('./modules/Shape'));
 const PlaceValueChart = lazy(() => import('./modules/PlaceValueChart'));
 const ClockDisplay = lazy(() => import('./modules/ClockDisplay'));
@@ -103,6 +104,7 @@ export default function VisualRenderer({ type, ...props }) {
           case 'ORDINAL_LINE': return <OrdinalLine {...props} />;
           case 'BASE_TEN_BLOCKS': return <BaseTenBlocks {...props} />;
           case 'NUMBER_BOND': return <NumberBond {...props} />;
+          case 'FACT_TRIANGLE': return <FactTriangle data={props.visualEngine?.componentData || props.data} />;
           case 'PLACE_VALUE_CHART': return <PlaceValueChart data={props.visualEngine?.componentData || props.data} />;
           case 'SHAPE': return <Shape {...props} />;
           case 'SHAPE_3D': return <Shape3D data={props.visualEngine?.componentData || props.data} />;
@@ -122,7 +124,7 @@ export default function VisualRenderer({ type, ...props }) {
           }
           case 'TF_MATRIX_TABLE': {
             const data = props.visualEngine?.componentData || props.data || {};
-            return <TFMatrixTable items={data.items} headers={data.headers} tableType={data.tableType} />;
+            return <TFMatrixTable statements={data.statements} entities={data.entities} />;
           }
           case 'VERTICAL_ALGORITHM': return <VerticalAlgorithm data={props.visualEngine?.componentData || props.data} />;
           case 'LONG_DIVISION': return <LongDivision data={props.visualEngine?.componentData || props.data} />;

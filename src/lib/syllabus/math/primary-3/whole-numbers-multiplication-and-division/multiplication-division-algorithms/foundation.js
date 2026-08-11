@@ -1,3 +1,4 @@
+import { BarModelBuilder } from '@/lib/builders/BarModelBuilder';
 import { generateMultiplicationAlgorithmTables, generateLongDivisionAlgorithmTables } from '@/lib/utils/math-html-utils';
 
 export function foundationLogic(difficulty, activeVariant, type, context, selectedContextItem, getFormatInstructions) {
@@ -38,9 +39,7 @@ export function foundationLogic(difficulty, activeVariant, type, context, select
           { label: "Step 2 (Final Answer)", expectedAnswer: String(product) }
         ]
       });
-      customConstraints = `
-- For MULTI_STEP_INPUT Step 1, the expectedAnswer MUST exactly be "${multiplicand} x ${multiplier} = ${product}".
-- For MULTI_STEP_INPUT Step 2 (Final Answer), the expectedAnswer MUST exactly be "${product}".`;
+      customConstraints = "";
     } else if (isMCQ) {
       askText = `Solve: ${multiplicand} x ${multiplier}`;
       questionStemConstraint = `- The question stem must exactly be: "${askText}"`;
@@ -110,9 +109,7 @@ export function foundationLogic(difficulty, activeVariant, type, context, select
           { label: "Step 2 (Final Answer)", expectedAnswer: String(quotient) }
         ]
       });
-      customConstraints = `
-- For MULTI_STEP_INPUT Step 1, the expectedAnswer MUST exactly be "${dividend} ÷ ${divisor} = ${quotient}".
-- For MULTI_STEP_INPUT Step 2 (Final Answer), the expectedAnswer MUST exactly be "${quotient}".`;
+      customConstraints = "";
     } else if (isMCQ) {
       askText = `Divide ${dividend} by ${divisor}. What is the quotient?`;
       questionStemConstraint = `- The question stem must exactly be: "${askText}"`;
@@ -187,9 +184,7 @@ export function foundationLogic(difficulty, activeVariant, type, context, select
           { label: "Step 2 (Final Answer)", expectedAnswer: String(product) }
         ]
       });
-      customConstraints = `
-- For MULTI_STEP_INPUT Step 1, the expectedAnswer MUST exactly be "${multiplicand} x ${multiplier} = ${product}".
-- For MULTI_STEP_INPUT Step 2 (Final Answer), the expectedAnswer MUST exactly be "${product}".`;
+      customConstraints = "";
     } else if (isMCQ) {
       askText = `Find the product of ${multiplicand} and ${multiplier}.`;
       questionStemConstraint = `- The question stem must exactly be: "${askText}"`;
@@ -238,9 +233,7 @@ export function foundationLogic(difficulty, activeVariant, type, context, select
           { label: "Step 2 (Final Answer)", expectedAnswer: String(missingFactor) }
         ]
       });
-      customConstraints = `
-- For MULTI_STEP_INPUT Step 1, the expectedAnswer MUST exactly be "${product} ÷ ${multiplier} = ${missingFactor}".
-- For MULTI_STEP_INPUT Step 2 (Final Answer), the expectedAnswer MUST exactly be "${missingFactor}".`;
+      customConstraints = "";
     } else if (isMCQ) {
       askText = `Which number multiplied by ${multiplier} gives ${product}?`;
       questionStemConstraint = `- The question stem must exactly be: "${askText}"`;
@@ -308,9 +301,7 @@ export function foundationLogic(difficulty, activeVariant, type, context, select
           { label: "Step 2 (Final Answer)", expectedAnswer: String(product) }
         ]
       });
-      customConstraints = `
-- For MULTI_STEP_INPUT Step 1, the expectedAnswer MUST exactly be "${multiplicand} x ${multiplier} = ${product}".
-- For MULTI_STEP_INPUT Step 2 (Final Answer), the expectedAnswer MUST exactly be "${product}".`;
+      customConstraints = "";
     } else if (isMCQ) {
       askText = `What is ${multiplicand} x ${multiplier}?`;
       questionStemConstraint = `- The question stem must exactly be: "${askText}"`;
