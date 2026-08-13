@@ -48,6 +48,7 @@ export const UniversalQuestionSchema = z.object({
       'BAR_MODEL',
       'VERTICAL_ALGORITHM',
       'LONG_DIVISION',
+      'FRACTION_EQUIVALENCE',
       'NONE'
     ]), // Registered native visual engines
     componentData: z.record(z.any()).nullable(),

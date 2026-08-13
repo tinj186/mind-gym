@@ -44,6 +44,7 @@ const VerticalAlgorithm = lazy(() => import('./modules/VerticalAlgorithm'));
 const LongDivision = lazy(() => import('./modules/LongDivision'));
 const DiagramRenderer = lazy(() => import('./modules/DiagramRenderer'));
 const BarModelRenderer = lazy(() => import('./modules/BarModelRenderer'));
+const FractionEquivalence = lazy(() => import('./modules/FractionEquivalence'));
 const GridDisplay = lazy(() => import('./modules/GridDisplay'));
 const GridDrawingCanvas = lazy(() => import('./modules/GridDrawingCanvas'));
 const FractionDisplay = lazy(() => import('./modules/FractionDisplay'));
@@ -130,6 +131,7 @@ export default function VisualRenderer({ type, ...props }) {
           case 'LONG_DIVISION': return <LongDivision data={props.visualEngine?.componentData || props.data} />;
           case 'DIAGRAM_RENDERER': return <DiagramRenderer data={props.visualEngine?.componentData || props.data} />;
           case 'BAR_MODEL': return <BarModelRenderer data={props.visualEngine?.componentData || props.data} setIsToolOpen={props.setIsToolOpen} toolState={props.toolState} />;
+          case 'FRACTION_EQUIVALENCE': return <FractionEquivalence data={props.visualEngine?.componentData || props.data} />;
           case 'FRACTION_DISPLAY': return <FractionDisplay data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
           case 'STATIC_IMAGE': {
             const data = props.visualEngine?.componentData || props.data || {};

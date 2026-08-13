@@ -73,7 +73,26 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
               {toolState['bar_label'] || m.barLabel}
             </span>
           )}
-          <div className="flex-1 relative">
+          <div className="flex-1 relative mt-8">
+            {/* Top Brackets */}
+            <div className="absolute -top-6 left-0 w-full h-4 flex">
+              {m.parts.map((part, idx) => {
+                const partValue = part.value !== undefined ? part.value : part;
+                const partLayoutVal = parseFloat(part.layoutSize || partValue) || fallbackPartVal;
+                const width = (partLayoutVal / calculatedWhole) * 100;
+                
+                if (part.segments && parseInt(part.segments) > 1 && partValue && partValue !== "?") {
+                  return (
+                    <div key={`bracket-${idx}`} style={{ width: `${width}%` }} className="relative flex flex-col items-center justify-end h-full">
+                      <span className="text-sm font-black text-slate-600 bg-slate-50 px-2 absolute -top-4">{partValue}</span>
+                      <div className="w-[calc(100%-8px)] h-2 border-x-2 border-t-2 border-slate-400 opacity-60 rounded-t-md"></div>
+                    </div>
+                  );
+                }
+                return <div key={`bracket-${idx}`} style={{ width: `${width}%` }} />;
+              })}
+            </div>
+            
             <div className="flex h-12 w-full rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-white">
               {m.parts.map((part, idx) => {
                 const partValue = part.value !== undefined ? part.value : part;
@@ -81,6 +100,7 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
                 const width = (partLayoutVal / calculatedWhole) * 100;
                 const inputKey = `part_${idx}`;
                 const userVal = toolState[inputKey];
+                const showTopBracket = part.segments && parseInt(part.segments) > 1 && partValue && partValue !== "?";
                 
                 return (
                   <div
@@ -91,7 +111,7 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
                     }`}
                   >
                     <UnitSegments value={typeof partValue === 'string' && partValue.startsWith('?:') ? `?:${userVal || partValue.split(':')[1] || '?'}` : partValue} segments={part.segments} />
-                    {!(typeof partValue === 'string' && partValue.startsWith('?:')) && (
+                    {!(typeof partValue === 'string' && partValue.startsWith('?:')) && !showTopBracket && (
                       userVal ? <span className="text-yellow-200 px-2 drop-shadow-md text-lg">{userVal}</span> : (partValue === "?" ? "?" : <span className="text-white drop-shadow-sm">{partValue}</span>)
                     )}
                   </div>

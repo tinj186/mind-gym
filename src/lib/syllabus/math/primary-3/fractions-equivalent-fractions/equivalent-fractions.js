@@ -1,4 +1,6 @@
 import { foundationLogic } from './equivalent-fractions/foundation.js';
+import { standardLogic } from './equivalent-fractions/standard.js';
+import { advancedLogic } from './equivalent-fractions/advanced.js';
 import { getRandomNames, getRandomDivisibleFoods } from '../../../../utils/variable-bank.js';
 
 export const p3EquivalentFractionsBlueprint = {
@@ -13,6 +15,18 @@ export const p3EquivalentFractionsBlueprint = {
       steps: 1,
       maxNumber: 12,
       logicDescription: "Finding equivalent fractions by multiplying the numerator and denominator by 2 or 3. High reliance on visual equivalence."
+    },
+    standard: {
+      name: 'Simplest Form & Direct Application',
+      steps: 1,
+      maxNumber: 12,
+      logicDescription: "Introducing division to find the simplest form of a fraction, and applying equivalent fractions without visual aids."
+    },
+    advanced: {
+      name: 'Multi-Step Equivalence & Word Problems',
+      steps: 2,
+      maxNumber: 24,
+      logicDescription: "Combining multiple fraction concepts like subtraction and simplification, finding double missing variables, and reverse operations. Deductive Scaffolding is mandatory for structured questions."
     }
   },
 
@@ -22,6 +36,18 @@ export const p3EquivalentFractionsBlueprint = {
     'foundation_times_2_rule': 'The "Times 2" Rule',
     'foundation_times_3_rule': 'The "Times 3" Rule',
     'foundation_identifying_match': 'Identifying the Match (Notation)',
+
+    'standard_simplest_form_2': 'Finding the Simplest Form (Divide by 2)',
+    'standard_simplest_form_3_4': 'Finding the Simplest Form (Divide by 3 or 4)',
+    'standard_scaling_reverse': 'Scaling to a Specific Denominator (Reverse)',
+    'standard_true_false': 'True/False Equivalence Verification',
+    'standard_simplest_missing_step': 'Simplest Form (Missing Step)',
+
+    'advanced_remaining_simplify': 'Calculate Remaining Fraction, then Simplify',
+    'advanced_equivalence_chain': 'Equivalence Chain (Double Missing Variables)',
+    'advanced_who_is_correct': '"Who is Correct?" (Proving Equivalence)',
+    'advanced_reverse_simplest': 'Reversing the Simplest Form (Finding the Original)',
+    'advanced_find_total_parts': 'Find the Total Parts (Unknown Denominator from Context)',
   },
 
   generate: function (difficulty, activeVariant, type) {
@@ -64,10 +90,24 @@ CRITICAL INSTRUCTION: DO NOT generate your own visualEngine. You MUST output EXA
     const context = { name: name, pronoun: "they", pronounCaps: "They" };
     const selectedContextItem = getRandomDivisibleFoods(1)[0];
 
-    const getQText = (structText, shortText) => isStructure ? structText : shortText;
+    const isMCQWordProblem = isMCQ ? Math.random() > 0.5 : false;
+    const getQText = (structText, shortText) => {
+      if (isStructure) return structText;
+      if (isShort) return shortText;
+      if (isMCQ) return isMCQWordProblem ? structText : shortText;
+      return shortText;
+    };
 
     if (difficulty === 'Foundation') {
       return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, null, null, level, topic, getFormatInstructions, context, selectedContextItem, getQText);
+    }
+
+    if (difficulty === 'Standard') {
+      return standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, null, null, level, topic, getFormatInstructions, context, selectedContextItem, getQText);
+    }
+
+    if (difficulty === 'Advanced') {
+      return advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, null, null, level, topic, getFormatInstructions, context, selectedContextItem, getQText);
     }
 
     throw new Error(`Difficulty level not implemented: ${difficulty}`);

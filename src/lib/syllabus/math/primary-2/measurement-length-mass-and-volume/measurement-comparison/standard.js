@@ -157,10 +157,10 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
 
     if (activeVariant === 'standard_difference_volumes') {
       structureText = `Container A is a ${firstObj} that holds ${firstVal} ${firstUnit} of water. Container B is a ${secondObj} that holds ${secondVal} ${secondUnit} of water. How much ${finalAdj} water does Container ${askFirst ? 'A' : 'B'} hold than Container ${askFirst ? 'B' : 'A'}?`;
-      shortText = `A: ${firstObj} (${firstVal} ${firstUnit}), B: ${secondObj} (${secondVal} ${secondUnit}). Container ${askFirst ? 'A' : 'B'} holds ___ ${finalAdj} water than Container ${askFirst ? 'B' : 'A'}.`;
+      shortText = `A: ${firstObj} (${firstVal} ${firstUnit}), B: ${secondObj} (${secondVal} ${secondUnit}). How much ${finalAdj} water does Container ${askFirst ? 'A' : 'B'} hold than Container ${askFirst ? 'B' : 'A'}?`;
     } else {
       structureText = `Object A is a ${firstObj} that is ${firstVal} ${firstUnit}. Object B is a ${secondObj} that is ${secondVal} ${secondUnit}. How much ${finalAdj} is Object ${askFirst ? 'A' : 'B'} than Object ${askFirst ? 'B' : 'A'}?`;
-      shortText = `A: ${firstObj} (${firstVal} ${firstUnit}), B: ${secondObj} (${secondVal} ${secondUnit}). Object ${askFirst ? 'A' : 'B'} is ___ ${finalAdj} than Object ${askFirst ? 'B' : 'A'}.`;
+      shortText = `A: ${firstObj} (${firstVal} ${firstUnit}), B: ${secondObj} (${secondVal} ${secondUnit}). How much ${finalAdj} is Object ${askFirst ? 'A' : 'B'} than Object ${askFirst ? 'B' : 'A'}?`;
     }
 
     actualAnswer = `${diff} ${baseUnit}`;

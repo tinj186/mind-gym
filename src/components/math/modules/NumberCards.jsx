@@ -23,9 +23,17 @@ export default function NumberCards({ data }) {
               {item.label}
             </span>
           )}
-          <span className="text-4xl font-black text-slate-900">
-            {item.value || item.lengthUnits}
-          </span>
+          {item.type === 'fraction' ? (
+            <div className="flex flex-col items-center justify-center font-black text-slate-900">
+              <span className="text-4xl leading-none px-2">{item.num}</span>
+              <div className="h-1 w-full bg-slate-900 my-1 rounded"></div>
+              <span className="text-4xl leading-none px-2">{item.denom}</span>
+            </div>
+          ) : (
+            <span className="text-4xl font-black text-slate-900">
+              {item.value || item.lengthUnits}
+            </span>
+          )}
         </div>
       ))}
     </div>

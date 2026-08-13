@@ -244,12 +244,12 @@ export const standardLogic = (activeVariant, isMCQ, isShort, isStructure, getQTe
 
     const usedColors = [...new Set(core.map(c => c.color))];
     const usedColorNames = [...new Set(core.map(c => c.colorName))];
+    const usedRotations = [...new Set(core.map(c => c.rotation))];
     const optionsRow = [];
     usedColors.forEach((hex, idx) => {
-      optionsRow.push({ label: `${usedColorNames[idx]} up`, shapeType: shape, color: hex, size: 'large', rotation: 0 });
-      optionsRow.push({ label: `${usedColorNames[idx]} right`, shapeType: shape, color: hex, size: 'large', rotation: 90 });
-      optionsRow.push({ label: `${usedColorNames[idx]} down`, shapeType: shape, color: hex, size: 'large', rotation: 180 });
-      optionsRow.push({ label: `${usedColorNames[idx]} left`, shapeType: shape, color: hex, size: 'large', rotation: 270 });
+      usedRotations.forEach(rot => {
+        optionsRow.push({ label: `${usedColorNames[idx]} ${getDirection(rot)}`, shapeType: shape, color: hex, size: 'large', rotation: rot });
+      });
     });
 
     visualEngineStr = JSON.stringify({
@@ -321,12 +321,12 @@ export const standardLogic = (activeVariant, isMCQ, isShort, isStructure, getQTe
     ];
 
     const usedShapes = [...new Set(core.map(c => c.shapeType))];
+    const usedRotations = [...new Set(core.map(c => c.rotation))];
     const optionsRow = [];
     usedShapes.forEach(shapeType => {
-      optionsRow.push({ label: `${shapeType} up`, shapeType, color: color.hex, size: 'large', rotation: 0 });
-      optionsRow.push({ label: `${shapeType} right`, shapeType, color: color.hex, size: 'large', rotation: 90 });
-      optionsRow.push({ label: `${shapeType} down`, shapeType, color: color.hex, size: 'large', rotation: 180 });
-      optionsRow.push({ label: `${shapeType} left`, shapeType, color: color.hex, size: 'large', rotation: 270 });
+      usedRotations.forEach(rot => {
+        optionsRow.push({ label: `${shapeType} ${getDirection(rot)}`, shapeType, color: color.hex, size: 'large', rotation: rot });
+      });
     });
 
     visualEngineStr = JSON.stringify({
@@ -456,14 +456,14 @@ export const standardLogic = (activeVariant, isMCQ, isShort, isStructure, getQTe
     
     structureText = `Look at the pattern of shapes below. What is the missing shape in the pattern?`;
     shortText = `What is the missing shape in the pattern?`;
-    actualAnswer = `${nextShape.size} ${getDirection(nextShape.rotation)}`;
+    actualAnswer = `${nextShape.size} ${shape} ${getDirection(nextShape.rotation)}`;
     hintStr = `Notice how BOTH the size and the orientation change. Find the repeating group!`;
     
-    const coreString = core.map(s => `${s.size} ${getDirection(s.rotation)}`).join(', ');
+    const coreString = core.map(s => `${s.size} ${shape} ${getDirection(s.rotation)}`).join(', ');
     stepsStr = JSON.stringify([
       `Identify the repeating core of the pattern: ${coreString}.`,
       `The pattern repeats this sequence over and over.`,
-      `The shape right before the missing one is a ${pattern[gapIndex - 1].size} ${getDirection(pattern[gapIndex - 1].rotation)}.`,
+      `The shape right before the missing one is a ${pattern[gapIndex - 1].size} ${shape} ${getDirection(pattern[gapIndex - 1].rotation)}.`,
       `According to the core, the shape that comes after that is a ${actualAnswer}.`,
       `So the missing shape is a ${actualAnswer}.`
     ]);
@@ -474,12 +474,13 @@ export const standardLogic = (activeVariant, isMCQ, isShort, isStructure, getQTe
       { label: `Final Answer`, expectedAnswer: actualAnswer }
     ];
 
-    const optionsRow = [
-      { label: `small up`, shapeType: shape, color: color.hex, size: 'small', rotation: 0 },
-      { label: `small right`, shapeType: shape, color: color.hex, size: 'small', rotation: 90 },
-      { label: `large up`, shapeType: shape, color: color.hex, size: 'large', rotation: 0 },
-      { label: `large right`, shapeType: shape, color: color.hex, size: 'large', rotation: 90 }
-    ];
+    const usedRotations = [...new Set(core.map(c => c.rotation))];
+    const optionsRow = [];
+    ['small', 'large'].forEach(sz => {
+      usedRotations.forEach(rot => {
+        optionsRow.push({ label: `${sz} ${shape} ${getDirection(rot)}`, shapeType: shape, color: color.hex, size: sz, rotation: rot });
+      });
+    });
 
     visualEngineStr = JSON.stringify({
       componentToRender: "SHAPE_DISPLAY",

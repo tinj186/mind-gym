@@ -232,17 +232,18 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   if (activeVariant === 'standard_unit_price_calc') {
     const qty = Math.floor(Math.random() * 4) + 2; 
     const price = [2, 5, 10][Math.floor(Math.random() * 3)]; 
-    const answer = String(qty * price);
+    const rawAnswer = qty * price;
+    const answer = `$${rawAnswer}`;
 
     let defectMap = null;
     let options = null;
     if (isMCQ) {
-      options = Array.from(new Set([answer, String(qty + price), String(parseInt(answer) - price), String(parseInt(answer) + 10)])).slice(0, 4);
-      while(options.length < 4) { options.push(String(parseInt(answer) + Math.floor(Math.random() * 5) + 2)); options = Array.from(new Set(options)); }
+      options = Array.from(new Set([answer, `$${qty + price}`, `$${rawAnswer - price}`, `$${rawAnswer + 10}`])).slice(0, 4);
+      while(options.length < 4) { options.push(`$${rawAnswer + Math.floor(Math.random() * 5) + 2}`); options = Array.from(new Set(options)); }
       options = options.sort(() => Math.random() - 0.5);
       
       defectMap = {
-        [String(qty + price)]: "CONFUSED_OPERATION"
+        [`$${qty + price}`]: "CONFUSED_OPERATION"
       };
       options.forEach(opt => { if (opt !== answer && !defectMap[opt]) defectMap[opt] = "CARELESS_CALCULATION"; });
     }

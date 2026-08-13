@@ -259,7 +259,13 @@ export const standardVariants = {
     }
 
     return {
-      aiPrompt: `You are an expert Primary 1 math generator.
+      aiPrompt: `STRICT VARIANT MANDATE: You are generating a compare_place_value question. DO NOT modify the mathematical structure, options, defect map, or the final answer.
+      MATH CONSTRAINTS:
+      - Compare ${n1_tens} tens ${n1_ones} ones (${num1}) and ${n2_tens} tens ${n2_ones} ones (${num2})
+      - Target is: ${targetWord}
+      - Final Answer MUST strictly be: "${answer}"
+      CRITICAL: If the question type is MCQ, the "options" array MUST be exactly: ${mcqOptions} and "defectMap" MUST be exactly: ${defectMapStr}. DO NOT modify their content or format.
+      
       ${formatInstructions}
 
       CRITICAL: This is a text-only conceptual comparison. Do NOT include a "visualEngine" block with blocks or icons. No icon rendering is allowed.
