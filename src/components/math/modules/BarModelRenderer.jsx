@@ -76,26 +76,41 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
           <div className="flex-1 relative mt-8">
             {/* Top Brackets */}
             <div className="absolute -top-6 left-0 w-full h-4 flex">
-              {m.parts.map((part, idx) => {
-                const partValue = part.value !== undefined ? part.value : part;
-                const partLayoutVal = parseFloat(part.layoutSize || partValue) || fallbackPartVal;
-                const width = (partLayoutVal / calculatedWhole) * 100;
-                
-                if (part.segments && parseInt(part.segments) > 1 && partValue && partValue !== "?") {
-                  return (
-                    <div key={`bracket-${idx}`} style={{ width: `${width}%` }} className="relative flex flex-col items-center justify-end h-full">
-                      <span className="text-sm font-black text-slate-600 bg-slate-50 px-2 absolute -top-4">{partValue}</span>
-                      <div className="w-[calc(100%-8px)] h-2 border-x-2 border-t-2 border-slate-400 opacity-60 rounded-t-md"></div>
-                    </div>
-                  );
-                }
-                return <div key={`bracket-${idx}`} style={{ width: `${width}%` }} />;
-              })}
+              {m.topBrackets ? (
+                m.topBrackets.map((tb, idx) => {
+                  const width = (tb.size / calculatedWhole) * 100;
+                  if (tb.label) {
+                    return (
+                      <div key={`tb-${idx}`} style={{ width: `${width}%` }} className="relative flex flex-col items-center justify-end h-full">
+                        <span className="text-sm font-black text-slate-600 bg-slate-50 px-2 absolute -top-4 z-10">{tb.label}</span>
+                        <div className="w-[calc(100%-8px)] h-2 border-x-2 border-t-2 border-slate-400 opacity-60 rounded-t-md"></div>
+                      </div>
+                    );
+                  }
+                  return <div key={`tb-${idx}`} style={{ width: `${width}%` }} />;
+                })
+              ) : (
+                m.parts.map((part, idx) => {
+                  const partValue = (typeof part === 'object' && part !== null) ? (part.value !== undefined ? part.value : "") : part;
+                  const partLayoutVal = parseFloat(part.layoutSize || partValue) || fallbackPartVal;
+                  const width = (partLayoutVal / calculatedWhole) * 100;
+                  
+                  if (part.segments && parseInt(part.segments) > 1 && partValue && partValue !== "?") {
+                    return (
+                      <div key={`bracket-${idx}`} style={{ width: `${width}%` }} className="relative flex flex-col items-center justify-end h-full">
+                        <span className="text-sm font-black text-slate-600 bg-slate-50 px-2 absolute -top-4">{partValue}</span>
+                        <div className="w-[calc(100%-8px)] h-2 border-x-2 border-t-2 border-slate-400 opacity-60 rounded-t-md"></div>
+                      </div>
+                    );
+                  }
+                  return <div key={`bracket-${idx}`} style={{ width: `${width}%` }} />;
+                })
+              )}
             </div>
             
             <div className="flex h-12 w-full rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-white">
               {m.parts.map((part, idx) => {
-                const partValue = part.value !== undefined ? part.value : part;
+                const partValue = (typeof part === 'object' && part !== null) ? (part.value !== undefined ? part.value : "") : part;
                 const partLayoutVal = parseFloat(part.layoutSize || partValue) || fallbackPartVal;
                 const width = (partLayoutVal / calculatedWhole) * 100;
                 const inputKey = `part_${idx}`;
@@ -107,7 +122,7 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
                     key={idx}
                     style={{ width: `${width}%` }}
                     className={`relative flex items-center justify-center border-r last:border-r-0 border-slate-200 text-sm font-black ${
-                      idx % 2 === 0 ? 'bg-blue-500 text-white' : 'bg-blue-400 text-white'
+                      part.bgClass || (idx % 2 === 0 ? 'bg-blue-500 text-white' : 'bg-blue-400 text-white')
                     }`}
                   >
                     <UnitSegments value={typeof partValue === 'string' && partValue.startsWith('?:') ? `?:${userVal || partValue.split(':')[1] || '?'}` : partValue} segments={part.segments} />
@@ -118,12 +133,14 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
                 );
               })}
             </div>
-            <div className="mt-2 flex flex-col items-center">
-              <div className="w-full h-3 border-x-2 border-b-2 border-slate-300 rounded-b-xl"></div>
-              <span className="text-sm font-black text-slate-500 uppercase mt-2 tracking-widest bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm">
-                Total: {toolState['whole'] ? <span className="text-indigo-600">{toolState['whole']}</span> : (m.whole === "?" ? "?" : <span className="text-indigo-600">{m.whole}</span>)}
-              </span>
-            </div>
+            {!m.hideTotal && (
+              <div className="mt-2 flex flex-col items-center">
+                <div className="w-full h-3 border-x-2 border-b-2 border-slate-300 rounded-b-xl"></div>
+                <span className="text-sm font-black text-slate-500 uppercase mt-2 tracking-widest bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm">
+                  Total: {toolState['whole'] ? <span className="text-indigo-600">{toolState['whole']}</span> : (m.whole === "?" ? "?" : <span className="text-indigo-600">{m.whole}</span>)}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>
