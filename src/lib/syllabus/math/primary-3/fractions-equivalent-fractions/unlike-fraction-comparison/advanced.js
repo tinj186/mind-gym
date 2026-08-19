@@ -1,4 +1,4 @@
-import { getRandomNames, getRandomDivisibleFoods, getRandomColors, getRandomDivisibleObjects } from '@/lib/utils/variable-bank';
+import { getRandomNames, getRandomDivisibleFoods, getRandomColors, getRandomDivisibleObjects, getTimeActivities } from '@/lib/utils/variable-bank';
 
 const getArticle = (word) => /^[aeiou]/i.test(word) ? 'an' : 'a';
 
@@ -143,7 +143,7 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
     answer = targetAns.toString();
     
     if (isMCQ) {
-      askText = `Which number can be placed in the box to make this statement true?\n${sc.t.n}/${sc.t.d} ${sc.op === '<' ? '>' : '<'} [ ]/${sc.d2}`;
+      askText = `Which number can be placed in the box to make this statement true?\n${sc.t.n}/${sc.t.d} ${sc.op === '<' ? 'is greater than' : 'is smaller than'} [ ]/${sc.d2}`;
       
       const wrong1 = equiv.toString();
       const wrong2 = (sc.type === 'largest' ? targetAns - 1 : targetAns + 1).toString();
@@ -154,19 +154,19 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       solutionSteps = [
         `Find an equivalent fraction for ${sc.t.n}/${sc.t.d} with a denominator of ${sc.d2}.`,
         `${sc.t.n}/${sc.t.d} is equal to ${equiv}/${sc.d2}.`,
-        `The statement becomes: ${equiv}/${sc.d2} ${sc.op === '<' ? '>' : '<'} [ ]/${sc.d2}.`,
+        `The statement becomes: ${equiv}/${sc.d2} ${sc.op === '<' ? 'is greater than' : 'is smaller than'} [ ]/${sc.d2}.`,
         `The ${sc.type} number that makes this true is ${answer}.`
       ];
       hint = `Change the first fraction so it has the same denominator as the second fraction!`;
     } else {
-      let structText = `STORY: Create a short story word problem where a container can hold ${sc.d2} liters of water. It currently holds an unknown amount, represented by [ ]/${sc.d2}. If the container is ${sc.op === '<' ? 'less' : 'more'} than ${sc.t.n}/${sc.t.d} full, what is the ${sc.type} possible whole number of liters it could contain?`;
-      let shortText = `What is the ${sc.type} whole number that can fill the box?\n[ ]/${sc.d2} ${sc.op} ${sc.t.n}/${sc.t.d}`;
+      let structText = `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 3 student featuring a person named ${getRandomNames(1)} where a container can hold exactly ${sc.d2} liters of water. It currently holds an unknown amount, represented by [ ]/${sc.d2} liters. CRITICAL: DO NOT state the answer or give it away. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided!\n\n[STORY] If the container is ${sc.op === '<' ? 'less' : 'more'} than ${sc.t.n}/${sc.t.d} full, what is the ${sc.type} possible whole number of liters it could contain?`;
+      let shortText = `What is the ${sc.type} whole number that can fill the box?\n[ ]/${sc.d2} ${sc.op === '<' ? 'is smaller than' : 'is greater than'} ${sc.t.n}/${sc.t.d}`;
       
       if (isStructure) {
         inputRequirementStr = JSON.stringify({
           inputType: "MULTI_STEP_INPUT",
           steps: [
-            { label: `Convert ${sc.t.n}/${sc.t.d} to an equivalent fraction with denominator ${sc.d2}:`, expectedAnswer: `${equiv}/${sc.d2}` },
+            { label: `What is the equivalent fraction for ${sc.t.n}/${sc.t.d}?`, expectedAnswer: `${equiv}/${sc.d2}` },
             { label: `What is the ${sc.type} whole number that can fill the box?`, expectedAnswer: answer }
           ]
         });
@@ -177,7 +177,7 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       solutionSteps = [
         `To compare, first find an equivalent fraction for ${sc.t.n}/${sc.t.d} that has a denominator of ${sc.d2}.`,
         `${sc.t.n}/${sc.t.d} = ${equiv}/${sc.d2}.`,
-        `We are looking for the ${sc.type} number where [ ]/${sc.d2} ${sc.op} ${equiv}/${sc.d2}.`,
+        `We are looking for the ${sc.type} number where [ ]/${sc.d2} ${sc.op === '<' ? 'is smaller than' : 'is greater than'} ${equiv}/${sc.d2}.`,
         `The ${sc.type} possible whole number is ${answer}.`
       ];
     }
@@ -195,10 +195,10 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
     
     let isBoxFirst = Math.random() > 0.5;
     let boxOp = sc.op; 
-    let expr = `${sc.num}/[ ] ${boxOp} ${sc.num}/${sc.d1}`;
+    let expr = `${sc.num}/[ ] ${boxOp === '<' ? 'is smaller than' : 'is greater than'} ${sc.num}/${sc.d1}`;
     if (!isBoxFirst) {
       boxOp = sc.op === '<' ? '>' : '<';
-      expr = `${sc.num}/${sc.d1} ${boxOp} ${sc.num}/[ ]`;
+      expr = `${sc.num}/${sc.d1} ${boxOp === '<' ? 'is smaller than' : 'is greater than'} ${sc.num}/[ ]`;
     }
     
     let relationToD1 = sc.op === '<' ? '>' : '<'; 
@@ -223,27 +223,26 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       hint = `Remember, a larger denominator means smaller pieces!`;
     } else {
       const item = getRandomDivisibleObjects(1)[0];
-      let structText = `STORY: Create a short story word problem. Two identical ${item}s are shared. The first is shared equally among ${sc.d1} people, and each gets ${sc.num}/${sc.d1}. The second is shared equally among an unknown number of people, getting ${sc.num}/[ ]. If the people in the second group got a ${sc.op === '<' ? 'smaller' : 'larger'} share than the first group, what is the ${sc.type} number of people that could be in the second group?`;
-      let shortText = `What is the ${sc.type} whole number that can fill the box?\n${expr}`;
+      let structText = `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple Singaporean math story context for a Primary 3 student featuring a person named \${getRandomNames(1)} who cuts a physical object (like a ${item}). CRITICAL: DO NOT use algebra like 'n' or state the answer. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided!\\n\\n[STORY] They cut the first ${item} into ${sc.d1} equal parts and use ${sc.num} parts. This is ${sc.num}/${sc.d1} of the ${item}. Later, they cut an identical ${item} into a different number of equal parts and use ${sc.num} parts. If the pieces from the second ${item} are ${sc.op === '<' ? 'smaller' : 'larger'} than the pieces from the first ${item}, what is the ${sc.type} number of parts the second ${item} could be cut into?`;
+      let shortText = `What is the ${sc.type} whole number that can fill the box?\\n${expr}`;
       
       if (isStructure) {
         inputRequirementStr = JSON.stringify({
           inputType: "MULTI_STEP_INPUT",
           steps: [
-            { label: `Does the second group need MORE or FEWER people to get a ${sc.op === '<' ? 'smaller' : 'larger'} share? (Type MORE or FEWER)`, expectedAnswer: sc.op === '<' ? 'MORE' : 'FEWER' },
-            { label: `What is the ${sc.type} number of people that could be in the second group?`, expectedAnswer: answer }
+            { label: `The pieces of the second ${item} are ${sc.op === '<' ? 'smaller' : 'larger'}. To get ${sc.op === '<' ? 'smaller' : 'larger'} pieces, the total number of parts (the denominator) must be ${sc.op === '<' ? 'greater' : 'less'} than what number?`, expectedAnswer: `${sc.d1}` },
+            { label: `What is the ${sc.type} whole number that is ${sc.op === '<' ? 'greater' : 'less'} than ${sc.d1}?`, expectedAnswer: answer }
           ]
         });
       }
       
       askText = getQText(structText, shortText);
-      hint = `If you want a ${sc.op === '<' ? 'smaller' : 'larger'} slice, do you need to share the whole with more or fewer people?`;
+      hint = `If you want a ${sc.op === '<' ? 'smaller' : 'larger'} piece, do you need to cut the whole into more or fewer parts?`;
       solutionSteps = [
-        `If the numerator is the same, we compare the denominators.`,
-        `A ${sc.op === '<' ? 'smaller' : 'larger'} fraction means the pieces are ${sc.op === '<' ? 'smaller' : 'larger'}.`,
-        `To get ${sc.op === '<' ? 'smaller' : 'larger'} pieces, you must divide the whole into ${sc.op === '<' ? 'more' : 'fewer'} parts.`,
-        `So, the denominator must be ${sc.op === '<' ? 'greater' : 'less'} than ${sc.d1}.`,
-        `The ${sc.type} whole number is ${answer}.`
+        `Both fractions have the same numerator (${sc.num} parts used).`,
+        `To make the pieces ${sc.op === '<' ? 'smaller' : 'larger'}, the ${item} must be cut into ${sc.op === '<' ? 'more' : 'fewer'} parts.`,
+        `Therefore, the denominator must be ${sc.op === '<' ? 'greater' : 'less'} than ${sc.d1}.`,
+        `The ${sc.type} whole number ${sc.op === '<' ? 'greater' : 'less'} than ${sc.d1} is ${answer}.`
       ];
     }
   } else if (activeVariant === 'advanced_benchmark_no_conversion') {
@@ -282,17 +281,51 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
     } else {
       answer = isStructure ? winnerName : `${winnerFrac.n}/${winnerFrac.d}`;
       
-      let structText = `STORY: Create a short story where ${names[0]} spends ${first.n}/${first.d} of an hour reading, and ${names[1]} spends ${second.n}/${second.d} of an hour reading. The final sentence MUST EXACTLY be: "Without converting to a common denominator, deduce who read for a ${askForGreater ? 'longer' : 'shorter'} time by comparing both fractions to half an hour. (Write the name)"`;
-      let shortText = `Compare ${first.n}/${first.d} and ${second.n}/${second.d}. Which is ${askForGreater ? 'greater' : 'smaller'}?`;
+      let structText, shortText, steps;
+      let solutionNoun, timeLabel;
+      
+      const randTheme = Math.random();
+      if (randTheme < 0.33) {
+        // Food
+        const item = getRandomDivisibleFoods(1)[0];
+        solutionNoun = `half a ${item}`;
+        timeLabel = `fraction`;
+        structText = `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple Singaporean math story context for a Primary 3 student about ${names[0]} and ${names[1]} who each have an identical ${item}. CRITICAL: DO NOT state the answer. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided!\\n\\n[STORY] ${names[0]} ate ${first.n}/${first.d} of their ${item}. ${names[1]} ate ${second.n}/${second.d} of their ${item}. Without converting to a common denominator, deduce who ate a ${askForGreater ? 'larger' : 'smaller'} amount by comparing both fractions to half a ${item}. (Write the name)`;
+        steps = [
+          { label: `Is ${names[0]}'s fraction (${first.n}/${first.d}) MORE or LESS than half a ${item}?`, expectedAnswer: val1 > 0.5 ? 'MORE' : 'LESS' },
+          { label: `Is ${names[1]}'s fraction (${second.n}/${second.d}) MORE or LESS than half a ${item}?`, expectedAnswer: val2 > 0.5 ? 'MORE' : 'LESS' },
+          { label: `Who ate a ${askForGreater ? 'larger' : 'smaller'} amount? (Write the name)`, expectedAnswer: answer }
+        ];
+      } else if (randTheme < 0.66) {
+        // Objects
+        const item = getRandomDivisibleObjects(1)[0];
+        solutionNoun = `half a ${item}`;
+        timeLabel = `fraction`;
+        structText = `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple Singaporean math story context for a Primary 3 student about ${names[0]} and ${names[1]} who each have an identical ${item}. CRITICAL: DO NOT state the answer. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided!\\n\\n[STORY] ${names[0]} used ${first.n}/${first.d} of their ${item} for an art project. ${names[1]} used ${second.n}/${second.d} of their ${item} for the same project. Without converting to a common denominator, deduce who used a ${askForGreater ? 'larger' : 'smaller'} amount by comparing both fractions to half a ${item}. (Write the name)`;
+        steps = [
+          { label: `Is ${names[0]}'s fraction (${first.n}/${first.d}) MORE or LESS than half a ${item}?`, expectedAnswer: val1 > 0.5 ? 'MORE' : 'LESS' },
+          { label: `Is ${names[1]}'s fraction (${second.n}/${second.d}) MORE or LESS than half a ${item}?`, expectedAnswer: val2 > 0.5 ? 'MORE' : 'LESS' },
+          { label: `Who used a ${askForGreater ? 'larger' : 'smaller'} amount? (Write the name)`, expectedAnswer: answer }
+        ];
+      } else {
+        // Time
+        const activity = getTimeActivities(1, Math.random() > 0.5).text;
+        solutionNoun = `half an hour`;
+        timeLabel = `time`;
+        structText = `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple Singaporean math story context for a Primary 3 student about ${names[0]} and ${names[1]} competing in an activity. CRITICAL: DO NOT state the answer. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided!\\n\\n[STORY] ${names[0]} spent ${first.n}/${first.d} of an hour ${activity}. ${names[1]} spent ${second.n}/${second.d} of an hour doing the same activity. Without converting to a common denominator, deduce who took a ${askForGreater ? 'longer' : 'shorter'} time by comparing both fractions to half an hour. (Write the name)`;
+        steps = [
+          { label: `Is ${names[0]}'s time (${first.n}/${first.d}) MORE or LESS than half an hour?`, expectedAnswer: val1 > 0.5 ? 'MORE' : 'LESS' },
+          { label: `Is ${names[1]}'s time (${second.n}/${second.d}) MORE or LESS than half an hour?`, expectedAnswer: val2 > 0.5 ? 'MORE' : 'LESS' },
+          { label: `Who took a ${askForGreater ? 'longer' : 'shorter'} time? (Write the name)`, expectedAnswer: answer }
+        ];
+      }
+      
+      shortText = `Compare ${first.n}/${first.d} and ${second.n}/${second.d}. Which is ${askForGreater ? 'greater' : 'smaller'}?`;
       
       if (isStructure) {
         inputRequirementStr = JSON.stringify({
           inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: `Is ${names[0]}'s time (${first.n}/${first.d}) MORE or LESS than half an hour?`, expectedAnswer: val1 > 0.5 ? 'MORE' : 'LESS' },
-            { label: `Is ${names[1]}'s time (${second.n}/${second.d}) MORE or LESS than half an hour?`, expectedAnswer: val2 > 0.5 ? 'MORE' : 'LESS' },
-            { label: `Who read for a ${askForGreater ? 'longer' : 'shorter'} time? (Write the name)`, expectedAnswer: answer }
-          ]
+          steps: steps
         });
       }
       
@@ -300,8 +333,8 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       hint = `Compare each fraction to 1/2. Is the numerator more or less than half of the denominator?`;
       solutionSteps = [
         `Compare both fractions to 1/2.`,
-        `${names[0]}'s time: ${first.n}/${first.d} is ${val1 > 0.5 ? 'more' : 'less'} than 1/2.`,
-        `${names[1]}'s time: ${second.n}/${second.d} is ${val2 > 0.5 ? 'more' : 'less'} than 1/2.`,
+        `${names[0]}'s ${timeLabel}: ${first.n}/${first.d} is ${val1 > 0.5 ? 'more' : 'less'} than 1/2.`,
+        `${names[1]}'s ${timeLabel}: ${second.n}/${second.d} is ${val2 > 0.5 ? 'more' : 'less'} than 1/2.`,
         `Therefore, ${isStructure ? answer : `${winnerFrac.n}/${winnerFrac.d}`} is ${askForGreater ? 'greater' : 'smaller'}.`
       ];
     }
@@ -365,24 +398,54 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
         }) : 
         sorted.map(f => `${f.n}/${f.d}`);
       answer = ansArr.join(', ');
+      let structText, shortText, steps;
+      const randTheme = Math.random();
       
-      let structText = `STORY: Create a short story where three students are running a race. ${names[0]} has completed ${shuffled[0].n}/${shuffled[0].d} of the track, ${names[1]} has completed ${shuffled[1].n}/${shuffled[1].d}, and ${names[2]} has completed ${shuffled[2].n}/${shuffled[2].d}. The final sentence MUST EXACTLY be: "Arrange the students from who is ${isAscending ? 'furthest from' : 'closest to'} the finish line to who is ${isAscending ? 'closest to' : 'furthest from'} the finish line."`;
-      let shortText = `Arrange the fractions from ${isAscending ? 'smallest to greatest' : 'greatest to smallest'}:\n${shuffled.map(f=>`${f.n}/${f.d}`).join(', ')}`;
+      if (randTheme < 0.33) {
+        // Food Theme
+        const item = getRandomDivisibleFoods(1)[0];
+        structText = `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple Singaporean math story context for a Primary 3 student about ${names[0]}, ${names[1]}, and ${names[2]} eating a ${item}. CRITICAL: DO NOT state the answer. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided!\\n\\n[STORY] ${names[0]} has finished ${shuffled[0].n}/${shuffled[0].d} of their ${item}, ${names[1]} has finished ${shuffled[1].n}/${shuffled[1].d}, and ${names[2]} has finished ${shuffled[2].n}/${shuffled[2].d}. Arrange the students from who is ${isAscending ? 'furthest from' : 'closest to'} finishing their ${item} to who is ${isAscending ? 'closest to' : 'furthest from'} finishing their ${item}.`;
+        
+        steps = [
+          { label: `What fraction of the ${item} does ${names[0]} still need to finish?`, expectedAnswer: `1/${shuffled[0].d}` },
+          { label: `What fraction of the ${item} does ${names[1]} still need to finish?`, expectedAnswer: `1/${shuffled[1].d}` },
+          { label: `What fraction of the ${item} does ${names[2]} still need to finish?`, expectedAnswer: `1/${shuffled[2].d}` },
+          { label: `Arrange the students from ${isAscending ? 'furthest from' : 'closest to'} to ${isAscending ? 'closest to' : 'furthest from'} finishing:`, expectedAnswer: answer }
+        ];
+      } else if (randTheme < 0.66) {
+        // Objects Theme
+        const item = getRandomDivisibleObjects(1)[0];
+        structText = `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple Singaporean math story context for a Primary 3 student about ${names[0]}, ${names[1]}, and ${names[2]} using a ${item} for a project. CRITICAL: DO NOT state the answer. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided!\\n\\n[STORY] ${names[0]} has used ${shuffled[0].n}/${shuffled[0].d} of their ${item}, ${names[1]} has used ${shuffled[1].n}/${shuffled[1].d}, and ${names[2]} has used ${shuffled[2].n}/${shuffled[2].d}. Arrange the students from who has the ${isAscending ? 'most' : 'least'} amount left to who has the ${isAscending ? 'least' : 'most'} amount left.`;
+        
+        steps = [
+          { label: `What fraction of the ${item} does ${names[0]} have left?`, expectedAnswer: `1/${shuffled[0].d}` },
+          { label: `What fraction of the ${item} does ${names[1]} have left?`, expectedAnswer: `1/${shuffled[1].d}` },
+          { label: `What fraction of the ${item} does ${names[2]} have left?`, expectedAnswer: `1/${shuffled[2].d}` },
+          { label: `Arrange the students from having the ${isAscending ? 'most' : 'least'} to the ${isAscending ? 'least' : 'most'} amount left:`, expectedAnswer: answer }
+        ];
+      } else {
+        // Distance/Track Theme (Original)
+        structText = `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple Singaporean math story context for a Primary 3 student about ${names[0]}, ${names[1]}, and ${names[2]} running a race on a track. CRITICAL: DO NOT state the answer. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided!\\n\\n[STORY] ${names[0]} has completed ${shuffled[0].n}/${shuffled[0].d} of the track, ${names[1]} has completed ${shuffled[1].n}/${shuffled[1].d}, and ${names[2]} has completed ${shuffled[2].n}/${shuffled[2].d}. Arrange the students from who is ${isAscending ? 'furthest from' : 'closest to'} the finish line to who is ${isAscending ? 'closest to' : 'furthest from'} the finish line.`;
+        
+        steps = [
+          { label: `What fraction of the track does ${names[0]} still need to complete?`, expectedAnswer: `1/${shuffled[0].d}` },
+          { label: `What fraction of the track does ${names[1]} still need to complete?`, expectedAnswer: `1/${shuffled[1].d}` },
+          { label: `What fraction of the track does ${names[2]} still need to complete?`, expectedAnswer: `1/${shuffled[2].d}` },
+          { label: `Arrange the students from ${isAscending ? 'furthest from' : 'closest to'} to ${isAscending ? 'closest to' : 'furthest from'} the finish line:`, expectedAnswer: answer }
+        ];
+      }
+      
+      shortText = `Arrange the fractions from ${isAscending ? 'smallest to greatest' : 'greatest to smallest'}:\\n${shuffled.map(f=>`${f.n}/${f.d}`).join(', ')}`;
       
       if (isStructure) {
         inputRequirementStr = JSON.stringify({
           inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: `What fraction of the track does ${names[0]} still need to complete?`, expectedAnswer: `1/${shuffled[0].d}` },
-            { label: `What fraction of the track does ${names[1]} still need to complete?`, expectedAnswer: `1/${shuffled[1].d}` },
-            { label: `What fraction of the track does ${names[2]} still need to complete?`, expectedAnswer: `1/${shuffled[2].d}` },
-            { label: `Arrange the students from ${isAscending ? 'furthest from' : 'closest to'} to ${isAscending ? 'closest to' : 'furthest from'} the finish line:`, expectedAnswer: answer }
-          ]
+          steps: steps
         });
       }
       
       askText = getQText(structText, shortText);
-      hint = `Find the fraction that is missing from 1 whole! The smaller the missing piece, the closer they are to the finish line.`;
+      hint = `Find the fraction that is missing from 1 whole! The smaller the missing piece, the closer they are to 1 whole.`;
       solutionSteps = [
         `Find the missing piece for each fraction to reach 1 whole.`,
         `${isStructure ? `${names[0]}: ` : ''}1 - ${shuffled[0].n}/${shuffled[0].d} = 1/${shuffled[0].d}`,

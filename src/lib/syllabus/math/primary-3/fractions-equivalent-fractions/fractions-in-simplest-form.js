@@ -1,4 +1,6 @@
 import { foundationLogic } from './fractions-in-simplest-form/foundation.js';
+import { standardLogic } from './fractions-in-simplest-form/standard.js';
+import { advancedLogic } from './fractions-in-simplest-form/advanced.js';
 import { getRandomNames, getRandomDivisibleFoods } from '../../../../utils/variable-bank.js';
 
 export const p3FractionsInSimplestFormBlueprint = {
@@ -33,7 +35,17 @@ export const p3FractionsInSimplestFormBlueprint = {
     'foundation_divide_by_x': 'The "Divide by X" Direct Prompt',
     'foundation_true_false': 'Identifying the Simplest Form (True/False)',
     'foundation_match': 'The Simplest Form Match',
-    'foundation_evaluate_simplification': 'Evaluate the Simplification'
+    'foundation_evaluate_simplification': 'Evaluate the Simplification',
+    'standard_even_denominators': 'Simplification of Even Denominators (10 and 12)',
+    'standard_odd_denominators': 'Simplification of Odd Denominators (9 and 15)',
+    'standard_add_and_simplify': 'Add First, Then Simplify',
+    'standard_subtract_and_simplify': 'Subtract First, Then Simplify',
+    'standard_missing_divisor': 'Finding the Missing Divisor (Reverse Engineering)',
+    'advanced_remaining_amount': 'Calculate Remaining Amount, Then Simplify',
+    'advanced_grouping': 'Grouping/Categorization to Simplest Fraction',
+    'advanced_reverse_simplification': 'Reverse Simplification (Find the Original Numerator)',
+    'advanced_money_context': 'Measurement/Money Context to Simplest Fraction',
+    'advanced_time_context': 'Time Context (Fraction of a Day)'
   },
 
   generate: function (difficulty, activeVariant, type) {
@@ -88,6 +100,10 @@ CRITICAL INSTRUCTION: DO NOT generate your own visualEngine. You MUST output EXA
     const normalizedDifficulty = difficulty.toLowerCase();
     if (normalizedDifficulty === 'foundation') {
       result = foundationLogic.generate(difficulty, activeVariant, type, context, selectedContextItem, getQText);
+    } else if (normalizedDifficulty === 'standard') {
+      result = standardLogic.generate(difficulty, activeVariant, type, context, selectedContextItem, getQText);
+    } else if (normalizedDifficulty === 'advanced') {
+      result = advancedLogic.generate(difficulty, activeVariant, type, context, selectedContextItem, getQText);
     } else {
       throw new Error(`Difficulty ${difficulty} not implemented yet`);
     }

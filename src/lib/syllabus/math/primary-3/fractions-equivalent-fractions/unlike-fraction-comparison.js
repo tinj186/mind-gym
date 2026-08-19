@@ -40,10 +40,10 @@ export const p3UnlikeFractionComparisonBlueprint = {
     'standard_odd_one_out': 'Identify the Odd One Out (Magnitude)',
 
     'advanced_remaining_comparison': 'The Remaining Fraction Comparison (Inversion)',
-    //   'advanced_missing_numerator': 'Deduce the Missing Numerator',
-    //   'advanced_missing_denominator': 'Deduce the Missing Denominator',
-    //   'advanced_benchmark_no_conversion': 'Benchmark Logic Without Conversion',
-    //   'advanced_closest_to_one': 'Ordering from Context (The "Closest to 1" Rule)'
+    'advanced_missing_numerator': 'Deduce the Missing Numerator',
+    'advanced_missing_denominator': 'Deduce the Missing Denominator',
+    'advanced_benchmark_no_conversion': 'Benchmark Logic Without Conversion',
+    'advanced_closest_to_one': 'Ordering from Context (The "Closest to 1" Rule)'
   },
 
   generate: function (difficulty, activeVariant, type) {
