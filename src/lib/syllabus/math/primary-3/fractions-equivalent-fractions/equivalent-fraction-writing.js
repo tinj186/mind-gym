@@ -1,4 +1,6 @@
 import { foundationLogic } from './equivalent-fraction-writing/foundation.js';
+import { standardLogic } from './equivalent-fraction-writing/standard.js';
+import { advancedLogic } from './equivalent-fraction-writing/advanced.js';
 
 export const p3EquivalentFractionWritingBlueprint = {
   id: 'p3-fractions-equivalent-fraction-writing',
@@ -8,7 +10,19 @@ export const p3EquivalentFractionWritingBlueprint = {
     'foundation_visual_forward_denominator': 'Visual Forward Scaling (Missing Denominator)',
     'foundation_arrow_diagram_multiply': 'The "Times X" Direct Prompt (Arrow Diagram)',
     'foundation_subdivided_bar': 'Subdivided Bar Model (Find the Equation)',
-    'foundation_true_false_missing_match': 'True/False Missing Variable Match'
+    'foundation_true_false_missing_match': 'True/False Missing Variable Match',
+
+    'standard_forward_numerator': 'Forward Scaling (Missing Numerator)',
+    'standard_forward_denominator': 'Forward Scaling (Missing Denominator)',
+    'standard_reverse_numerator': 'Reverse Scaling / Simplification (Missing Numerator)',
+    'standard_reverse_denominator': 'Reverse Scaling / Simplification (Missing Denominator)',
+    'standard_multiplier_check': 'The Multiplier Checkpoint',
+
+    'advanced_sum_of_variables': 'The "Sum of A + B" Strategy (Double Missing Variables)',
+    'advanced_contextual_forward': 'Contextual Forward Scaling (Missing Numerator)',
+    'advanced_contextual_reverse': 'Contextual Reverse Deduction (Missing Denominator)',
+    'advanced_add_first_then_scale': 'Add First, Then Find Equivalent',
+    'advanced_impossible_conversion': 'Identify the Impossible Conversion (Denominator Limit)'
   },
 
   generate: function (difficulty, activeVariant, type) {
@@ -51,6 +65,12 @@ export const p3EquivalentFractionWritingBlueprint = {
 
     if (difficulty.toLowerCase() === 'foundation') {
       return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions);
+    }
+    if (difficulty.toLowerCase() === 'standard') {
+      return standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions);
+    }
+    if (difficulty.toLowerCase() === 'advanced') {
+      return advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions);
     }
 
     throw new Error(`Variant not implemented for difficulty: ${difficulty}`);

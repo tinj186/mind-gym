@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useTransition, useMemo, useCallback } from 'react';
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { finalizeWorkoutAction, updateWorkoutProgressAction, saveAttemptAction } from '@/app/actions/workoutActions';
 import { normalizeQuestionData, deriveVisualProps } from '@/lib/intelligence/workout-utils';
 import VisualRenderer, { ESSENTIAL_VISUALS } from '@/components/math/VisualRenderer';
@@ -15,6 +15,7 @@ import confetti from 'canvas-confetti';
 import ExamReviewBoard from '@/components/math/ExamReviewBoard';
 
 export default function WorkoutSession({ studentId, level, initialQuestions = [], initialIndex = 0, initialLog = [], title = "Daily Training Sequence", mode = "daily", subtopicId, isSandbox = false }) {
+  const dragControls = useDragControls();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [answersLog, setAnswersLog] = useState(initialLog);
   const [lastSubmittedAnswer, setLastSubmittedAnswer] = useState("");
@@ -30,6 +31,8 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
   const [isPending, startTransition] = useTransition();
   const [summary, setSummary] = useState(null);
   const [singleInputAnswer, setSingleInputAnswer] = useState("");
+  const [focusedOptionIndex, setFocusedOptionIndex] = useState(-1);
+  const handleAnswerRef = React.useRef(null);
 
   const isP1 = level === "Primary 1";
   
@@ -148,6 +151,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
     setHasAutoOpened(false);
     setToolState({});
     setSingleInputAnswer("");
+    setFocusedOptionIndex(-1);
 
     // Part 2: Real-Time Saving & Persistence
     if (!isSandbox) {
@@ -203,6 +207,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
         .replace(/÷/g, '/') // Normalize unicode divide
         .replace(/\\cdot/g, '*') // Normalize multiplication dot
         .replace(/(?<=\d)\s*[xX]\s*(?=\d)/g, '*') // Normalize letter x used as multiplication between numbers
+        .replace(/^\s*[xX]\s*$/g, '*') // Normalize standalone x as multiplication symbol
         .replace(/[\u200B-\u200D\uFEFF]/g, '') // Strip zero-width invisible characters
         .replace(/’/g, "'") // Normalize typographic apostrophes from MathInput bypass
         .replace(/\\/g, '') // Any remaining latex slashes
@@ -281,7 +286,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
     } else {
       let studentAns = cleanString(submittedAnswer);
       let realAns = cleanString(normalizedQuestion.finalAnswer);
-      let accepted = normalizedQuestion.acceptedAnswers ? normalizedQuestion.acceptedAnswers.map(a => cleanString(a)) : [];
+      let accepted = (normalizedQuestion.inputRequirement?.acceptedAnswers || normalizedQuestion.acceptedAnswers || []).map(a => cleanString(a));
       
       // Custom grader for Grid Lines to handle swapped points or reordered lines
       if (normalizedQuestion.inputRequirement?.inputType === 'INTERACTIVE_GRID') {
@@ -312,7 +317,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
         
         studentAns = normalizeLines(submittedAnswer);
         realAns = normalizeLines(normalizedQuestion.finalAnswer);
-        accepted = normalizedQuestion.acceptedAnswers ? normalizedQuestion.acceptedAnswers.map(normalizeLines) : [];
+        accepted = (normalizedQuestion.inputRequirement?.acceptedAnswers || normalizedQuestion.acceptedAnswers || []).map(normalizeLines);
       }
       
       console.log('🚨 [WorkoutSession Grading Debug] raw submittedAnswer:', submittedAnswer);
@@ -372,6 +377,34 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
       }
     }
   };
+
+  handleAnswerRef.current = handleAnswer;
+
+  useEffect(() => {
+    const isMCQ = normalizedQuestion?.options && normalizedQuestion.options.length > 0 && normalizedQuestion.inputRequirement?.inputType !== 'INTERACTIVE_GRID';
+    if (!isMCQ || feedback === 'correct' || feedback === 'solution_revealed' || isToolOpen) return;
+
+    const handleKeyDown = (e) => {
+      const numOptions = normalizedQuestion.options.length;
+      
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        setFocusedOptionIndex(prev => prev < numOptions - 1 ? prev + 1 : 0);
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        setFocusedOptionIndex(prev => prev > 0 ? prev - 1 : numOptions - 1);
+      } else if (e.key === 'Enter' && focusedOptionIndex >= 0 && focusedOptionIndex < numOptions) {
+        e.preventDefault();
+        const opt = normalizedQuestion.options[focusedOptionIndex];
+        if (handleAnswerRef.current) {
+          handleAnswerRef.current(opt.replace(/^[A-D]:\s*/, '').trim());
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [normalizedQuestion, feedback, isToolOpen, focusedOptionIndex]);
 
   if (summary) {
     return (
@@ -475,12 +508,13 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
             ) : normalizedQuestion.options && normalizedQuestion.options.length > 0 && normalizedQuestion.inputRequirement?.inputType !== 'INTERACTIVE_GRID' ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
                 {normalizedQuestion.options.map((opt, idx) => (
-                  <button
-                    key={idx}
-                    disabled={feedback === 'correct'}
-                    onClick={() => handleAnswer(opt.replace(/^[A-D]:\s*/, '').trim())}
-                    className="text-left p-6 border-4 border-slate-200 rounded-2xl text-xl font-black transition-all hover:border-slate-900 hover:bg-slate-50 active:scale-95 disabled:opacity-50"
-                  >
+                    <button
+                      key={idx}
+                      disabled={feedback === 'correct'}
+                      onClick={() => handleAnswer(opt.replace(/^[A-D]:\s*/, '').trim())}
+                      onMouseMove={() => { if (focusedOptionIndex !== idx) setFocusedOptionIndex(idx) }}
+                      className={`text-left p-6 border-4 rounded-2xl text-xl font-black transition-all active:scale-95 disabled:opacity-50 ${focusedOptionIndex === idx ? 'border-slate-900 ring-4 ring-blue-200 bg-slate-50 scale-[1.02]' : 'border-slate-200'}`}
+                    >
                     <span className="inline-block w-8 h-8 rounded-full border-2 border-slate-900 text-center leading-7 mr-4 text-sm">{['A','B','C','D'][idx] || idx + 1}</span>
                     {opt.replace(/^[A-D]:\s*/, '')}
                   </button>
@@ -489,7 +523,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
             ) : normalizedQuestion.inputRequirement?.inputType === 'INTERACTIVE_GRID' ? null : (
               <div className="w-full flex justify-center">
                 <MathInput
-                  key={`input-${currentIndex}-${attempts}`}
+                  key={`input-${currentIndex}`}
                   autoFocus
                   value={singleInputAnswer}
                   onChange={setSingleInputAnswer}
@@ -552,19 +586,27 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
           >
             <motion.div 
               drag
+              dragControls={dragControls}
+              dragListener={false}
               dragMomentum={false}
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-white rounded-[3rem] w-full max-w-5xl max-h-[90vh] overflow-hidden relative border-8 border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.3)] pointer-events-auto cursor-grab active:cursor-grabbing"
+              className="bg-white rounded-[3rem] w-full max-w-5xl max-h-[90vh] overflow-hidden relative border-8 border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.3)] pointer-events-auto flex flex-col"
             >
+              <div 
+                className="absolute top-0 left-0 w-full h-12 flex items-start justify-center pt-3 cursor-grab active:cursor-grabbing z-50 bg-white/80 backdrop-blur-sm"
+                onPointerDown={(e) => dragControls.start(e)}
+              >
+                <div className="w-16 h-1.5 bg-slate-300 rounded-full" />
+              </div>
               <button 
                 onClick={() => setIsToolOpen(false)}
-                className="absolute top-8 right-8 w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center font-black hover:bg-slate-200 z-50 text-xl"
+                className="absolute top-6 right-6 w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center font-black hover:bg-slate-200 z-50 text-xl"
               >
                 ✕
               </button>
-              <div className="p-12 overflow-y-auto max-h-[85vh]">
+              <div className="p-12 pt-8 overflow-y-auto flex-1">
                 {(() => {
                   let toolEngine = normalizedQuestion?.visualEngine;
                   if (toolEngine?.componentToRender === 'MULTI_COMPONENT') {

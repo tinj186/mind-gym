@@ -9,19 +9,25 @@ import { normalizeQuestionData, deriveVisualProps } from '@/lib/intelligence/wor
 import ExamReviewBoard from '@/components/math/ExamReviewBoard';
 import { saveMockExamAction } from '@/app/actions/examActions';
 import MathInput from '@/components/math/MathInput';
-
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
+import GroupingWorkspace from '@/components/tools/GroupingWorkspace';
+import BarModelWorkspace from '@/components/tools/BarModelWorkspace';
 export default function ArenaSession({ studentId, level, examPaper, durationMinutes }) {
+  const dragControls = useDragControls();
   const router = useRouter();
   const [timeLeft, setTimeLeft] = useState(durationMinutes * 60);
   const [activeSection, setActiveSection] = useState('mcq'); // mcq | short | structured
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [focusedOptionIndex, setFocusedOptionIndex] = useState(-1);
   const [answers, setAnswers] = useState({}); // Stores questionId -> studentInput response map
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [scoreSummary, setScoreSummary] = useState(null);
   const [isGrading, setIsGrading] = useState(false);
   const [finalAnswersLog, setFinalAnswersLog] = useState(null);
-
+  
+  const [isToolOpen, setIsToolOpen] = useState(false);
+  const [toolState, setToolState] = useState(null);
   // Normalize entire exam paper ONCE on mount so that random variables 
   // and final answers are stable for grading and review.
   const [normalizedExamPaper] = useState(() => {
@@ -60,6 +66,12 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
     sessionStorage.removeItem('allow_workout');
   }, []);
 
+  useEffect(() => {
+    setFocusedOptionIndex(-1);
+  }, [currentIndex, activeSection]);
+
+  const handleSelectAnswerRef = React.useRef(null);
+  
   // Global Countdown Controller
   useEffect(() => {
     if (timeLeft <= 0) {
@@ -79,6 +91,49 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
   const handleSelectAnswer = (qId, value) => {
     setAnswers(prev => ({ ...prev, [qId]: value }));
   };
+  handleSelectAnswerRef.current = handleSelectAnswer;
+
+  const answersRef = React.useRef(answers);
+  answersRef.current = answers;
+
+  const handleNextQuestionRef = React.useRef(null);
+
+  useEffect(() => {
+    if (activeSection !== 'mcq' || isToolOpen || !activeQuestion?.options) return;
+
+    const handleKeyDown = (e) => {
+      const numOptions = activeQuestion.options.length;
+      if (!numOptions) return;
+      
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        setFocusedOptionIndex(prev => prev < numOptions - 1 ? prev + 1 : 0);
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        setFocusedOptionIndex(prev => prev > 0 ? prev - 1 : numOptions - 1);
+      } else if (e.key === 'Enter') {
+        if (focusedOptionIndex >= 0 && focusedOptionIndex < numOptions) {
+          e.preventDefault();
+          const opt = activeQuestion.options[focusedOptionIndex];
+          
+          if (answersRef.current[activeQuestion.id] === opt) {
+            // Already selected, move to next question
+            if (handleNextQuestionRef.current) {
+              handleNextQuestionRef.current();
+            }
+          } else {
+            // Select it
+            if (handleSelectAnswerRef.current) {
+              handleSelectAnswerRef.current(activeQuestion.id, opt);
+            }
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeSection, isToolOpen, activeQuestion, focusedOptionIndex]);
 
   const handleNextQuestion = () => {
     if (currentIndex < currentQuestionsList.length - 1) {
@@ -94,6 +149,7 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
       }
     }
   };
+  handleNextQuestionRef.current = handleNextQuestion;
 
   const handleExamSubmission = async () => {
     setIsGrading(true);
@@ -131,6 +187,7 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
           .replace(/÷/g, '/') // Normalize unicode divide
           .replace(/\\cdot/g, '*') // Normalize multiplication dot
           .replace(/(?<=\d)\s*[xX]\s*(?=\d)/g, '*') // Normalize letter x used as multiplication between numbers
+          .replace(/^\s*[xX]\s*$/g, '*') // Normalize standalone x as multiplication symbol
           .replace(/[\u200B-\u200D\uFEFF]/g, '') // Strip zero-width invisible characters
           .replace(/’/g, "'") // Normalize typographic apostrophes from MathInput bypass
           .replace(/\\/g, '') // Any remaining latex slashes
@@ -211,7 +268,7 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
       } else {
         let studentAns = cleanString(rawAns);
         let realAns = cleanString(q.finalAnswer);
-        let accepted = q.acceptedAnswers ? q.acceptedAnswers.map(a => cleanString(a)) : [];
+        let accepted = (q.inputRequirement?.acceptedAnswers || q.acceptedAnswers || []).map(a => cleanString(a));
         
         // Custom grader for Grid Lines to handle swapped points or reordered lines
         if (q.inputRequirement?.inputType === 'INTERACTIVE_GRID') {
@@ -242,7 +299,7 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
           
           studentAns = normalizeLines(rawAns);
           realAns = normalizeLines(q.finalAnswer);
-          accepted = q.acceptedAnswers ? q.acceptedAnswers.map(normalizeLines) : [];
+          accepted = (q.inputRequirement?.acceptedAnswers || q.acceptedAnswers || []).map(normalizeLines);
         }
         
         isCorrect = studentAns === realAns || accepted.includes(studentAns);
@@ -350,7 +407,8 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
                     type={normalizedQuestion.visualEngine.componentToRender} 
                     data={normalizedQuestion.visualEngine.componentData}
                     visualProps={visualProps}
-                    setIsToolOpen={() => {}} // Disabled for exams
+                    setIsToolOpen={setIsToolOpen}
+                    toolState={toolState}
                     questionId={normalizedQuestion.id}
                     difficulty={normalizedQuestion.difficulty}
                     topic={normalizedQuestion.topic}
@@ -368,10 +426,13 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
                     <button
                       key={idx}
                       onClick={() => handleSelectAnswer(activeQuestion.id, opt)}
-                      className={`text-left p-6 border-4 border-black text-lg font-black transition-all transform active:scale-[0.98] ${
+                      onMouseMove={() => { if (focusedOptionIndex !== idx) setFocusedOptionIndex(idx) }}
+                      className={`text-left p-6 border-4 text-lg font-black transition-all transform active:scale-[0.98] ${
                         answers[activeQuestion.id] === opt 
-                          ? 'bg-black text-white shadow-none translate-x-1 translate-y-1' 
-                          : 'bg-white text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-slate-50'
+                          ? 'border-black bg-black text-white shadow-none translate-x-1 translate-y-1' 
+                          : focusedOptionIndex === idx 
+                            ? 'border-black bg-white text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ring-4 ring-blue-500 ring-offset-4 z-10 scale-[1.02]' 
+                            : 'border-slate-300 bg-white text-slate-800 shadow-[4px_4px_0px_0px_rgba(203,213,225,1)]'
                       }`}
                     >
                       <span className="inline-block w-8 h-8 rounded-full border-2 border-current text-center leading-7 mr-4 text-sm font-mono">{idx + 1}</span>
@@ -394,12 +455,14 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
                               {step.stepLabel || step.label}
                             </label>
                             <MathInput
+                              key={`${activeQuestion.id}-step-${index}`}
                               id={`multi-step-${index}`}
                               value={currentMultiAnswers[index] || ''}
                               onChange={(val) => {
                                 const updated = { ...currentMultiAnswers, [index]: val };
                                 handleSelectAnswer(activeQuestion.id, updated);
                               }}
+                              onEnter={handleNextQuestion}
                               level={level}
                             />
                           </div>
@@ -410,8 +473,10 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
                     <div>
                       <label className="block text-[10px] font-black mb-2 uppercase text-slate-400 tracking-tighter">Student Workspace Input Response</label>
                       <MathInput
+                        key={activeQuestion.id}
                         value={typeof answers[activeQuestion.id] === 'string' ? answers[activeQuestion.id] : ''}
                         onChange={(val) => handleSelectAnswer(activeQuestion.id, val)}
+                        onEnter={handleNextQuestion}
                         level={level}
                       />
                     </div>
@@ -492,6 +557,84 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
           {isGrading ? 'Grading... Please Wait' : 'Finalize Simulation'}
         </button>
       </div>
+
+      {/* Floating Modal for Interactive Tools */}
+      <AnimatePresence>
+        {isToolOpen && normalizedQuestion && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] pointer-events-none flex items-center justify-center p-4"
+          >
+            <motion.div 
+              drag
+              dragControls={dragControls}
+              dragListener={false}
+              dragMomentum={false}
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white rounded-[3rem] w-full max-w-5xl max-h-[90vh] overflow-hidden relative border-8 border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.3)] pointer-events-auto flex flex-col"
+            >
+              <div 
+                className="absolute top-0 left-0 w-full h-12 flex items-start justify-center pt-3 cursor-grab active:cursor-grabbing z-50 bg-white/80 backdrop-blur-sm"
+                onPointerDown={(e) => dragControls.start(e)}
+              >
+                <div className="w-16 h-1.5 bg-slate-300 rounded-full" />
+              </div>
+              <button 
+                onClick={() => setIsToolOpen(false)}
+                className="absolute top-6 right-6 w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center font-black hover:bg-slate-200 z-50 text-xl"
+              >
+                ✕
+              </button>
+              <div className="p-12 pt-8 overflow-y-auto flex-1">
+                {(() => {
+                  let toolEngine = normalizedQuestion?.visualEngine;
+                  if (toolEngine?.componentToRender === 'MULTI_COMPONENT') {
+                    toolEngine = toolEngine.componentData?.components?.find(c => 
+                      !c.componentData?.isStatic && 
+                      ['BAR_MODEL', 'GROUPING_WORKSPACE', 'EQUAL_GROUPS', 'COUNTING_OBJECTS'].includes(c.componentToRender)
+                    ) || toolEngine;
+                  }
+                  const activeType = toolEngine?.componentToRender;
+                  const activeData = toolEngine?.componentData || {};
+                  
+                  if (activeType === 'BAR_MODEL') {
+                    return (
+                      <BarModelWorkspace
+                        modelData={activeData}
+                        initialState={toolState}
+                        onClose={(newState) => {
+                          if (newState) setToolState(newState);
+                          setIsToolOpen(false);
+                        }}
+                      />
+                    );
+                  } else {
+                    const toolProps = deriveVisualProps({ visualEngine: toolEngine, modelData: normalizedQuestion.modelData });
+                    return (
+                      <GroupingWorkspace
+                        modelData={activeData}
+                        onClose={() => setIsToolOpen(false)}
+                        questionId={normalizedQuestion.id}
+                        difficulty={normalizedQuestion.difficulty}
+                        mode={toolProps.mode}
+                        totalItems={toolProps.totalItems}
+                        icon={toolProps.icon}
+                        expectedGroups={toolProps.expectedGroups}
+                        targetGroupSize={toolProps.targetSize}
+                        showTargetSize={normalizedQuestion.topic !== 'Division'}
+                      />
+                    );
+                  }
+                })()}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

@@ -68,8 +68,10 @@ export const advancedLogic = function (
     while (!validFound) {
       // 1. Generate right side
       if (isMultiply) {
-        rightA = [2, 3, 4, 5, 10][Math.floor(Math.random() * 5)];
-        rightB = Math.floor(Math.random() * 5) + 2;
+        do {
+          rightA = [2, 3, 4, 5, 10][Math.floor(Math.random() * 5)];
+          rightB = Math.floor(Math.random() * 5) + 2;
+        } while (rightA % rightB !== 0);
         rightAnsSymbol = "x";
       } else {
         rightB = [2, 3, 4, 5, 10][Math.floor(Math.random() * 5)];
@@ -183,6 +185,9 @@ export const advancedLogic = function (
     - answer: ${answer}
 
     ${customConstraints}
+
+    CRITICAL INSTRUCTION: For 'questionText', you MUST use the exact string provided in 'askText'. DO NOT paraphrase or shorten it.
+    CRITICAL INSTRUCTION: For 'finalAnswer', you MUST use the exact string provided in 'answer'.
 
     ${getFormatInstructions(visualEngineStr, inputRequirementStr)}
   `;

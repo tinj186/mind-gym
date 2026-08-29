@@ -374,7 +374,7 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
     const answer = statementIsTrue ? "True" : "False";
 
     const questionTextRaw = `True or False: The number of items in Set A is greater than Set B, but less than ${upperLimit}.`;
-    const questionTextShort = `${upperLimit} > Set A > Set B? (True/False):`;
+    const questionTextShort = `Is Set A more than Set B but less than ${upperLimit}? (True/False):`;
     const questionText = getQText(questionTextRaw, questionTextShort);
 
     let defectMap = null;

@@ -141,6 +141,9 @@ export class GenerationEngine {
           if (stepResult.visualEngine) {
             q.visualEngine = stepResult.visualEngine;
           }
+          if (stepResult.inputRequirement) {
+            q.inputRequirement = stepResult.inputRequirement;
+          }
           parsedQuestions.push(processAiQuestion(q, { ...context, blueprintMeta, stepResult, heuristic: loopVariant }));
         }
         

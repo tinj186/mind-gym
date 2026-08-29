@@ -148,7 +148,7 @@ export const advancedVariants = {
         {
           "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
           "content": {
-            "questionText": ${JSON.stringify(getQText(`I am a number between ${lowerBound} and ${upperBound}. My tens digit is ${diff} more than my ones digit. What number am I?`, `Number between ${lowerBound} and ${upperBound}: Tens digit is ${diff} more than ones?`))},
+            "questionText": ${JSON.stringify(getQText(`Create a riddle or word problem where a character is trying to find a mystery number between ${lowerBound} and ${upperBound}. The tens digit is ${diff} more than the ones digit. The final question must ask what the number is. CRITICAL: Do NOT state the answer (${num}) anywhere in the story text!`, `Number between ${lowerBound} and ${upperBound}: Tens digit is ${diff} more than ones?`))},
             "options": ${mcqOptions},
             "defectMap": ${defectMapStr},
             "hint": ${JSON.stringify(getQText(`If I am between ${lowerBound} and ${upperBound}, my tens digit must be ${tensDigit}. Now find the ones digit.`, `Tens digit is ${tensDigit}.`))},

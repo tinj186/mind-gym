@@ -59,15 +59,15 @@ const foundationVariants = {
 
   foundation_decompose_in_half: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const pairs = [
-      { shape: "Rectangle", result: "2 Squares", distractors: ["2 Circles", "2 Triangles", "2 Rectangles"] },
-      { shape: "Rectangle", result: "2 Triangles", distractors: ["2 Squares", "2 Circles", "2 Rectangles"] },
-      { shape: "Circle", result: "2 Half Circles", distractors: ["2 Triangles", "2 Quarter Circles", "2 Squares"] },
-      { shape: "Square", result: "2 Triangles", distractors: ["2 Circles", "2 Half Circles", "2 Squares"] },
-      { shape: "Half Circle", result: "2 Quarter Circles", distractors: ["2 Triangles", "2 Circles", "2 Squares"] }
+      { shape: "Rectangle", cutType: "straight down the middle", result: "2 Rectangles", distractors: ["2 Circles", "2 Triangles", "2 Squares"] },
+      { shape: "Rectangle", cutType: "diagonally from one corner to the opposite corner", result: "2 Triangles", distractors: ["2 Squares", "2 Circles", "2 Rectangles"] },
+      { shape: "Square", cutType: "diagonally from one corner to the opposite corner", result: "2 Triangles", distractors: ["2 Circles", "2 Half Circles", "2 Squares"] },
+      { shape: "Circle", cutType: "straight down the middle", result: "2 Half Circles", distractors: ["2 Triangles", "2 Quarter Circles", "2 Squares"] },
+      { shape: "Half Circle", cutType: "straight down the middle", result: "2 Quarter Circles", distractors: ["2 Triangles", "2 Circles", "2 Squares"] }
     ];
     const target = pairs[Math.floor(Math.random() * pairs.length)];
     
-    const questionTextTemplate = getQText(`If you cut a ${target.shape.toLowerCase()} exactly in half, what smaller shapes can you get?`, `Cut a ${target.shape.toLowerCase()} in half. What shapes do you get?`);
+    const questionTextTemplate = getQText(`If you cut a ${target.shape.toLowerCase()} ${target.cutType}, what smaller shapes can you get?`, `Cut a ${target.shape.toLowerCase()} ${target.cutType}. What shapes do you get?`);
     const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student featuring a person named ${getRandomNames(1)}.`;
     
     let options = target.distractors;

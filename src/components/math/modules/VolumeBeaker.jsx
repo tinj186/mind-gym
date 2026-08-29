@@ -11,6 +11,7 @@ export default function VolumeBeaker({ data, hideCardStyles = false }) {
     unit = 'l',
     color = '#3b82f6', // blue-500
     intervals = 1,
+    labelInterval,
     label,
   } = data || {};
 
@@ -67,12 +68,15 @@ export default function VolumeBeaker({ data, hideCardStyles = false }) {
         >
           {ticks.map((tick, i) => {
             const yPos = liquidMaxHeight - (tick.value / maxScale) * liquidMaxHeight;
+            const showLabel = labelInterval ? tick.value % labelInterval === 0 : true;
             return (
               <div key={i} className="absolute flex items-center" style={{ top: `${yPos}px`, left: '0', transform: 'translateY(-50%)' }}>
-                <div className="w-6 h-1 bg-slate-800 rounded-r-full z-10" />
-                <div className="ml-1 text-sm font-bold text-slate-800 drop-shadow-md bg-white/60 px-1 rounded">
-                  {tick.value}{unit}
-                </div>
+                <div className={`${showLabel ? 'w-10' : 'w-6'} h-1 bg-slate-800 rounded-r-full z-10`} />
+                {showLabel && (
+                  <div className="ml-1 text-sm font-bold text-slate-800 drop-shadow-md bg-white/60 px-1 rounded">
+                    {tick.value}{unit}
+                  </div>
+                )}
               </div>
             );
           })}

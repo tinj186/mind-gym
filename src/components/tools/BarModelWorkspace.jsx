@@ -9,7 +9,7 @@ const CurlyBracket = () => (
   </svg>
 );
 
-function UnitSegments({ value, children }) {
+function UnitSegments({ value, segments, children }) {
   if (typeof value === 'string' && value.startsWith('?:')) {
     const label = value.split(':')[1] || '?';
     return (
@@ -28,7 +28,7 @@ function UnitSegments({ value, children }) {
     );
   }
 
-  const num = parseInt(value);
+  const num = segments !== undefined ? parseInt(segments) : parseInt(value);
   if (isNaN(num) || num <= 0 || num > 20) return (
     <>{children}</>
   );
@@ -103,16 +103,16 @@ export default function BarModelWorkspace({ modelData, onClose, initialState }) 
                     key={idx}
                     style={{ width: `${width}%` }}
                     className={`relative flex items-center justify-center border-r-4 last:border-r-0 border-slate-200 ${
-                      idx % 2 === 0 ? 'bg-blue-500' : 'bg-blue-400'
+                      part.bgClass || (idx % 2 === 0 ? 'bg-blue-500 text-white' : 'bg-blue-400 text-white')
                     }`}
                   >
-                    <UnitSegments value={typeof partValue === 'string' && partValue.startsWith('?:') ? `?:${inputs[inputKey] || ''}` : partValue}>
+                    <UnitSegments value={typeof partValue === 'string' && partValue.startsWith('?:') ? `?:${inputs[inputKey] || ''}` : partValue} segments={part.segments}>
                       <input
                         type="text"
                         value={inputs[inputKey] || ''}
                         onChange={(e) => handleInputChange(inputKey, e.target.value)}
-                        placeholder=""
-                        className="w-full h-full text-center text-xl font-black bg-transparent border-none focus:outline-none focus:bg-black/10 text-white placeholder:text-white/50 caret-white cursor-text"
+                        placeholder={partValue === "?" ? "?" : ""}
+                        className="w-full h-full text-center text-xl font-black bg-transparent border-none focus:outline-none focus:bg-black/10 text-inherit placeholder:text-inherit/50 caret-current cursor-text"
                       />
                     </UnitSegments>
                   </div>
@@ -129,8 +129,8 @@ export default function BarModelWorkspace({ modelData, onClose, initialState }) 
                   type="text"
                   value={inputs['whole'] || ''}
                   onChange={(e) => handleInputChange('whole', e.target.value)}
-                  placeholder=""
-                  className="w-32 h-10 text-center text-lg font-black bg-transparent border-none focus:outline-none text-slate-900 placeholder:text-slate-300"
+                  placeholder={modelData.whole === "?" ? "?" : ""}
+                  className="w-32 h-10 text-center text-lg font-black bg-transparent border-none focus:outline-none text-slate-900 placeholder:text-slate-400"
                 />
               </div>
             </div>

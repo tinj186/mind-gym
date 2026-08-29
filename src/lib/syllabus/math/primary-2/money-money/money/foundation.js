@@ -321,8 +321,10 @@ export const foundationLogic = (activeVariant, config, type, isMCQ, isShort, isS
 
     answer = `${multiplier}`;
     
+    const largeType = largeVal <= 100 ? "coin" : "note";
+    
     questionText = getQText(
-      `${names[0]} wants to exchange a ${largeStr} note for ${small.label} coins.\nHow many ${small.label} coins will ${names[0]} get?\nShow your working and the final answer.`,
+      `${names[0]} wants to exchange a ${largeStr} ${largeType} for ${small.label} coins.\nHow many ${small.label} coins will ${names[0]} get?\nShow your working and the final answer.`,
       `How many ${small.label} coins make ${largeStr}?`
     );
 

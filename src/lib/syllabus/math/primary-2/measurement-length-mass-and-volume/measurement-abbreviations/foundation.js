@@ -62,7 +62,11 @@ solutionSteps: """${stepsStr}"""
 ${distractorMapping}
 `;
   } else {
-    inputRequirementStr = `{"inputType": "TEXT_INPUT"}`;
+    let accepted = `[]`;
+    if (activeVariant === 'foundation_abbreviation_to_word') {
+      accepted = `["${pair.full.slice(0, -1)}"]`;
+    }
+    inputRequirementStr = `{"inputType": "TEXT_INPUT", "acceptedAnswers": ${accepted}}`;
     systemPrompt = `
 You are generating a Primary 2 Math question.
 Topic: ${topic}

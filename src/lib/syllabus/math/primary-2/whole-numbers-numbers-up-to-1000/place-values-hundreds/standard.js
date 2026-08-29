@@ -49,8 +49,8 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const num = (h * 100) + (t * 10) + o;
     
     const clues = [
-      `the value of my hundreds digit is ${h * 100}`,
-      `the value of my tens digit is ${t * 10}`,
+      `my hundreds digit is ${h}`,
+      `my tens digit is ${t}`,
       `my ones digit is ${o}`
     ];
     // Shuffle clues

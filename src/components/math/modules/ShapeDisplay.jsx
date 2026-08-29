@@ -4,7 +4,7 @@ export default function ShapeDisplay({ data, hideCardStyles = false }) {
   if (!data) return null;
 
   // Normalize layout/mode keys from syllabus logic
-  const layout = (data.layout || data.mode || 'SINGLE').toUpperCase();
+  const layout = (data.layout || data.mode || data.Layout || data.Mode || 'SINGLE').toUpperCase();
 
   const renderPrimitiveShape = (shapeData) => {
     if (shapeData && shapeData.isComposite && shapeData.parts) {
@@ -20,8 +20,18 @@ export default function ShapeDisplay({ data, hideCardStyles = false }) {
     }
 
     // Handle both string identifiers and detailed shape objects
-    const { shapeType, color, size = 'large', rotation = 0 } = 
-      typeof shapeData === 'string' ? { shapeType: shapeData, color: '#3b82f6' } : shapeData;
+    let shapeType, color, size, rotation;
+    if (typeof shapeData === 'string') {
+      shapeType = shapeData;
+      color = '#3b82f6';
+      size = 'large';
+      rotation = 0;
+    } else {
+      shapeType = shapeData.shapeType || shapeData.ShapeType || shapeData.shapetype;
+      color = shapeData.color || shapeData.Color;
+      size = shapeData.size || shapeData.Size || 'large';
+      rotation = shapeData.rotation || shapeData.Rotation || 0;
+    }
 
     // Use a fixed base size for the SVG, let CSS transforms handle scaling/rotation for COMPOSITE_ADVANCED
     const baseSize = 100;

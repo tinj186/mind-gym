@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, useDragControls } from 'framer-motion';
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import GroupingWorkspace from '@/components/tools/GroupingWorkspace';
@@ -12,6 +12,7 @@ import ReviewCard from './ReviewCard';
 const fetcher = url => fetch(url).then(res => res.json());
 
 export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh = false }) {
+  const dragControls = useDragControls();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -33,7 +34,7 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
     }
   );
 
-  const questions = data || [];
+  const questions = Array.isArray(data) ? data : (data ? [data] : []);
   const [processingId, setProcessingId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -276,15 +277,23 @@ export default function ReviewList({ initialQuestions, isViewOnly, autoRefresh =
         <div className="fixed inset-0 z-[100] pointer-events-none flex items-center justify-center p-4">
           <motion.div 
             drag
+            dragControls={dragControls}
+            dragListener={false}
             dragMomentum={false}
             initial={{ scale: 0.9, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.9, y: 20 }}
-            className="bg-white rounded-[3rem] w-full max-w-5xl max-h-[90vh] overflow-hidden relative border-8 border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.3)] pointer-events-auto cursor-grab active:cursor-grabbing"
+            className="bg-white rounded-[3rem] w-full max-w-5xl max-h-[90vh] overflow-hidden relative border-8 border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.3)] pointer-events-auto flex flex-col"
           >
+            <div 
+              className="absolute top-0 left-0 w-full h-12 flex items-start justify-center pt-3 cursor-grab active:cursor-grabbing z-50 bg-white/80 backdrop-blur-sm"
+              onPointerDown={(e) => dragControls.start(e)}
+            >
+              <div className="w-16 h-1.5 bg-slate-300 rounded-full" />
+            </div>
             <button 
               onClick={() => setActiveTool(null)}
-              className="absolute top-8 right-8 w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center font-black hover:bg-slate-200 z-50 text-xl"
+              className="absolute top-6 right-6 w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center font-black hover:bg-slate-200 z-50 text-xl"
             >
               ✕
             </button>

@@ -182,6 +182,9 @@ export const standardLogic = function (
 
     ${customConstraints}
 
+    CRITICAL INSTRUCTION: For 'questionText', you MUST use the exact string provided in 'askText'. DO NOT paraphrase or shorten it.
+    CRITICAL INSTRUCTION: For 'finalAnswer', you MUST use the exact string provided in 'answer'.
+
     ${getFormatInstructions(visualEngineStr, inputRequirementStr)}
   `;
 

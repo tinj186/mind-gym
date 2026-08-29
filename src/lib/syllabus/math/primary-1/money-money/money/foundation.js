@@ -246,7 +246,7 @@ export const foundationVariants = {
           "componentToRender": "SINGAPORE_MONEY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? `, "steps": [{"label": "How much money is shown in total?", "expectedAnswer": "${displayTotal}"}, {"label": "Is ${displayTotal} enough to buy the item that costs ${targetPriceStr}? (Type 'Yes' or 'No')", "expectedAnswer": "${answer}"}]` : ''} }
+        "inputRequirement": { "inputType": "${isStructure ? 'MULTI_STEP_INPUT' : (type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT')}"${isStructure ? `, "steps": [{"label": "How much money is shown in total?", "expectedAnswer": "${displayTotal}"}, {"label": "Is the total amount shown enough to buy the item that costs ${targetPriceStr}? (Type 'Yes' or 'No')", "expectedAnswer": "${answer}"}]` : ''} }
       }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "comparing_values", hideVisual: false }
     };

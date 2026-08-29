@@ -164,13 +164,15 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
     }
 
     actualAnswer = `${diff} ${baseUnit}`;
-    equation = `${Math.max(baseValA, compareValB)} ${baseUnit} - ${Math.min(baseValA, compareValB)} ${baseUnit} = ${actualAnswer}`;
+    const noUnitEquation = `${Math.max(baseValA, compareValB)} - ${Math.min(baseValA, compareValB)} = ${diff}`;
+    const unitEquation = `${Math.max(baseValA, compareValB)} ${baseUnit} - ${Math.min(baseValA, compareValB)} ${baseUnit} = ${actualAnswer}`;
+    equation = noUnitEquation;
 
     const askText = getQText(structureText, shortText);
 
     if (isStructure) {
       inputRequirementStr = `{"inputType": "MULTI_STEP_INPUT", "steps": [
-        {"label": "Equation to find difference:", "expectedAnswer": "${equation}", "acceptedAnswers": []},
+        {"label": "Equation to find difference:", "expectedAnswer": "${noUnitEquation}", "acceptedAnswers": ["${unitEquation}"]},
         {"label": "Difference:", "expectedAnswer": "${actualAnswer}", "acceptedAnswers": ["${diff}"]}
       ]}`;
     }

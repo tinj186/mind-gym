@@ -49,6 +49,11 @@ export const UniversalQuestionSchema = z.object({
       'VERTICAL_ALGORITHM',
       'LONG_DIVISION',
       'FRACTION_EQUIVALENCE',
+      'HTML_CONTENT',
+      'STATIC_IMAGE',
+      'VOLUME_BEAKER',
+      'MEASUREMENT_RULER',
+      'MASS_SCALE',
       'NONE'
     ]), // Registered native visual engines
     componentData: z.record(z.any()).nullable(),

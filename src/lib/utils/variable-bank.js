@@ -891,3 +891,13 @@ export const getRandom3DObject = () => {
   ];
   return objects[Math.floor(Math.random() * objects.length)];
 };
+
+export const LIQUIDS_POOL = [
+  "sirap bandung", "iced Milo", "lemonade", "orange juice", 
+  "soya bean milk", "milk", "apple juice", "water", "tea"
+];
+
+export const getRandomLiquids = (count = 1) => {
+  const shuffled = [...LIQUIDS_POOL].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+};

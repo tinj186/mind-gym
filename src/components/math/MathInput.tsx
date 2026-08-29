@@ -30,6 +30,7 @@ interface MathInputProps {
 export default function MathInput({ id, name, value, onChange, onEnter, disabled = false, autoFocus = false, level = "Primary 1" }: MathInputProps) {
   const mfRef = useRef<any>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const isDesktop = typeof window !== 'undefined' ? (!window.matchMedia("(pointer: coarse)").matches && !('ontouchstart' in window)) : true;
   
   // Keep references to props so the initialization effect doesn't re-run
   // when the student types or the parent state updates.
@@ -89,12 +90,54 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
   // Initialization effect for properties and event listeners
   useEffect(() => {
     if (!isLoaded || !mfRef.current) return;
+    
+    let isActive = true;
+    let cleanupEvents: (() => void) | null = null;
 
-    const currentMf = mfRef.current;
-    console.log('🔍 [MathInput] Initializing custom element properties...');
+    customElements.whenDefined('math-field').then(() => {
+      if (!isActive || !mfRef.current) return;
+
+      const currentMf = mfRef.current;
+      console.log('🔍 [MathInput] Initializing custom element properties...');
 
     // Determine student grade level to customize keyboard
     const gradeLevel = parseInt((level || "Primary 1").replace(/\D/g, '')) || 1;
+
+    const buildDesktopToolRows = () => {
+      let toolKeys = [];
+      if (gradeLevel >= 2) {
+        toolKeys.push({ command: ["insert", "\\frac{#?}{#?}", { mode: "math" }], label: "a/b" });
+        toolKeys.push({ command: ["insert", "#?\\frac{#?}{#?}", { mode: "math" }], label: "c a/b" });
+      }
+      if (gradeLevel >= 3) {
+        toolKeys.push({ command: ["insert", "^{\\circ}", { mode: "math" }], label: "deg" });
+      }
+      if (gradeLevel >= 4) {
+        toolKeys.push({ command: ["insert", "\\angle", { mode: "math" }], label: "angle" });
+        toolKeys.push({ label: "<", key: "<" });
+        toolKeys.push({ label: ">", key: ">" });
+        toolKeys.push({ label: "(", key: "(" });
+        toolKeys.push({ label: ")" }); // key not strictly needed if label matches
+      }
+      if (gradeLevel >= 5) {
+        toolKeys.push({ command: ["insert", "#?^{2}", { mode: "math" }], label: "x²" });
+        toolKeys.push({ command: ["insert", "#?^{3}", { mode: "math" }], label: "x³" });
+        toolKeys.push({ label: "%", key: "%" });
+      }
+
+      // Add common operators and currency at the end
+      toolKeys.push(
+        { label: "+", key: "+", class: "action font-black" },
+        { label: "−", key: "-", class: "action font-black" },
+        { command: ["insert", "\\times", { mode: "math" }], label: "×", class: "action font-black" },
+        { command: ["insert", "\\div", { mode: "math" }], label: "÷", class: "action font-black" },
+        { label: "$", key: "$", class: "action font-black text-emerald-600" },
+        { label: "¢", key: "¢", class: "action font-black text-emerald-600" }
+      );
+
+      const rows = [toolKeys];
+      return rows;
+    };
 
     const buildLayoutRows = () => {
       let toolKeys = [];
@@ -199,62 +242,105 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
     const mvk = (window as any).mathVirtualKeyboard;
     if (mvk) {
       mvk.keypressSound = null; // Disable the missing click sounds that cause 404s
-      mvk.layouts = [
-        {
-          name: "moe-math",
-          label: "123",
-          tooltip: "MOE Primary Math Layout",
-          rows: buildLayoutRows()
-        },
-        {
-          name: "moe-words",
-          label: "abc",
-          tooltip: "MOE Primary Words Layout",
-          rows: buildWordsLayoutRows()
+      
+      if (isDesktop) {
+        mvk.layouts = [
+          {
+            name: "desktop-math-tools",
+            label: "Tools",
+            tooltip: "Math Tools",
+            rows: buildDesktopToolRows()
+          }
+        ];
+      } else {
+        mvk.layouts = [
+          {
+            name: "moe-math",
+            label: "123",
+            tooltip: "MOE Primary Math Layout",
+            rows: buildLayoutRows()
+          },
+          {
+            name: "moe-words",
+            label: "abc",
+            tooltip: "MOE Primary Words Layout",
+            rows: buildWordsLayoutRows()
+          }
+        ];
+      }
+    }
+
+    // MathLive's connectedCallback might be pending in the microtask queue.
+    // We must wait for the next frame to safely apply configurations.
+    requestAnimationFrame(() => {
+      if (!isActive || !mfRef.current) return;
+      
+      const mfe = mfRef.current;
+      
+      try {
+        if (mfe.setOptions) {
+          mfe.setOptions({
+            menuToggleVisibility: "hidden",
+            virtualKeyboardToggleVisibility: "hidden",
+            mathVirtualKeyboardPolicy: isDesktop ? "manual" : "auto",
+            readOnly: disabled,
+            letterShapeStyle: "upright",
+            smartMode: false,
+            defaultMode: "math",
+            smartFence: false,
+            mathModeSpace: "\\ ",
+            popoverPolicy: "none"
+          });
+        } else {
+          mfe.menuToggleVisibility = "hidden";
+          mfe.virtualKeyboardToggleVisibility = "hidden";
+          mfe.mathVirtualKeyboardPolicy = isDesktop ? "manual" : "auto";
+          mfe.readOnly = disabled;
+          mfe.letterShapeStyle = "upright";
+          mfe.smartMode = false;
+          mfe.defaultMode = "math";
+          mfe.smartFence = false;
+          mfe.mathModeSpace = "\\ ";
+          mfe.popoverPolicy = "none";
         }
-      ];
-    }
+        
+        mfe.macros = {
+          ...mfe.macros,
+          cm2: '{cm}^2',
+          m2: '{m}^2',
+          kg: '\\text{kg}',
+          ml: '\\text{ml}',
+          "m/s": '\\text{m/s}',
+        };
+        mfe.inlineShortcuts = {
+          '*': '\\times',
+          '/': '\\div',
+          "'": "’"
+        };
+        
+        if (mfe.keybindings) {
+          mfe.keybindings = mfe.keybindings.filter((kb: any) => kb.key !== 'tab' && kb.key !== 'shift+[Tab]' && kb.key !== '[Tab]');
+        }
+        
+        // MathLive < 0.94 compat
+        if (mfe.mathModeInlineShortcuts !== undefined) {
+           mfe.mathModeInlineShortcuts = { '*': '\\times', '/': '\\div', "'": "’" };
+        }
+      } catch (e) {
+        console.warn("Could not apply configurations early, retrying safely", e);
+      }
 
-    // Force hide UI buttons that clutter the primary interface
-    currentMf.menuToggleVisibility = "hidden";
-    currentMf.virtualKeyboardToggleVisibility = "hidden"; // Hide toggle to prevent focus loop glitch on mobile
-    currentMf.mathVirtualKeyboardPolicy = "auto"; // Revert back to auto so the virtual keyboard takes over natively
+      if ((window as any).mathVirtualKeyboard) {
+        (window as any).mathVirtualKeyboard.plonkSound = null;
+        (window as any).mathVirtualKeyboard.keypressSound = null;
+      }
 
-    currentMf.readOnly = disabled;
-    currentMf.letterShapeStyle = "upright"; // Disguise math variables as normal text
-    currentMf.smartMode = false; // Disable unpredictable auto-guessing
-    currentMf.defaultMode = "math"; // Stay in native math mode to prevent text-block placeholder bugs
-    currentMf.smartFence = false;
-    currentMf.mathModeSpace = "\\ ";
-    currentMf.popoverPolicy = "none"; // Disable error toasts
-    currentMf.plonkSound = null; // Disable error sounds
-    
-    currentMf.macros = {
-      ...currentMf.macros,
-      cm2: '{cm}^2',
-      m2: '{m}^2',
-      kg: '\\text{kg}',
-      ml: '\\text{ml}',
-      "m/s": '\\text{m/s}',
-    };
-
-    // Replace all default inline shortcuts to prevent words like "or" and "and" 
-    // from automatically turning into \lor and \land math symbols.
-    // We only define the specific physical keyboard shortcuts we want to allow.
-    currentMf.mathModeInlineShortcuts = { 
-      '*': '\\times',
-      '/': '\\div',
-      "'": "’" // Prevent apostrophe from turning into a math prime
-    };
-    currentMf.inlineShortcuts = { 
-      '*': '\\times',
-      '/': '\\div',
-      "'": "’"
-    };
-
-    if (currentMf.value !== value) {
-      currentMf.value = value || "";
-    }
+      try {
+        if (mfe.value !== value) {
+          mfe.value = value || "";
+        }
+      } catch (e) {}
+    });
 
     const onInputEvent = (e: Event) => {
       const target = e.target as any;
@@ -278,15 +364,13 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
     };
 
     const onCommitEvent = (e: Event) => {
-      // MathLive fires 'change' on both Enter press AND blur.
-      // We only want to submit if the user explicitly pressed Enter (the field is still focused).
       const isFocused = 
         document.activeElement === currentMf || 
         currentMf.contains(document.activeElement) ||
         (currentMf.shadowRoot && currentMf.shadowRoot.activeElement !== null);
 
-      if (!isFocused && e.type === 'change') {
-        console.log('👻 [MathInput] Ignoring ghost submit on blur.');
+      if (!isFocused) {
+        console.log(`👻 [MathInput] Ignoring ghost commit on blur.`);
         return;
       }
 
@@ -297,39 +381,101 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
       }
     };
 
+    const onFocusIn = () => {
+      // Guard against MathLive internal race conditions
+      if (!currentMf || !currentMf.executeCommand) return;
+      
+      if (isDesktop && (window as any).mathVirtualKeyboard) {
+        // Give the browser a moment to settle focus before connecting the VK
+        setTimeout(() => {
+          const mvk = (window as any).mathVirtualKeyboard;
+          if (mvk) {
+            try {
+              // Let MathLive handle its own activeMathfield natively on focus
+              // mvk.activeMathfield = currentMf; // THIS CAUSES CRASHES ON RAPID TABBING
+              mvk.show();
+            } catch(e) {}
+          }
+        }, 10);
+      }
+    };
+
+    const onFocusOut = () => {
+      if (isDesktop && (window as any).mathVirtualKeyboard) {
+        // Wait to see if focus moved to another mathfield before hiding
+        setTimeout(() => {
+          if (!document.activeElement || document.activeElement.tagName.toLowerCase() !== 'math-field') {
+            (window as any).mathVirtualKeyboard.hide();
+          }
+        }, 100);
+      }
+    };
+
     currentMf.addEventListener('input', onInputEvent);
-    currentMf.addEventListener('keydown', onKeyDownEvent);
+    currentMf.addEventListener('keydown', onKeyDownEvent, { capture: true });
     currentMf.addEventListener('commit', onCommitEvent);
-    currentMf.addEventListener('change', onCommitEvent);
+    currentMf.addEventListener('focusin', onFocusIn);
+    currentMf.addEventListener('focusout', onFocusOut);
     
     console.log('✅ [MathInput] Event listeners attached successfully.');
 
-    return () => {
+    cleanupEvents = () => {
       currentMf.removeEventListener('input', onInputEvent);
-      currentMf.removeEventListener('keydown', onKeyDownEvent);
+      currentMf.removeEventListener('keydown', onKeyDownEvent, { capture: true } as any);
       currentMf.removeEventListener('commit', onCommitEvent);
-      currentMf.removeEventListener('change', onCommitEvent);
+      currentMf.removeEventListener('focusin', onFocusIn);
+      currentMf.removeEventListener('focusout', onFocusOut);
+    };
+    });
+
+    return () => {
+      isActive = false;
+      if (cleanupEvents) {
+        cleanupEvents();
+      }
     };
   }, [isLoaded, level]);
 
   // 5. External Value Sync
   useEffect(() => {
-    const mfe = mfRef.current;
-    if (!mfe || !isLoaded) return;
+    if (!isLoaded) return;
+    
+    let isActive = true;
 
-    // Check if the math-field or any of its internal parts have focus
-    // Resilient check for Shadow DOM focus
-    const isFocused = 
-      document.activeElement === mfe || 
-      mfe.contains(document.activeElement) ||
-      (mfe.shadowRoot && mfe.shadowRoot.activeElement !== null);
+    customElements.whenDefined('math-field').then(() => {
+      if (!isActive) return;
+      const mfe = mfRef.current;
+      if (!mfe) return;
 
-    // Only update DOM if the value changed externally AND the user isn't typing.
-    // Also check if mfe.value is strictly different to avoid cursor jumps
-    if (!isFocused && value !== undefined && (mfe.value + "") !== (value + "")) {
-      console.log('🔄 [MathInput] Syncing external value:', value);
-      mfe.value = value || "";
-    }
+      // Check if the math-field or any of its internal parts have focus
+      // Resilient check for Shadow DOM focus
+      const isFocused = 
+        document.activeElement === mfe || 
+        mfe.contains(document.activeElement) ||
+        (mfe.shadowRoot && mfe.shadowRoot.activeElement !== null);
+
+      // Only update DOM if the value changed externally AND the user isn't typing.
+      // Also check if mfe.value is strictly different to avoid cursor jumps
+      if (!isFocused && value !== undefined) {
+        try {
+          if ((mfe.value + "") !== (value + "")) {
+            console.log('🔄 [MathInput] Syncing external value:', value);
+            mfe.value = value || "";
+          }
+        } catch (e) {
+          console.warn('⚠️ [MathInput] Mathfield not fully initialized for value sync, retrying...', e);
+          setTimeout(() => {
+            if (isActive && mfRef.current) {
+               try { mfRef.current.value = value || ""; } catch(err) {}
+            }
+          }, 100);
+        }
+      }
+    });
+
+    return () => {
+      isActive = false;
+    };
   }, [value, isLoaded]);
 
   useEffect(() => {
@@ -337,16 +483,15 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
       setTimeout(() => {
         try {
           if (mfRef.current) {
-            mfRef.current.focus();
+            // Guard against calling focus before MathLive internal setup
+            if (mfRef.current.mathVirtualKeyboard || mfRef.current.executeCommand) {
+              mfRef.current.focus();
+            }
           }
         } catch (e: any) {
-          if (e?.message && e.message.includes('mathfield')) {
-            // Silently ignore: Mathfield internal focus error on initial mount
-          } else {
-            console.warn('⚠️ [MathInput] Auto-focus skipped (likely blocked by mobile Safari security policy):', e);
-          }
+          // Silently ignore: Auto-focus skipped safely.
         }
-      }, 100);
+      }, 350); // Increased from 150 to wait for DOM hydration fully
     }
   }, [isLoaded, autoFocus]);
 
@@ -367,8 +512,8 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
             ref={mfRef}
             tabIndex={0}
             menu-toggle-visibility="hidden"
-            virtual-keyboard-toggle-visibility="visible"
-            math-virtual-keyboard-policy="auto"
+            virtual-keyboard-toggle-visibility="hidden"
+            math-virtual-keyboard-policy={isDesktop ? "manual" : "auto"}
             style={{
               display: 'block',
               minHeight: '2.5rem',

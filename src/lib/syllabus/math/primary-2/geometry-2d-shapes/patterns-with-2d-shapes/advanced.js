@@ -528,7 +528,8 @@ export function advancedLogic(activeVariant, isMCQ, isShort, isStructure, getQTe
     }
     
     const nextShapeObj = pattern[gapIndex];
-    const actualAnswerDesc = `${nextShapeObj.size === 'medium' ? 'medium ' : nextShapeObj.size === 'small' ? 'small ' : ''}${nextShapeObj.colorName} ${nextShapeObj.shapeType}`;
+    const isSizeChanging = (attr1 === 'size' || attr2 === 'size');
+    const actualAnswerDesc = `${(isSizeChanging || nextShapeObj.size !== 'large') ? nextShapeObj.size + ' ' : ''}${nextShapeObj.colorName} ${nextShapeObj.shapeType}`;
     
     structureText = `This is a tricky pattern! Two things are changing, but they don't change together. What is the missing shape?`;
     shortText = `What is the missing shape?`;
@@ -565,7 +566,7 @@ export function advancedLogic(activeVariant, isMCQ, isShort, isStructure, getQTe
         let shapeType = attr1 === 'shape' ? v1List[(gapIndex + i) % cycleLen1] : (attr2 === 'shape' ? v2List[(gapIndex + i) % cycleLen2] : baseShape);
         let colorObj = attr1 === 'color' ? v1List[(gapIndex + i) % cycleLen1] : (attr2 === 'color' ? v2List[(gapIndex + i) % cycleLen2] : baseColor);
         let size = attr1 === 'size' ? v1List[(gapIndex + i) % cycleLen1] : (attr2 === 'size' ? v2List[(gapIndex + i) % cycleLen2] : baseSize);
-        let desc = `${size === 'medium' ? 'medium ' : size === 'small' ? 'small ' : ''}${colorObj.name} ${shapeType}`;
+        let desc = `${(isSizeChanging || size !== 'large') ? size + ' ' : ''}${colorObj.name} ${shapeType}`;
         mcqOptions.push(desc);
       }
       mcqOptions = [...new Set(mcqOptions)];

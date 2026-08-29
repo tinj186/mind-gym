@@ -34,8 +34,8 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
 
     actualAnswer = formatTime(hour, min);
 
-    structureText = `What is the time shown on the clock?`;
-    shortText = `Time shown on the clock:`;
+    structureText = `What is the time shown on the clock? Write your answer using numbers (e.g., 4:00).`;
+    shortText = `Time shown on the clock (e.g., 4:00):`;
 
     hintStr = `Look at the short hand for the hour and the long hand for the minutes.`;
     stepsStr = `"""1. The short hand (hour hand) is ${isHalfHour ? 'between ' + hour + ' and ' + (hour === 12 ? 1 : hour + 1) : 'pointing to ' + hour}.\\n2. The long hand (minute hand) is pointing to ${isHalfHour ? '6, which means 30 minutes' : '12, which means 0 minutes'}.\\n3. The time is ${actualAnswer}."""`;

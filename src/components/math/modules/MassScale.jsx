@@ -10,6 +10,7 @@ export default function MassScale({ data, hideCardStyles = false }) {
     maxScale = 1000,
     unit = 'g',
     intervals = 100,
+    labelInterval,
     objectEmoji = '🍎',
   } = data || {};
 
@@ -65,26 +66,29 @@ export default function MassScale({ data, hideCardStyles = false }) {
               const x2 = cx + radius * Math.cos(rad);
               const y2 = cy + radius * Math.sin(rad);
               
-              // Only label every alternate tick if too many, but for primary 2 we can label all if reasonable
-              // 1000/100 = 10 ticks + 0
               const labelRad = (tick.angle - 90) * (Math.PI / 180);
               const lx = cx + (radius - 22) * Math.cos(labelRad);
               const ly = cy + (radius - 22) * Math.sin(labelRad);
 
+              const shouldLabel = labelInterval ? (tick.value % labelInterval === 0) : true;
+              const isMajorTick = shouldLabel;
+
               return (
                 <g key={i}>
-                  <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#1e293b" strokeWidth="3" />
-                  <text 
-                    x={lx} 
-                    y={ly} 
-                    fill="#334155" 
-                    fontSize="12" 
-                    fontWeight="bold" 
-                    textAnchor="middle" 
-                    dominantBaseline="central"
-                  >
-                    {tick.value}
-                  </text>
+                  <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#1e293b" strokeWidth={isMajorTick ? "3" : "1.5"} />
+                  {shouldLabel && (
+                    <text 
+                      x={lx} 
+                      y={ly} 
+                      fill="#334155" 
+                      fontSize="12" 
+                      fontWeight="bold" 
+                      textAnchor="middle" 
+                      dominantBaseline="central"
+                    >
+                      {tick.value}
+                    </text>
+                  )}
                 </g>
               );
             })}

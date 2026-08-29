@@ -105,24 +105,61 @@ const standardVariants = {
   },
 
   standard_count_embedded_pieces: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const scenarios = [
-      { bigShape: "large rectangle", smallShape: "small squares", count: 8, distractors: ["6", "10", "12"] },
-      { bigShape: "large square", smallShape: "small triangles", count: 4, distractors: ["2", "6", "8"] },
-      { bigShape: "large circle", smallShape: "quarter circles", count: 4, distractors: ["2", "6", "8"] }
-    ];
-    const target = scenarios[Math.floor(Math.random() * scenarios.length)];
+    const isSquare = Math.random() > 0.5;
+    const isTriangles = isSquare && Math.random() > 0.5;
     
-    const questionTextTemplate = getQText(`How many ${target.smallShape} can fit exactly inside this ${target.bigShape}?`, `How many ${target.smallShape} make up the ${target.bigShape}?`);
+    let width, height, count, bigShape, smallShape, referenceLines;
+    
+    if (isTriangles) {
+      width = 2; height = 2; count = 4;
+      bigShape = "large square";
+      smallShape = "small triangles";
+      referenceLines = `[
+        { "start": [1, 1], "end": [3, 1], "color": "#3b82f6" },
+        { "start": [3, 1], "end": [3, 3], "color": "#3b82f6" },
+        { "start": [3, 3], "end": [1, 3], "color": "#3b82f6" },
+        { "start": [1, 3], "end": [1, 1], "color": "#3b82f6" },
+        { "start": [1, 1], "end": [3, 3], "dashed": true },
+        { "start": [1, 3], "end": [3, 1], "dashed": true }
+      ]`;
+    } else {
+      if (isSquare) {
+        width = Math.floor(Math.random() * 3) + 2; // 2 to 4
+        height = width;
+        bigShape = "large square";
+      } else {
+        width = Math.floor(Math.random() * 4) + 2; // 2 to 5
+        height = Math.floor(Math.random() * 2) + 2; // 2 to 3
+        if (width === height) width += 1;
+        bigShape = "large rectangle";
+      }
+      count = width * height;
+      smallShape = "small squares";
+      referenceLines = `[
+        { "start": [1, 1], "end": [${width + 1}, 1], "color": "#ef4444" },
+        { "start": [${width + 1}, 1], "end": [${width + 1}, ${height + 1}], "color": "#ef4444" },
+        { "start": [${width + 1}, ${height + 1}], "end": [1, ${height + 1}], "color": "#ef4444" },
+        { "start": [1, ${height + 1}], "end": [1, 1], "color": "#ef4444" }
+      ]`;
+    }
+    
+    let distractors = [String(count - 1), String(count + 1), String(count + 2), String(count + Math.floor(Math.random() * 3) + 3)];
+    if (distractors.includes("0")) distractors[distractors.indexOf("0")] = "5";
+    // Deduplicate distractors if any overlap
+    distractors = [...new Set(distractors)].filter(d => d !== String(count));
+    while (distractors.length < 3) distractors.push(String(Math.floor(Math.random() * 10) + 10));
+    
+    const questionTextTemplate = getQText(`Look at the drawing. How many ${smallShape} can fit exactly inside this ${bigShape}?`, `How many ${smallShape} make up the ${bigShape}?`);
     const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student featuring a person named ${getRandomNames(1)}.`;
     
-    let options = target.distractors;
+    let options = distractors.slice(0, 3);
     let mcqOptions = 'null';
     let defectMapStr = 'null';
     if (type === 'MCQ') {
-      options = getShuffledOptions(target.count.toString(), target.distractors);
+      options = getShuffledOptions(count.toString(), options);
       mcqOptions = JSON.stringify(options);
       let defectMapObj = {};
-      options.forEach(opt => { if (opt !== target.count.toString()) defectMapObj[opt] = "COUNTING_ERROR"; });
+      options.forEach(opt => { if (opt !== count.toString()) defectMapObj[opt] = "COUNTING_ERROR"; });
       defectMapStr = JSON.stringify(defectMapObj);
     }
     
@@ -138,17 +175,21 @@ const standardVariants = {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
           "defectMap": ${defectMapStr},
-          "hint": "Try to count carefully.",
-          "finalAnswer": "${target.count}",
-          "solutionSteps": "${target.count} ${target.smallShape} fit perfectly inside the ${target.bigShape}."
+          "hint": "Count them one by one.",
+          "finalAnswer": "${count}",
+          "solutionSteps": "There are ${count} ${smallShape} inside the ${bigShape}."
         },
         "visualEngine": {
-          "componentToRender": "SHAPE_DISPLAY",
-          "componentData": { "layout": "SINGLE", "shapeType": "${target.bigShape.includes('circle') ? 'circle' : (target.bigShape.includes('rectangle') ? 'rectangle' : 'square')}" }
+          "componentToRender": "GRID_DISPLAY",
+          "componentData": { 
+            "gridType": "SQUARE",
+            "gridSize": { "cols": ${width + 2}, "rows": ${height + 2} },
+            "referenceLines": ${referenceLines}
+          }
         },
         "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
       }`,
-      metadata: { difficulty: 'standard', steps: 1, logic: "count_embedded_pieces", hideVisual: true }
+      metadata: { difficulty: 'standard', steps: 1, logic: "count_embedded_pieces", hideVisual: false }
     };
   },
 

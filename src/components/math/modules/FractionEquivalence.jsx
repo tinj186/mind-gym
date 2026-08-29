@@ -19,10 +19,17 @@ export default function FractionEquivalence({ data }) {
     </div>
   );
 
+  const getBgClass = (colorClass) => {
+    if (colorClass.includes('slate')) return 'bg-slate-800';
+    if (colorClass.includes('emerald')) return 'bg-emerald-600';
+    if (colorClass.includes('violet')) return 'bg-violet-600';
+    return 'bg-current';
+  };
+
   const renderFraction = (frac, colorClass) => (
     <div className={`flex flex-col items-center justify-center text-3xl font-black ${colorClass}`}>
       <div className="mb-2">{frac?.num}</div>
-      <div className={`w-8 h-1 rounded-full ${colorClass === 'text-slate-800' ? 'bg-slate-800' : 'bg-current'}`}></div>
+      <div className={`w-8 h-1 rounded-full flex-shrink-0 ${getBgClass(colorClass)}`}></div>
       <div className="mt-2">{frac?.denom}</div>
     </div>
   );
@@ -32,14 +39,18 @@ export default function FractionEquivalence({ data }) {
       
       <div className="flex items-center justify-center min-w-max">
         {/* First block */}
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center relative">
           {renderOperatorBox(operator, factor, true)}
           {renderArrow(operator, factor, true)}
           
-          <div className="flex items-center justify-between px-2 py-2">
-            {renderFraction(before, 'text-slate-800')}
-            <div className="text-3xl font-black text-slate-400 mx-4">=</div>
-            {renderFraction(after, 'text-emerald-600')}
+          <div className="flex items-center justify-center gap-4 px-2 py-2">
+            <div className="w-12 flex justify-center">
+              {renderFraction(before, 'text-slate-800')}
+            </div>
+            <div className="text-3xl font-black text-slate-400 w-8 text-center">=</div>
+            <div className="w-12 flex justify-center">
+              {renderFraction(after, 'text-emerald-600')}
+            </div>
           </div>
           
           {renderArrow(operator, factor, false)}
@@ -49,13 +60,15 @@ export default function FractionEquivalence({ data }) {
         {/* Optional Second Block */}
         {final && (
           <>
-            <div className="flex flex-col items-center ml-2">
+            <div className="flex flex-col items-center ml-2 relative">
               {renderOperatorBox(operator2, factor2, true)}
               {renderArrow(operator2, factor2, true)}
               
-              <div className="flex items-center justify-between px-2 py-2">
-                <div className="text-3xl font-black text-slate-400 mx-4">=</div>
-                {renderFraction(final, 'text-violet-600')}
+              <div className="flex items-center justify-center gap-4 px-2 py-2">
+                <div className="text-3xl font-black text-slate-400 w-8 text-center">=</div>
+                <div className="w-12 flex justify-center">
+                  {renderFraction(final, 'text-violet-600')}
+                </div>
               </div>
               
               {renderArrow(operator2, factor2, false)}

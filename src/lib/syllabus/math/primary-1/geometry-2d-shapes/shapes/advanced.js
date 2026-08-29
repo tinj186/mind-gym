@@ -13,18 +13,17 @@ const getShuffledOptions = (correct, distractors) => {
 export const advancedVariants = {
   advanced_pattern_two_attributes: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const [s1, s2] = getRandomShapes(2);
-    const [c1] = getRandomColors(1);
-    const [sz1, sz2] = getRandom(sizeTiers, 2);
+    const [c1, c2] = getRandomColors(2);
     
-    const p1 = { shapeType: s1, size: sz1, color: c1 };
-    const p2 = { shapeType: s2, size: sz2, color: c1 };
+    const p1 = { shapeType: s1, size: "medium", color: c1 };
+    const p2 = { shapeType: s2, size: "medium", color: c2 };
     const componentData = { layout: "PATTERN", pattern: [p1, p2, p1, p2], nextItem: p1 };
 
-    const answer = `${capitalize(sz1)} ${capitalize(s1)}`;
+    const answer = `${capitalize(c1)} ${capitalize(s1)}`;
     const questionTextTemplate = getQText(`What comes next in the pattern?`, `Next shape = ?`);
     const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers/shapes MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
 
-    let options = [answer, `${capitalize(sz2)} ${capitalize(s2)}`, `${capitalize(sz2)} ${capitalize(s1)}`, `${capitalize(sz1)} ${capitalize(s2)}`];
+    let options = [answer, `${capitalize(c2)} ${capitalize(s2)}`, `${capitalize(c2)} ${capitalize(s1)}`, `${capitalize(c1)} ${capitalize(s2)}`];
     let mcqOptions = 'null';
     let defectMapStr = 'null';
     if (type === 'MCQ') {
@@ -47,9 +46,9 @@ export const advancedVariants = {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
           "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`Look at the shape and the size. They both change every time!`, `Observe changing properties.`))},
+          "hint": ${JSON.stringify(getQText(`Look at the shape and the color. They both change every time!`, `Observe changing properties.`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`The pattern shows a ${sz1} ${s1} followed by a ${sz2} ${s2}. To continue the pattern, we need a ${sz1} ${s1} again.`, `It is a ${answer}.`))}
+          "solutionSteps": ${JSON.stringify(getQText(`The pattern shows a ${c1} ${s1} followed by a ${c2} ${s2}. To continue the pattern, we need a ${c1} ${s1} again.`, `It is a ${answer}.`))}
         },
         "visualEngine": {
           "componentToRender": "SHAPE_DISPLAY",
@@ -117,17 +116,19 @@ export const advancedVariants = {
   advanced_pattern_three_attributes: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const [s1, s2] = getRandomShapes(2);
     const [c1, c2] = getRandomColors(2);
-    const [sz1, sz2] = getRandom(sizeTiers, 2);
+    // Force maximum contrast (Small vs Large) to prevent visual ambiguity
+    const sizes = Math.random() > 0.5 ? ["small", "large"] : ["large", "small"];
+    const [sz1, sz2] = sizes;
 
     const p1 = { shapeType: s1, color: c1, size: sz1 };
     const p2 = { shapeType: s2, color: c2, size: sz2 };
     const componentData = { layout: "PATTERN", pattern: [p1, p2, p1, p2] };
 
-    const answer = `${capitalize(sz1)} ${colorNames[c1]} ${capitalize(s1)}`;
+    const answer = `${capitalize(sz1)} ${capitalize(c1)} ${capitalize(s1)}`;
     const questionTextTemplate = getQText(`Which shape comes next in this complex pattern?`, `Next shape in pattern = ?`);
     const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers/shapes MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
 
-    let options = [answer, `${capitalize(sz2)} ${colorNames[c2]} ${capitalize(s2)}`, `${capitalize(sz1)} ${colorNames[c2]} ${capitalize(s1)}`, `${capitalize(sz2)} ${colorNames[c1]} ${capitalize(s2)}`];
+    let options = [answer, `${capitalize(sz2)} ${capitalize(c2)} ${capitalize(s2)}`, `${capitalize(sz1)} ${capitalize(c2)} ${capitalize(s1)}`, `${capitalize(sz2)} ${capitalize(c1)} ${capitalize(s2)}`];
     let mcqOptions = 'null';
     let defectMapStr = 'null';
     if (type === 'MCQ') {
@@ -152,7 +153,7 @@ export const advancedVariants = {
           "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Watch the shape, the color, AND the size. All three things repeat in order!`, `Identify all 3 changing properties.`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`The pattern repeats two different items. The first item is a ${sz1} ${colorNames[c1]} ${s1}. This is what comes after the second item.`, `It is a ${answer}.`))}
+          "solutionSteps": ${JSON.stringify(getQText(`The pattern repeats two different items. The first item is a ${sz1} ${c1} ${s1}. This is what comes after the second item.`, `It is a ${answer}.`))}
         },
         "visualEngine": {
           "componentToRender": "SHAPE_DISPLAY",

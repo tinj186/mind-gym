@@ -1,8 +1,12 @@
 # AI Agent Guidelines
 
 ## Prompt Generation Rules
-- Always use dynamic JS interpolation (e.g., \`${getRandomNames(1)}\`) to inject names and items from variable-bank.js directly into the LLM prompt. Do NOT write static prompt instructions that ask the LLM to "pick a random name from a list," as the LLM will lazily reuse the same names.
-
+- **Constrained AI Story Generation:** To ensure high question variety and avoid template repetitiveness, the LLM is allowed to rewrite the descriptive portions of word problems (indicated by a `STORY:` prefix). 
+- **Strict Hallucination Prevention:** When allowing the AI to generate/rewrite a story, you MUST strictly constrain it via a `CRITICAL INSTRUCTION`. Explicitly command the AI to:
+  1. Preserve exact mathematical values and operations.
+  2. NEVER add extra unrequested questions (e.g., do not add "How many altogether?").
+  3. Keep the final question sentence exactly as provided.
+- **Dynamic Variable Context:** Continue to inject names and items from `variable-bank.js` into the `STORY:` template to give the AI a grounded starting point, preventing it from lazily reusing the same names.
 ## Project Structure Rules
 - Always place scratch scripts, testing files, and one-off debugging files in the `scripts/` directory to keep the root directory clean and organized.
 

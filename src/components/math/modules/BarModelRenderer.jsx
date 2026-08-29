@@ -47,18 +47,19 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
     <div className="space-y-6">
       {modelsToRender.map((m, index) => {
         if (m.modelType === 'PART_WHOLE' || m.type === 'PART_WHOLE') {
-    const knownSum = m.parts.reduce((sum, p) => sum + (parseFloat(p.layoutSize || p.value || p) || 0), 0);
+    const partsList = m.parts || m.segments || [];
+    const knownSum = partsList.reduce((sum, p) => sum + (parseFloat(p.layoutSize || p.value || p) || 0), 0);
     const hasUnknownWhole = isNaN(parseFloat(m.whole));
-    const unknownCount = m.parts.filter(p => isNaN(parseFloat(p.layoutSize || p.value || p))).length;
+    const unknownCount = partsList.filter(p => isNaN(parseFloat(p.layoutSize || p.value || p))).length;
     
     let remainingForUnknown = 0;
     let calculatedWhole = parseFloat(m.whole);
     
     if (hasUnknownWhole) {
-       const knownCount = m.parts.length - unknownCount;
+       const knownCount = partsList.length - unknownCount;
        const avgKnown = knownCount > 0 ? (knownSum / knownCount) : 1;
        remainingForUnknown = unknownCount > 0 ? (unknownCount * avgKnown) : 0;
-       calculatedWhole = knownSum + remainingForUnknown || m.parts.length;
+       calculatedWhole = knownSum + remainingForUnknown || partsList.length;
     } else {
        remainingForUnknown = Math.max(0, calculatedWhole - knownSum);
     }
@@ -90,15 +91,16 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
                   return <div key={`tb-${idx}`} style={{ width: `${width}%` }} />;
                 })
               ) : (
-                m.parts.map((part, idx) => {
-                  const partValue = (typeof part === 'object' && part !== null) ? (part.value !== undefined ? part.value : "") : part;
+                partsList.map((part, idx) => {
+                  const partValue = (typeof part === 'object' && part !== null) ? (part.value !== undefined ? part.value : (part.text !== undefined ? part.text : "")) : part;
+                  const partDisplayValue = (typeof part === 'object' && part !== null && part.displayValue !== undefined) ? part.displayValue : partValue;
                   const partLayoutVal = parseFloat(part.layoutSize || partValue) || fallbackPartVal;
                   const width = (partLayoutVal / calculatedWhole) * 100;
                   
-                  if (part.segments && parseInt(part.segments) > 1 && partValue && partValue !== "?") {
+                  if (part.segments && parseInt(part.segments) > 1 && partDisplayValue && partDisplayValue !== "?") {
                     return (
                       <div key={`bracket-${idx}`} style={{ width: `${width}%` }} className="relative flex flex-col items-center justify-end h-full">
-                        <span className="text-sm font-black text-slate-600 bg-slate-50 px-2 absolute -top-4">{partValue}</span>
+                        <span className="text-sm font-black text-slate-600 bg-slate-50 px-2 absolute -top-4">{partDisplayValue}</span>
                         <div className="w-[calc(100%-8px)] h-2 border-x-2 border-t-2 border-slate-400 opacity-60 rounded-t-md"></div>
                       </div>
                     );
@@ -109,13 +111,14 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
             </div>
             
             <div className="flex h-12 w-full rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-white">
-              {m.parts.map((part, idx) => {
-                const partValue = (typeof part === 'object' && part !== null) ? (part.value !== undefined ? part.value : "") : part;
+              {partsList.map((part, idx) => {
+                const partValue = (typeof part === 'object' && part !== null) ? (part.value !== undefined ? part.value : (part.text !== undefined ? part.text : "")) : part;
+                const partDisplayValue = (typeof part === 'object' && part !== null && part.displayValue !== undefined) ? part.displayValue : partValue;
                 const partLayoutVal = parseFloat(part.layoutSize || partValue) || fallbackPartVal;
                 const width = (partLayoutVal / calculatedWhole) * 100;
                 const inputKey = `part_${idx}`;
                 const userVal = toolState[inputKey];
-                const showTopBracket = part.segments && parseInt(part.segments) > 1 && partValue && partValue !== "?";
+                const showTopBracket = part.segments && parseInt(part.segments) > 1 && partDisplayValue && partDisplayValue !== "?";
                 
                 return (
                   <div
@@ -125,9 +128,9 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
                       part.bgClass || (idx % 2 === 0 ? 'bg-blue-500 text-white' : 'bg-blue-400 text-white')
                     }`}
                   >
-                    <UnitSegments value={typeof partValue === 'string' && partValue.startsWith('?:') ? `?:${userVal || partValue.split(':')[1] || '?'}` : partValue} segments={part.segments} />
-                    {!(typeof partValue === 'string' && partValue.startsWith('?:')) && !showTopBracket && (
-                      userVal ? <span className="text-yellow-200 px-2 drop-shadow-md text-lg">{userVal}</span> : (partValue === "?" ? "?" : <span className="text-white drop-shadow-sm">{partValue}</span>)
+                    <UnitSegments value={typeof partDisplayValue === 'string' && partDisplayValue.startsWith('?:') ? `?:${userVal || partDisplayValue.split(':')[1] || '?'}` : partDisplayValue} segments={part.segments} />
+                    {!(typeof partDisplayValue === 'string' && partDisplayValue.startsWith('?:')) && !showTopBracket && (
+                      userVal ? <span className="text-yellow-200 px-2 drop-shadow-md text-lg">{userVal}</span> : (partDisplayValue === "?" ? "?" : <span className="text-white drop-shadow-sm">{partDisplayValue}</span>)
                     )}
                   </div>
                 );
@@ -177,19 +180,19 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
           return (
             <div key={idx} className="flex flex-col">
               <div className="flex items-center gap-4">
-                <span className="w-16 text-xs font-black text-slate-400 uppercase truncate text-right">
-                  {bar.name}
+                <span className="w-32 flex-shrink-0 text-xs font-black text-slate-400 uppercase truncate text-right">
+                  {typeof bar.name === 'object' && bar.name !== null ? (bar.name.item || bar.name.text || bar.name.label || JSON.stringify(bar.name)) : bar.name}
                 </span>
-                <div className="flex-1 h-10 bg-white rounded-lg border border-slate-200 overflow-hidden shadow-inner flex relative z-10">
+                <div className="flex-1 h-10 rounded-lg flex relative z-10">
                   <div
                     style={{ width: `${(getLayoutValue(bar) / maxVal) * 100}%` }}
-                    className={`relative h-full flex items-center justify-end px-4 text-sm font-black text-white ${
+                    className={`relative h-full flex items-center justify-end px-4 text-sm font-black text-white rounded-lg border border-slate-200 shadow-inner overflow-hidden ${
                       idx === 0 ? 'bg-blue-500' : 'bg-amber-500'
                     }`}
                   >
                     <UnitSegments value={bar.segments || bar.value} />
                     {(!bar.segments || parseInt(bar.segments) <= 1) && (
-                      userVal ? <span className="text-yellow-200 px-2 drop-shadow-md text-lg">{userVal}</span> : (bar.value === "?" ? "?" : <span className="text-white drop-shadow-sm">{bar.value}</span>)
+                      userVal ? <span className="text-yellow-200 px-2 drop-shadow-md text-lg z-10">{userVal}</span> : (bar.value === "?" ? "?" : <span className="text-white drop-shadow-sm z-10">{bar.displayValue !== undefined ? bar.displayValue : bar.value}</span>)
                     )}
                   </div>
                   
@@ -197,11 +200,24 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
                   {getLayoutValue(bar) < maxVal && (
                     <div 
                       style={{ width: `${100 - ((getLayoutValue(bar) / maxVal) * 100)}%` }}
-                      className="h-full flex items-center justify-center bg-slate-50/50 border-l-2 border-dashed border-slate-300"
+                      className="h-full flex flex-col items-center justify-end relative"
                     >
-                      <span className="text-sm font-black text-slate-500">
-                        {toolState['diff'] ? <span className="text-indigo-600">{toolState['diff']}</span> : '?'}
-                      </span>
+                      {idx === 0 ? (
+                        <div className="absolute -top-5 flex flex-col items-center justify-end w-full h-8">
+                          <span className="text-sm font-black text-slate-500 bg-slate-50 px-2 absolute -top-3 z-10">
+                            {toolState['diff'] ? <span className="text-indigo-600">{toolState['diff']}</span> : (m.difference?.displayValue !== undefined ? m.difference.displayValue : '?')}
+                          </span>
+                          <div className="w-[calc(100%-16px)] h-2 border-x-2 border-t-2 border-slate-400 opacity-60 rounded-t-md"></div>
+                        </div>
+                      ) : (
+                        <div className="absolute -bottom-5 flex flex-col items-center justify-start w-full h-8">
+                          <span className="text-sm font-black text-slate-500 bg-slate-50 px-2 absolute -bottom-3 z-10">
+                            {toolState['diff'] ? <span className="text-indigo-600">{toolState['diff']}</span> : (m.difference?.displayValue !== undefined ? m.difference.displayValue : '?')}
+                          </span>
+                          <div className="w-[calc(100%-16px)] h-2 border-x-2 border-b-2 border-slate-400 opacity-60 rounded-b-md"></div>
+                        </div>
+                      )}
+                      <div className="w-full h-full bg-slate-50/50 border-y border-r border-dashed border-slate-300 rounded-r-lg"></div>
                     </div>
                   )}
                 </div>
@@ -214,7 +230,7 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
                   <div className="flex-1 flex">
                     <div style={{ width: `${(getLayoutValue(bar) / maxVal) * 100}%` }} className="flex flex-col items-center">
                       <div className="w-[calc(100%-8px)] h-4 border-x-2 border-b-2 border-slate-400 opacity-60 rounded-b-md"></div>
-                      <span className="text-sm font-black text-slate-600 bg-slate-50 px-2 -mt-3 z-10">{userVal || bar.value}</span>
+                      <span className="text-sm font-black text-slate-600 bg-slate-50 px-2 -mt-3 z-10">{userVal || (bar.displayValue !== undefined ? bar.displayValue : bar.value)}</span>
                     </div>
                   </div>
                 </div>
@@ -226,7 +242,7 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
           
           {/* Total Bracket for Comparison */}
           {m.whole !== undefined && (
-            <div className="w-[180px] flex-shrink-0 flex items-center ml-4 h-[9.5rem]">
+            <div className="w-[180px] flex-shrink-0 flex items-center ml-4 h-[6rem]">
               <div className="w-10 h-full py-1 pointer-events-none">
                 <CurlyBracket />
               </div>

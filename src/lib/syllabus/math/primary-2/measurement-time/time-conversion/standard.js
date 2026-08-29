@@ -71,7 +71,7 @@ export const standardLogic = (activeVariant, isMCQ, isShort, isStructure, getQTe
     
     if (unknownType === 1) { // Unknown C (Total)
       structureText = `A ${transport} takes ${hourStr} and ${activity} takes ${halfStr}. How many minutes is the entire journey?`;
-      shortText = `Transport: ${hourStr}. Activity: ${halfStr}. Entire journey in mins:`;
+      shortText = `Transport: ${hourStr}. Activity: ${halfStr}. Entire journey in minutes:`;
       actualAnswer = `${totalMins} minutes`;
       hintStr = `Convert both times into minutes first. ${hourStr} is ${hourVal * 60} minutes, and each half-hour is 30 minutes. Then add them up!`;
       
@@ -88,7 +88,7 @@ export const standardLogic = (activeVariant, isMCQ, isShort, isStructure, getQTe
       ];
     } else if (unknownType === 2) { // Unknown A (Transport)
       structureText = `An entire journey takes ${totalMins} minutes. ${activity} takes ${halfStr}. How many minutes does the ${transport} take?`;
-      shortText = `Entire journey: ${totalMins} mins. Activity: ${halfStr}. Transport in mins:`;
+      shortText = `Entire journey: ${totalMins} minutes. Activity: ${halfStr}. Transport in minutes:`;
       actualAnswer = `${hourVal * 60} minutes`;
       hintStr = `Convert the ${activity} time to minutes first. Then subtract it from the entire journey time!`;
       
@@ -104,7 +104,7 @@ export const standardLogic = (activeVariant, isMCQ, isShort, isStructure, getQTe
       ];
     } else { // Unknown B (Activity)
       structureText = `An entire journey takes ${totalMins} minutes. A ${transport} takes ${hourStr}. How many minutes does ${activity} take?`;
-      shortText = `Entire journey: ${totalMins} mins. Transport: ${hourStr}. Activity in mins:`;
+      shortText = `Entire journey: ${totalMins} minutes. Transport: ${hourStr}. Activity in minutes:`;
       actualAnswer = `${halfHourVal * 30} minutes`;
       hintStr = `Convert the ${transport} time to minutes first. Then subtract it from the entire journey time!`;
       
@@ -276,8 +276,8 @@ export const standardLogic = (activeVariant, isMCQ, isShort, isStructure, getQTe
     const remainingMins = totalMinsTarget - elapsedMins;
     
     structureText = `${names[0]} wants to spend ${hours} hour${hours > 1 ? 's' : ''} ${activityText}. ${names[0]} has spent ${elapsedMins} minutes ${activityText}. How many more minutes does ${names[0]} need?`;
-    shortText = `Total goal: ${hours} hour${hours > 1 ? 's' : ''}. Completed: ${elapsedMins} mins. Mins left:`;
-    actualAnswer = `${remainingMins} minutes`;
+    shortText = `Total goal: ${hours} hour${hours > 1 ? 's' : ''}. Completed: ${elapsedMins} minutes. Minutes left:`;
+    actualAnswer = `${remainingMins}`;
     hintStr = `Convert ${hours} hour${hours > 1 ? 's' : ''} to minutes first. Then subtract the ${elapsedMins} minutes ${names[0]} has already spent!`;
     
     const repeatedAdditionStr = hours === 1 ? '60' : `${Array(hours).fill(60).join(" + ")} = ${totalMinsTarget}`;
@@ -391,7 +391,7 @@ export const standardLogic = (activeVariant, isMCQ, isShort, isStructure, getQTe
       ];
     }
     
-    actualAnswer = `${totalMins} minutes`;
+    actualAnswer = `${totalMins}`;
     
     if (isMCQ) {
       mcqOptions = [
@@ -407,7 +407,8 @@ export const standardLogic = (activeVariant, isMCQ, isShort, isStructure, getQTe
   if (isStructure) {
     inputRequirementStr = `{\n  "inputType": "MULTI_STEP_INPUT",\n  "steps": [\n${structureSteps.map(s => `    { "label": "${s.label}", "expectedAnswer": "${s.expectedAnswer}", "acceptedAnswers": [] }`).join(',\n')}\n  ]\n}`;
   } else {
-    inputRequirementStr = `{"inputType": "TEXT_INPUT"}`;
+    const accepted = [`${actualAnswer}`, `${actualAnswer} min`, `${actualAnswer} mins`, `${actualAnswer} minutes`];
+    inputRequirementStr = `{"inputType": "TEXT_INPUT", "acceptedAnswers": ${JSON.stringify(accepted)}}`;
   }
 
   // Shuffle MCQ options if applicable

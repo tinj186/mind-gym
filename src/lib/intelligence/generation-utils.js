@@ -178,11 +178,29 @@ export function sanitizeComponentData(data) {
 export function processAiQuestion(q, context) {
   const { level, topic, subtopic, heuristic, difficulty, gradeLevel, type, strand, blueprintMeta, stepResult } = context;
 
+  // Sanitize meta.type to prevent Zod validation errors due to LLM hallucinations
+  if (q && q.meta) {
+    q.meta.type = type === 'Short Question' ? 'SHORT_QUESTION' : (type === 'Structured' ? 'STRUCTURED' : 'MCQ');
+    q.meta.difficulty = difficulty.charAt(0).toUpperCase() + difficulty.slice(1).toLowerCase();
+  }
+
   try {
     // Try strict Zod validation first
     const validatedData = UniversalQuestionSchema.parse(q);
-    const resolvedVisualEngine = stepResult?.visualEngine || validatedData.visualEngine;
-    const safeData = sanitizeComponentData(resolvedVisualEngine.componentData);
+    
+    // Parse stepResult overrides if they are JSON strings
+    let overrideVisualEngine = stepResult?.visualEngine;
+    if (typeof overrideVisualEngine === 'string') {
+      try { overrideVisualEngine = JSON.parse(overrideVisualEngine); } catch (e) {}
+    }
+    
+    let overrideInputRequirement = stepResult?.inputRequirement;
+    if (typeof overrideInputRequirement === 'string') {
+      try { overrideInputRequirement = JSON.parse(overrideInputRequirement); } catch (e) {}
+    }
+
+    const resolvedVisualEngine = overrideVisualEngine || validatedData.visualEngine;
+    const safeData = sanitizeComponentData(resolvedVisualEngine?.componentData);
     
     return {
       level, topic, subtopic: subtopic || "", heuristic: heuristic || null,
@@ -201,15 +219,16 @@ export function processAiQuestion(q, context) {
       hint: validatedData.content.hint || null,
       modelData: {
         ...safeData,
-        type: resolvedVisualEngine.componentToRender,
+        type: resolvedVisualEngine?.componentToRender,
         hideVisual: stepResult?.metadata?.hideVisual ? true : (safeData?.hideVisual !== undefined 
           ? safeData.hideVisual 
           : resolvedVisualEngine.componentToRender === 'NONE'),
-        inputRequirement: validatedData.inputRequirement,
+        inputRequirement: overrideInputRequirement || validatedData.inputRequirement || null,
         finalAnswer: validatedData.content.finalAnswer,
         acceptedAnswers: validatedData.content.acceptedAnswers || [],
         items: Array.isArray(safeData?.items) ? safeData.items : [],
-        defectMap: validatedData.content.defectMap || null
+        defectMap: validatedData.content.defectMap || null,
+        visualEngine: resolvedVisualEngine
       }
     };
   } catch (zodError) {

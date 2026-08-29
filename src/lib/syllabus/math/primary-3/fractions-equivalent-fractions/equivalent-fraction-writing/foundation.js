@@ -389,5 +389,9 @@ export const foundationLogic = (activeVariant, difficulty, type, isMCQ, isShort,
     .replace('["string", "string"] (Array of strings for the step-by-step model solution. Use EXACTLY the characters \\\\n for any newlines inside strings if needed.)', JSON.stringify(solutionSteps).replace(/\\\\n/g, '\\n'))
     .replace('"string (The exact final answer)"', JSON.stringify(answer));
 
-  return { aiPrompt };
+  return { 
+    aiPrompt,
+    visualEngine: JSON.parse(visualEngineStr),
+    inputRequirement: inputRequirementStr && inputRequirementStr !== 'null' ? JSON.parse(inputRequirementStr) : undefined
+  };
 };

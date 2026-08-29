@@ -103,7 +103,19 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       if (intermediate >= 0 && intermediate <= 20) {
         target = op2 === '+' ? intermediate + a3 : intermediate - a3;
         if (target >= 0 && target <= 20) {
-          valid = true;
+          // Verify that this is the ONLY valid combination
+          let validCount = 0;
+          const combos = [['+', '+'], ['+', '-'], ['-', '+'], ['-', '-']];
+          for (let combo of combos) {
+            let tempInt = combo[0] === '+' ? a1 + a2 : a1 - a2;
+            let tempFinal = combo[1] === '+' ? tempInt + a3 : tempInt - a3;
+            if (tempFinal === target) {
+              validCount++;
+            }
+          }
+          if (validCount === 1) {
+            valid = true;
+          }
         }
       }
     }

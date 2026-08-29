@@ -191,6 +191,12 @@ export const foundationLogic = (activeVariant, difficulty, type, isMCQ, isShort,
     if (isAddition) {
       num1 = Math.floor(Math.random() * 5) + 2; // 2 to 6
       num2 = Math.floor(Math.random() * 5) + 2;
+      
+      // Prevent ambiguous 2 [ ? ] 2 = 4 which could be + or *
+      if (num1 === 2 && num2 === 2) {
+        num1 = 3;
+      }
+      
       result = num1 + num2;
       correctSymbol = "+";
     } else {

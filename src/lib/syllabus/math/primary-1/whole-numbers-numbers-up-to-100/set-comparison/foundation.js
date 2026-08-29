@@ -133,7 +133,7 @@ export const foundationLogic = (activeVariant, difficulty, type, isMCQ, isShort,
 
     const answer = statementIsTrue ? "True" : "False";
     const questionTextRaw = `True or False: Set A has more ${selectedContextItem.item} than Set B.`;
-    const questionTextShort = `Set A > Set B? (True/False):`;
+    const questionTextShort = `Is Set A more than Set B? (True/False):`;
     
     let defectMap = null;
     let options = null;
@@ -185,7 +185,7 @@ export const foundationLogic = (activeVariant, difficulty, type, isMCQ, isShort,
 
     const answer = statementIsTrue ? "True" : "False";
     const questionTextRaw = `True or False: Set A has fewer ${selectedContextItem.item} than Set B.`;
-    const questionTextShort = `Set A < Set B? (True/False):`;
+    const questionTextShort = `Does Set A have fewer than Set B? (True/False):`;
     
     let defectMap = null;
     let options = null;
