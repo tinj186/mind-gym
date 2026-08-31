@@ -347,12 +347,13 @@ CRITICAL INSTRUCTIONS:
 4. Set the exact string "${answer}" as the 'finalAnswer'.
 5. Use the exact provided solution steps and hint.
 6. The 'visualEngine' and 'inputRequirement' fields MUST match the provided JSON schema exactly. DO NOT invent or generate your own visual engine objects (like BAR_MODEL).
+7. If 'options' is provided in the inputs, you MUST use the exact array for the 'options' field in the 'content' object. If it is empty, return [].
 
 Inputs for your generation:
 - askText: ${askText}
 - solutionSteps: ${JSON.stringify(solutionSteps)}
 - hint: ${hint}
-- mcqOptions: ${mcqOptions ? JSON.stringify(mcqOptions) : '[]'}
+- options: ${mcqOptions ? JSON.stringify(mcqOptions) : '[]'}
 
 ${payloadStr}
 `

@@ -184,9 +184,43 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
   }, [currentIndex, answersLog, initialQuestions.length, studentId]);
 
   const handleAnswer = async (submittedAnswer) => {
-    let isCorrect = false;
+    // SAFARI CRASH PREVENTION (THE DOM SWEEP):
+    // In multi-step questions, clicking the "Submit" button natively moves focus to the button.
+    // MathLive's global engine STILL holds a reference to the old mathfield in its cache.
+    // When the next question mounts, it triggers a native `blur` event on the old detached node.
+    // MathLive's internal `blur` listener catches this and crashes trying to read destroyed memory.
+    // We forcefully intercept the `blur` event in the capture phase and kill it before MathLive sees it!
+    try {
+      const allMathFields = document.querySelectorAll('math-field');
+      allMathFields.forEach((mf) => {
+        try {
+          // THE SYNCHRONOUS BLUR ASSASSIN
+          // Safari's native `mf.blur()` relies on the event loop to fire the 'blur' event.
+          // Because React unmounts the component instantly, Safari cancels the pending event.
+          // Since MathLive never receives the event, its `onBlur` never runs, and it keeps 
+          // the dead element in its global `_globallyFocusedMathfield` cache forever.
+          // By forcefully dispatching synchronous events, MathLive runs its cleanup immediately 
+          // while the element is still perfectly healthy!
+          mf.dispatchEvent(new Event('blur', { bubbles: false }));
+          mf.dispatchEvent(new Event('focusout', { bubbles: true }));
+          mf.blur(); 
+        } catch(e) {}
+      });
+      
+      if (window.mathVirtualKeyboard) {
+        try { window.mathVirtualKeyboard.hide(); } catch(e) {}
+      }
+    } catch(e) {}
+    
+    // SAFARI CRASH PREVENTION (THE 150ms LIFE-SUPPORT YIELD):
+    // If we process the state update immediately, React destroys the mathfield 
+    // while Safari is still processing the blur event. MathLive crashes trying to 
+    // run cleanup on a detached node. We force React to wait 150ms before updating 
+    // the state, giving Safari and MathLive a safe, healthy DOM to finish tearing down!
+    setTimeout(async () => {
+      let isCorrect = false;
 
-    const cleanString = (str) => {
+      const cleanString = (str) => {
       let s = String(str || '')
         .replace(/\\\s/g, ' ') // MathLive escaped spaces
         .replace(/\\quad/g, ' ') // MathLive quad space
@@ -376,6 +410,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
         setFeedback('solution_revealed');
       }
     }
+    }, 150); // END SAFARI LIFE-SUPPORT YIELD
   };
 
   handleAnswerRef.current = handleAnswer;

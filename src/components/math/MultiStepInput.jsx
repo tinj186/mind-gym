@@ -18,11 +18,23 @@ export default function MultiStepInput({ steps, onSubmit, disabled, level }) {
       if (index === steps.length - 1) {
         handleSubmit();
       } else {
-        // focus next
-        const nextInput = document.getElementById(`multi-step-${index + 1}`);
-        if (nextInput) {
-          nextInput.focus();
+        // SAFARI CRASH PREVENTION (AIR GAP):
+        // Force blur the active math-field BEFORE focusing the next one.
+        // Safari interleaves direct focus swaps differently than Chrome, which causes MathLive to double-blur.
+        // By severing the focus and adding a 50ms timeout, we create an "air gap" that allows 
+        // Safari and MathLive to completely tear down the old focus state cleanly before the new focus begins.
+        if (document.activeElement && document.activeElement.tagName.toLowerCase() === 'math-field') {
+          try {
+            document.activeElement.blur();
+          } catch(err) {}
         }
+
+        setTimeout(() => {
+          const nextInput = document.getElementById(`multi-step-${index + 1}`);
+          if (nextInput) {
+            nextInput.focus();
+          }
+        }, 50);
       }
     }
   };

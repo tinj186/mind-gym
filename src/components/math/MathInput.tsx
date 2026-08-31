@@ -42,6 +42,38 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
     onEnterRef.current = onEnter;
   }, [onChange, onEnter]);
 
+  // DIAGNOSTIC INJECTION FOR SAFARI BUG
+  useEffect(() => {
+    const handleGlobalError = (event: ErrorEvent) => {
+       if (event.message.includes("this.mathfield.options")) {
+          console.error("🚨 SAFARI CRASH INTERCEPTED 🚨");
+          console.error("Message:", event.message);
+          console.error("Stack Trace:", event.error?.stack || "No stack trace available");
+          console.error("Active Element:", document.activeElement);
+          if ((window as any).mathVirtualKeyboard) {
+             console.error("MVK State:", {
+               activeMathfield: (window as any).mathVirtualKeyboard.activeMathfield,
+               visible: (window as any).mathVirtualKeyboard.visible
+             });
+          }
+       }
+    };
+    
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+       if (event.reason && event.reason.message && event.reason.message.includes("this.mathfield.options")) {
+          console.error("🚨 SAFARI ASYNC CRASH INTERCEPTED 🚨", event.reason.stack);
+       }
+    };
+
+    window.addEventListener('error', handleGlobalError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    
+    return () => {
+       window.removeEventListener('error', handleGlobalError);
+       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
     if (typeof window !== 'undefined') {
@@ -240,7 +272,8 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
     };
 
     const mvk = (window as any).mathVirtualKeyboard;
-    if (mvk) {
+    if (mvk && !(mvk as any).__layoutsConfigured) {
+      (mvk as any).__layoutsConfigured = true;
       mvk.keypressSound = null; // Disable the missing click sounds that cause 404s
       
       if (isDesktop) {
@@ -278,20 +311,6 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
       const mfe = mfRef.current;
       
       try {
-        if (mfe.setOptions) {
-          mfe.setOptions({
-            menuToggleVisibility: "hidden",
-            virtualKeyboardToggleVisibility: "hidden",
-            mathVirtualKeyboardPolicy: isDesktop ? "manual" : "auto",
-            readOnly: disabled,
-            letterShapeStyle: "upright",
-            smartMode: false,
-            defaultMode: "math",
-            smartFence: false,
-            mathModeSpace: "\\ ",
-            popoverPolicy: "none"
-          });
-        } else {
           mfe.menuToggleVisibility = "hidden";
           mfe.virtualKeyboardToggleVisibility = "hidden";
           mfe.mathVirtualKeyboardPolicy = isDesktop ? "manual" : "auto";
@@ -302,7 +321,6 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
           mfe.smartFence = false;
           mfe.mathModeSpace = "\\ ";
           mfe.popoverPolicy = "none";
-        }
         
         mfe.macros = {
           ...mfe.macros,
@@ -382,30 +400,37 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
     };
 
     const onFocusIn = () => {
-      // Guard against MathLive internal race conditions
-      if (!currentMf || !currentMf.executeCommand) return;
+      if (!currentMf) return;
       
-      if (isDesktop && (window as any).mathVirtualKeyboard) {
-        // Give the browser a moment to settle focus before connecting the VK
-        setTimeout(() => {
-          const mvk = (window as any).mathVirtualKeyboard;
-          if (mvk) {
-            try {
-              // Let MathLive handle its own activeMathfield natively on focus
-              // mvk.activeMathfield = currentMf; // THIS CAUSES CRASHES ON RAPID TABBING
-              mvk.show();
-            } catch(e) {}
-          }
-        }, 10);
+      const mvk = (window as any).mathVirtualKeyboard;
+      // In manual policy mode, MathLive requires the activeMathfield to be set.
+      // If it's missing on focus, internal MathLive handlers may crash in Safari.
+      if (mvk && mvk.activeMathfield !== currentMf) {
+        try {
+          mvk.activeMathfield = currentMf;
+        } catch(e) {}
+      }
+    };
+
+    const onClick = () => {
+      // Only pop up the virtual keyboard on Desktop if they explicitly click/tap the field.
+      // Tabbing into it via keyboard should not obstruct the screen.
+      if (isDesktop && currentMf && currentMf.executeCommand) {
+        try {
+          currentMf.executeCommand("showVirtualKeyboard");
+        } catch(e) {}
       }
     };
 
     const onFocusOut = () => {
-      if (isDesktop && (window as any).mathVirtualKeyboard) {
-        // Wait to see if focus moved to another mathfield before hiding
+      if (isDesktop) {
         setTimeout(() => {
           if (!document.activeElement || document.activeElement.tagName.toLowerCase() !== 'math-field') {
-            (window as any).mathVirtualKeyboard.hide();
+            try {
+              if (currentMf && currentMf.executeCommand) {
+                 currentMf.executeCommand("hideVirtualKeyboard");
+              }
+            } catch(e) {}
           }
         }, 100);
       }
@@ -416,6 +441,7 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
     currentMf.addEventListener('commit', onCommitEvent);
     currentMf.addEventListener('focusin', onFocusIn);
     currentMf.addEventListener('focusout', onFocusOut);
+    currentMf.addEventListener('click', onClick);
     
     console.log('✅ [MathInput] Event listeners attached successfully.');
 
@@ -425,24 +451,102 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
       currentMf.removeEventListener('commit', onCommitEvent);
       currentMf.removeEventListener('focusin', onFocusIn);
       currentMf.removeEventListener('focusout', onFocusOut);
+      currentMf.removeEventListener('click', onClick);
     };
     });
 
     return () => {
       isActive = false;
-      if (cleanupEvents) {
-        cleanupEvents();
-      }
+      if (cleanupEvents) cleanupEvents();
+      
+      try {
+        if (mfRef.current) {
+           const mvk = (window as any).mathVirtualKeyboard;
+           if (mvk && mvk.activeMathfield === mfRef.current) mvk.activeMathfield = null;
+
+           // THE FINAL SAFARI ZOMBIE KILLER:
+           // In MathLive, `disconnectedCallback` automatically calls `dispose()`, 
+           // which deletes `this.mathfield`. However, Safari's event loop delays focus events,
+           // causing `onBlur` to fire AFTER the element is disconnected!
+           // If `onBlur` fires after `dispose()`, it crashes looking for `this.mathfield.options`.
+           // By shadowing `dispose()` with an empty function right before unmount, 
+           // we intentionally leak the mathfield in memory so that the delayed `onBlur` 
+           // has the context it needs to succeed without crashing!
+           (mfRef.current as any).dispose = () => {}; 
+           
+           if (mfRef.current.executeCommand) mfRef.current.executeCommand("hideVirtualKeyboard");
+        }
+      } catch (e) {}
     };
   }, [isLoaded, level]);
 
   // 5. External Value Sync
   useEffect(() => {
-    if (!isLoaded) return;
-    
     let isActive = true;
 
+    // SYNCHRONOUS PREMATURE FOCUS SHIELD:
+    // Safari fires native focus events the exact millisecond the element enters the DOM.
+    // If MathLive hasn't finished hydrating, `this.mathfield` returns undefined and `onFocus` crashes.
+    // Because `mathfield` is a read-only getter on the MathFieldElement prototype, standard assignment fails.
+    // We forcefully shadow the getter on the instance to return a dummy object if the real one isn't ready!
+    if (mfRef.current) {
+      try {
+        Object.defineProperty(mfRef.current, 'mathfield', {
+          get: function() {
+            // Return the real internal state if MathLive is ready, otherwise our crash-preventing dummy!
+            return this._mathfield || { options: {} };
+          },
+          configurable: true
+        });
+      } catch(e) {}
+    }
+
+    // THE ULTIMATE SAFARI RACE CONDITION FIX (ZOMBIE IMMORTALITY):
+    // Because `math-virtual-keyboard-policy="manual"`, MathLive intentionally caches the 
+    // active mathfield globally. When React unmounts the element, Safari drops the blur event,
+    // leaving MathLive's global cache pointing to a detached DOM node.
+    // When the NEXT mathfield mounts and auto-focuses, MathLive triggers the native `blur` 
+    // on the old, detached element. However, the element's `disconnectedCallback` already 
+    // fired and deleted `this.mathfield`, causing `atomToString` to crash!
+    // By shadowing `disconnectedCallback` on the instance, we forbid MathLive from deleting 
+    // the internal memory state when React removes it. The mathfield becomes an immortal zombie,
+    // allowing the delayed `blur` event to successfully serialize the data without crashing!
+    if (mfRef.current) {
+      (mfRef.current as any).disconnectedCallback = () => {};
+    }
+
     customElements.whenDefined('math-field').then(() => {
+      // SAFARI DOUBLE-BLUR FIX:
+      // Safari interleaves `focusin` and `focusout` differently than Chrome when moving focus
+      // directly between two mathfields (e.g. pressing Tab or Enter). This causes MathLive's
+      // internal `onFocus` to manually trigger `onBlur` on the old field, followed instantly
+      // by Safari's native `focusout` triggering `onBlur` again. The second `onBlur` call crashes
+      // because the internal context (`this.mathfield`) was already torn down by the first call!
+      // We monkey-patch the prototype to intercept and suppress this specific redundant crash.
+      const MathFieldElement = customElements.get('math-field');
+      if (MathFieldElement && !(MathFieldElement as any).__safariPatched) {
+        (MathFieldElement as any).__safariPatched = true;
+        
+        const originalAddEventListener = MathFieldElement.prototype.addEventListener;
+        MathFieldElement.prototype.addEventListener = function(type: string, listener: any, options: any) {
+          if (typeof listener === 'function') {
+            const wrappedListener = function(this: any, ...args: any[]) {
+              try {
+                return listener.apply(this, args);
+              } catch (e: any) {
+                if (e instanceof TypeError && e.message.includes('this.mathfield.options')) {
+                  console.warn("🛡️ [MathInput] Suppressed redundant MathLive onBlur crash caused by Safari event interleaving.");
+                  return; // Silently swallow the redundant crash
+                }
+                throw e; // Rethrow actual errors
+              }
+            };
+            return originalAddEventListener.call(this, type, wrappedListener, options);
+          }
+          return originalAddEventListener.call(this, type, listener, options);
+        };
+      }
+      setIsLoaded(true);
       if (!isActive) return;
       const mfe = mfRef.current;
       if (!mfe) return;
@@ -480,18 +584,33 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
 
   useEffect(() => {
     if (isLoaded && autoFocus && mfRef.current) {
-      setTimeout(() => {
+      const attemptFocus = () => {
         try {
-          if (mfRef.current) {
-            // Guard against calling focus before MathLive internal setup
-            if (mfRef.current.mathVirtualKeyboard || mfRef.current.executeCommand) {
-              mfRef.current.focus();
-            }
+          if (!mfRef.current) return; // Component unmounted while waiting
+
+          // Check if an older mathfield from a previous question is STILL in the document
+          // and holding focus. React 18 concurrent rendering can cause them to overlap!
+          if (document.activeElement && 
+              document.activeElement.tagName.toLowerCase() === 'math-field' && 
+              document.activeElement !== mfRef.current) {
+             
+             // If it is still in the DOM, MathLive WILL crash if we call .focus() now.
+             // We must wait for React to fully unmount the old one.
+             console.warn("⚠️ [MathInput] Safari crash prevention: Waiting for old mathfield to unmount...");
+             setTimeout(attemptFocus, 50); // Poll again in 50ms
+             return;
+          }
+
+          // Guard against calling focus before MathLive internal setup
+          if ((mfRef.current as any).mathVirtualKeyboard || (mfRef.current as any).executeCommand) {
+            mfRef.current.focus();
           }
         } catch (e: any) {
           // Silently ignore: Auto-focus skipped safely.
         }
-      }, 350); // Increased from 150 to wait for DOM hydration fully
+      };
+
+      setTimeout(attemptFocus, 350); // Initial delay to wait for DOM hydration fully
     }
   }, [isLoaded, autoFocus]);
 

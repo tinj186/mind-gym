@@ -49,11 +49,11 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
         if (m.modelType === 'PART_WHOLE' || m.type === 'PART_WHOLE') {
     const partsList = m.parts || m.segments || [];
     const knownSum = partsList.reduce((sum, p) => sum + (parseFloat(p.layoutSize || p.value || p) || 0), 0);
-    const hasUnknownWhole = isNaN(parseFloat(m.whole));
+    const hasUnknownWhole = m.wholeLayoutSize !== undefined ? isNaN(parseFloat(m.wholeLayoutSize)) : isNaN(parseFloat(m.whole));
     const unknownCount = partsList.filter(p => isNaN(parseFloat(p.layoutSize || p.value || p))).length;
     
     let remainingForUnknown = 0;
-    let calculatedWhole = parseFloat(m.whole);
+    let calculatedWhole = m.wholeLayoutSize !== undefined ? parseFloat(m.wholeLayoutSize) : parseFloat(m.whole);
     
     if (hasUnknownWhole) {
        const knownCount = partsList.length - unknownCount;

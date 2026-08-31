@@ -1,4 +1,5 @@
 import { foundationLogic } from './compound-unit-measurement/foundation.js';
+import { standardLogic } from './compound-unit-measurement/standard.js';
 
 export const p3CompoundUnitMeasurementBlueprint = {
   id: 'p3-measurement-length-mass-and-volume-compound-unit-measurement',
@@ -8,7 +9,12 @@ export const p3CompoundUnitMeasurementBlueprint = {
     'foundation_volume_beaker_reading': 'Volume Beaker Reading (Past 1 ℓ)',
     'foundation_zero_trap_conversion': 'The Zero Trap Conversion (Compound to Single)',
     'foundation_map_distance_extraction': 'Map Distance (Compound Unit Extraction)',
-    'foundation_fractional_benchmark': 'Fractional Benchmark Recognition (Half/Quarter)'
+    'foundation_fractional_benchmark': 'Fractional Benchmark Recognition (Half/Quarter)',
+    'standard_pure_addition': 'Pure Addition (No Regrouping)',
+    'standard_pure_subtraction': 'Pure Subtraction (No Regrouping)',
+    'standard_reaching_next_whole': 'Reaching the Next Whole Unit (Shortfall)',
+    'standard_subtracting_from_whole': 'Subtracting from a Whole Unit (Remaining)',
+    'standard_direct_comparison': 'Direct Comparison (How much more/less)'
   },
 
   generate: function (difficulty, activeVariant, type) {
@@ -42,7 +48,7 @@ export const p3CompoundUnitMeasurementBlueprint = {
     "finalAnswer": "string",
     "solutionSteps": ["string", "string"],
     "hint": "string",
-    "mcqOptions": ${optionsStr}
+    "options": ${optionsStr}
   },
   "visualEngine": ${visualEngineStr},
   "inputRequirement": ${inputReq},
@@ -52,6 +58,10 @@ export const p3CompoundUnitMeasurementBlueprint = {
 
     if (difficulty.toLowerCase() === 'foundation') {
       return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, getFormatInstructions);
+    }
+
+    if (difficulty.toLowerCase() === 'standard') {
+      return standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, getFormatInstructions);
     }
 
     throw new Error(`Difficulty level logic not implemented for: ${difficulty}`);

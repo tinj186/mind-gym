@@ -135,24 +135,48 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeSection, isToolOpen, activeQuestion, focusedOptionIndex]);
 
-  const handleNextQuestion = () => {
-    if (currentIndex < currentQuestionsList.length - 1) {
-      setCurrentIndex(prev => prev + 1);
-    } else {
-      // Section jumper logic
-      if (activeSection === 'mcq' && normalizedExamPaper.short.length > 0) {
-        setActiveSection('short');
-        setCurrentIndex(0);
-      } else if (activeSection === 'short' && normalizedExamPaper.structured.length > 0) {
-        setActiveSection('structured');
-        setCurrentIndex(0);
+  // SAFARI ZOMBIE CRASH ASSASSIN & 150ms LIFE-SUPPORT YIELD
+  const executeSafeTransition = (transitionFn) => {
+    try {
+      const allMathFields = document.querySelectorAll('math-field');
+      allMathFields.forEach((mf) => {
+        try {
+          mf.dispatchEvent(new Event('blur', { bubbles: false }));
+          mf.dispatchEvent(new Event('focusout', { bubbles: true }));
+          mf.blur(); 
+        } catch(e) {}
+      });
+      if (window.mathVirtualKeyboard) {
+        try { window.mathVirtualKeyboard.hide(); } catch(e) {}
       }
-    }
+    } catch(e) {}
+    
+    setTimeout(() => {
+      transitionFn();
+    }, 150);
+  };
+
+  const handleNextQuestion = () => {
+    executeSafeTransition(() => {
+      if (currentIndex < currentQuestionsList.length - 1) {
+        setCurrentIndex(prev => prev + 1);
+      } else {
+        // Section jumper logic
+        if (activeSection === 'mcq' && normalizedExamPaper.short.length > 0) {
+          setActiveSection('short');
+          setCurrentIndex(0);
+        } else if (activeSection === 'short' && normalizedExamPaper.structured.length > 0) {
+          setActiveSection('structured');
+          setCurrentIndex(0);
+        }
+      }
+    });
   };
   handleNextQuestionRef.current = handleNextQuestion;
 
-  const handleExamSubmission = async () => {
-    setIsGrading(true);
+  const handleExamSubmission = () => {
+    executeSafeTransition(async () => {
+      setIsGrading(true);
 
     const flattenedQuestions = [
       ...normalizedExamPaper.mcq.map(q => ({ ...q, type: 'MULTIPLE_CHOICE' })),
@@ -342,6 +366,7 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
     setIsSubmitted(true);
     setIsGrading(false);
     setShowReport(true);
+    });
   };
 
   if (showReport && scoreSummary && finalAnswersLog) {
@@ -493,7 +518,7 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
         <div className="flex justify-between items-center border-t-2 border-slate-100 pt-6 mt-8">
           <button
             disabled={currentIndex === 0}
-            onClick={() => setCurrentIndex(p => p - 1)}
+            onClick={() => executeSafeTransition(() => setCurrentIndex(p => p - 1))}
             className="border-4 border-black px-6 py-2 text-xs font-black uppercase disabled:opacity-30 hover:bg-slate-50 transition-colors"
           >
             ← Prev
@@ -520,7 +545,7 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
             {['mcq', 'short', 'structured'].map(sec => (
               <button
                 key={sec}
-                onClick={() => { setActiveSection(sec); setCurrentIndex(0); }}
+                onClick={() => executeSafeTransition(() => { setActiveSection(sec); setCurrentIndex(0); })}
                 className={`py-3 text-center border-2 border-black uppercase transition-all ${
                   activeSection === sec ? 'bg-black text-white' : 'bg-white hover:bg-slate-100'
                 }`}
@@ -535,7 +560,7 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
             {currentQuestionsList.map((q, idx) => (
               <button
                 key={q.id}
-                onClick={() => setCurrentIndex(idx)}
+                onClick={() => executeSafeTransition(() => setCurrentIndex(idx))}
                 className={`h-10 border-2 text-[10px] font-black flex items-center justify-center transition-all ${
                   currentIndex === idx ? 'bg-blue-600 text-white border-blue-600 shadow-none' : 'border-black bg-white'
                 } ${answers[q.id] ? 'ring-2 ring-inset ring-green-500' : ''}`}
