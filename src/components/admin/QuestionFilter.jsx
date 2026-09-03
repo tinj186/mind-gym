@@ -1,10 +1,11 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 
 export default function QuestionFilter({ levels, topics, subtopics, types, difficulties, currentFilters }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
 
   const handleFilterChange = (name, value) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -23,7 +24,7 @@ export default function QuestionFilter({ levels, topics, subtopics, types, diffi
       params.delete('subtopic');
     }
 
-    router.push(`/admin/questions?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   return (
@@ -98,7 +99,9 @@ export default function QuestionFilter({ levels, topics, subtopics, types, diffi
                 if (isUuid) {
                   router.push(`/admin/questions/review?id=${val}`);
                 } else {
-                  router.push(`/admin/questions/review?heuristic=${encodeURIComponent(val)}`);
+                  const params = new URLSearchParams(searchParams.toString());
+                  params.set('heuristic', val);
+                  router.push(`/admin/questions/review?${params.toString()}`);
                 }
               }
             }}
@@ -112,7 +115,9 @@ export default function QuestionFilter({ levels, topics, subtopics, types, diffi
                 if (isUuid) {
                   router.push(`/admin/questions/review?id=${val}`);
                 } else {
-                  router.push(`/admin/questions/review?heuristic=${encodeURIComponent(val)}`);
+                  const params = new URLSearchParams(searchParams.toString());
+                  params.set('heuristic', val);
+                  router.push(`/admin/questions/review?${params.toString()}`);
                 }
               }
             }}

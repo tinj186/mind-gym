@@ -2,16 +2,73 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useState, useRef } from 'react';
+
+function GenerateButton({ row, onGenerate }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const timeoutRef = useRef(null);
+  const isLongPressRef = useRef(false);
+
+  const startPress = () => {
+    isLongPressRef.current = false;
+    timeoutRef.current = setTimeout(() => {
+      isLongPressRef.current = true;
+      setIsOpen(true);
+    }, 500); // 500ms long press
+  };
+
+  const cancelPress = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+  };
+
+  const handleClick = (e) => {
+    cancelPress();
+    if (isLongPressRef.current) {
+      return; // Do nothing on long press release
+    }
+    if (!isOpen) {
+      onGenerate(row, 5);
+    }
+  };
+
+  return (
+    <div className="relative inline-block">
+      <button 
+        onMouseDown={startPress}
+        onMouseUp={cancelPress}
+        onMouseLeave={cancelPress}
+        onTouchStart={startPress}
+        onTouchEnd={cancelPress}
+        onClick={handleClick}
+        className="bg-blue-100 text-blue-600 px-2 py-1 rounded hover:bg-blue-200 transition-colors select-none"
+        title="Click for 5, long press for more options"
+      >
+        +
+      </button>
+      
+      {isOpen && (
+        <div className="absolute top-full right-0 mt-1 bg-white border border-slate-200 shadow-xl rounded-lg p-1 z-50 flex flex-col gap-1 w-28 text-sm">
+          <button onClick={() => { setIsOpen(false); onGenerate(row, 5); }} className="px-3 py-1.5 hover:bg-slate-100 rounded-md text-left font-medium text-slate-700">Generate 5</button>
+          <button onClick={() => { setIsOpen(false); onGenerate(row, 10); }} className="px-3 py-1.5 hover:bg-slate-100 rounded-md text-left font-medium text-slate-700">Generate 10</button>
+          <button onClick={() => { setIsOpen(false); onGenerate(row, 15); }} className="px-3 py-1.5 hover:bg-slate-100 rounded-md text-left font-medium text-slate-700">Generate 15</button>
+          <button onClick={() => setIsOpen(false)} className="px-3 py-1.5 hover:bg-red-50 text-red-600 rounded-md text-left font-medium">Cancel</button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function QuestionTable({ data }) {
   const router = useRouter();
 
-  const handleGenerateBatch = async (row) => {
-    const confirm = window.confirm(`Generate 5 new ${row.type} questions for ${row.level} ${row.topic}?`);
+  const handleGenerateBatch = async (row, amount = 5) => {
+    const confirm = window.confirm(`Generate ${amount} new ${row.type} questions for ${row.level} ${row.topic}?`);
     if (!confirm) return;
 
     // Generate questions one-by-one to show progress in the UI counts
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < amount; i++) {
       try {
         const res = await fetch('/api/admin/generate', {
           method: 'POST',
@@ -68,7 +125,7 @@ export default function QuestionTable({ data }) {
   };
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-slate-200">
+    <div className="overflow-x-auto rounded-2xl border border-slate-200 pb-40">
       <table className="w-full min-w-[1150px] table-fixed divide-y divide-slate-200 text-left">
         <thead className="bg-slate-50">
           <tr>
@@ -101,13 +158,7 @@ export default function QuestionTable({ data }) {
                 </span>
               </td>
               <td className="px-4 py-4 whitespace-nowrap text-right text-[12px] space-x-2">
-                <button 
-                  onClick={() => handleGenerateBatch(row)}
-                  className="bg-blue-100 text-blue-600 px-2 py-1 rounded hover:bg-blue-200 transition-colors"
-                  title="Generate 5 Questions"
-                >
-                  +5
-                </button>
+                <GenerateButton row={row} onGenerate={handleGenerateBatch} />
                 
                 <Link 
                   href={`/admin/questions/review?level=${encodeURIComponent(row.level)}&topic=${encodeURIComponent(row.topic)}&subtopic=${encodeURIComponent(row.subtopic || '')}&type=${encodeURIComponent(row.type)}&difficulty=${encodeURIComponent(row.difficulty)}&approved=false`}

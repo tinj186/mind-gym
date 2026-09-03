@@ -376,13 +376,27 @@ export const advancedVariants = {
 
   advanced_split_schedule_total: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const { name } = getRandomContext();
-    const answer = "1 hour and 30 minutes";
+    const timeCombos = [
+      { t1: "1 hour", t2: "30 minutes", ans: "1 hour and 30 minutes" },
+      { t1: "30 minutes", t2: "30 minutes", ans: "1 hour" },
+      { t1: "1 hour", t2: "1 hour", ans: "2 hours" },
+      { t1: "2 hours", t2: "30 minutes", ans: "2 hours and 30 minutes" },
+      { t1: "30 minutes", t2: "1 hour", ans: "1 hour and 30 minutes" }
+    ];
+    const combo = timeCombos[Math.floor(Math.random() * timeCombos.length)];
+    const answer = combo.ans;
 
-    const questionTextTemplate = getQText(`${name} read for 1 hour in the morning and 30 minutes at night. How much time did he spend reading in total?`, `Total time = ?`);
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
+    const activities = [
+      `${name} read a book for ${combo.t1} in the morning and ${combo.t2} at night. How much time did ${name} spend reading in total?`,
+      `${name} played the piano for ${combo.t1} in the morning and ${combo.t2} at night. How much time did ${name} spend practicing in total?`,
+      `${name} watched cartoons for ${combo.t1} in the afternoon and ${combo.t2} at night. How much time did ${name} spend watching cartoons in total?`
+    ];
+    const questionTextTemplate = getQText(activities[Math.floor(Math.random() * activities.length)], `Total time = ?`);
+    const storyInstruction = "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it exactly as provided. CRITICAL: DO NOT modify ANY field in the JSON template. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.";
 
-    let options = [answer, "1 hour", "2 hours", "30 minutes", "2 hours and 30 minutes"];
-    options = getShuffledOptions(answer, options);
+    const allOptions = ["1 hour", "2 hours", "30 minutes", "2 hours and 30 minutes", "3 hours", "1 hour and 30 minutes"];
+    let distractors = allOptions.filter(opt => opt !== answer).sort(() => Math.random() - 0.5).slice(0, 3);
+    let options = getShuffledOptions(answer, distractors);
 
     let mcqOptions = 'null';
     let defectMapStr = 'null';
@@ -403,12 +417,12 @@ export const advancedVariants = {
       {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
-          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "questionText": ${JSON.stringify(questionTextTemplate)},
           "options": ${mcqOptions},
           "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Add the hours together, and then add the minutes.`, `Add times together.`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`Total time = Morning time + Night time. 1 hour + 30 minutes = 1 hour and 30 minutes.`, `Answer is ${answer}.`))}
+          "solutionSteps": ${JSON.stringify(getQText(`Total time = Morning time + Night time. ${combo.t1} + ${combo.t2} = ${answer}.`, `Answer is ${answer}.`))}
         },
         "visualEngine": {
           "componentToRender": "NONE",

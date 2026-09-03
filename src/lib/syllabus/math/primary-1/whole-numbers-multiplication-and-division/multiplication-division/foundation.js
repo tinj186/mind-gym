@@ -242,12 +242,16 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     
     const answer = Array(groups).fill(itemsPerGroup).join(' + ');
     
-    const distractor1 = Array(itemsPerGroup).fill(groups).join(' + ');
+    const distractor1 = Array(groups).fill(itemsPerGroup === 2 ? 3 : itemsPerGroup - 1).join(' + ');
     const distractor2 = Array(groups - 1).fill(itemsPerGroup).join(' + ');
     const distractor3 = Array(groups + 1).fill(itemsPerGroup).join(' + ');
     
     const options = Array.from(new Set([answer, distractor1, distractor2, distractor3]));
-    while(options.length < 4) { options.push(Array(groups).fill(itemsPerGroup + 1).join(' + ')); }
+    let offset = 1;
+    while(options.length < 4) { 
+      options.push(Array(groups).fill(itemsPerGroup + offset).join(' + ')); 
+      offset++;
+    }
     const shuffledOptions = options.slice(0, 4).sort(() => Math.random() - 0.5);
     
     let questionText = `Which addition sentence matches the picture?`;

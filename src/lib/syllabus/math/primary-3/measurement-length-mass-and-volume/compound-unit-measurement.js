@@ -1,5 +1,6 @@
 import { foundationLogic } from './compound-unit-measurement/foundation.js';
 import { standardLogic } from './compound-unit-measurement/standard.js';
+import { advancedLogic } from './compound-unit-measurement/advanced.js';
 
 export const p3CompoundUnitMeasurementBlueprint = {
   id: 'p3-measurement-length-mass-and-volume-compound-unit-measurement',
@@ -14,7 +15,12 @@ export const p3CompoundUnitMeasurementBlueprint = {
     'standard_pure_subtraction': 'Pure Subtraction (No Regrouping)',
     'standard_reaching_next_whole': 'Reaching the Next Whole Unit (Shortfall)',
     'standard_subtracting_from_whole': 'Subtracting from a Whole Unit (Remaining)',
-    'standard_direct_comparison': 'Direct Comparison (How much more/less)'
+    'standard_direct_comparison': 'Direct Comparison (How much more/less)',
+    'advanced_addition_regrouping': 'Addition with Regrouping (Convert First Strategy)',
+    'advanced_subtraction_regrouping': 'Subtraction with Regrouping (Borrowing Strategy)',
+    'advanced_three_part_total': 'The 3-Part Total (Add Twice)',
+    'advanced_two_step_comparison': 'The 2-Step Comparison (Find Item B, then Total)',
+    'advanced_remaining_multiple_uses': 'Remaining After Multiple Uses (Subtract Twice)'
   },
 
   generate: function (difficulty, activeVariant, type) {
@@ -62,6 +68,10 @@ export const p3CompoundUnitMeasurementBlueprint = {
 
     if (difficulty.toLowerCase() === 'standard') {
       return standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, getFormatInstructions);
+    }
+
+    if (difficulty.toLowerCase() === 'advanced') {
+      return advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, getFormatInstructions);
     }
 
     throw new Error(`Difficulty level logic not implemented for: ${difficulty}`);

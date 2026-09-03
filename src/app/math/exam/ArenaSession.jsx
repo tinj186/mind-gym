@@ -481,13 +481,26 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
                             </label>
                             <MathInput
                               key={`${activeQuestion.id}-step-${index}`}
-                              id={`multi-step-${index}`}
+                              id={`${activeQuestion.id}-multi-step-${index}`}
                               value={currentMultiAnswers[index] || ''}
                               onChange={(val) => {
                                 const updated = { ...currentMultiAnswers, [index]: val };
                                 handleSelectAnswer(activeQuestion.id, updated);
                               }}
-                              onEnter={handleNextQuestion}
+                              onEnter={() => {
+                                const isLastStep = index === (normalizedQuestion.inputRequirement.steps.length - 1);
+                                if (isLastStep) {
+                                  handleNextQuestion();
+                                } else {
+                                  if (document.activeElement && document.activeElement.tagName.toLowerCase() === 'math-field') {
+                                    try { document.activeElement.blur(); } catch(e) {}
+                                  }
+                                  setTimeout(() => {
+                                    const nextInput = document.getElementById(`${activeQuestion.id}-multi-step-${index + 1}`);
+                                    if (nextInput) nextInput.focus();
+                                  }, 50);
+                                }
+                              }}
                               level={level}
                             />
                           </div>

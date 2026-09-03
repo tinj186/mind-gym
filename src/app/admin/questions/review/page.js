@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db';
 import ReviewList from '@/components/admin/ReviewList';
-import { SYLLABUS_DATA } from '@/lib/syllabus';
+import { SYLLABUS_DATA, getSyllabusRows } from '@/lib/syllabus';
 import { blueprintRegistry } from '@/lib/syllabus/index';
 import Link from 'next/link';
 
@@ -15,13 +15,32 @@ export default async function QuestionReviewPage({ searchParams }) {
 
   if (id) {
     whereClause = { id: { equals: id, mode: 'insensitive' } };
-  } else if (heuristic) {
-    whereClause = { heuristic: heuristic };
   } else {
     // Keep the query mapping focus cleanly on approval status, allowing archived questions through for admin tracking
-    whereClause = { isApproved: isApprovedFilter };
+    // If heuristic is provided, we don't strictly require isApproved filter to allow checking all variants, but we maintain backward logic.
+    if (heuristic) {
+      whereClause.heuristic = heuristic;
 
-    // Only apply metadata filters if they are provided in the URL (non-empty)
+      // Smart Egress Protection: If the user searches by variant without selecting dropdowns,
+      // pinpoint the first blueprint that owns this variant and apply its metadata filters to the query.
+      if (!level && !topic && !subtopic) {
+        const syllabusRows = getSyllabusRows();
+        for (const row of syllabusRows) {
+          const blueprintId = `${row.level}-${row.topic}-${row.subtopic}`;
+          const blueprint = blueprintRegistry[blueprintId];
+          if (blueprint && blueprint.variants && blueprint.variants[heuristic]) {
+            whereClause.level = row.level;
+            whereClause.topic = row.topic;
+            if (row.subtopic) whereClause.subtopic = row.subtopic;
+            break;
+          }
+        }
+      }
+    } else {
+      whereClause.isApproved = isApprovedFilter;
+    }
+
+    // Apply explicit metadata filters from URL (these will override the Smart Egress Protection above)
     if (level) whereClause.level = level;
     if (topic) whereClause.topic = topic;
     if (type) whereClause.type = type;

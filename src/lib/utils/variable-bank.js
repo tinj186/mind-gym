@@ -138,6 +138,11 @@ export const getRandomNames = (count = 1) => {
   return count === 1 ? makeCompatibleArray(shuffled[0]) : shuffled.slice(0, count);
 };
 
+export const getRandomLocations = (count = 1) => {
+  const shuffled = [...CONTEXT_TIERS.LOWER_BLOCK.SETTINGS].sort(() => 0.5 - Math.random());
+  return count === 1 ? makeCompatibleArray(shuffled[0]) : shuffled.slice(0, count);
+};
+
 export const getRandomCountableItems = (count = 1) => {
   const pool = [
     ...CONTEXT_TIERS.LOWER_BLOCK.GENERAL,

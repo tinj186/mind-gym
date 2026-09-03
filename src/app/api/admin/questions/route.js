@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db';
 import { NextResponse } from 'next/server';
-import { SYLLABUS_DATA } from '@/lib/syllabus';
+import { SYLLABUS_DATA, getSyllabusRows } from '@/lib/syllabus';
 import { blueprintRegistry } from '@/lib/syllabus/index';
 
 export const dynamic = 'force-dynamic';
@@ -20,11 +20,29 @@ export async function GET(req) {
   let takeAmount = undefined;
   if (id) {
     where = { id: { equals: id, mode: 'insensitive' } };
-  } else if (heuristic) {
-    where = { heuristic: heuristic };
-    takeAmount = 50; // Match the limit from the Server Component to prevent DB overload
   } else {
-    where = { isApproved: approved };
+    if (heuristic) {
+      where = { heuristic: heuristic };
+      takeAmount = 50; // Match the limit from the Server Component to prevent DB overload
+      
+      // Smart Egress Protection
+      if (!level && !topic && !subtopic) {
+        const syllabusRows = getSyllabusRows();
+        for (const row of syllabusRows) {
+          const blueprintId = `${row.level}-${row.topic}-${row.subtopic}`;
+          const blueprint = blueprintRegistry[blueprintId];
+          if (blueprint && blueprint.variants && blueprint.variants[heuristic]) {
+            where.level = row.level;
+            where.topic = row.topic;
+            if (row.subtopic) where.subtopic = row.subtopic;
+            break;
+          }
+        }
+      }
+    } else {
+      where = { isApproved: approved };
+    }
+
     if (level) where.level = level;
     if (topic) where.topic = topic;
     if (subtopic) where.subtopic = subtopic;

@@ -461,20 +461,24 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
       
       try {
         if (mfRef.current) {
-           const mvk = (window as any).mathVirtualKeyboard;
-           if (mvk && mvk.activeMathfield === mfRef.current) mvk.activeMathfield = null;
-
-           // THE FINAL SAFARI ZOMBIE KILLER:
-           // In MathLive, `disconnectedCallback` automatically calls `dispose()`, 
-           // which deletes `this.mathfield`. However, Safari's event loop delays focus events,
-           // causing `onBlur` to fire AFTER the element is disconnected!
-           // If `onBlur` fires after `dispose()`, it crashes looking for `this.mathfield.options`.
-           // By shadowing `dispose()` with an empty function right before unmount, 
-           // we intentionally leak the mathfield in memory so that the delayed `onBlur` 
-           // has the context it needs to succeed without crashing!
-           (mfRef.current as any).dispose = () => {}; 
+           // FORCE SYNCHRONOUS BLUR CLEANUP BEFORE DISCONNECTION
+           // By forcing MathLive's internal blur listener to run right now, 
+           // it clears `_globallyFocusedMathfield` safely before React unmounts the element.
+           // This prevents the Safari "zombie crash" where Safari delays the native blur event 
+           // until after the DOM node is destroyed.
+           try {
+             mfRef.current.dispatchEvent(new Event('blur', { bubbles: false }));
+             mfRef.current.dispatchEvent(new Event('focusout', { bubbles: true }));
+           } catch(e) {}
            
-           if (mfRef.current.executeCommand) mfRef.current.executeCommand("hideVirtualKeyboard");
+           const mvk = (window as any).mathVirtualKeyboard;
+           if (mvk && mvk.activeMathfield === mfRef.current) {
+             mvk.activeMathfield = null;
+           }
+
+           if (mfRef.current.executeCommand) {
+             try { mfRef.current.executeCommand("hideVirtualKeyboard"); } catch(e) {}
+           }
         }
       } catch (e) {}
     };
