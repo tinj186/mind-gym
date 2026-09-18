@@ -36,37 +36,80 @@ export const foundationLogic = (activeVariant, difficulty, type, isMCQ, isShort,
   if (activeVariant.includes('compare_two')) {
     let objA, objB, valA, valB, unit;
     let attribute, comparisonAdj;
+    let globalItems = [];
 
     if (activeVariant === 'foundation_compare_two_lengths') {
       unit = Math.random() > 0.5 ? 'cm' : 'm';
-      const items = getRealisticItems('length', unit, 2);
-      objA = items[0].item;
-      objB = items[1].item;
-      valA = items[0].val;
-      valB = items[1].val;
+      const itemsList = getRealisticItems('length', unit, 4);
+      objA = itemsList[0].item;
+      objB = itemsList[1].item;
+      valA = itemsList[0].val;
+      valB = itemsList[1].val;
       while (valA === valB) valB += 1;
+      
+      // Ensure all 4 globalItems have distinct values for MCQ logic
+      const distinctVals = Array.from(new Set(itemsList.map(i => i.val)));
+      while (distinctVals.length < 4) {
+        const newVal = getRandomInt(10, 500);
+        if (!distinctVals.includes(newVal)) distinctVals.push(newVal);
+      }
+      for (let i = 0; i < 4; i++) {
+        itemsList[i].val = distinctVals[i];
+      }
+      valA = itemsList[0].val;
+      valB = itemsList[1].val;
+
       attribute = 'long';
       comparisonAdj = isShorterLighterLess ? 'shorter' : 'longer';
+      globalItems = itemsList;
     } else if (activeVariant === 'foundation_compare_two_masses') {
       unit = Math.random() > 0.5 ? 'kg' : 'g';
-      const items = getRealisticItems('mass', unit, 2);
-      objA = items[0].item;
-      objB = items[1].item;
-      valA = items[0].val;
-      valB = items[1].val;
+      const itemsList = getRealisticItems('mass', unit, 4);
+      objA = itemsList[0].item;
+      objB = itemsList[1].item;
+      valA = itemsList[0].val;
+      valB = itemsList[1].val;
       while (valA === valB) valB += 1;
+      
+      // Ensure all 4 globalItems have distinct values for MCQ logic
+      const distinctVals = Array.from(new Set(itemsList.map(i => i.val)));
+      while (distinctVals.length < 4) {
+        const newVal = getRandomInt(10, 500);
+        if (!distinctVals.includes(newVal)) distinctVals.push(newVal);
+      }
+      for (let i = 0; i < 4; i++) {
+        itemsList[i].val = distinctVals[i];
+      }
+      valA = itemsList[0].val;
+      valB = itemsList[1].val;
+
       attribute = 'heavy';
       comparisonAdj = isShorterLighterLess ? 'lighter' : 'heavier';
+      globalItems = itemsList;
     } else if (activeVariant === 'foundation_compare_two_volumes') {
       unit = Math.random() > 0.5 ? 'l' : 'ml';
-      const items = getRealisticItems('volume', unit, 2);
-      objA = items[0].item;
-      objB = items[1].item;
-      valA = items[0].val;
-      valB = items[1].val;
+      const itemsList = getRealisticItems('volume', unit, 4);
+      objA = itemsList[0].item;
+      objB = itemsList[1].item;
+      valA = itemsList[0].val;
+      valB = itemsList[1].val;
       while (valA === valB) valB += 1;
+      
+      // Ensure all 4 globalItems have distinct values for MCQ logic
+      const distinctVals = Array.from(new Set(itemsList.map(i => i.val)));
+      while (distinctVals.length < 4) {
+        const newVal = getRandomInt(10, 500);
+        if (!distinctVals.includes(newVal)) distinctVals.push(newVal);
+      }
+      for (let i = 0; i < 4; i++) {
+        itemsList[i].val = distinctVals[i];
+      }
+      valA = itemsList[0].val;
+      valB = itemsList[1].val;
+
       attribute = 'volume';
       comparisonAdj = isShorterLighterLess ? 'less' : 'more';
+      globalItems = itemsList;
     }
 
     const structureText = activeVariant === 'foundation_compare_two_volumes'
@@ -105,10 +148,15 @@ export const foundationLogic = (activeVariant, difficulty, type, isMCQ, isShort,
 
     if (isMCQ) {
       inputRequirementStr = `null`;
-      const mcqAnswer = `${expectedWinner === 'A' ? objA : objB} (${expectedWinner === 'A' ? valA : valB} ${unit})`;
+      
+      // For MCQ, we just find the expected winner from the 4 distinct global items to avoid duplicate weight ties
+      let targetVal = isShorterLighterLess ? Math.min(...globalItems.map(i => i.val)) : Math.max(...globalItems.map(i => i.val));
+      let targetItem = globalItems.find(i => i.val === targetVal);
+      const mcqAnswer = `${targetItem.item} (${targetItem.val} ${unit})`;
+      
       const mcqAskText = activeVariant === 'foundation_compare_two_volumes'
-        ? `Compare the two containers: ${objA} (${valA} ${unit}) and ${objB} (${valB} ${unit}). Which container holds ${comparisonAdj} water?`
-        : `Compare the two objects: ${objA} (${valA} ${unit}) and ${objB} (${valB} ${unit}). Which object is ${comparisonAdj}?`;
+        ? `Which container holds ${comparisonAdj} water?`
+        : `Which object is ${comparisonAdj}?`;
 
       systemPrompt = `
 You are generating a Primary 2 Math question.
@@ -117,16 +165,21 @@ Type: ${zodType}
 Difficulty: ${zodDiff}
 
 CRITICAL INSTRUCTION: You MUST use the EXACT strings provided in the template below for questionText, hint, and solutionSteps. DO NOT rephrase them!
-CRITICAL INSTRUCTION: The 'options' array MUST contain EXACTLY 2 elements. DO NOT generate 3 or 4 options!
+CRITICAL INSTRUCTION: The 'options' array MUST contain EXACTLY 4 elements. DO NOT generate 2 or 3 options!
 
 Use EXACTLY:
-questionText: "${mcqAskText}"
+questionText: ["${mcqAskText}"]
 finalAnswer: "${mcqAnswer}"
-hint: "Compare the numbers ${valA} and ${valB}. The one with the ${isShorterLighterLess ? 'smaller' : 'larger'} number is the ${comparisonAdj} one."
-solutionSteps: "1. Compare the measurements: ${valA} ${unit} and ${valB} ${unit}.\\n2. Since ${isShorterLighterLess ? Math.min(valA, valB) + ' is less than ' + Math.max(valA, valB) : Math.max(valA, valB) + ' is more than ' + Math.min(valA, valB)}, the ${comparisonAdj} one is ${mcqAnswer}."
+hint: "Look for the ${isShorterLighterLess ? 'smallest' : 'largest'} number among the measurements."
+solutionSteps: ["1. Compare the measurements: ${globalItems[0].val} ${unit}, ${globalItems[1].val} ${unit}, ${globalItems[2].val} ${unit}, and ${globalItems[3].val} ${unit}.", "2. The ${isShorterLighterLess ? 'smallest' : 'largest'} is ${targetVal} ${unit}, so it is the ${comparisonAdj} one."]
 
-Generate EXACTLY 2 options: "${objA} (${valA} ${unit})" and "${objB} (${valB} ${unit})".
-The defectMap should map the incorrect option to "COMPARISON_ERROR".
+Generate EXACTLY 4 options:
+- "${globalItems[0].item} (${globalItems[0].val} ${unit})"
+- "${globalItems[1].item} (${globalItems[1].val} ${unit})"
+- "${globalItems[2].item} (${globalItems[2].val} ${unit})"
+- "${globalItems[3].item} (${globalItems[3].val} ${unit})"
+The options array MUST contain these 4 strings exactly.
+The defectMap should map the incorrect options to "COMPARISON_ERROR".
 `;
     } else {
       if (!isStructure) {
@@ -163,42 +216,43 @@ solutionSteps: ${sysSolutionSteps}
 
     if (activeVariant === 'foundation_identify_longest_shortest') {
       unit = Math.random() > 0.5 ? 'cm' : 'm';
-      const fetchedItems = getRealisticItems('length', unit, 3);
+      const fetchedItems = getRealisticItems('length', unit, 4);
       items = fetchedItems.map(i => i.item);
       vals = fetchedItems.map(i => i.val);
       attribute = 'long';
       comparisonAdj = isShorterLighterLess ? 'shortest' : 'longest';
     } else {
       unit = Math.random() > 0.5 ? 'kg' : 'g';
-      const fetchedItems = getRealisticItems('mass', unit, 3);
+      const fetchedItems = getRealisticItems('mass', unit, 4);
       items = fetchedItems.map(i => i.item);
       vals = fetchedItems.map(i => i.val);
       attribute = 'heavy';
       comparisonAdj = isShorterLighterLess ? 'lightest' : 'heaviest';
     }
 
-    // Ensure all 3 values are distinct
-    while (vals[0] === vals[1] || vals[1] === vals[2] || vals[0] === vals[2]) {
-      if (vals[0] === vals[1]) vals[1] += 1;
-      if (vals[1] === vals[2]) vals[2] += 2;
-      if (vals[0] === vals[2]) vals[2] += 3;
+    // Ensure all 4 values are distinct
+    const distinctVals = Array.from(new Set(vals));
+    while (distinctVals.length < 4) {
+      const newVal = getRandomInt(10, 500);
+      if (!distinctVals.includes(newVal)) distinctVals.push(newVal);
     }
+    vals = distinctVals;
 
-    const structureText = `Object A is a ${items[0]} (${vals[0]} ${unit}). Object B is a ${items[1]} (${vals[1]} ${unit}). Object C is a ${items[2]} (${vals[2]} ${unit}). Which object is the ${comparisonAdj}?`;
-    const shortText = `A: ${items[0]} (${vals[0]} ${unit}), B: ${items[1]} (${vals[1]} ${unit}), C: ${items[2]} (${vals[2]} ${unit}). The ${comparisonAdj} object is:`;
+const structureText = `Object A is a ${items[0]} (${vals[0]} ${unit}). Object B is a ${items[1]} (${vals[1]} ${unit}). Object C is a ${items[2]} (${vals[2]} ${unit}). Object D is a ${items[3]} (${vals[3]} ${unit}). Which object is the ${comparisonAdj}?`;
+    const shortText = `A: ${items[0]} (${vals[0]} ${unit}), B: ${items[1]} (${vals[1]} ${unit}), C: ${items[2]} (${vals[2]} ${unit}), D: ${items[3]} (${vals[3]} ${unit}). The ${comparisonAdj} object is:`;
 
     let askText = getQText(structureText, shortText);
 
     let targetVal = isShorterLighterLess ? Math.min(...vals) : Math.max(...vals);
     let targetIndex = vals.indexOf(targetVal);
-    let expectedWinner = ['A', 'B', 'C'][targetIndex];
+    let expectedWinner = ['A', 'B', 'C', 'D'][targetIndex];
     const actualAnswer = `Object ${expectedWinner}`;
 
     if (isStructure) {
-      const otherIndices = [0, 1, 2].filter(i => i !== targetIndex);
+      const otherIndices = [0, 1, 2, 3].filter(i => i !== targetIndex);
       const other1 = otherIndices[0];
       const other2 = otherIndices[1];
-      const objLetters = ['A', 'B', 'C'];
+      const objLetters = ['A', 'B', 'C', 'D'];
 
       const diff1 = Math.abs(targetVal - vals[other1]);
       const diff2 = Math.abs(targetVal - vals[other2]);
@@ -216,7 +270,7 @@ solutionSteps: ${sysSolutionSteps}
         {"label": "${label2}", "expectedAnswer": "${diff2} ${unit}", "acceptedAnswers": ["${diff2}", "${eq2}"]}
       ]}`;
 
-      askText += " Show your working and find the differences with the other two objects.";
+      askText += " Show your working and find the differences with Object " + objLetters[other1] + " and Object " + objLetters[other2] + ".";
     }
 
     if (isMCQ) {
@@ -236,11 +290,15 @@ DO NOT ADD ANY CONTEXT OR EXTRA SENTENCES to the questionText. It must ONLY cont
 
 Use EXACTLY:
 questionText: ["${mcqAskText}"]
-finalAnswer: """${mcqAnswer}"""
-hint: """Look for the ${isShorterLighterLess ? 'smallest' : 'largest'} number among the three measurements."""
-solutionSteps: """1. Compare the measurements: ${vals[0]} ${unit}, ${vals[1]} ${unit}, and ${vals[2]} ${unit}.\\n2. The ${isShorterLighterLess ? 'smallest' : 'largest'} is ${targetVal} ${unit}, so it is the ${comparisonAdj} one."""
+finalAnswer: "${mcqAnswer}"
+hint: "Look for the ${isShorterLighterLess ? 'smallest' : 'largest'} number among the measurements."
+solutionSteps: ["1. Compare the measurements: ${vals[0]} ${unit}, ${vals[1]} ${unit}, ${vals[2]} ${unit}, and ${vals[3]} ${unit}.", "2. The ${isShorterLighterLess ? 'smallest' : 'largest'} is ${targetVal} ${unit}, so it is the ${comparisonAdj} one."]
 
-Generate exactly 3 options: "${items[0]} (${vals[0]} ${unit})", "${items[1]} (${vals[1]} ${unit})", and "${items[2]} (${vals[2]} ${unit})".
+Generate exactly 4 options:
+- "${items[0]} (${vals[0]} ${unit})"
+- "${items[1]} (${vals[1]} ${unit})"
+- "${items[2]} (${vals[2]} ${unit})"
+- "${items[3]} (${vals[3]} ${unit})"
 The defectMap should map the incorrect options to "COMPARISON_ERROR".
 `;
     } else {
@@ -249,16 +307,16 @@ The defectMap should map the incorrect options to "COMPARISON_ERROR".
       }
 
       let sysFinalAnswer = actualAnswer;
-      let sysSolutionSteps = `"""1. Compare the measurements: ${vals[0]} ${unit}, ${vals[1]} ${unit}, and ${vals[2]} ${unit}.\\n2. The ${isShorterLighterLess ? 'smallest' : 'largest'} is ${targetVal} ${unit}, so ${actualAnswer} is the ${comparisonAdj}."""`;
+      let sysSolutionSteps = `"""1. Compare the measurements: ${vals[0]} ${unit}, ${vals[1]} ${unit}, ${vals[2]} ${unit}, and ${vals[3]} ${unit}.\\n2. The ${isShorterLighterLess ? 'smallest' : 'largest'} is ${targetVal} ${unit}, so ${actualAnswer} is the ${comparisonAdj}."""`;
 
       if (isStructure) {
-        const otherIndices = [0, 1, 2].filter(i => i !== targetIndex);
-        const objLetters = ['A', 'B', 'C'];
+        const otherIndices = [0, 1, 2, 3].filter(i => i !== targetIndex);
+        const objLetters = ['A', 'B', 'C', 'D'];
         const diff1 = Math.abs(targetVal - vals[otherIndices[0]]);
         const diff2 = Math.abs(targetVal - vals[otherIndices[1]]);
 
         sysFinalAnswer = `${actualAnswer}, ${diff1} ${unit}, ${diff2} ${unit}`;
-        sysSolutionSteps = `"""1. Compare the measurements: ${vals[0]} ${unit}, ${vals[1]} ${unit}, and ${vals[2]} ${unit}.\\n2. The ${isShorterLighterLess ? 'smallest' : 'largest'} is ${targetVal} ${unit}, so ${actualAnswer} is the ${comparisonAdj}.\\n3. Difference with Object ${objLetters[otherIndices[0]]} = ${Math.max(targetVal, vals[otherIndices[0]])} - ${Math.min(targetVal, vals[otherIndices[0]])} = ${diff1} ${unit}.\\n4. Difference with Object ${objLetters[otherIndices[1]]} = ${Math.max(targetVal, vals[otherIndices[1]])} - ${Math.min(targetVal, vals[otherIndices[1]])} = ${diff2} ${unit}."""`;
+        sysSolutionSteps = `"""1. Compare the measurements: ${vals[0]} ${unit}, ${vals[1]} ${unit}, ${vals[2]} ${unit}, and ${vals[3]} ${unit}.\\n2. The ${isShorterLighterLess ? 'smallest' : 'largest'} is ${targetVal} ${unit}, so ${actualAnswer} is the ${comparisonAdj}.\\n3. Difference with Object ${objLetters[otherIndices[0]]} = ${Math.max(targetVal, vals[otherIndices[0]])} - ${Math.min(targetVal, vals[otherIndices[0]])} = ${diff1} ${unit}.\\n4. Difference with Object ${objLetters[otherIndices[1]]} = ${Math.max(targetVal, vals[otherIndices[1]])} - ${Math.min(targetVal, vals[otherIndices[1]])} = ${diff2} ${unit}."""`;
       }
 
       systemPrompt = `

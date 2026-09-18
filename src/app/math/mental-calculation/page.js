@@ -28,7 +28,136 @@ export default function MentalCalculationPage() {
             </p>
           </div>
         </Link>
+        <Link href="/math/mental-calculation/two-digit-addition">
+          <div className="group bg-slate-800 border-2 border-slate-700 hover:border-amber-500 rounded-3xl p-8 cursor-pointer transition-all hover:-translate-y-1">
+            <div className="text-4xl mb-4 bg-slate-900 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:bg-amber-500 group-hover:text-slate-900 transition-colors">
+              🧠
+            </div>
+            <h2 className="text-2xl font-black text-white mb-2 group-hover:text-amber-500 transition-colors">
+              Double Digit Addition
+            </h2>
+            <p className="text-slate-400 font-medium">
+              High-speed addition of numbers 10-99. Track your average speed and set new all-time records.
+            </p>
+          </div>
+        </Link>
+        <Link href="/math/mental-calculation/three-digit-addition">
+          <div className="group bg-slate-800 border-2 border-slate-700 hover:border-amber-500 rounded-3xl p-8 cursor-pointer transition-all hover:-translate-y-1">
+            <div className="text-4xl mb-4 bg-slate-900 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:bg-amber-500 group-hover:text-slate-900 transition-colors">
+              🔥
+            </div>
+            <h2 className="text-2xl font-black text-white mb-2 group-hover:text-amber-500 transition-colors">
+              Triple Digit Addition
+            </h2>
+            <p className="text-slate-400 font-medium">
+              High-speed addition of numbers 100-999. Track your average speed and set new all-time records.
+            </p>
+          </div>
+        </Link>
+        <Link href="/math/mental-calculation/single-digit-subtraction">
+          <div className="group bg-slate-800 border-2 border-slate-700 hover:border-emerald-500 rounded-3xl p-8 cursor-pointer transition-all hover:-translate-y-1">
+            <div className="text-4xl mb-4 bg-slate-900 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-slate-900 transition-colors">
+              📉
+            </div>
+            <h2 className="text-2xl font-black text-white mb-2 group-hover:text-emerald-500 transition-colors">
+              Single Digit Subtraction
+            </h2>
+            <p className="text-slate-400 font-medium">
+              High-speed subtraction of numbers 1-9. Track your average speed and set new all-time records.
+            </p>
+          </div>
+        </Link>
+        <Link href="/math/mental-calculation/two-digit-subtraction">
+          <div className="group bg-slate-800 border-2 border-slate-700 hover:border-emerald-500 rounded-3xl p-8 cursor-pointer transition-all hover:-translate-y-1">
+            <div className="text-4xl mb-4 bg-slate-900 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-slate-900 transition-colors">
+              📉
+            </div>
+            <h2 className="text-2xl font-black text-white mb-2 group-hover:text-emerald-500 transition-colors">
+              Double Digit Subtraction
+            </h2>
+            <p className="text-slate-400 font-medium">
+              High-speed subtraction of numbers 10-99. Track your average speed and set new all-time records.
+            </p>
+          </div>
+        </Link>
+        <Link href="/math/mental-calculation/three-digit-subtraction">
+          <div className="group bg-slate-800 border-2 border-slate-700 hover:border-emerald-500 rounded-3xl p-8 cursor-pointer transition-all hover:-translate-y-1">
+            <div className="text-4xl mb-4 bg-slate-900 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-slate-900 transition-colors">
+              📉
+            </div>
+            <h2 className="text-2xl font-black text-white mb-2 group-hover:text-emerald-500 transition-colors">
+              Triple Digit Subtraction
+            </h2>
+            <p className="text-slate-400 font-medium">
+              High-speed subtraction of numbers 100-999. Track your average speed and set new all-time records.
+            </p>
+          </div>
+        </Link>
+        <Link href="/math/mental-calculation/complements-1-digit">
+          <div className="group bg-slate-800 border-2 border-slate-700 hover:border-violet-500 rounded-3xl p-8 cursor-pointer transition-all hover:-translate-y-1">
+            <div className="text-4xl mb-4 bg-slate-900 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:bg-violet-500 group-hover:text-slate-900 transition-colors">
+              🧩
+            </div>
+            <h2 className="text-2xl font-black text-white mb-2 group-hover:text-violet-500 transition-colors">
+              Finding Complements (1 Digit)
+            </h2>
+            <p className="text-slate-400 font-medium">
+              Find the number that adds up to 10. High-speed training. Track your average speed and set new all-time records.
+            </p>
+          </div>
+        </Link>
+        <Link href="/math/mental-calculation/complements-2-3-digits">
+          <div className="group bg-slate-800 border-2 border-slate-700 hover:border-violet-500 rounded-3xl p-8 cursor-pointer transition-all hover:-translate-y-1">
+            <div className="text-4xl mb-4 bg-slate-900 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:bg-violet-500 group-hover:text-slate-900 transition-colors">
+              🎯
+            </div>
+            <h2 className="text-2xl font-black text-white mb-2 group-hover:text-violet-500 transition-colors">
+              Finding Complements (2-3 Digits)
+            </h2>
+            <p className="text-slate-400 font-medium">
+              Find the number that adds up to 100 or 1,000. Track your average speed and set new all-time records.
+            </p>
+          </div>
+        </Link>
+        <Link href="/math/mental-calculation/complements-4-5-digits">
+          <div className="group bg-slate-800 border-2 border-slate-700 hover:border-violet-500 rounded-3xl p-8 cursor-pointer transition-all hover:-translate-y-1">
+            <div className="text-4xl mb-4 bg-slate-900 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:bg-violet-500 group-hover:text-slate-900 transition-colors">
+              💎
+            </div>
+            <h2 className="text-2xl font-black text-white mb-2 group-hover:text-violet-500 transition-colors">
+              Finding Complements (4-5 Digits)
+            </h2>
+            <p className="text-slate-400 font-medium">
+              Find the number that adds up to 10,000 or 100,000. Track your average speed and set new all-time records.
+            </p>
+          </div>
+        </Link>
       </div>
+
+      <div className="mt-16 mb-8">
+        <h2 className="text-3xl font-black text-white tracking-tight mb-2">
+          Multiplication Mastery
+        </h2>
+        <p className="text-slate-400 font-medium">
+          Targeted practice for specific multipliers. Numbers scale up to 5 digits.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        {[2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 15, 16, 18, 21, 22].map(multiplier => (
+          <Link key={multiplier} href={`/math/mental-calculation/multiplication/${multiplier}`}>
+            <div className="group bg-slate-800 border-2 border-slate-700 hover:border-amber-500 rounded-3xl p-6 cursor-pointer transition-all hover:-translate-y-1 text-center">
+              <div className="text-3xl mb-3 bg-slate-900 w-12 h-12 mx-auto rounded-xl flex items-center justify-center group-hover:bg-amber-500 group-hover:text-slate-900 transition-colors">
+                ×
+              </div>
+              <h3 className="text-xl font-black text-white group-hover:text-amber-500 transition-colors">
+                {multiplier}
+              </h3>
+            </div>
+          </Link>
+        ))}
+      </div>
+
     </div>
   );
 }

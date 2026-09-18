@@ -16,10 +16,25 @@ export default async function QuestionReviewPage({ searchParams }) {
   if (id) {
     whereClause = { id: { equals: id, mode: 'insensitive' } };
   } else {
-    // Keep the query mapping focus cleanly on approval status, allowing archived questions through for admin tracking
     // If heuristic is provided, we don't strictly require isApproved filter to allow checking all variants, but we maintain backward logic.
     if (heuristic) {
-      whereClause.heuristic = heuristic;
+      let searchHeuristic = heuristic;
+      
+      const normalize = (s) => String(s || '').toLowerCase().replace(/[\s.,:;!?]+/g, '');
+      const normalizedQuery = normalize(heuristic);
+
+      // Reverse-lookup: If the user pasted the long descriptive text, translate it to the short key
+      for (const blueprint of Object.values(blueprintRegistry)) {
+        if (blueprint.variants) {
+          const shortKey = Object.keys(blueprint.variants).find(key => normalize(blueprint.variants[key]) === normalizedQuery);
+          if (shortKey) {
+            searchHeuristic = shortKey;
+            break;
+          }
+        }
+      }
+      
+      whereClause.heuristic = searchHeuristic;
 
       // Smart Egress Protection: If the user searches by variant without selecting dropdowns,
       // pinpoint the first blueprint that owns this variant and apply its metadata filters to the query.
@@ -28,7 +43,7 @@ export default async function QuestionReviewPage({ searchParams }) {
         for (const row of syllabusRows) {
           const blueprintId = `${row.level}-${row.topic}-${row.subtopic}`;
           const blueprint = blueprintRegistry[blueprintId];
-          if (blueprint && blueprint.variants && blueprint.variants[heuristic]) {
+          if (blueprint && blueprint.variants && blueprint.variants[searchHeuristic]) {
             whereClause.level = row.level;
             whereClause.topic = row.topic;
             if (row.subtopic) whereClause.subtopic = row.subtopic;

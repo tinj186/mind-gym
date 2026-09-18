@@ -9,17 +9,17 @@ const getShuffledOptions = (correct, distractors) => {
 
 const standardVariants = {
   standard_find_all_target_shape: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const target = getRandomShapes(1);
+    const target = getRandomShapes(1)[0];
     const items = [];
     let count = 0;
     for (let i = 0; i < 8; i++) {
-      const shape = getRandomShapes(1);
+      const shape = getRandomShapes(1)[0];
       if (shape === target) count++;
-      items.push({ shapeType: shape, color: getRandomColors(1), size: "medium" });
+      items.push({ shapeType: shape, color: getRandomColors(1)[0], size: "medium" });
     }
     // Ensure at least 1 exists
     if (count === 0) {
-      items[0] = { shapeType: target, color: getRandomColors(1), size: "medium" };
+      items[0] = { shapeType: target, color: getRandomColors(1)[0], size: "medium" };
       count = 1;
     }
     
@@ -164,9 +164,9 @@ const standardVariants = {
   },
 
   standard_compare_shape_counts: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const shape1 = getRandomShapes(1);
-    let shape2 = getRandomShapes(1);
-    while (shape1 === shape2) shape2 = getRandomShapes(1);
+    const shape1 = getRandomShapes(1)[0];
+    let shape2 = getRandomShapes(1)[0];
+    while (shape1 === shape2) shape2 = getRandomShapes(1)[0];
     
     let count1 = Math.floor(Math.random() * 4) + 1; // 1 to 4
     let count2 = Math.floor(Math.random() * 4) + 1; // 1 to 4
@@ -176,24 +176,29 @@ const standardVariants = {
     const answer = askMore ? (count1 > count2 ? shape1 : shape2) : (count1 < count2 ? shape1 : shape2);
     
     const items = [];
-    for (let i = 0; i < count1; i++) items.push({ shapeType: shape1, color: getRandomColors(1), size: "medium" });
-    for (let i = 0; i < count2; i++) items.push({ shapeType: shape2, color: getRandomColors(1), size: "medium" });
+    for (let i = 0; i < count1; i++) items.push({ shapeType: shape1, color: getRandomColors(1)[0], size: "medium" });
+    for (let i = 0; i < count2; i++) items.push({ shapeType: shape2, color: getRandomColors(1)[0], size: "medium" });
     
     // Add random distractors to make grid 8
     while (items.length < 8) {
-        let dist = getRandomShapes(1);
-        while(dist === shape1 || dist === shape2) dist = getRandomShapes(1);
-        items.push({ shapeType: dist, color: getRandomColors(1), size: "medium" });
+        let dist = getRandomShapes(1)[0];
+        while(dist === shape1 || dist === shape2) dist = getRandomShapes(1)[0];
+        items.push({ shapeType: dist, color: getRandomColors(1)[0], size: "medium" });
     }
     items.sort(() => Math.random() - 0.5);
     
     const componentData = { layout: "GRID", items };
-    const capitalizedAnswer = answer.charAt(0).toUpperCase() + answer.slice(1);
+    const capitalizedAnswer = answer.charAt(0).toUpperCase() + answer.slice(1) + "s";
     
     const questionTextTemplate = getQText(`Look at the shapes. Are there ${askMore ? 'more' : 'fewer'} ${shape1}s or ${shape2}s?`, `Which is there ${askMore ? 'more' : 'fewer'} of: ${shape1}s or ${shape2}s?`);
     const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student featuring a person named ${getRandomNames(1)}. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all options MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
 
-    let options = [shape1.charAt(0).toUpperCase() + shape1.slice(1), shape2.charAt(0).toUpperCase() + shape2.slice(1)];
+    let options = [
+      (shape1.charAt(0).toUpperCase() + shape1.slice(1)) + "s", 
+      (shape2.charAt(0).toUpperCase() + shape2.slice(1)) + "s",
+      "Equal amounts",
+      "Cannot be determined"
+    ];
     let mcqOptions = 'null';
     let defectMapStr = 'null';
     if (type === 'MCQ') {
@@ -233,14 +238,14 @@ const standardVariants = {
   standard_identify_by_exclusion: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const presentShapes = [];
     while (presentShapes.length < 5) {
-      const s = getRandomShapes(1);
+      const s = getRandomShapes(1)[0];
       if (!presentShapes.includes(s)) presentShapes.push(s);
     }
     const missingShape = SHAPES_POOL.find(s => !presentShapes.includes(s));
 
     const items = [];
     for (let i = 0; i < 6; i++) {
-      items.push({ shapeType: presentShapes[i % 5], color: getRandomColors(1), size: "medium" });
+      items.push({ shapeType: presentShapes[i % 5], color: getRandomColors(1)[0], size: "medium" });
     }
     items.sort(() => Math.random() - 0.5);
     const componentData = { layout: "GRID", items };

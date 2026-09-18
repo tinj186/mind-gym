@@ -176,7 +176,7 @@ export default function SingleDigitAdditionGame() {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            className={`w-64 text-center text-7xl font-black bg-slate-800 rounded-3xl p-6 outline-none border-4 transition-colors shadow-2xl ${
+            className={`w-full max-w-md text-center text-7xl font-black bg-slate-800 rounded-3xl p-6 outline-none border-4 transition-colors shadow-2xl ${
               isError ? 'border-red-500 text-red-500' : 'border-slate-600 focus:border-amber-500 text-white'
             }`}
             autoFocus

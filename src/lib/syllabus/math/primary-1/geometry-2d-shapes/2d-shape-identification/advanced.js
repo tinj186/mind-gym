@@ -9,8 +9,8 @@ const getShuffledOptions = (correct, distractors) => {
 
 const advancedVariants = {
   advanced_attribute_logic: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const targetColor = getRandomColors(1);
-    const targetShape = getRandomShapes(1);
+    const targetColor = getRandomColors(1)[0];
+    const targetShape = getRandomShapes(1)[0];
     
     // Properties of target shape
     let sideCount = 4;
@@ -132,7 +132,7 @@ const advancedVariants = {
     const componentData = { 
       layout: "SINGLE", 
       shapeType: targetShape, 
-      color: getRandomColors(1), 
+      color: getRandomColors(1)[0], 
       size: "large",
       rotation: targetRot
     };

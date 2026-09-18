@@ -45,32 +45,26 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
   // DIAGNOSTIC INJECTION FOR SAFARI BUG
   useEffect(() => {
     const handleGlobalError = (event: ErrorEvent) => {
-       if (event.message.includes("this.mathfield.options")) {
-          console.error("🚨 SAFARI CRASH INTERCEPTED 🚨");
-          console.error("Message:", event.message);
-          console.error("Stack Trace:", event.error?.stack || "No stack trace available");
-          console.error("Active Element:", document.activeElement);
-          if ((window as any).mathVirtualKeyboard) {
-             console.error("MVK State:", {
-               activeMathfield: (window as any).mathVirtualKeyboard.activeMathfield,
-               visible: (window as any).mathVirtualKeyboard.visible
-             });
-          }
+       if (event.message && event.message.includes("this.mathfield.options")) {
+          event.preventDefault(); // Stop the red error in the console
+          event.stopImmediatePropagation(); // Stop Next.js Error Overlay from catching it!
+          console.warn("🛡️ SAFARI CRASH INTERCEPTED & SUPPRESSED");
        }
     };
     
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
        if (event.reason && event.reason.message && event.reason.message.includes("this.mathfield.options")) {
-          console.error("🚨 SAFARI ASYNC CRASH INTERCEPTED 🚨", event.reason.stack);
+          event.preventDefault();
+          console.warn("🛡️ SAFARI ASYNC CRASH INTERCEPTED");
        }
     };
 
-    window.addEventListener('error', handleGlobalError);
-    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    window.addEventListener('error', handleGlobalError, true); // USE CAPTURE PHASE!
+    window.addEventListener('unhandledrejection', handleUnhandledRejection, true);
     
     return () => {
-       window.removeEventListener('error', handleGlobalError);
-       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+       window.removeEventListener('error', handleGlobalError, true);
+       window.removeEventListener('unhandledrejection', handleUnhandledRejection, true);
     };
   }, []);
 
@@ -143,6 +137,8 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
       }
       if (gradeLevel >= 3) {
         toolKeys.push({ command: ["insert", "^{\\circ}", { mode: "math" }], label: "deg" });
+        toolKeys.push({ command: ["insert", "\\text{cm}^2", { mode: "math" }], label: "cm²" });
+        toolKeys.push({ command: ["insert", "\\text{m}^2", { mode: "math" }], label: "m²" });
       }
       if (gradeLevel >= 4) {
         toolKeys.push({ command: ["insert", "\\angle", { mode: "math" }], label: "angle" });
@@ -180,6 +176,8 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
       }
       if (gradeLevel >= 3) {
         toolKeys.push({ command: ["insert", "^{\\circ}", { mode: "math" }], label: "deg" });
+        toolKeys.push({ command: ["insert", "\\text{cm}^2", { mode: "math" }], label: "cm²" });
+        toolKeys.push({ command: ["insert", "\\text{m}^2", { mode: "math" }], label: "m²" });
       }
       if (gradeLevel >= 4) {
         toolKeys.push({ command: ["insert", "\\angle", { mode: "math" }], label: "angle" });
@@ -321,6 +319,11 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
           mfe.smartFence = false;
           mfe.mathModeSpace = "\\ ";
           mfe.popoverPolicy = "none";
+          
+          try {
+            mfe.keypressSound = "none";
+            mfe.plonkSound = "none";
+          } catch(e) {}
         
         mfe.macros = {
           ...mfe.macros,

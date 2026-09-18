@@ -28,7 +28,9 @@ export default function ShapeDisplay({ data, hideCardStyles = false }) {
       rotation = 0;
     } else {
       shapeType = shapeData.shapeType || shapeData.ShapeType || shapeData.shapetype;
+      if (Array.isArray(shapeType)) shapeType = shapeType[0];
       color = shapeData.color || shapeData.Color;
+      if (Array.isArray(color)) color = color[0];
       size = shapeData.size || shapeData.Size || 'large';
       rotation = shapeData.rotation || shapeData.Rotation || 0;
     }

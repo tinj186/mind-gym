@@ -715,7 +715,7 @@ export const getTimeActivities = (count = 1, isMorning = true) => {
   const shuffled = [...pool].sort(() => 0.5 - Math.random());
   const selected = shuffled.slice(0, count);
 
-  return makeCompatibleArray(count === 1 ? selected[0] : selected);
+  return count === 1 ? makeCompatibleArray(selected[0]) : selected;
 };
 
 export const getPairedActivities = () => {
@@ -779,6 +779,42 @@ export const getPairedActivities = () => {
     { main: "art gallery tour", break: "introductory video" }
   ];
   return pairs[Math.floor(Math.random() * pairs.length)];
+};
+
+export const getOverlappingVenues = () => {
+  const venues = [
+    ["community pool", "public library"],
+    ["food court", "supermarket"],
+    ["theme park", "water park"],
+    ["museum", "art gallery"],
+    ["bookstore", "cafe"],
+    ["sports hall", "gymnasium"],
+    ["petting zoo", "bird park"],
+    ["medical clinic", "pharmacy"],
+    ["post office", "bank"],
+    ["bakery", "flower shop"],
+    ["shopping mall", "cinema"],
+    ["community club", "neighbourhood police centre"],
+    ["ice skating rink", "bowling alley"],
+    ["science centre", "observatory"],
+    ["indoor playground", "arcade"],
+    ["hawker centre", "wet market"],
+    ["aquarium", "safari park"],
+    ["hardware store", "furniture shop"],
+    ["bicycles shop", "skate park"],
+    ["laundromat", "convenience store"],
+    ["tuition centre", "student care"],
+    ["trampoline park", "laser tag arena"],
+    ["botanical garden", "orchid garden"],
+    ["toy store", "candy shop"],
+    ["barber shop", "tailor"],
+    ["pet grooming salon", "veterinary clinic"],
+    ["music school", "dance studio"],
+    ["stadium", "tennis court"],
+    ["car wash", "petrol kiosk"],
+    ["electronics store", "computer repair shop"]
+  ];
+  return venues[Math.floor(Math.random() * venues.length)];
 };
 
 export const getRandom3DObject = () => {

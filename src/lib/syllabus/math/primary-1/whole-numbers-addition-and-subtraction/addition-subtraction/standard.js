@@ -683,7 +683,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         solutionSteps: `1. First subtraction: ${num1} - ${num2} = ${step1Ans}.\\n2. Second subtraction: ${step1Ans} - ${num3} = ${finalAns}.\\n3. Total left is ${finalAns}.`
       },
       visualEngine: { componentToRender: "NONE", componentData: {} },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {
@@ -745,7 +745,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         solutionSteps: `1. Addition step: ${num1} + ${num2} = ${step1Ans}.\\n2. Subtraction step: ${step1Ans} - ${num3} = ${finalAns}.\\n3. Total now is ${finalAns}.`
       },
       visualEngine: { componentToRender: "NONE", componentData: {} },
-      inputRequirement: { inputType }
+      inputRequirement: { inputType, ...(isStructure ? { steps: "[AI: INJECT ARRAY OF { label: string, expectedAnswer: string } OBJECTS HERE BREAKING DOWN THE SOLUTION STEPS]" } : {}) }
     };
 
     return {

@@ -3,6 +3,7 @@ import MathInput from '@/components/math/MathInput';
 
 export default function MultiStepInput({ steps, onSubmit, disabled, level }) {
   const [answers, setAnswers] = useState({});
+  const [instanceId] = useState(() => Math.random().toString(36).substring(2, 9));
 
   useEffect(() => {
     setAnswers({});
@@ -30,7 +31,7 @@ export default function MultiStepInput({ steps, onSubmit, disabled, level }) {
         }
 
         setTimeout(() => {
-          const nextInput = document.getElementById(`multi-step-${index + 1}`);
+          const nextInput = document.getElementById(`multi-step-${instanceId}-${index + 1}`);
           if (nextInput) {
             nextInput.focus();
           }
@@ -53,7 +54,7 @@ export default function MultiStepInput({ steps, onSubmit, disabled, level }) {
             {step.stepLabel || step.label}
           </label>
           <MathInput
-            id={`multi-step-${index}`}
+            id={`multi-step-${instanceId}-${index}`}
             value={answers[index] || ''}
             onChange={(val) => handleChange(index, val)}
             onEnter={() => handleKeyDown({ key: 'Enter' }, index)}

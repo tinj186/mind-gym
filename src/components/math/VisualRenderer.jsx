@@ -10,7 +10,8 @@ export const ESSENTIAL_VISUALS = [
   "SINGAPORE_MONEY", "MEASUREMENT_UNIT", "MEASUREMENT_RULER", "CLOCK_DISPLAY",
   "SHAPE_DISPLAY", "SHAPE_3D", "SHAPE_3D_PATTERN", "PLACE_VALUE_CHART", "VERTICAL_ALGORITHM", "LONG_DIVISION",
   "GRID_DISPLAY", "GRID_DRAWING_CANVAS", "FRACTION_DISPLAY",
-  "MASS_SCALE", "VOLUME_BEAKER", "STATIC_IMAGE", "HTML_CONTENT", "BAR_MODEL", "FACT_TRIANGLE"
+  "MASS_SCALE", "VOLUME_BEAKER", "STATIC_IMAGE", "HTML_CONTENT", "BAR_MODEL", "FACT_TRIANGLE",
+  "SQUARE_GRID_SHAPE", "GEOMETRY_POLYGON", "AREA_PERIMETER_EXPLORER"
   // "PICTURE_GRAPH_DISPLAY" // Not essential, lazy-loaded
 ];
 
@@ -48,9 +49,11 @@ const FractionEquivalence = lazy(() => import('./modules/FractionEquivalence'));
 const GridDisplay = lazy(() => import('./modules/GridDisplay'));
 const GridDrawingCanvas = lazy(() => import('./modules/GridDrawingCanvas'));
 const FractionDisplay = lazy(() => import('./modules/FractionDisplay'));
+const SquareGridShape = lazy(() => import('./modules/SquareGridShape'));
+const GeometryPolygon = lazy(() => import('./modules/GeometryPolygon'));
 const TimeLine = lazy(() => import('./modules/TimeLine'));
 const Timetable = lazy(() => import('./modules/Timetable'));
-
+const AreaPerimeterExplorer = lazy(() => import('./modules/AreaPerimeterExplorer'));
 export default function VisualRenderer({ type, ...props }) {
   const activeType = (
     type || 
@@ -69,6 +72,7 @@ export default function VisualRenderer({ type, ...props }) {
       {(() => {
         switch (activeType) {
           case 'TIMETABLE': return <Timetable data={props.visualEngine?.componentData || props.data} />;
+          case 'AREA_PERIMETER_EXPLORER': return <AreaPerimeterExplorer {...props} data={props.visualEngine?.componentData || props.data} />;
           case 'TIMELINE': return <TimeLine data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
           case 'MEASUREMENT_UNIT': return <MeasurementUnit {...props} />;
           case 'MEASUREMENT_RULER': return <MeasurementRuler {...props} />;
@@ -133,6 +137,8 @@ export default function VisualRenderer({ type, ...props }) {
           case 'BAR_MODEL': return <BarModelRenderer data={props.visualEngine?.componentData || props.data} setIsToolOpen={props.setIsToolOpen} toolState={props.toolState} />;
           case 'FRACTION_EQUIVALENCE': return <FractionEquivalence data={props.visualEngine?.componentData || props.data} />;
           case 'FRACTION_DISPLAY': return <FractionDisplay data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
+          case 'SQUARE_GRID_SHAPE': return <SquareGridShape data={props.visualEngine?.componentData || props.data} />;
+          case 'GEOMETRY_POLYGON': return <GeometryPolygon data={props.visualEngine?.componentData || props.data} />;
           case 'STATIC_IMAGE': {
             const data = props.visualEngine?.componentData || props.data || {};
             return (

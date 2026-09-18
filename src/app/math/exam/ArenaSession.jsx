@@ -247,6 +247,15 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
         return s.replace(/\s+/g, '');
       };
 
+      const formatDisplay = (val) => {
+        if (!val) return '';
+        if (typeof val !== 'string') return String(val);
+        return val.replace(/\\text\{([^}]*)\}/g, '$1')
+                  .replace(/\\mathrm\{([^}]*)\}/g, '$1')
+                  .replace(/\\/g, '')
+                  .trim();
+      };
+
       if (inputType === 'MULTI_STEP_INPUT') {
         const steps = q.inputRequirement?.steps || [];
         const studentObj = typeof rawAns === 'object' && rawAns !== null ? rawAns : {};
@@ -285,7 +294,7 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
 
         displayAnswer = steps.map((step, idx) => {
           const label = step.stepLabel || `Step ${idx + 1}`;
-          const val = cleanString(studentObj[idx]);
+          const val = formatDisplay(studentObj[idx]);
           return `${label}: ${val}`;
         }).join(' | ');
         
@@ -327,7 +336,7 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
         }
         
         isCorrect = studentAns === realAns || accepted.includes(studentAns);
-        displayAnswer = typeof rawAns === 'string' && rawAns.startsWith('[') ? rawAns : cleanString(rawAns);
+        displayAnswer = typeof rawAns === 'string' && rawAns.startsWith('[') ? rawAns : formatDisplay(rawAns);
       }
 
       return {
@@ -483,6 +492,7 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
                               key={`${activeQuestion.id}-step-${index}`}
                               id={`${activeQuestion.id}-multi-step-${index}`}
                               value={currentMultiAnswers[index] || ''}
+                              autoFocus={index === 0}
                               onChange={(val) => {
                                 const updated = { ...currentMultiAnswers, [index]: val };
                                 handleSelectAnswer(activeQuestion.id, updated);
@@ -512,6 +522,7 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
                       <label className="block text-[10px] font-black mb-2 uppercase text-slate-400 tracking-tighter">Student Workspace Input Response</label>
                       <MathInput
                         key={activeQuestion.id}
+                        autoFocus
                         value={typeof answers[activeQuestion.id] === 'string' ? answers[activeQuestion.id] : ''}
                         onChange={(val) => handleSelectAnswer(activeQuestion.id, val)}
                         onEnter={handleNextQuestion}

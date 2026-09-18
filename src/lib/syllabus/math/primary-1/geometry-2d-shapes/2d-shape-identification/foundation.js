@@ -8,11 +8,11 @@ const getShuffledOptions = (correct, distractors) => {
 
 export const foundationVariants = {
   foundation_identify_shape: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const targetShape = getRandomShapes(1);
+    const targetShape = getRandomShapes(1)[0];
     const rotation = Math.floor(Math.random() * 8) * 45;
     const componentData = { 
       shapeType: targetShape, 
-      color: getRandomColors(1), 
+      color: getRandomColors(1)[0], 
       size: "medium", 
       rotation, 
       layout: "SINGLE" 
@@ -62,8 +62,8 @@ export const foundationVariants = {
 
   foundation_classify_attribute: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const useColor = Math.random() > 0.5;
-    const targetColor = getRandomColors(1);
-    const targetShape = getRandomShapes(1);
+    const targetColor = getRandomColors(1)[0];
+    const targetShape = getRandomShapes(1)[0];
     const targetValue = useColor ? targetColor : targetShape;
 
     const componentData = { 
@@ -119,7 +119,7 @@ export const foundationVariants = {
   },
 
   foundation_count_sides: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const targetShape = getRandomShapes(1);
+    const targetShape = getRandomShapes(1)[0];
     let sideCount = 4;
     if (targetShape === "triangle") sideCount = 3;
     if (targetShape === "half circle") sideCount = 1;
@@ -128,7 +128,7 @@ export const foundationVariants = {
 
     const componentData = { 
       shapeType: targetShape, 
-      color: getRandomColors(1), 
+      color: getRandomColors(1)[0], 
       size: "large", 
       rotation: 0, 
       layout: "SINGLE" 
@@ -177,8 +177,8 @@ export const foundationVariants = {
   },
 
   foundation_size_comparison: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const targetShape = getRandomShapes(1);
-    const targetColor = getRandomColors(1);
+    const targetShape = getRandomShapes(1)[0];
+    const targetColor = getRandomColors(1)[0];
     const askSmallest = Math.random() > 0.5;
 
     const items = [

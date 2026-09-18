@@ -116,7 +116,7 @@ Forbidden: "Choose 15," "It's the smallest one."
 Required: Point to place value or relative clues.
 Example: "Compare the tens place first. Which number has more tens?" or "If A is more than B, who is standing closer to the front?"`;
 
-    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: For the "visualItems" array and any "COMPARE_OBJECTS" icons, you MUST use the emoji: "${selectedIcon || '⭐'}". Do not pick any other emoji. DO NOT use emojis inside "NUMBER_CARDS" items.`;
+    const visualProtocol = `\nSTRICT VISUAL PROTOCOL: For the "visualItems" array, you MUST use the emoji: "${selectedIcon || '⭐'}". Do not pick any other emoji. DO NOT use emojis inside "NUMBER_CARDS" items.`;
 
     let formatInstructions = isMCQ
       ? `Format as MCQ. Include an "options" array with 4 choices. "finalAnswer" must exactly match one of the options.${hintProtocol}${visualProtocol}`

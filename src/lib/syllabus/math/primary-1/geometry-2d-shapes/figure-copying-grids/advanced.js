@@ -446,25 +446,27 @@ export const advancedLogic = {
           ]
         },
         {
-          name: "T-shape",
+          name: "J-shape",
           coords: [
-            { start: [0, 0], end: [3, 0] },
-            { start: [3, 0], end: [3, 1] },
-            { start: [2, 1], end: [2, 3] },
-            { start: [1, 3], end: [1, 1] },
-            { start: [1, 1], end: [0, 1] },
-            { start: [0, 1], end: [0, 0] }
+            { start: [1, 0], end: [2, 0] },
+            { start: [2, 0], end: [2, 3] },
+            { start: [2, 3], end: [0, 3] },
+            { start: [0, 3], end: [0, 2] },
+            { start: [0, 2], end: [1, 2] },
+            { start: [1, 2], end: [1, 0] }
           ]
         },
         {
-          name: "stairs shape",
+          name: "S-shape",
           coords: [
+            { start: [1, 0], end: [2, 0] },
+            { start: [2, 0], end: [2, 2] },
+            { start: [2, 2], end: [1, 2] },
+            { start: [1, 2], end: [1, 3] },
+            { start: [1, 3], end: [0, 3] },
+            { start: [0, 3], end: [0, 1] },
             { start: [0, 1], end: [1, 1] },
-            { start: [1, 1], end: [1, 2] },
-            { start: [1, 2], end: [2, 2] },
-            { start: [2, 2], end: [2, 3] },
-            { start: [2, 3], end: [0, 3] },
-            { start: [0, 3], end: [0, 1] }
+            { start: [1, 1], end: [1, 0] }
           ]
         }
       ];
@@ -519,7 +521,7 @@ export const advancedLogic = {
       const options = ["Option A", "Option B", "Option C", "Option D"];
       const finalAnswerStr = `Option ${correctLabel}`;
 
-      const questionTextTemplate = getQText(`Look at the blue Target ${chosenShape.name} on the top left. Which of the labelled shapes (A, B, C, or D) shows the EXACT same shape but rotated on its side?`, `Find the rotated copy.`);
+      const questionTextTemplate = getQText(`Look at the blue Target ${chosenShape.name} on the top left. Which of the labelled shapes (A, B, C, or D) shows the EXACT same shape but turned around (like a steering wheel)? (Be careful not to choose the flipped one!)`, `Find the turned copy.`);
       const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student featuring a person named \${getRandomNames(1)}.`;
 
       return {
@@ -534,9 +536,9 @@ export const advancedLogic = {
             "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
             "options": ${JSON.stringify(options)},
             "defectMap": null,
-            "hint": "Try turning your head or the screen to see which shape matches exactly.",
+            "hint": "Try turning your head or the screen to see which shape matches exactly. Imagine turning it like a steering wheel! A flipped (mirrored) shape is wrong.",
             "finalAnswer": "${finalAnswerStr}",
-            "solutionSteps": "${finalAnswerStr} is the exact same shape rotated 90 degrees."
+            "solutionSteps": "${finalAnswerStr} is the exact same shape turned around. The others are flipped or stretched."
           },
           "visualEngine": {
             "componentToRender": "GRID_DISPLAY",

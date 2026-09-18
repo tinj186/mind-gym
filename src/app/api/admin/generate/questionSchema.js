@@ -54,7 +54,12 @@ export const UniversalQuestionSchema = z.object({
       'VOLUME_BEAKER',
       'MEASUREMENT_RULER',
       'MASS_SCALE',
-      'NONE'
+      'TIMETABLE',
+      'TIMELINE',
+      'SQUARE_GRID_SHAPE',
+      'GEOMETRY_POLYGON',
+      'AREA_PERIMETER_EXPLORER',
+      'NONE',
     ]), // Registered native visual engines
     componentData: z.record(z.any()).nullable(),
   }),

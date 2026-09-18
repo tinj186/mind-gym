@@ -1,12 +1,14 @@
 # AI Agent Guidelines
 
 ## Prompt Generation Rules
-- **Constrained AI Story Generation:** To ensure high question variety and avoid template repetitiveness, the LLM is allowed to rewrite the descriptive portions of word problems (indicated by a `STORY:` prefix). 
+- **Constrained AI Story Generation:** To ensure high question variety and avoid template repetitiveness, the LLM is allowed to rewrite the descriptive portions of word problems. DO NOT use hardcoded arrays of predefined stories. Instead, provide a highly abstract/generic base template (e.g., `STORY: [Name] takes [time] to [Activity].`) and command the AI to generate a creative math story from scratch.
 - **Strict Hallucination Prevention:** When allowing the AI to generate/rewrite a story, you MUST strictly constrain it via a `CRITICAL INSTRUCTION`. Explicitly command the AI to:
   1. Preserve exact mathematical values and operations.
   2. NEVER add extra unrequested questions (e.g., do not add "How many altogether?").
   3. Keep the final question sentence exactly as provided.
-- **Dynamic Variable Context:** Continue to inject names and items from `variable-bank.js` into the `STORY:` template to give the AI a grounded starting point, preventing it from lazily reusing the same names.
+  4. CRITICAL: Forbid the AI from including the word "STORY:" or any other instructional prefixes in its final generated output.
+- **Dynamic Variable Context:** You MUST actively inject variables (`names`, `activities`, etc.) from `variable-bank.js` directly into your abstract/generic `STORY:` templates. This grounds the AI's story generation and prevents it from hallucinating repetitive names or actions.
+- **MCQ Option Generation (Anti-Hallucination):** The universal generator strictly enforces that Multiple Choice Questions (MCQ) must have exactly 4 options. To prevent the LLM from hallucinating unchecked and mathematically incorrect distractors to fill this quota, you MUST explicitly pre-calculate and provide all 4 exact options in the `aiPrompt` (e.g., `Generate EXACTLY 4 options: "- [Option 1]", "- [Option 2]", ...`). Never ask the LLM to generate just 2 or 3 options for an MCQ, or allow it to invent its own distractors.
 ## Project Structure Rules
 - Always place scratch scripts, testing files, and one-off debugging files in the `scripts/` directory to keep the root directory clean and organized.
 

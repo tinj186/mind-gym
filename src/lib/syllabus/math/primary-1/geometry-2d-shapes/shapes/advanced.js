@@ -1,7 +1,7 @@
 import { getRandomContext } from '@/lib/utils/localization';
 import { getRandomShapes, getRandomColors, getRandomGeometrySubjects, getRandomNames, SHAPES_POOL, COLORS_POOL } from '@/lib/utils/variable-bank';
 
-const colorNames = { "#ef4444": "red", "#3b82f6": "blue", "#eab308": "yellow", "#22c55e": "green", "#a855f7": "purple", "#f97316": "orange" };
+// colorNames removed, COLORS_POOL now provides color names directly.
 const sizeTiers = ["small", "medium", "large"];
 
 const getRandom = (arr, count) => [...arr].sort(() => Math.random() - 0.5).slice(0, count);
@@ -71,12 +71,12 @@ export const advancedVariants = {
 
     const componentData = { layout: "GRID", items };
     const target = items.find(i => i.shapeType === s1 && i.color === c1);
-    const answer = `Item ${target.label}`;
+    const answer = `${target.label}`;
 
-    const questionTextTemplate = getQText(`Which item is a ${s1} AND is colored ${colorNames[c1]}?`, `Find the ${colorNames[c1]} ${s1}.`);
+    const questionTextTemplate = getQText(`Which item is a ${s1} AND is colored ${c1}?`, `Find the ${c1} ${s1}.`);
     const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers/shapes MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
 
-    let options = ["Item A", "Item B", "Item C"];
+    let options = ["A", "B", "C"];
     let mcqOptions = 'null';
     let defectMapStr = 'null';
     if (type === 'MCQ') {
@@ -99,9 +99,9 @@ export const advancedVariants = {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
           "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`You need to find a shape that matches both rules: it must be a ${s1} and also be ${colorNames[c1]}.`, `Match both rules.`))},
+          "hint": ${JSON.stringify(getQText(`You need to find a shape that matches both rules: it must be a ${s1} and also be ${c1}.`, `Match both rules.`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`Look at each item. Only Item ${target.label} is both a ${s1} and colored ${colorNames[c1]}.`, `It is ${answer}.`))}
+          "solutionSteps": ${JSON.stringify(getQText(`Look at each item. Only Item ${target.label} is both a ${s1} and colored ${c1}.`, `It is ${answer}.`))}
         },
         "visualEngine": {
           "componentToRender": "SHAPE_DISPLAY",
@@ -370,12 +370,12 @@ export const advancedVariants = {
         { shapeType: s2, color: c2, size: "medium", label: "4" }
       ]
     };
-    const answer = "Item 3";
+    const answer = "3";
 
-    const questionTextTemplate = getQText(`Find the item that fits this rule: It must be a ${s2} AND it must be ${colorNames[c1]}.`, `Find the ${colorNames[c1]} ${s2}.`);
+    const questionTextTemplate = getQText(`Find the item that fits this rule: It must be a ${s2} AND it must be ${c1}.`, `Find the ${c1} ${s2}.`);
     const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers/shapes MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
 
-    let options = ["Item 1", "Item 2", "Item 3", "Item 4"];
+    let options = ["1", "2", "3", "4"];
     let mcqOptions = 'null';
     let defectMapStr = 'null';
     if (type === 'MCQ') {
@@ -400,7 +400,7 @@ export const advancedVariants = {
           "defectMap": ${defectMapStr},
           "hint": ${JSON.stringify(getQText(`Look for the shape first, then check if it has the right color.`, `Check shape and color.`))},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`Only Item 3 is a ${s2} that is also colored ${colorNames[c1]}.`, `Item 3 fits the rule.`))}
+          "solutionSteps": ${JSON.stringify(getQText(`Only Item 3 is a ${s2} that is also colored ${c1}.`, `Item 3 fits the rule.`))}
         },
         "visualEngine": {
           "componentToRender": "SHAPE_DISPLAY",

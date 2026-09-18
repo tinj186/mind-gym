@@ -9,22 +9,22 @@ export const foundationVariants = {
       targetLength - 1,
       targetLength + 1
     ].sort(() => Math.random() - 0.5);
-    
+
     const itemsArr = lengthsArr.map((len, index) => ({
       label: `Line ${String.fromCharCode(65 + index)}`,
       length: len
     }));
-    
+
     const componentData = { items: itemsArr, unitIcon: "ruler.svg" };
     const answer = itemsArr.find(i => i.length === targetLength).label;
-    
+
     const questionTextTemplate = getQText(`Which line segment is exactly ${targetLength} cm long? (Note: Each unit stands for 1 cm)`, `Find the ${targetLength} cm line segment.`);
-    
+
     let options = itemsArr.map(i => i.label);
     let mcqOptions = 'null';
     let defectMapStr = 'null';
-    
-    const forceMCQ = true;
+
+    const forceMCQ = false;
     if (type === 'MCQ' || forceMCQ) {
       mcqOptions = JSON.stringify(options);
       let defectMapObj = {};
@@ -67,23 +67,23 @@ export const foundationVariants = {
       len3 = Math.floor(Math.random() * 5) + 3;
     }
     const lengthsArr = [len1, len2, len3].sort(() => Math.random() - 0.5);
-    
+
     const itemsArr = lengthsArr.map((len, index) => ({
       label: `Line ${String.fromCharCode(65 + index)}`,
       length: len
     }));
-    
+
     const componentData = { items: itemsArr, unitIcon: "ruler.svg" };
     const maxLen = Math.max(...lengthsArr);
     const answer = itemsArr.find(i => i.length === maxLen).label;
-    
+
     const questionTextTemplate = getQText(`Look at the lines. Which line segment is the longest?`, `Which line is the longest?`);
-    
+
     let options = itemsArr.map(i => i.label);
     let mcqOptions = 'null';
     let defectMapStr = 'null';
-    
-    const forceMCQ = true;
+
+    const forceMCQ = false;
     if (type === 'MCQ' || forceMCQ) {
       mcqOptions = JSON.stringify(options);
       let defectMapObj = {};
@@ -126,23 +126,23 @@ export const foundationVariants = {
       len3 = Math.floor(Math.random() * 5) + 3;
     }
     const lengthsArr = [len1, len2, len3].sort(() => Math.random() - 0.5);
-    
+
     const itemsArr = lengthsArr.map((len, index) => ({
       label: `Line ${String.fromCharCode(65 + index)}`,
       length: len
     }));
-    
+
     const componentData = { items: itemsArr, unitIcon: "ruler.svg" };
     const minLen = Math.min(...lengthsArr);
     const answer = itemsArr.find(i => i.length === minLen).label;
-    
+
     const questionTextTemplate = getQText(`Look at the lines. Which line segment is the shortest?`, `Which line is the shortest?`);
-    
+
     let options = itemsArr.map(i => i.label);
     let mcqOptions = 'null';
     let defectMapStr = 'null';
-    
-    const forceMCQ = true;
+
+    const forceMCQ = false;
     if (type === 'MCQ' || forceMCQ) {
       mcqOptions = JSON.stringify(options);
       let defectMapObj = {};
@@ -183,26 +183,26 @@ export const foundationVariants = {
       len2 = Math.floor(Math.random() * 5) + 3;
     }
     const lengthsArr = [len1, len2].sort(() => Math.random() - 0.5);
-    
+
     const itemsArr = lengthsArr.map((len, index) => ({
       label: `Line ${String.fromCharCode(65 + index)}`,
       length: len
     }));
-    
+
     const componentData = { items: itemsArr, unitIcon: "ruler.svg" };
-    
+
     const isTrue = Math.random() > 0.5;
     const targetLine = itemsArr[Math.floor(Math.random() * itemsArr.length)];
     const statedLength = isTrue ? targetLine.length : (targetLine.length + (Math.random() > 0.5 ? 1 : -1));
-    const answer = isTrue ? "True" : "False";
-    
-    const questionTextTemplate = getQText(`${targetLine.label} is exactly ${statedLength} cm long. Is this True or False?`, `Is ${targetLine.label} ${statedLength} cm long?`);
-    
-    let options = ["True", "False"];
+    const answer = isTrue ? "Yes" : "No";
+
+    const questionTextTemplate = getQText(`Is ${targetLine.label} exactly ${statedLength} cm long? (Yes or No)`, `Is ${targetLine.label} exactly ${statedLength} cm long? (Answer Yes or No)`);
+
+    let options = ["Yes", "No"];
     let mcqOptions = 'null';
     let defectMapStr = 'null';
-    
-    const forceMCQ = true;
+
+    const forceMCQ = false;
     if (type === 'MCQ' || forceMCQ) {
       mcqOptions = JSON.stringify(options);
       let defectMapObj = {};
@@ -223,7 +223,7 @@ export const foundationVariants = {
           "defectMap": ${defectMapStr},
           "hint": "Count the cm units for the line mentioned in the question.",
           "finalAnswer": "${answer}",
-          "solutionSteps": "Counting the units, ${targetLine.label} is exactly ${targetLine.length} cm long. So the statement is ${answer}."
+          "solutionSteps": "Counting the units, ${targetLine.label} is exactly ${targetLine.length} cm long. So the answer is ${answer}."
         },
         "visualEngine": {
           "componentToRender": "MEASUREMENT_RULER",
@@ -241,21 +241,21 @@ export const foundationVariants = {
     let other2 = Math.floor(Math.random() * 4) + 3;
     while (other1 === sameLen) other1 = Math.floor(Math.random() * 4) + 3;
     while (other2 === sameLen || other2 === other1) other2 = Math.floor(Math.random() * 4) + 3;
-    
+
     const lengthsArr = [sameLen, sameLen, other1, other2].sort(() => Math.random() - 0.5);
-    
+
     const itemsArr = lengthsArr.map((len, index) => ({
       label: `Line ${String.fromCharCode(65 + index)}`,
       length: len
     }));
-    
+
     const componentData = { items: itemsArr, unitIcon: "ruler.svg" };
-    
+
     const sameItems = itemsArr.filter(i => i.length === sameLen);
     const answer = `${sameItems[0].label} and ${sameItems[1].label}`;
-    
+
     const questionTextTemplate = getQText(`Which two line segments have the exact same length?`, `Find the two lines with the same length.`);
-    
+
     // Generate valid combinations for options
     const allLabels = itemsArr.map(i => i.label);
     const possibleOptions = [];
@@ -264,14 +264,14 @@ export const foundationVariants = {
         possibleOptions.push(`${allLabels[i]} and ${allLabels[j]}`);
       }
     }
-    
+
     let options = [answer, ...possibleOptions.filter(o => o !== answer).sort(() => Math.random() - 0.5).slice(0, 3)];
     options = options.sort(() => Math.random() - 0.5);
-    
+
     let mcqOptions = 'null';
     let defectMapStr = 'null';
-    
-    const forceMCQ = true;
+
+    const forceMCQ = false;
     if (type === 'MCQ' || forceMCQ) {
       mcqOptions = JSON.stringify(options);
       let defectMapObj = {};

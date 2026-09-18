@@ -535,6 +535,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
           {feedback !== 'solution_revealed' ? (
             normalizedQuestion.inputRequirement?.inputType === 'MULTI_STEP_INPUT' && normalizedQuestion.inputRequirement?.steps ? (
               <MultiStepInput 
+                key={`multi-${currentIndex}`}
                 steps={normalizedQuestion.inputRequirement.steps} 
                 onSubmit={handleAnswer} 
                 disabled={feedback === 'correct'}

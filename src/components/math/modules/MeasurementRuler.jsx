@@ -445,11 +445,32 @@ export default function MeasurementRuler({ data, topic, difficulty, hideCardStyl
     ...(data?.items || []).map(item => (item.startOffset || 0) + item.length)
   );
 
-  const unitSize = Math.min(48, Math.floor(480 / maxTotalUnits));
+  const [availableWidth, setAvailableWidth] = useState(480);
+  const horizontalContainerRef = useRef(null);
+
+  React.useEffect(() => {
+    if (!horizontalContainerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        // Calculate remaining width for the ruler: total width - label width (112px) - gap (16px) - safety padding
+        const newWidth = entry.contentRect.width - 150;
+        if (newWidth > 100) {
+          setAvailableWidth(newWidth);
+        }
+      }
+    });
+    observer.observe(horizontalContainerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  // Use dynamic width, but cap it so it doesn't get ridiculously large on ultra-wide screens
+  const unitSize = Math.min(48, availableWidth / maxTotalUnits);
 
   return (
-    <div className={`${containerStyle} space-y-8`}>
-      {data?.items?.map((mItem, idx) => {
+    <div ref={horizontalContainerRef} className={`${containerStyle} overflow-hidden`}>
+      <div className="w-full overflow-x-auto pb-4">
+        <div className="min-w-[400px] flex flex-col space-y-8">
+          {data?.items?.map((mItem, idx) => {
         const offsetLeftPadding = (mItem.startOffset || 0) * unitSize;
         const targetWidth = mItem.length * unitSize;
         const assetFile = getHorizontalAsset(mItem.label);
@@ -526,6 +547,8 @@ export default function MeasurementRuler({ data, topic, difficulty, hideCardStyl
           </div>
         );
       })}
+        </div>
+      </div>
     </div>
   );
 }

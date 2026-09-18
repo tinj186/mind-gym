@@ -16,10 +16,7 @@ export class GenerationEngine {
       k => k.toLowerCase() === (difficulty || "Standard").toLowerCase()
     ) || "Standard";
 
-    // ENFORCE SYLLABUS DEFINITION: Advanced difficulty strictly forbids Short Questions (Pure Math)
-    if (safeDifficulty === 'Advanced' && type === 'Short Question') {
-      throw new Error("Syllabus Violation: Advanced difficulty strictly forbids Pure Math / Short Questions. Please generate Structured Questions or MCQs for Advanced difficulty.");
-    }
+    // Removed: ENFORCE SYLLABUS DEFINITION: Advanced difficulty strictly forbids Short Questions (Pure Math)
     const safeSubtopic = String(subtopic || "").trim().toLowerCase();
     
     // 1. Get Level Specific Strategy

@@ -36,7 +36,7 @@ export function normalizeQuestionData(raw) {
   const rawInputReq = modelData?.inputRequirement || raw.inputRequirement || { inputType: 'STANDARD_TEXT' };
   const inputRequirement = typeof rawInputReq === 'string' 
     ? { inputType: rawInputReq } 
-    : rawInputReq;
+    : { ...rawInputReq, inputType: rawInputReq.inputType || rawInputReq.InputType || 'STANDARD_TEXT' };
 
   const acceptedAnswers = modelData?.acceptedAnswers || raw.acceptedAnswers || [];
 

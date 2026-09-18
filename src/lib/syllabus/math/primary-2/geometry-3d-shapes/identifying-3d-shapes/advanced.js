@@ -186,12 +186,14 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
   } else if (activeVariant === 'advanced_hidden_block_difference') {
     const isAdding = Math.random() > 0.5;
-    const baseCount = getRandomInt(3, 7);
-    const difference = getRandomInt(1, 5);
+    const baseCount = getRandomInt(4, 7);
+    const difference = getRandomInt(1, 3);
     const finalCount = isAdding ? baseCount + difference : baseCount - difference;
 
     // Create random visually-offset structures
     const generateStructure = (count) => {
+      if (count <= 0) return [];
+      
       const blocks = [];
       const used = new Set();
       blocks.push({ x: 0, y: 0, z: 0 });

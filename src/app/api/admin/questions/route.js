@@ -22,7 +22,23 @@ export async function GET(req) {
     where = { id: { equals: id, mode: 'insensitive' } };
   } else {
     if (heuristic) {
-      where = { heuristic: heuristic };
+      let searchHeuristic = heuristic;
+      
+      const normalize = (s) => String(s || '').toLowerCase().replace(/[\s.,:;!?]+/g, '');
+      const normalizedQuery = normalize(heuristic);
+
+      // Reverse-lookup: If the user pasted the long descriptive text, translate it to the short key
+      for (const blueprint of Object.values(blueprintRegistry)) {
+        if (blueprint.variants) {
+          const shortKey = Object.keys(blueprint.variants).find(key => normalize(blueprint.variants[key]) === normalizedQuery);
+          if (shortKey) {
+            searchHeuristic = shortKey;
+            break;
+          }
+        }
+      }
+
+      where = { heuristic: searchHeuristic };
       takeAmount = 50; // Match the limit from the Server Component to prevent DB overload
       
       // Smart Egress Protection
@@ -31,7 +47,7 @@ export async function GET(req) {
         for (const row of syllabusRows) {
           const blueprintId = `${row.level}-${row.topic}-${row.subtopic}`;
           const blueprint = blueprintRegistry[blueprintId];
-          if (blueprint && blueprint.variants && blueprint.variants[heuristic]) {
+          if (blueprint && blueprint.variants && blueprint.variants[searchHeuristic]) {
             where.level = row.level;
             where.topic = row.topic;
             if (row.subtopic) where.subtopic = row.subtopic;
