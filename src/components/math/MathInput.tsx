@@ -230,7 +230,7 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
         { label: "'", command: ["insert", "'"] },
         { label: "=", command: ["insert", "="], class: "action font-black text-blue-600" },
         { label: "+", command: ["insert", "+"], class: "action font-black" },
-        { label: "⏎", command: ["insert", "\\text{SUBMIT_ACTION}"], class: "action font-black text-white bg-blue-600" }
+        { label: "⏎", command: ["insert", "\\Omega"], class: "action font-black text-white bg-blue-600" }
       ]);
 
       return rows;
@@ -263,8 +263,8 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
           { label: "⌫", command: ["deleteBackward"], class: "action font-black text-rose-500 bg-rose-50" }
         ],
         [
-          { label: "space", command: ["insert", "\\ "], width: 7 },
-          { label: "⏎", command: ["insert", "\\text{SUBMIT_ACTION}"], class: "action font-black text-white bg-blue-600", width: 3 }
+          { label: "space", command: ["insert", "\\space"], width: 7 },
+          { label: "⏎", command: ["insert", "\\Omega"], class: "action font-black text-white bg-blue-600", width: 3 }
         ]
       ];
     };
@@ -367,8 +367,8 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
       const target = e.target as any;
       let newValue = target?.value || target?.getValue?.() || "";
       
-      if (newValue.includes('\\text{SUBMIT_ACTION}')) {
-        newValue = newValue.replace('\\text{SUBMIT_ACTION}', '');
+      if (newValue.includes('\\Omega')) {
+        newValue = newValue.replace(/\\Omega/g, '').trim();
         target.value = newValue;
         if (onEnterRef.current) {
           onEnterRef.current();
