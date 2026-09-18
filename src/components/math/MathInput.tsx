@@ -230,7 +230,7 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
         { label: "'", command: ["insert", "'"] },
         { label: "=", command: ["insert", "="], class: "action font-black text-blue-600" },
         { label: "+", command: ["insert", "+"], class: "action font-black" },
-        { label: "⏎", command: "commit", class: "action font-black text-white bg-blue-600" }
+        { label: "⏎", command: ["insert", "\\text{SUBMIT_ACTION}"], class: "action font-black text-white bg-blue-600" }
       ]);
 
       return rows;
@@ -263,8 +263,8 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
           { label: "⌫", command: ["deleteBackward"], class: "action font-black text-rose-500 bg-rose-50" }
         ],
         [
-          { label: "space", command: ["insert", " "], width: 7 },
-          { label: "⏎", command: "commit", class: "action font-black text-white bg-blue-600", width: 3 }
+          { label: "space", command: ["insert", "\\ "], width: 7 },
+          { label: "⏎", command: ["insert", "\\text{SUBMIT_ACTION}"], class: "action font-black text-white bg-blue-600", width: 3 }
         ]
       ];
     };
@@ -365,7 +365,16 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
 
     const onInputEvent = (e: Event) => {
       const target = e.target as any;
-      const newValue = target?.value || target?.getValue?.() || "";
+      let newValue = target?.value || target?.getValue?.() || "";
+      
+      if (newValue.includes('\\text{SUBMIT_ACTION}')) {
+        newValue = newValue.replace('\\text{SUBMIT_ACTION}', '');
+        target.value = newValue;
+        if (onEnterRef.current) {
+          onEnterRef.current();
+        }
+        return;
+      }
       
       // Use the ref to check against the latest value to avoid stale closure issues
       if (newValue === mfRef.current?.value && newValue === value) return;
