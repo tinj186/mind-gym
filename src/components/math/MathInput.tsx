@@ -142,25 +142,25 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
       }
       if (gradeLevel >= 4) {
         toolKeys.push({ command: ["insert", "\\angle", { mode: "math" }], label: "angle" });
-        toolKeys.push({ label: "<", key: "<" });
-        toolKeys.push({ label: ">", key: ">" });
-        toolKeys.push({ label: "(", key: "(" });
+        toolKeys.push({ label: "<", command: ["insert", "<"] });
+        toolKeys.push({ label: ">", command: ["insert", ">"] });
+        toolKeys.push({ label: "(", command: ["insert", "("] });
         toolKeys.push({ label: ")" }); // key not strictly needed if label matches
       }
       if (gradeLevel >= 5) {
         toolKeys.push({ command: ["insert", "#?^{2}", { mode: "math" }], label: "x²" });
         toolKeys.push({ command: ["insert", "#?^{3}", { mode: "math" }], label: "x³" });
-        toolKeys.push({ label: "%", key: "%" });
+        toolKeys.push({ label: "%", command: ["insert", "%"] });
       }
 
       // Add common operators and currency at the end
       toolKeys.push(
-        { label: "+", key: "+", class: "action font-black" },
-        { label: "−", key: "-", class: "action font-black" },
+        { label: "+", command: ["insert", "+"], class: "action font-black" },
+        { label: "−", command: ["insert", "-"], class: "action font-black" },
         { command: ["insert", "\\times", { mode: "math" }], label: "×", class: "action font-black" },
         { command: ["insert", "\\div", { mode: "math" }], label: "÷", class: "action font-black" },
-        { label: "$", key: "$", class: "action font-black text-emerald-600" },
-        { label: "¢", key: "¢", class: "action font-black text-emerald-600" }
+        { label: "$", command: ["insert", "$"], class: "action font-black text-emerald-600" },
+        { label: "¢", command: ["insert", "¢"], class: "action font-black text-emerald-600" }
       );
 
       const rows = [toolKeys];
@@ -181,15 +181,15 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
       }
       if (gradeLevel >= 4) {
         toolKeys.push({ command: ["insert", "\\angle", { mode: "math" }], label: "angle" });
-        toolKeys.push({ label: "<", key: "<" });
-        toolKeys.push({ label: ">", key: ">" });
-        toolKeys.push({ label: "(", key: "(" });
-        toolKeys.push({ label: ")", key: ")" });
+        toolKeys.push({ label: "<", command: ["insert", "<"] });
+        toolKeys.push({ label: ">", command: ["insert", ">"] });
+        toolKeys.push({ label: "(", command: ["insert", "("] });
+        toolKeys.push({ label: ")", command: ["insert", ")"] });
       }
       if (gradeLevel >= 5) {
         toolKeys.push({ command: ["insert", "#?^{2}", { mode: "math" }], label: "x²" });
         toolKeys.push({ command: ["insert", "#?^{3}", { mode: "math" }], label: "x³" });
-        toolKeys.push({ label: "%", key: "%" });
+        toolKeys.push({ label: "%", command: ["insert", "%"] });
       }
 
       const rows = [];
@@ -201,35 +201,35 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
 
       // Compact 5x4 Numpad Grid
       rows.push([
-        { label: "7", key: "7" }, 
-        { label: "8", key: "8" }, 
-        { label: "9", key: "9" },
+        { label: "7", command: ["insert", "7"] }, 
+        { label: "8", command: ["insert", "8"] }, 
+        { label: "9", command: ["insert", "9"] },
         { command: ["insert", "\\div", { mode: "math" }], label: "÷", class: "action font-black" },
         { label: "⌫", command: ["deleteBackward"], class: "action font-black text-rose-500 bg-rose-50" }
       ]);
 
       rows.push([
-        { label: "4", key: "4" }, 
-        { label: "5", key: "5" }, 
-        { label: "6", key: "6" },
+        { label: "4", command: ["insert", "4"] }, 
+        { label: "5", command: ["insert", "5"] }, 
+        { label: "6", command: ["insert", "6"] },
         { command: ["insert", "\\times", { mode: "math" }], label: "×", class: "action font-black" },
-        { label: "$", key: "$", class: "action font-black text-emerald-600" }
+        { label: "$", command: ["insert", "$"], class: "action font-black text-emerald-600" }
       ]);
 
       rows.push([
-        { label: "1", key: "1" }, 
-        { label: "2", key: "2" }, 
-        { label: "3", key: "3" },
-        { label: "−", key: "-", class: "action font-black" },
-        { label: "¢", key: "¢", class: "action font-black text-emerald-600" }
+        { label: "1", command: ["insert", "1"] }, 
+        { label: "2", command: ["insert", "2"] }, 
+        { label: "3", command: ["insert", "3"] },
+        { label: "−", command: ["insert", "-"], class: "action font-black" },
+        { label: "¢", command: ["insert", "¢"], class: "action font-black text-emerald-600" }
       ]);
 
       rows.push([
-        { label: "0", key: "0" }, 
-        { label: ".", key: "." },
-        { label: "'", key: "'" },
-        { label: "=", key: "=", class: "action font-black text-blue-600" },
-        { label: "+", key: "+", class: "action font-black" },
+        { label: "0", command: ["insert", "0"] }, 
+        { label: ".", command: ["insert", "."] },
+        { label: "'", command: ["insert", "'"] },
+        { label: "=", command: ["insert", "="], class: "action font-black text-blue-600" },
+        { label: "+", command: ["insert", "+"], class: "action font-black" },
         { label: "⏎", command: "commit", class: "action font-black text-white bg-blue-600" }
       ]);
 
@@ -239,31 +239,31 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
     const buildWordsLayoutRows = () => {
       return [
         [
-          { label: "1", key: "1" }, { label: "2", key: "2" }, { label: "3", key: "3" },
-          { label: "4", key: "4" }, { label: "5", key: "5" }, { label: "6", key: "6" },
-          { label: "7", key: "7" }, { label: "8", key: "8" }, { label: "9", key: "9" },
-          { label: "0", key: "0" }
+          { label: "1", command: ["insert", "1"] }, { label: "2", command: ["insert", "2"] }, { label: "3", command: ["insert", "3"] },
+          { label: "4", command: ["insert", "4"] }, { label: "5", command: ["insert", "5"] }, { label: "6", command: ["insert", "6"] },
+          { label: "7", command: ["insert", "7"] }, { label: "8", command: ["insert", "8"] }, { label: "9", command: ["insert", "9"] },
+          { label: "0", command: ["insert", "0"] }
         ],
         [
-          { label: "q", key: "q" }, { label: "w", key: "w" }, { label: "e", key: "e" },
-          { label: "r", key: "r" }, { label: "t", key: "t" }, { label: "y", key: "y" },
-          { label: "u", key: "u" }, { label: "i", key: "i" }, { label: "o", key: "o" },
-          { label: "p", key: "p" }
+          { label: "q", command: ["insert", "q"] }, { label: "w", command: ["insert", "w"] }, { label: "e", command: ["insert", "e"] },
+          { label: "r", command: ["insert", "r"] }, { label: "t", command: ["insert", "t"] }, { label: "y", command: ["insert", "y"] },
+          { label: "u", command: ["insert", "u"] }, { label: "i", command: ["insert", "i"] }, { label: "o", command: ["insert", "o"] },
+          { label: "p", command: ["insert", "p"] }
         ],
         [
-          { label: "a", key: "a" }, { label: "s", key: "s" }, { label: "d", key: "d" },
-          { label: "f", key: "f" }, { label: "g", key: "g" }, { label: "h", key: "h" },
-          { label: "j", key: "j" }, { label: "k", key: "k" }, { label: "l", key: "l" },
-          { label: "'", key: "'", class: "font-black text-emerald-600" } 
+          { label: "a", command: ["insert", "a"] }, { label: "s", command: ["insert", "s"] }, { label: "d", command: ["insert", "d"] },
+          { label: "f", command: ["insert", "f"] }, { label: "g", command: ["insert", "g"] }, { label: "h", command: ["insert", "h"] },
+          { label: "j", command: ["insert", "j"] }, { label: "k", command: ["insert", "k"] }, { label: "l", command: ["insert", "l"] },
+          { label: "'", command: ["insert", "'"], class: "font-black text-emerald-600" } 
         ],
         [
-          { label: "z", key: "z" }, { label: "x", key: "x" }, { label: "c", key: "c" },
-          { label: "v", key: "v" }, { label: "b", key: "b" }, { label: "n", key: "n" },
-          { label: "m", key: "m" }, { label: ",", key: "," }, { label: "?", key: "?" },
+          { label: "z", command: ["insert", "z"] }, { label: "x", command: ["insert", "x"] }, { label: "c", command: ["insert", "c"] },
+          { label: "v", command: ["insert", "v"] }, { label: "b", command: ["insert", "b"] }, { label: "n", command: ["insert", "n"] },
+          { label: "m", command: ["insert", "m"] }, { label: ",", command: ["insert", ","] }, { label: "?", command: ["insert", "?"] },
           { label: "⌫", command: ["deleteBackward"], class: "action font-black text-rose-500 bg-rose-50" }
         ],
         [
-          { label: "space", key: " ", width: 7 },
+          { label: "space", command: ["insert", " "], width: 7 },
           { label: "⏎", command: "commit", class: "action font-black text-white bg-blue-600", width: 3 }
         ]
       ];
@@ -385,13 +385,16 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
     };
 
     const onCommitEvent = (e: Event) => {
+      const activeTagName = document.activeElement?.tagName.toLowerCase();
       const isFocused = 
         document.activeElement === currentMf || 
         currentMf.contains(document.activeElement) ||
-        (currentMf.shadowRoot && currentMf.shadowRoot.activeElement !== null);
+        (currentMf.shadowRoot && currentMf.shadowRoot.activeElement !== null) ||
+        activeTagName === 'math-virtual-keyboard' ||
+        activeTagName === 'math-field';
 
       if (!isFocused) {
-        console.log(`👻 [MathInput] Ignoring ghost commit on blur.`);
+        console.log(`👻 [MathInput] Ignoring ghost commit on blur. Active Element: ${activeTagName}`);
         return;
       }
 
