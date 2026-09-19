@@ -379,10 +379,12 @@ ${isMCQ ? `Generate EXACTLY 4 options:
       askText = `The target area is ${targetArea} ${unit}². The figure currently shows some shaded squares. How many more squares are needed?`;
     } else if (isStructure) {
       askText = `Min Jie wants to shade a total area of ${targetArea} ${unit}² on the grid. He has already shaded a block that is ${w} squares wide and ${h} squares long. How many more squares does he need to shade?`;
+      const additionEq = `${Array(h).fill(w).join(" + ")} = ${shadedArea}`;
+      const additionEqAlt = `${Array(w).fill(h).join(" + ")} = ${shadedArea}`;
       inputRequirementStr = JSON.stringify({
         inputType: "MULTI_STEP_INPUT",
         steps: [
-          { label: "Write the working equation to find the area already shaded:", expectedAnswer: `${w} x ${h} = ${shadedArea}`, acceptedAnswers: [`${h} x ${w} = ${shadedArea}`] },
+          { label: "Write the working equation to group and count the area already shaded:", expectedAnswer: additionEq, acceptedAnswers: [additionEqAlt] },
           { label: "Write the working equation to find the remaining area needed:", expectedAnswer: `${targetArea} - ${shadedArea} = ${missingArea}`, acceptedAnswers: [] },
           { label: "Number of additional squares to shade:", expectedAnswer: `${missingArea}`, acceptedAnswers: [] }
         ]
