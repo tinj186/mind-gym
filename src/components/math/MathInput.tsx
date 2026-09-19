@@ -233,20 +233,11 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
         { label: "⏎", command: ["insert", "\\Omega"], class: "action font-black text-white bg-blue-600" }
       ]);
 
-      rows.unshift([
-        { label: "▼", command: "hideVirtualKeyboard", class: "action font-black text-slate-600 bg-slate-200", width: 2 },
-        { label: "", class: "separator", width: 8 }
-      ]);
-
       return rows;
     };
 
     const buildWordsLayoutRows = () => {
       return [
-        [
-          { label: "▼", command: "hideVirtualKeyboard", class: "action font-black text-slate-600 bg-slate-200", width: 1.5 },
-          { label: "", class: "separator", width: 8.5 }
-        ],
         [
           { label: "1", command: ["insert", "1"] }, { label: "2", command: ["insert", "2"] }, { label: "3", command: ["insert", "3"] },
           { label: "4", command: ["insert", "4"] }, { label: "5", command: ["insert", "5"] }, { label: "6", command: ["insert", "6"] },
@@ -305,6 +296,12 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
             label: "abc",
             tooltip: "MOE Primary Words Layout",
             rows: buildWordsLayoutRows()
+          },
+          {
+            name: "hide-kbd",
+            label: "▼",
+            tooltip: "Hide Keyboard",
+            rows: []
           }
         ];
       }
@@ -467,6 +464,22 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
     currentMf.addEventListener('focusout', onFocusOut);
     currentMf.addEventListener('click', onClick);
     
+    const handleGlobalClick = (e: Event) => {
+      const path = (e as any).composedPath?.() || [];
+      for (const el of path) {
+        if (el instanceof HTMLElement) {
+          if (el.getAttribute('data-tooltip') === 'Hide Keyboard' || el.innerText?.trim() === '▼' || el.textContent?.trim() === '▼') {
+            const mvk = (window as any).mathVirtualKeyboard;
+            if (mvk) mvk.hide();
+            e.stopPropagation();
+            e.preventDefault();
+            return;
+          }
+        }
+      }
+    };
+    window.addEventListener('pointerdown', handleGlobalClick, { capture: true });
+
     console.log('✅ [MathInput] Event listeners attached successfully.');
 
     cleanupEvents = () => {
@@ -476,6 +489,7 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
       currentMf.removeEventListener('focusin', onFocusIn);
       currentMf.removeEventListener('focusout', onFocusOut);
       currentMf.removeEventListener('click', onClick);
+      window.removeEventListener('pointerdown', handleGlobalClick, { capture: true } as any);
     };
     });
 
