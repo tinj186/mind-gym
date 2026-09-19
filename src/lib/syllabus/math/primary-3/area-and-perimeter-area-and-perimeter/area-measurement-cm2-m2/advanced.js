@@ -20,17 +20,22 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
 
     visualEngineStr = JSON.stringify({
       componentToRender: "BAR_MODEL",
-        componentData: { isStatic: true,
-        bars: [
-          { segments: [{ value: areaA, label: `A: ${areaA}`, color: "blue" }] },
-          { segments: [{ value: areaB, label: "B", color: "red" }], alignment: "left" },
-          { segments: [{ value: areaC, label: "C", color: "green" }], alignment: "left" }
-        ],
-        differences: [
-          { fromBar: 1, toBar: 0, label: `${diff1} larger`, color: "orange" },
-          { fromBar: 1, toBar: 2, label: `${diff2} smaller`, color: "purple" }
-        ]
-      }
+      componentData: [
+        {
+          isStatic: true,
+          modelType: 'COMPARISON',
+          bar1: { value: areaA, name: "Figure X", displayValue: `${areaA}` },
+          bar2: { value: areaB, name: "Figure Y", displayValue: "?" },
+          difference: { displayValue: `${diff1} larger` }
+        },
+        {
+          isStatic: true,
+          modelType: 'COMPARISON',
+          bar1: { value: areaB, name: "Figure Y", displayValue: "?" },
+          bar2: { value: areaC, name: "Figure Z", displayValue: "?" },
+          difference: { displayValue: `${diff2} smaller` }
+        }
+      ]
     });
 
     let askText = `Figure X has an area of ${areaA} ${unit}². Figure Y has an area ${diff1} ${unit}² larger than Figure X. Figure Z has an area ${diff2} ${unit}² smaller than Figure Y. What is the total area of all three figures?`;
@@ -213,18 +218,15 @@ ${isMCQ ? `Generate EXACTLY 4 options:
 
     visualEngineStr = JSON.stringify({
       componentToRender: "BAR_MODEL",
-        componentData: { isStatic: true,
-        bars: [
-          {
-            segments: [
-              { value: unitArea, label: `${unitArea}`, color: "blue" },
-              { value: unitArea, label: `${unitArea}`, color: "blue" },
-              { value: totalArea - (unitArea * 2), label: "...", color: "gray" }
-            ],
-            bracketLabel: `Total: ${totalArea} ${unit}²`,
-            bracketPosition: "top"
-          }
-        ]
+      componentData: {
+        isStatic: true,
+        modelType: 'PART_WHOLE',
+        parts: [
+          { value: unitArea, label: `${unitArea}`, bgClass: 'bg-blue-500 text-white' },
+          { value: unitArea, label: `${unitArea}`, bgClass: 'bg-blue-500 text-white' },
+          { value: totalArea - (unitArea * 2), label: "...", bgClass: 'bg-slate-400 text-white' }
+        ],
+        whole: `${totalArea} ${unit}²`
       }
     });
 
@@ -278,17 +280,14 @@ ${isMCQ ? `Generate EXACTLY 4 options:
 
     visualEngineStr = JSON.stringify({
       componentToRender: "BAR_MODEL",
-        componentData: { isStatic: true,
-        bars: [
-          {
-            segments: [
-              { value: areaA, label: `Patch 1: ${areaA}`, color: "blue" },
-              { value: areaB, label: `Patch 2: ${areaB}`, color: "green" }
-            ],
-            bracketLabel: `Total Area: ?`,
-            bracketPosition: "top"
-          }
-        ]
+      componentData: {
+        isStatic: true,
+        modelType: 'PART_WHOLE',
+        parts: [
+          { value: areaA, label: `Patch 1: ${areaA}`, bgClass: 'bg-blue-500 text-white' },
+          { value: areaB, label: `Patch 2: ${areaB}`, bgClass: 'bg-green-500 text-white' }
+        ],
+        whole: "?"
       }
     });
 

@@ -167,17 +167,14 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     if (isAddition) {
       visualEngineStr = JSON.stringify({
         componentToRender: "BAR_MODEL",
-        componentData: { isStatic: true,
-          bars: [
-            {
-              segments: [
-                { value: areaA, label: `Rug A: ${areaA} ${unit}²`, color: "blue" },
-                { value: areaB, label: `Rug B: ${areaB} ${unit}²`, color: "red" }
-              ],
-              bracketLabel: "?",
-              bracketPosition: "top"
-            }
-          ]
+        componentData: {
+          isStatic: true,
+          modelType: 'PART_WHOLE',
+          parts: [
+            { value: areaA, label: `Rug A: ${areaA} ${unit}²`, bgClass: 'bg-blue-500 text-white' },
+            { value: areaB, label: `Rug B: ${areaB} ${unit}²`, bgClass: 'bg-red-500 text-white' }
+          ],
+          whole: "?"
         }
       });
 
@@ -202,17 +199,14 @@ ${isMCQ ? `Generate EXACTLY 4 options:
       // Subtraction (given total and one part)
       visualEngineStr = JSON.stringify({
         componentToRender: "BAR_MODEL",
-        componentData: { isStatic: true,
-          bars: [
-            {
-              segments: [
-                { value: areaA, label: `First: ${areaA} ${unit}²`, color: "blue" },
-                { value: areaB, label: `?`, color: "gray" }
-              ],
-              bracketLabel: `Total: ${totalArea} ${unit}²`,
-              bracketPosition: "top"
-            }
-          ]
+        componentData: {
+          isStatic: true,
+          modelType: 'PART_WHOLE',
+          parts: [
+            { value: areaA, label: `First: ${areaA} ${unit}²`, bgClass: 'bg-blue-500 text-white' },
+            { value: areaB, displayValue: "?", bgClass: 'bg-slate-400 text-white' }
+          ],
+          whole: `${totalArea} ${unit}²`
         }
       });
 
@@ -271,14 +265,12 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     if (isFindingDiff) {
       visualEngineStr = JSON.stringify({
         componentToRender: "BAR_MODEL",
-        componentData: { isStatic: true,
-          bars: [
-            { segments: [{ value: areaA, label: `Mirror A: ${areaA} ${unit}²`, color: "blue" }] },
-            { segments: [{ value: areaB, label: `Mirror B: ${areaB} ${unit}²`, color: "red" }], alignment: "left" }
-          ],
-          differences: [
-            { fromBar: 1, toBar: 0, label: "?", color: "orange" }
-          ]
+        componentData: {
+          isStatic: true,
+          modelType: 'COMPARISON',
+          bar1: { value: areaA, name: "Section A", displayValue: `${areaA} ${unit}²` },
+          bar2: { value: areaB, name: "Section B", displayValue: `${areaB} ${unit}²` },
+          difference: { displayValue: "?" }
         }
       });
 
@@ -303,14 +295,12 @@ ${isMCQ ? `Generate EXACTLY 4 options:
       // Find unknown area using difference (e.g., A is known, B is smaller by diff)
       visualEngineStr = JSON.stringify({
         componentToRender: "BAR_MODEL",
-        componentData: { isStatic: true,
-          bars: [
-            { segments: [{ value: areaA, label: `Board X: ${areaA} ${unit}²`, color: "blue" }] },
-            { segments: [{ value: areaB, label: `Board Y: ?`, color: "red" }], alignment: "left" }
-          ],
-          differences: [
-            { fromBar: 1, toBar: 0, label: `Diff: ${diff} ${unit}²`, color: "orange" }
-          ]
+        componentData: {
+          isStatic: true,
+          modelType: 'COMPARISON',
+          bar1: { value: areaA, name: "Section A", displayValue: `${areaA} ${unit}²` },
+          bar2: { value: areaB, name: "Section B", displayValue: "?" },
+          difference: { displayValue: `${diff} ${unit}²` }
         }
       });
 

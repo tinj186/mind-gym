@@ -90,17 +90,14 @@ ${isMCQ ? `Generate EXACTLY 4 options:
 
     visualEngineStr = JSON.stringify({
       componentToRender: "BAR_MODEL",
-        componentData: { isStatic: true,
-        bars: [
-          {
-            segments: [
-              { value: remainingArea, label: "?", color: "blue" },
-              ...Array(cutOutCount).fill({ value: cutOutArea, label: `${cutOutArea} ${unit}²`, color: "red" })
-            ],
-            bracketLabel: `Total: ${totalArea} ${unit}²`,
-            bracketPosition: "top"
-          }
-        ]
+      componentData: {
+        isStatic: true,
+        modelType: 'PART_WHOLE',
+        parts: [
+          { value: remainingArea, displayValue: "?", bgClass: 'bg-slate-400 text-white' },
+          { value: totalCutOut, label: `Cut: ${totalCutOut} ${unit}²`, bgClass: 'bg-red-500 text-white' }
+        ],
+        whole: `${totalArea} ${unit}²`
       }
     });
 
@@ -163,14 +160,11 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     if (isFindingUnit) {
       visualEngineStr = JSON.stringify({
         componentToRender: "BAR_MODEL",
-        componentData: { isStatic: true,
-          bars: [
-            {
-              segments: Array(items).fill({ value: unitArea, label: "?", color: "blue" }),
-              bracketLabel: `Total: ${totalArea} ${unit}²`,
-              bracketPosition: "top"
-            }
-          ]
+        componentData: {
+          isStatic: true,
+          modelType: 'PART_WHOLE',
+          parts: Array(items).fill({ value: unitArea, displayValue: "?", bgClass: "bg-blue-500 text-white" }),
+          whole: `${totalArea} ${unit}²`
         }
       });
       finalAnswer = `${unitArea} ${unit}²`;
@@ -193,14 +187,11 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     } else {
       visualEngineStr = JSON.stringify({
         componentToRender: "BAR_MODEL",
-        componentData: { isStatic: true,
-          bars: [
-            {
-              segments: Array(items).fill({ value: unitArea, label: `${unitArea}`, color: "blue" }),
-              bracketLabel: "?",
-              bracketPosition: "top"
-            }
-          ]
+        componentData: {
+          isStatic: true,
+          modelType: 'PART_WHOLE',
+          parts: Array(items).fill({ value: unitArea, label: `${unitArea}`, bgClass: "bg-blue-500 text-white" }),
+          whole: "?"
         }
       });
       finalAnswer = `${totalArea} ${unit}²`;
@@ -254,17 +245,14 @@ ${isMCQ ? `Generate EXACTLY 4 options:
 
     visualEngineStr = JSON.stringify({
       componentToRender: "BAR_MODEL",
-        componentData: { isStatic: true,
-        bars: [
-          {
-            segments: [
-              ...Array(items).fill({ value: unitArea, label: `${unitArea}`, color: "blue" }),
-              { value: remainingArea, label: "?", color: "gray" }
-            ],
-            bracketLabel: `Total: ${totalArea} ${unit}²`,
-            bracketPosition: "top"
-          }
-        ]
+      componentData: {
+        isStatic: true,
+        modelType: 'PART_WHOLE',
+        parts: [
+          ...Array(items).fill({ value: unitArea, label: `${unitArea}`, bgClass: 'bg-blue-500 text-white' }),
+          { value: remainingArea, displayValue: "?", bgClass: 'bg-slate-400 text-white' }
+        ],
+        whole: `${totalArea} ${unit}²`
       }
     });
 
