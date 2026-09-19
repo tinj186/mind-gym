@@ -24,15 +24,15 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
         {
           isStatic: true,
           modelType: 'COMPARISON',
-          bar1: { value: areaA, name: "Figure X", displayValue: `${areaA}` },
-          bar2: { value: areaB, name: "Figure Y", displayValue: "?" },
+          bar1: { segments: 1, value: areaA, name: "Figure X", displayValue: `${areaA}` },
+          bar2: { segments: 1, value: areaB, name: "Figure Y", displayValue: "?" },
           difference: { displayValue: `${diff1} larger` }
         },
         {
           isStatic: true,
           modelType: 'COMPARISON',
-          bar1: { value: areaB, name: "Figure Y", displayValue: "?" },
-          bar2: { value: areaC, name: "Figure Z", displayValue: "?" },
+          bar1: { segments: 1, value: areaB, name: "Figure Y", displayValue: "?" },
+          bar2: { segments: 1, value: areaC, name: "Figure Z", displayValue: "?" },
           difference: { displayValue: `${diff2} smaller` }
         }
       ]
@@ -222,9 +222,9 @@ ${isMCQ ? `Generate EXACTLY 4 options:
         isStatic: true,
         modelType: 'PART_WHOLE',
         parts: [
-          { value: unitArea, label: `${unitArea}`, bgClass: 'bg-blue-500 text-white' },
-          { value: unitArea, label: `${unitArea}`, bgClass: 'bg-blue-500 text-white' },
-          { value: totalArea - (unitArea * 2), label: "...", bgClass: 'bg-slate-400 text-white' }
+          { segments: 1, value: unitArea, label: `${unitArea}`, bgClass: 'bg-blue-500 text-white' },
+          { segments: 1, value: unitArea, label: `${unitArea}`, bgClass: 'bg-blue-500 text-white' },
+          { segments: 1, value: totalArea - (unitArea * 2), label: "...", bgClass: 'bg-slate-400 text-white' }
         ],
         whole: `${totalArea} ${unit}²`
       }
@@ -284,8 +284,8 @@ ${isMCQ ? `Generate EXACTLY 4 options:
         isStatic: true,
         modelType: 'PART_WHOLE',
         parts: [
-          { value: areaA, label: `Patch 1: ${areaA}`, bgClass: 'bg-blue-500 text-white' },
-          { value: areaB, label: `Patch 2: ${areaB}`, bgClass: 'bg-green-500 text-white' }
+          { segments: 1, value: areaA, label: `Patch 1: ${areaA}`, bgClass: 'bg-blue-500 text-white' },
+          { segments: 1, value: areaB, label: `Patch 2: ${areaB}`, bgClass: 'bg-green-500 text-white' }
         ],
         whole: "?"
       }

@@ -94,8 +94,8 @@ ${isMCQ ? `Generate EXACTLY 4 options:
         isStatic: true,
         modelType: 'PART_WHOLE',
         parts: [
-          { value: remainingArea, displayValue: "?", bgClass: 'bg-slate-400 text-white' },
-          { value: totalCutOut, label: `Cut: ${totalCutOut} ${unit}²`, bgClass: 'bg-red-500 text-white' }
+          { segments: 1, value: remainingArea, displayValue: "?", bgClass: 'bg-slate-400 text-white' },
+          { segments: 1, value: totalCutOut, label: `Cut: ${totalCutOut} ${unit}²`, bgClass: 'bg-red-500 text-white' }
         ],
         whole: `${totalArea} ${unit}²`
       }
@@ -163,7 +163,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
         componentData: {
           isStatic: true,
           modelType: 'PART_WHOLE',
-          parts: Array(items).fill({ value: unitArea, displayValue: "?", bgClass: "bg-blue-500 text-white" }),
+          parts: Array(items).fill({ segments: 1, value: unitArea, displayValue: "?", bgClass: "bg-blue-500 text-white" }),
           whole: `${totalArea} ${unit}²`
         }
       });
@@ -190,7 +190,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
         componentData: {
           isStatic: true,
           modelType: 'PART_WHOLE',
-          parts: Array(items).fill({ value: unitArea, label: `${unitArea}`, bgClass: "bg-blue-500 text-white" }),
+          parts: Array(items).fill({ segments: 1, value: unitArea, label: `${unitArea}`, bgClass: "bg-blue-500 text-white" }),
           whole: "?"
         }
       });
@@ -249,8 +249,8 @@ ${isMCQ ? `Generate EXACTLY 4 options:
         isStatic: true,
         modelType: 'PART_WHOLE',
         parts: [
-          ...Array(items).fill({ value: unitArea, label: `${unitArea}`, bgClass: 'bg-blue-500 text-white' }),
-          { value: remainingArea, displayValue: "?", bgClass: 'bg-slate-400 text-white' }
+          ...Array(items).fill({ segments: 1, value: unitArea, label: `${unitArea}`, bgClass: 'bg-blue-500 text-white' }),
+          { segments: 1, value: remainingArea, displayValue: "?", bgClass: 'bg-slate-400 text-white' }
         ],
         whole: `${totalArea} ${unit}²`
       }

@@ -171,8 +171,8 @@ ${isMCQ ? `Generate EXACTLY 4 options:
           isStatic: true,
           modelType: 'PART_WHOLE',
           parts: [
-            { value: areaA, label: `Rug A: ${areaA} ${unit}²`, bgClass: 'bg-blue-500 text-white' },
-            { value: areaB, label: `Rug B: ${areaB} ${unit}²`, bgClass: 'bg-red-500 text-white' }
+            { segments: 1, value: areaA, label: `Rug A: ${areaA} ${unit}²`, bgClass: 'bg-blue-500 text-white' },
+            { segments: 1, value: areaB, label: `Rug B: ${areaB} ${unit}²`, bgClass: 'bg-red-500 text-white' }
           ],
           whole: "?"
         }
@@ -203,8 +203,8 @@ ${isMCQ ? `Generate EXACTLY 4 options:
           isStatic: true,
           modelType: 'PART_WHOLE',
           parts: [
-            { value: areaA, label: `First: ${areaA} ${unit}²`, bgClass: 'bg-blue-500 text-white' },
-            { value: areaB, displayValue: "?", bgClass: 'bg-slate-400 text-white' }
+            { segments: 1, value: areaA, label: `First: ${areaA} ${unit}²`, bgClass: 'bg-blue-500 text-white' },
+            { segments: 1, value: areaB, displayValue: "?", bgClass: 'bg-slate-400 text-white' }
           ],
           whole: `${totalArea} ${unit}²`
         }
@@ -268,8 +268,8 @@ ${isMCQ ? `Generate EXACTLY 4 options:
         componentData: {
           isStatic: true,
           modelType: 'COMPARISON',
-          bar1: { value: areaA, name: "Section A", displayValue: `${areaA} ${unit}²` },
-          bar2: { value: areaB, name: "Section B", displayValue: `${areaB} ${unit}²` },
+          bar1: { segments: 1, value: areaA, name: "Section A", displayValue: `${areaA} ${unit}²` },
+          bar2: { segments: 1, value: areaB, name: "Section B", displayValue: `${areaB} ${unit}²` },
           difference: { displayValue: "?" }
         }
       });
@@ -298,8 +298,8 @@ ${isMCQ ? `Generate EXACTLY 4 options:
         componentData: {
           isStatic: true,
           modelType: 'COMPARISON',
-          bar1: { value: areaA, name: "Section A", displayValue: `${areaA} ${unit}²` },
-          bar2: { value: areaB, name: "Section B", displayValue: "?" },
+          bar1: { segments: 1, value: areaA, name: "Section A", displayValue: `${areaA} ${unit}²` },
+          bar2: { segments: 1, value: areaB, name: "Section B", displayValue: "?" },
           difference: { displayValue: `${diff} ${unit}²` }
         }
       });
