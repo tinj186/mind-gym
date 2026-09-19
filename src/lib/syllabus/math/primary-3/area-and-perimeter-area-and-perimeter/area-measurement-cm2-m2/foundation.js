@@ -5,8 +5,8 @@ export const foundationLogic = (activeVariant, difficulty, type, isMCQ, isShort,
 
   const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-  if (activeVariant === 'foundation_counting_1cm_grid' || activeVariant === 'foundation_counting_1m_grid') {
-    const isM = activeVariant === 'foundation_counting_1m_grid';
+  if (activeVariant === 'foundation_counting_grid') {
+    const isM = Math.random() < 0.5;
     const unit = isM ? 'm' : 'cm';
     const w = getRandomInt(3, 6);
     const h = getRandomInt(2, 5);
@@ -77,6 +77,80 @@ ${isMCQ ? `Generate EXACTLY 4 options:
 - "${area - h} ${unit}²"
 - "${area + w} ${unit}²"
 - "${area * 2} ${unit}²"` : ''}
+`;
+  }
+  else if (activeVariant === 'foundation_irregular_part_addition') {
+    const unit = Math.random() < 0.5 ? "cm" : "m";
+    const partA_w = getRandomInt(4, 6);
+    const partA_h = getRandomInt(2, 3);
+    const partB_w = getRandomInt(2, 3);
+    const partB_h = getRandomInt(2, 3);
+    
+    const areaA = partA_w * partA_h;
+    const areaB = partB_w * partB_h;
+    const totalArea = areaA + areaB;
+
+    let shaded = [];
+    for(let i=0; i<partA_w; i++){
+      for(let j=0; j<partA_h; j++){
+        shaded.push([1 + i, 1 + partB_h + j]);
+      }
+    }
+    const offsetX = Math.floor((partA_w - partB_w) / 2);
+    for(let i=0; i<partB_w; i++){
+      for(let j=0; j<partB_h; j++){
+        shaded.push([1 + offsetX + i, 1 + j]);
+      }
+    }
+
+    visualEngineStr = JSON.stringify({
+      componentToRender: "SQUARE_GRID_SHAPE",
+      componentData: {
+        gridSize: { cols: partA_w + 2, rows: partA_h + partB_h + 2 },
+        unitLabel: `1 ${unit}`,
+        figures: [{ shadedSquares: shaded }]
+      }
+    });
+
+    let askText = `Look at the figure on the 1 ${unit} grid. What is its area in ${unit}²?`;
+    let finalAnswer = `${totalArea} ${unit}²`;
+    let sysSolutionSteps = `"""1. Split the shape into two parts.\\n2. Count the squares in the first part: ${areaA}.\\n3. Count the squares in the second part: ${areaB}.\\n4. Add them together: ${areaA} + ${areaB} = ${totalArea}.\\n5. The total area is ${totalArea} ${unit}²."""`;
+
+    if (isShort) {
+      askText = `Look at the T-shaped figure on the 1 ${unit} grid. What is its area in ${unit}²?`;
+    } else if (isMCQ) {
+      askText = `The shaded shape on the 1 ${unit} grid is made of a square part and a rectangular part. What is the total area?`;
+    } else if (isStructure) {
+      askText = `A stage is drawn on a 1 ${unit} grid. It has a main rectangular area made of ${areaA} squares and a smaller front step area made of ${areaB} squares. Find the total area of the stage.`;
+      inputRequirementStr = JSON.stringify({
+        inputType: "MULTI_STEP_INPUT",
+        steps: [
+          { label: "Write the working equation to add the squares of the two parts together:", expectedAnswer: `${areaA} + ${areaB} = ${totalArea}`, acceptedAnswers: [`${areaB} + ${areaA} = ${totalArea}`] },
+          { label: `Total area in ${unit}²:`, expectedAnswer: `${totalArea}`, acceptedAnswers: [`${totalArea} ${unit}²`, `${totalArea} \\\\text{${unit}}^2`] }
+        ]
+      });
+    }
+
+    if (!isStructure && !isMCQ) {
+      inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
+    }
+
+    systemPrompt = `
+You are generating a Primary 3 Math question.
+Topic: ${topic}
+Type: ${zodType}
+Difficulty: ${zodDiff}
+
+CRITICAL INSTRUCTION: You MUST construct the "content" object using the EXACT strings provided below:
+- For content.questionText, use: "${askText}"
+- For content.finalAnswer, use: "${finalAnswer}"
+- For content.hint, use: "Split the shape into two blocks and add their areas together."
+- For content.solutionSteps, use: ${sysSolutionSteps}
+${isMCQ ? `Generate EXACTLY 4 options:
+- "${finalAnswer}"
+- "${totalArea - partB_w} ${unit}²"
+- "${totalArea + partA_w} ${unit}²"
+- "${areaA * 2} ${unit}²"` : ''}
 `;
   }
   else if (activeVariant === 'foundation_add_sub_given_areas') {
