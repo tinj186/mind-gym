@@ -268,8 +268,8 @@ ${isMCQ ? `Generate EXACTLY 4 options:
         componentData: {
           isStatic: true,
           modelType: 'COMPARISON',
-          bar1: { segments: 1, value: areaA, name: "Section A", displayValue: `${areaA} ${unit}²` },
-          bar2: { segments: 1, value: areaB, name: "Section B", displayValue: `${areaB} ${unit}²` },
+          bar1: { layoutSize: areaA, segments: 1, value: areaA, name: "Section A", displayValue: `${areaA} ${unit}²` },
+          bar2: { layoutSize: areaB, segments: 1, value: areaB, name: "Section B", displayValue: `${areaB} ${unit}²` },
           difference: { displayValue: "?" }
         }
       });
@@ -298,8 +298,8 @@ ${isMCQ ? `Generate EXACTLY 4 options:
         componentData: {
           isStatic: true,
           modelType: 'COMPARISON',
-          bar1: { segments: 1, value: areaA, name: "Section A", displayValue: `${areaA} ${unit}²` },
-          bar2: { segments: 1, value: areaB, name: "Section B", displayValue: "?" },
+          bar1: { layoutSize: areaA, segments: 1, value: areaA, name: "Section A", displayValue: `${areaA} ${unit}²` },
+          bar2: { layoutSize: areaB, segments: 1, value: areaB, name: "Section B", displayValue: "?" },
           difference: { displayValue: `${diff} ${unit}²` }
         }
       });

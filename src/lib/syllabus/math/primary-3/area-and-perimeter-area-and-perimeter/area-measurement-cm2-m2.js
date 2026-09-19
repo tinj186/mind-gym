@@ -8,8 +8,8 @@ export const p3AreaMeasurementCm2M2Blueprint = {
   variants: {
     //    'foundation_counting_grid': 'Counting Whole Units on a Grid (cm² or m²)',
     //    'foundation_irregular_part_addition': 'Area of an Irregular Shape by Part Addition',
-    'foundation_add_sub_given_areas': 'Adding/Subtracting Two Given Areas (a±b=c)',
-    //    'foundation_compare_given_areas': 'Comparing Two Given Areas (a-b=c)',
+    //    'foundation_add_sub_given_areas': 'Adding/Subtracting Two Given Areas (a±b=c)',
+    'foundation_compare_given_areas': 'Comparing Two Given Areas (a-b=c)',
     //    'foundation_shortfall_target_area': 'The Shortfall (Building a Target Area)',
 
     'standard_area_half_squares': 'Area with Half-Squares (Single Shape)',
