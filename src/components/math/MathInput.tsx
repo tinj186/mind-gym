@@ -259,7 +259,7 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
         [
           { label: "z", command: ["insert", "z"] }, { label: "x", command: ["insert", "x"] }, { label: "c", command: ["insert", "c"] },
           { label: "v", command: ["insert", "v"] }, { label: "b", command: ["insert", "b"] }, { label: "n", command: ["insert", "n"] },
-          { label: "m", command: ["insert", "m"] }, { label: ",", command: ["insert", ","] }, { label: "?", command: ["insert", "?"] },
+          { label: "m", command: ["insert", "m"] }, { label: ",", command: ["insert", ","] }, { label: ".", command: ["insert", "."] },
           { label: "⌫", command: ["deleteBackward"], class: "action font-black text-rose-500 bg-rose-50" }
         ],
         [
