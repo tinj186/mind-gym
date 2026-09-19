@@ -263,7 +263,7 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
           { label: "⌫", command: ["deleteBackward"], class: "action font-black text-rose-500 bg-rose-50" }
         ],
         [
-          { label: "space", command: ["insert", "\\space"], width: 7 },
+          { label: "space", command: ["insert", "\\ "], width: 7 },
           { label: "⏎", command: ["insert", "\\Omega"], class: "action font-black text-white bg-blue-600", width: 3 }
         ]
       ];
