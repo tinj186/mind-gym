@@ -6,23 +6,23 @@ export const p3AreaMeasurementCm2M2Blueprint = {
   id: 'area-measurement-cm2-m2',
   blueprint: 'Measuring Area in Square Units (cm² and m²)',
   variants: {
-    'foundation_1': 'Counting Whole Units on a 1 cm Grid',
-    'foundation_2': 'Counting Whole Units on a 1 m Grid',
-    'foundation_3': 'Adding/Subtracting Two Given Areas (a±b=c)',
-    'foundation_4': 'Comparing Two Given Areas (a-b=c)',
-    'foundation_5': 'The Shortfall (Building a Target Area)',
+    'foundation_counting_1cm_grid': 'Counting Whole Units on a 1 cm Grid',
+    'foundation_counting_1m_grid': 'Counting Whole Units on a 1 m Grid',
+    'foundation_add_sub_given_areas': 'Adding/Subtracting Two Given Areas (a±b=c)',
+    'foundation_compare_given_areas': 'Comparing Two Given Areas (a-b=c)',
+    'foundation_shortfall_target_area': 'The Shortfall (Building a Target Area)',
 
-    'standard_6': 'Area with Half-Squares (Single Shape)',
-    'standard_7': 'Word Problem - Subtracting Area (The Cut-Out)',
-    'standard_8': 'Grouping Identical Areas (Repeated Addition/Multiplication)',
-    'standard_9': 'Grouping Identical Areas + A Remainder',
-    'standard_10': 'Area on a Grid with a Hollow Center (The "Donut")',
+    'standard_area_half_squares': 'Area with Half-Squares (Single Shape)',
+    'standard_subtracting_cut_out': 'Word Problem - Subtracting Area (The Cut-Out)',
+    'standard_grouping_identical_areas': 'Grouping Identical Areas (Repeated Addition/Multiplication)',
+    'standard_grouping_with_remainder': 'Grouping Identical Areas + A Remainder',
+    'standard_donut_hollow_center': 'Area on a Grid with a Hollow Center (The "Donut")',
 
-    'advanced_11': '3-Part Area Comparison (A->B->C)',
-    'advanced_12': 'Grid Area with Mixed Halves and Cutouts',
-    'advanced_13': 'Area Conservation (Rearranging Pieces)',
-    'advanced_14': 'Tiling with Larger Units (Area Division)',
-    'advanced_15': 'Two-Part Area with Unit Cost (a+b->xCost)'
+    'advanced_3_part_comparison': '3-Part Area Comparison (A->B->C)',
+    'advanced_mixed_halves_cutouts': 'Grid Area with Mixed Halves and Cutouts',
+    'advanced_area_conservation': 'Area Conservation (Rearranging Pieces)',
+    'advanced_tiling_area_division': 'Tiling with Larger Units (Area Division)',
+    'advanced_two_part_unit_cost': 'Two-Part Area with Unit Cost (a+b->xCost)'
   },
   generate: function (difficulty, activeVariant, type) {
     const safeType = String(type).toLowerCase();

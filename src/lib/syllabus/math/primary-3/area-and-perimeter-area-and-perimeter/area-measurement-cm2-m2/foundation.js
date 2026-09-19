@@ -5,8 +5,8 @@ export const foundationLogic = (activeVariant, difficulty, type, isMCQ, isShort,
 
   const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-  if (activeVariant === 'foundation_1' || activeVariant === 'foundation_2') {
-    const isM = activeVariant === 'foundation_2';
+  if (activeVariant === 'foundation_counting_1cm_grid' || activeVariant === 'foundation_counting_1m_grid') {
+    const isM = activeVariant === 'foundation_counting_1m_grid';
     const unit = isM ? 'm' : 'cm';
     const w = getRandomInt(3, 6);
     const h = getRandomInt(2, 5);
@@ -79,7 +79,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
 - "${area * 2} ${unit}²"` : ''}
 `;
   }
-  else if (activeVariant === 'foundation_3') {
+  else if (activeVariant === 'foundation_add_sub_given_areas') {
     const isAddition = Math.random() < 0.5;
     const unit = Math.random() < 0.5 ? "cm" : "m";
     const areaA = getRandomInt(10, 30);
@@ -183,7 +183,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
 - "${isAddition ? totalArea - 5 : Math.abs(areaB - 5)} ${unit}²"` : ''}
 `;
   }
-  else if (activeVariant === 'foundation_4') {
+  else if (activeVariant === 'foundation_compare_given_areas') {
     const isFindingDiff = Math.random() < 0.5;
     const unit = Math.random() < 0.5 ? "cm" : "m";
     const areaA = getRandomInt(20, 40);
@@ -281,7 +281,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
 - "${isFindingDiff ? diff - 2 : Math.abs(areaB - 5)} ${unit}²"` : ''}
 `;
   }
-  else if (activeVariant === 'foundation_5') {
+  else if (activeVariant === 'foundation_shortfall_target_area') {
     const unit = Math.random() < 0.5 ? "cm" : "m";
     const w = getRandomInt(2, 4);
     const h = getRandomInt(2, 4);

@@ -5,7 +5,7 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
 
   const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-  if (activeVariant === 'standard_6') {
+  if (activeVariant === 'standard_area_half_squares') {
     const unit = Math.random() < 0.5 ? "cm" : "m";
     const full = getRandomInt(4, 10);
     const halves = getRandomInt(1, 4) * 2; // Always even to make whole squares
@@ -80,7 +80,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
 - "${area - 1} ${unit}²"` : ''}
 `;
   }
-  else if (activeVariant === 'standard_7') {
+  else if (activeVariant === 'standard_subtracting_cut_out') {
     const unit = Math.random() < 0.5 ? "cm" : "m";
     const totalArea = getRandomInt(40, 80);
     const cutOutCount = getRandomInt(1, 3);
@@ -149,7 +149,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
 - "${totalArea + cutOutArea} ${unit}²"` : ''}
 `;
   }
-  else if (activeVariant === 'standard_8') {
+  else if (activeVariant === 'standard_grouping_identical_areas') {
     const unit = Math.random() < 0.5 ? "cm" : "m";
     const items = getRandomInt(4, 9);
     const unitArea = getRandomInt(3, 8);
@@ -244,7 +244,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
 - "${isFindingUnit ? totalArea - items : totalArea + unitArea} ${unit}²"` : ''}
 `;
   }
-  else if (activeVariant === 'standard_9') {
+  else if (activeVariant === 'standard_grouping_with_remainder') {
     const unit = Math.random() < 0.5 ? "cm" : "m";
     const totalArea = getRandomInt(60, 100);
     const items = getRandomInt(3, 5);
@@ -309,7 +309,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
 - "${coveredArea} ${unit}²"` : ''}
 `;
   }
-  else if (activeVariant === 'standard_10') {
+  else if (activeVariant === 'standard_donut_hollow_center') {
     const unit = Math.random() < 0.5 ? "cm" : "m";
     const outerW = getRandomInt(5, 7);
     const outerH = getRandomInt(4, 6);

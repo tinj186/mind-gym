@@ -5,7 +5,7 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
 
   const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-  if (activeVariant === 'advanced_11') {
+  if (activeVariant === 'advanced_3_part_comparison') {
     const unit = Math.random() < 0.5 ? "cm" : "m";
     const isTotal = Math.random() < 0.5;
     const areaA = getRandomInt(10, 20);
@@ -81,7 +81,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
 - "${isTotal ? areaC : totalArea} ${unit}²"` : ''}
 `;
   }
-  else if (activeVariant === 'advanced_12') {
+  else if (activeVariant === 'advanced_mixed_halves_cutouts') {
     const unit = Math.random() < 0.5 ? "cm" : "m";
     const full = getRandomInt(6, 12);
     const halves = getRandomInt(2, 6) * 2;
@@ -140,7 +140,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
 - "${area - 1} ${unit}²"` : ''}
 `;
   }
-  else if (activeVariant === 'advanced_13') {
+  else if (activeVariant === 'advanced_area_conservation') {
     const unit = Math.random() < 0.5 ? "cm" : "m";
     const w = getRandomInt(3, 5);
     const h = getRandomInt(3, 5);
@@ -205,7 +205,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
 - "${newArea - 2} ${unit}²"` : ''}
 `;
   }
-  else if (activeVariant === 'advanced_14') {
+  else if (activeVariant === 'advanced_tiling_area_division') {
     const unit = Math.random() < 0.5 ? "cm" : "m";
     const tilesNeeded = getRandomInt(6, 12);
     const unitArea = getRandomInt(2, 5);
@@ -268,7 +268,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
 - "${tilesNeeded * 2}"` : ''}
 `;
   }
-  else if (activeVariant === 'advanced_15') {
+  else if (activeVariant === 'advanced_two_part_unit_cost') {
     const unit = Math.random() < 0.5 ? "cm" : "m";
     const areaA = getRandomInt(10, 20);
     const areaB = getRandomInt(5, 15);
