@@ -14,8 +14,9 @@ const HINTS = {
   '11': 'Alternating subtract and add the digits. If the result is divisible by 11, the original number is too.'
 };
 
-export default function DivisibilityRoute({ params }) {
-  const divisorStr = params.divisor;
+export default async function DivisibilityRoute({ params }) {
+  const resolvedParams = await params;
+  const divisorStr = resolvedParams.divisor;
   const divisor = parseInt(divisorStr, 10);
   const hint = HINTS[divisorStr];
 
