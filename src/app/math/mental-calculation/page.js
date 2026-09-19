@@ -196,6 +196,30 @@ export default function MentalCalculationPage() {
         ))}
       </div>
 
+      <div className="mt-16 mb-8">
+        <h2 className="text-3xl font-black text-white tracking-tight mb-2">
+          Divisibility Rules
+        </h2>
+        <p className="text-slate-400 font-medium">
+          Quickly identify if large numbers are divisible by a specific divisor without doing long division.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        {[2, 3, 4, 5, 6, 7, 8, 9, 11].map(divisor => (
+          <Link key={divisor} href={`/math/mental-calculation/divisibility/${divisor}`}>
+            <div className="group bg-slate-800 border-2 border-slate-700 hover:border-emerald-500 rounded-3xl p-6 cursor-pointer transition-all hover:-translate-y-1 text-center">
+              <div className="text-3xl mb-3 bg-slate-900 w-12 h-12 mx-auto rounded-xl flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-slate-900 transition-colors">
+                ➗
+              </div>
+              <h3 className="text-xl font-black text-white group-hover:text-emerald-500 transition-colors">
+                {divisor}
+              </h3>
+            </div>
+          </Link>
+        ))}
+      </div>
+
     </div>
   );
 }
