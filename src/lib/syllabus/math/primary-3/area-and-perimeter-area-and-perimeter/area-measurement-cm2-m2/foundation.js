@@ -54,7 +54,7 @@ export const foundationLogic = (activeVariant, difficulty, type, isMCQ, isShort,
         inputType: "MULTI_STEP_INPUT",
         steps: [
           { label: "Write the working equation to group and count the squares (e.g., adding rows):", expectedAnswer: additionStr, acceptedAnswers: [`${w} \\\\times ${h} = ${area}`] },
-          { label: `Total area in ${unit}²:`, expectedAnswer: `${area}`, acceptedAnswers: [`${area} ${unit}²`, `${area} \\\\text{${unit}}^2`] }
+          { label: "Total area:", expectedAnswer: `${area} ${unit}²`, acceptedAnswers: [`${area}`, `${area} \\\\text{${unit}}^2`] }
         ]
       });
     } else if (!isMCQ) {
@@ -126,7 +126,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
         inputType: "MULTI_STEP_INPUT",
         steps: [
           { label: "Write the working equation to add the squares of the two parts together:", expectedAnswer: `${areaA} + ${areaB} = ${totalArea}`, acceptedAnswers: [`${areaB} + ${areaA} = ${totalArea}`] },
-          { label: `Total area in ${unit}²:`, expectedAnswer: `${totalArea}`, acceptedAnswers: [`${totalArea} ${unit}²`, `${totalArea} \\\\text{${unit}}^2`] }
+          { label: "Total area:", expectedAnswer: `${totalArea} ${unit}²`, acceptedAnswers: [`${totalArea}`, `${totalArea} \\\\text{${unit}}^2`] }
         ]
       });
     }
@@ -194,7 +194,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
           inputType: "MULTI_STEP_INPUT",
           steps: [
             { label: "Write the working equation to find the total area:", expectedAnswer: `${areaA} + ${areaB} = ${totalArea}`, acceptedAnswers: [] },
-            { label: `Total area in ${unit}²:`, expectedAnswer: `${totalArea}`, acceptedAnswers: [`${totalArea} ${unit}²`, `${totalArea} \\\\text{${unit}}^2`] }
+            { label: "Total area:", expectedAnswer: `${totalArea} ${unit}²`, acceptedAnswers: [`${totalArea}`, `${totalArea} \\\\text{${unit}}^2`] }
           ]
         });
       }
@@ -229,7 +229,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
           inputType: "MULTI_STEP_INPUT",
           steps: [
             { label: "Write the working equation to find the unknown area:", expectedAnswer: `${totalArea} - ${areaA} = ${areaB}`, acceptedAnswers: [] },
-            { label: `Area of the second painting in ${unit}²:`, expectedAnswer: `${areaB}`, acceptedAnswers: [`${areaB} ${unit}²`, `${areaB} \\\\text{${unit}}^2`] }
+            { label: "Area of the second piece:", expectedAnswer: `${areaB} ${unit}²`, acceptedAnswers: [`${areaB}`, `${areaB} \\\\text{${unit}}^2`] }
           ]
         });
       }
@@ -295,7 +295,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
           inputType: "MULTI_STEP_INPUT",
           steps: [
             { label: "Write the working equation to find the difference:", expectedAnswer: `${areaA} - ${areaB} = ${diff}`, acceptedAnswers: [] },
-            { label: `Difference in area in ${unit}²:`, expectedAnswer: `${diff}`, acceptedAnswers: [`${diff} ${unit}²`, `${diff} \\\\text{${unit}}^2`] }
+            { label: "Difference in area:", expectedAnswer: `${diff} ${unit}²`, acceptedAnswers: [`${diff}`, `${diff} \\\\text{${unit}}^2`] }
           ]
         });
       }
@@ -327,7 +327,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
           inputType: "MULTI_STEP_INPUT",
           steps: [
             { label: "Write the working equation to find the area of Section B:", expectedAnswer: `${areaA} - ${diff} = ${areaB}`, acceptedAnswers: [] },
-            { label: `Area of Section B in ${unit}²:`, expectedAnswer: `${areaB}`, acceptedAnswers: [`${areaB} ${unit}²`, `${areaB} \\\\text{${unit}}^2`] }
+            { label: "Area of Section B:", expectedAnswer: `${areaB} ${unit}²`, acceptedAnswers: [`${areaB}`, `${areaB} \\\\text{${unit}}^2`] }
           ]
         });
       }

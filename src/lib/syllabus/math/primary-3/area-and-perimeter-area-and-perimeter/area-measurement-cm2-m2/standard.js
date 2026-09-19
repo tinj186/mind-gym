@@ -53,7 +53,7 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
           { label: "Number of full squares:", expectedAnswer: `${full}`, acceptedAnswers: [] },
           { label: "Write the working equation to combine the half-squares into full squares:", expectedAnswer: `${halves} / 2 = ${halves/2}`, acceptedAnswers: [`${halves} \\\\div 2 = ${halves/2}`] },
           { label: "Write the working equation for the total area:", expectedAnswer: `${full} + ${halves/2} = ${area}`, acceptedAnswers: [] },
-          { label: `Total area in ${unit}²:`, expectedAnswer: `${area}`, acceptedAnswers: [`${area} ${unit}²`, `${area} \\\\text{${unit}}^2`] }
+          { label: "Total area:", expectedAnswer: `${area} ${unit}²`, acceptedAnswers: [`${area}`, `${area} \\\\text{${unit}}^2`] }
         ]
       });
     }
@@ -122,7 +122,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
         steps: [
           { label: `Write the working equation to find the total area of the ${cutOutCount} cut-out triangles:`, expectedAnswer: cutOutCount > 1 ? `${cutOutCount} x ${cutOutArea} = ${totalCutOut}` : `${cutOutArea} = ${totalCutOut}`, acceptedAnswers: cutOutCount === 2 ? [`${cutOutArea} + ${cutOutArea} = ${totalCutOut}`] : [] },
           { label: "Write the working equation to find the remaining area:", expectedAnswer: `${totalArea} - ${totalCutOut} = ${remainingArea}`, acceptedAnswers: [] },
-          { label: `Remaining area in ${unit}²:`, expectedAnswer: `${remainingArea}`, acceptedAnswers: [`${remainingArea} ${unit}²`] }
+          { label: "Remaining area:", expectedAnswer: `${remainingArea} ${unit}²`, acceptedAnswers: [`${remainingArea}`] }
         ]
       });
     }
@@ -186,7 +186,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
           inputType: "MULTI_STEP_INPUT",
           steps: [
             { label: "Write the working equation to find the area of 1 tile:", expectedAnswer: `${totalArea} / ${items} = ${unitArea}`, acceptedAnswers: [`${totalArea} \\\\div ${items} = ${unitArea}`] },
-            { label: `Area of 1 tile in ${unit}²:`, expectedAnswer: `${unitArea}`, acceptedAnswers: [`${unitArea} ${unit}²`] }
+            { label: "Area of 1 tile:", expectedAnswer: `${unitArea} ${unit}²`, acceptedAnswers: [`${unitArea}`] }
           ]
         });
       }
@@ -216,7 +216,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
           inputType: "MULTI_STEP_INPUT",
           steps: [
             { label: "Write the working equation to find the total area:", expectedAnswer: `${items} x ${unitArea} = ${totalArea}`, acceptedAnswers: [`${unitArea} x ${items} = ${totalArea}`] },
-            { label: `Total area in ${unit}²:`, expectedAnswer: `${totalArea}`, acceptedAnswers: [`${totalArea} ${unit}²`] }
+            { label: "Total area:", expectedAnswer: `${totalArea} ${unit}²`, acceptedAnswers: [`${totalArea}`] }
           ]
         });
       }
@@ -282,7 +282,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
         steps: [
           { label: `Write the working equation to find the total area of the ${items} photos:`, expectedAnswer: `${items} x ${unitArea} = ${coveredArea}`, acceptedAnswers: [`${unitArea} x ${items} = ${coveredArea}`] },
           { label: "Write the working equation to find the remaining empty area:", expectedAnswer: `${totalArea} - ${coveredArea} = ${remainingArea}`, acceptedAnswers: [] },
-          { label: `Empty area in ${unit}²:`, expectedAnswer: `${remainingArea}`, acceptedAnswers: [`${remainingArea} ${unit}²`] }
+          { label: "Empty area:", expectedAnswer: `${remainingArea} ${unit}²`, acceptedAnswers: [`${remainingArea}`] }
         ]
       });
     }
@@ -356,7 +356,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
           { label: "Write the working equation to find the area of the whole shape (including the pond):", expectedAnswer: `${outerW} x ${outerH} = ${outerArea}`, acceptedAnswers: [] },
           { label: "Write the working equation to find the area of the empty pond:", expectedAnswer: `${innerW} x ${innerH} = ${innerArea}`, acceptedAnswers: [] },
           { label: "Write the working equation to subtract the pond from the whole shape:", expectedAnswer: `${outerArea} - ${innerArea} = ${pathArea}`, acceptedAnswers: [] },
-          { label: `Area of the path in ${unit}²:`, expectedAnswer: `${pathArea}`, acceptedAnswers: [`${pathArea} ${unit}²`] }
+          { label: "Area of the path:", expectedAnswer: `${pathArea} ${unit}²`, acceptedAnswers: [`${pathArea}`] }
         ]
       });
     }

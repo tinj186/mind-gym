@@ -54,7 +54,7 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
           { label: "Write the working equation to find the area of Figure Y:", expectedAnswer: `${areaA} + ${diff1} = ${areaB}`, acceptedAnswers: [] },
           { label: "Write the working equation to find the area of Figure Z:", expectedAnswer: `${areaB} - ${diff2} = ${areaC}`, acceptedAnswers: [] },
           ...(isTotal ? [{ label: "Write the working equation to find the total area of X, Y, and Z:", expectedAnswer: `${areaA} + ${areaB} + ${areaC} = ${totalArea}`, acceptedAnswers: [] }] : []),
-          { label: `${isTotal ? "Total area" : "Area of Figure Z"} in ${unit}²:`, expectedAnswer: isTotal ? `${totalArea}` : `${areaC}`, acceptedAnswers: [] }
+          { label: isTotal ? "Total area:" : "Area of Figure Z:", expectedAnswer: isTotal ? `${totalArea} ${unit}²` : `${areaC} ${unit}²`, acceptedAnswers: [isTotal ? `${totalArea}` : `${areaC}`] }
         ]
       });
     }
@@ -113,7 +113,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
           { label: "Number of full squares:", expectedAnswer: `${full}`, acceptedAnswers: [] },
           { label: "Write the working equation to group the half-squares into wholes:", expectedAnswer: `${halves} / 2 = ${halves/2}`, acceptedAnswers: [`${halves} \\\\div 2 = ${halves/2}`] },
           { label: "Write the working equation to add the full and grouped squares together, subtracting the empty spaces:", expectedAnswer: `${full} + ${halves/2} - ${cutouts} = ${area}`, acceptedAnswers: [] },
-          { label: `Total area in ${unit}²:`, expectedAnswer: `${area}`, acceptedAnswers: [] }
+          { label: "Total area:", expectedAnswer: `${area} ${unit}²`, acceptedAnswers: [`${area}`] }
         ]
       });
     }
@@ -178,7 +178,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
         steps: [
           { label: "Write the working equation to find the area of the starting Figure A (by counting rows):", expectedAnswer: `${w} x ${h} = ${startArea}`, acceptedAnswers: [`${h} x ${w} = ${startArea}`] },
           { label: "Write the working equation to subtract the lost squares:", expectedAnswer: `${startArea} - ${lostSquares} = ${newArea}`, acceptedAnswers: [] },
-          { label: `Area of Figure B in ${unit}²:`, expectedAnswer: `${newArea}`, acceptedAnswers: [] }
+          { label: "Area of Figure B:", expectedAnswer: `${newArea} ${unit}²`, acceptedAnswers: [`${newArea}`] }
         ]
       });
     }
@@ -304,7 +304,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
       inputRequirementStr = JSON.stringify({
         inputType: "MULTI_STEP_INPUT",
         steps: [
-          { label: `Write the working equation to find the total area in ${unit}²:`, expectedAnswer: `${areaA} + ${areaB} = ${totalArea}`, acceptedAnswers: [] },
+          { label: "Write the working equation to find the total area:", expectedAnswer: `${areaA} + ${areaB} = ${totalArea}`, acceptedAnswers: [] },
           { label: "Write the working equation to find the total cost of the grass:", expectedAnswer: `${totalArea} x ${costPerUnit} = ${totalCost}`, acceptedAnswers: [`${costPerUnit} x ${totalArea} = ${totalCost}`] },
           { label: "Total cost in dollars:", expectedAnswer: `${totalCost}`, acceptedAnswers: [`$${totalCost}`] }
         ]
