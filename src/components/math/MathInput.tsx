@@ -150,7 +150,7 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
       if (gradeLevel >= 5) {
         toolKeys.push({ command: ["insert", "#?^{2}", { mode: "math" }], label: "x²" });
         toolKeys.push({ command: ["insert", "#?^{3}", { mode: "math" }], label: "x³" });
-        toolKeys.push({ label: "%", command: ["insert", "%"] });
+        toolKeys.push({ label: "%", command: ["insert", "\\%"] });
       }
 
       // Add common operators and currency at the end
@@ -159,7 +159,7 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
         { label: "−", command: ["insert", "-"], class: "action font-black" },
         { command: ["insert", "\\times", { mode: "math" }], label: "×", class: "action font-black" },
         { command: ["insert", "\\div", { mode: "math" }], label: "÷", class: "action font-black" },
-        { label: "$", command: ["insert", "$"], class: "action font-black text-emerald-600" },
+        { label: "$", command: ["insert", "\\$"], class: "action font-black text-emerald-600" },
         { label: "¢", command: ["insert", "¢"], class: "action font-black text-emerald-600" }
       );
 
@@ -189,7 +189,7 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
       if (gradeLevel >= 5) {
         toolKeys.push({ command: ["insert", "#?^{2}", { mode: "math" }], label: "x²" });
         toolKeys.push({ command: ["insert", "#?^{3}", { mode: "math" }], label: "x³" });
-        toolKeys.push({ label: "%", command: ["insert", "%"] });
+        toolKeys.push({ label: "%", command: ["insert", "\\%"] });
       }
 
       const rows = [];
@@ -213,7 +213,7 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
         { label: "5", command: ["insert", "5"] }, 
         { label: "6", command: ["insert", "6"] },
         { command: ["insert", "\\times", { mode: "math" }], label: "×", class: "action font-black" },
-        { label: "$", command: ["insert", "$"], class: "action font-black text-emerald-600" }
+        { label: "$", command: ["insert", "\\$"], class: "action font-black text-emerald-600" }
       ]);
 
       rows.push([
