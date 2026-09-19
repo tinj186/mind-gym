@@ -170,6 +170,32 @@ export default function MentalCalculationPage() {
             </p>
           </div>
         </Link>
+        <Link href="/math/mental-calculation/square-root">
+          <div className="group bg-slate-800 border-2 border-slate-700 hover:border-fuchsia-500 rounded-3xl p-8 cursor-pointer transition-all hover:-translate-y-1">
+            <div className="text-4xl mb-4 bg-slate-900 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:bg-fuchsia-500 group-hover:text-slate-900 transition-colors">
+              🌿
+            </div>
+            <h2 className="text-2xl font-black text-white mb-2 group-hover:text-fuchsia-500 transition-colors">
+              Square Root
+            </h2>
+            <p className="text-slate-400 font-medium">
+              Calculate the square root of perfect squares up to 4 digits.
+            </p>
+          </div>
+        </Link>
+        <Link href="/math/mental-calculation/cube-root">
+          <div className="group bg-slate-800 border-2 border-slate-700 hover:border-fuchsia-500 rounded-3xl p-8 cursor-pointer transition-all hover:-translate-y-1">
+            <div className="text-4xl mb-4 bg-slate-900 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:bg-fuchsia-500 group-hover:text-slate-900 transition-colors">
+              🌳
+            </div>
+            <h2 className="text-2xl font-black text-white mb-2 group-hover:text-fuchsia-500 transition-colors">
+              Cube Root
+            </h2>
+            <p className="text-slate-400 font-medium">
+              Calculate the cube root of perfect cubes up to 6 digits.
+            </p>
+          </div>
+        </Link>
       </div>
 
       <div className="mt-16 mb-8">
