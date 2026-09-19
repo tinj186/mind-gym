@@ -227,7 +227,7 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
       rows.push([
         { label: "0", command: ["insert", "0"] }, 
         { label: ".", command: ["insert", "."] },
-        { label: "'", command: ["insert", "'"] },
+        { label: "▼", command: "hideVirtualKeyboard", class: "action font-black text-slate-600 bg-slate-200" },
         { label: "=", command: ["insert", "="], class: "action font-black text-blue-600" },
         { label: "+", command: ["insert", "+"], class: "action font-black" },
         { label: "⏎", command: ["insert", "\\Omega"], class: "action font-black text-white bg-blue-600" }
@@ -263,7 +263,8 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
           { label: "⌫", command: ["deleteBackward"], class: "action font-black text-rose-500 bg-rose-50" }
         ],
         [
-          { label: "space", command: ["insert", "\\space"], width: 7 },
+          { label: "space", command: ["insert", "\\space"], width: 5 },
+          { label: "▼", command: "hideVirtualKeyboard", class: "action font-black text-slate-600 bg-slate-200", width: 2 },
           { label: "⏎", command: ["insert", "\\Omega"], class: "action font-black text-white bg-blue-600", width: 3 }
         ]
       ];
