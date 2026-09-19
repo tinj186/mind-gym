@@ -167,7 +167,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     if (isAddition) {
       visualEngineStr = JSON.stringify({
         componentToRender: "BAR_MODEL",
-        componentData: {
+        componentData: { isStatic: true,
           bars: [
             {
               segments: [
@@ -202,7 +202,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
       // Subtraction (given total and one part)
       visualEngineStr = JSON.stringify({
         componentToRender: "BAR_MODEL",
-        componentData: {
+        componentData: { isStatic: true,
           bars: [
             {
               segments: [
@@ -271,7 +271,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     if (isFindingDiff) {
       visualEngineStr = JSON.stringify({
         componentToRender: "BAR_MODEL",
-        componentData: {
+        componentData: { isStatic: true,
           bars: [
             { segments: [{ value: areaA, label: `Mirror A: ${areaA} ${unit}²`, color: "blue" }] },
             { segments: [{ value: areaB, label: `Mirror B: ${areaB} ${unit}²`, color: "red" }], alignment: "left" }
@@ -303,7 +303,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
       // Find unknown area using difference (e.g., A is known, B is smaller by diff)
       visualEngineStr = JSON.stringify({
         componentToRender: "BAR_MODEL",
-        componentData: {
+        componentData: { isStatic: true,
           bars: [
             { segments: [{ value: areaA, label: `Board X: ${areaA} ${unit}²`, color: "blue" }] },
             { segments: [{ value: areaB, label: `Board Y: ?`, color: "red" }], alignment: "left" }

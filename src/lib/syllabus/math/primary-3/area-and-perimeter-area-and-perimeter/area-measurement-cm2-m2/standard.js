@@ -90,7 +90,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
 
     visualEngineStr = JSON.stringify({
       componentToRender: "BAR_MODEL",
-      componentData: {
+        componentData: { isStatic: true,
         bars: [
           {
             segments: [
@@ -163,7 +163,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     if (isFindingUnit) {
       visualEngineStr = JSON.stringify({
         componentToRender: "BAR_MODEL",
-        componentData: {
+        componentData: { isStatic: true,
           bars: [
             {
               segments: Array(items).fill({ value: unitArea, label: "?", color: "blue" }),
@@ -193,7 +193,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     } else {
       visualEngineStr = JSON.stringify({
         componentToRender: "BAR_MODEL",
-        componentData: {
+        componentData: { isStatic: true,
           bars: [
             {
               segments: Array(items).fill({ value: unitArea, label: `${unitArea}`, color: "blue" }),
@@ -254,7 +254,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
 
     visualEngineStr = JSON.stringify({
       componentToRender: "BAR_MODEL",
-      componentData: {
+        componentData: { isStatic: true,
         bars: [
           {
             segments: [

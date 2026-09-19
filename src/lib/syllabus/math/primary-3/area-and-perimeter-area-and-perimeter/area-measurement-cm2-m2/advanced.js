@@ -20,7 +20,7 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
 
     visualEngineStr = JSON.stringify({
       componentToRender: "BAR_MODEL",
-      componentData: {
+        componentData: { isStatic: true,
         bars: [
           { segments: [{ value: areaA, label: `A: ${areaA}`, color: "blue" }] },
           { segments: [{ value: areaB, label: "B", color: "red" }], alignment: "left" },
@@ -213,7 +213,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
 
     visualEngineStr = JSON.stringify({
       componentToRender: "BAR_MODEL",
-      componentData: {
+        componentData: { isStatic: true,
         bars: [
           {
             segments: [
@@ -278,7 +278,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
 
     visualEngineStr = JSON.stringify({
       componentToRender: "BAR_MODEL",
-      componentData: {
+        componentData: { isStatic: true,
         bars: [
           {
             segments: [
