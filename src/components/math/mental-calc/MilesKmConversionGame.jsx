@@ -229,7 +229,7 @@ export default function MilesKmConversionGame() {
             {num}
           </div>
           <div className="text-3xl font-bold text-slate-400 mb-12 uppercase tracking-widest">
-            {isMilesToKm ? 'Miles &rarr; Kilometers' : 'Kilometers &rarr; Miles'}
+            {isMilesToKm ? 'Miles → Kilometers' : 'Kilometers → Miles'}
           </div>
           
           <input
