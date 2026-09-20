@@ -269,6 +269,19 @@ export default function MentalCalculationPage() {
             </p>
           </div>
         </Link>
+        <Link href="/math/mental-calculation/meters-feet-conversion">
+          <div className="group bg-slate-800 border-2 border-slate-700 hover:border-blue-500 rounded-3xl p-8 cursor-pointer transition-all hover:-translate-y-1">
+            <div className="text-4xl mb-4 bg-slate-900 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:bg-blue-500 group-hover:text-slate-900 transition-colors">
+              📏
+            </div>
+            <h2 className="text-2xl font-black text-white mb-2 group-hover:text-blue-500 transition-colors">
+              Meters ↔ Feet
+            </h2>
+            <p className="text-slate-400 font-medium">
+              Estimate distance conversions back and forth with high accuracy.
+            </p>
+          </div>
+        </Link>
       </div>
 
     </div>
