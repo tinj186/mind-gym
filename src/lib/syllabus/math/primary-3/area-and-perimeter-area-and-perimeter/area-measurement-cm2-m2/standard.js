@@ -11,27 +11,39 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
     const halves = getRandomInt(1, 4) * 2; // Always even to make whole squares
     const area = full + (halves / 2);
 
-    // Creating a pseudo-random triangle/shape representation with halves
-    // Since SquareGridShape.jsx supports half-squares via a custom format or we just describe it
-    // Wait, the prompt says "Requires half-shading support."
-    // Let's use `shadedSquares` and `halfShadedSquares` if the component supports it.
-    // If not, we just pass what we can or rely on the question text.
-    // Assuming `SquareGridShape` supports `halfShadedSquares` (e.g. { type: 'top-left', x, y }).
-    
-    // For standard_6 we just need any visual that fits. Let's just create some dummy squares.
+    // Create a cohesive, symmetrical composite shape.
+    // 1. All full squares form a single horizontal block at y=2.
     let shaded = [];
     for(let i=0; i<full; i++){
-      shaded.push([1 + i, 1]);
+      shaded.push([2 + i, 2]);
     }
+    
+    // 2. Attach pairs of half-squares (triangles) to the top (y=1) and bottom (y=3)
+    // Since full is at least 4, x=2,3,4,5 are guaranteed to be full squares.
     let halfShaded = [];
-    for(let i=0; i<halves; i++){
-      halfShaded.push({ type: 'top-left', x: 1 + i, y: 2 });
+    let pairs = halves / 2;
+    let pairIdx = 0;
+    while (pairIdx < pairs) {
+        if (pairIdx === 0) {
+            halfShaded.push({ type: 'bottom-right', x: 2, y: 1 });
+            halfShaded.push({ type: 'bottom-left', x: 3, y: 1 });
+        } else if (pairIdx === 1) {
+            halfShaded.push({ type: 'bottom-right', x: 4, y: 1 });
+            halfShaded.push({ type: 'bottom-left', x: 5, y: 1 });
+        } else if (pairIdx === 2) {
+            halfShaded.push({ type: 'top-right', x: 2, y: 3 });
+            halfShaded.push({ type: 'top-left', x: 3, y: 3 });
+        } else if (pairIdx === 3) {
+            halfShaded.push({ type: 'top-right', x: 4, y: 3 });
+            halfShaded.push({ type: 'top-left', x: 5, y: 3 });
+        }
+        pairIdx++;
     }
 
     visualEngineStr = JSON.stringify({
       componentToRender: "SQUARE_GRID_SHAPE",
       componentData: {
-        gridSize: { cols: Math.max(full, halves) + 2, rows: 4 },
+        gridSize: { cols: Math.max(full + 4, 8), rows: 5 },
         unitLabel: `1 ${unit}`,
         figures: [{ shadedSquares: shaded, halfShadedSquares: halfShaded }]
       }
