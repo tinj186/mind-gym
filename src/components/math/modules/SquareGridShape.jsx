@@ -55,24 +55,33 @@ export default function SquareGridShape({ data }) {
         {/* Render Shaded Figures */}
         {figures.map((fig, fIdx) => (
           <g key={fIdx}>
-            {(fig.shadedSquares || []).map((sq, sIdx) => {
-              let x, y, type;
-              if (Array.isArray(sq)) {
-                [x, y] = sq;
-                type = 'full';
-              } else {
-                ({ x, y, type = 'full' } = sq);
-              }
-              // Skip if out of bounds
-              if (x < 0 || x >= cols || y < 0 || y >= rows) return null;
-              
-              const color = fig.color || colors[fIdx % colors.length];
-              return (
-                <g key={sIdx}>
-                  {renderSquare(x, y, type, color)}
-                </g>
-              );
-            })}
+            {(() => {
+              const squares = [...(fig.shadedSquares || []), ...(fig.halfShadedSquares || [])];
+              return squares.map((sq, sIdx) => {
+                let x, y, type;
+                if (Array.isArray(sq)) {
+                  [x, y] = sq;
+                  type = 'full';
+                } else {
+                  ({ x, y, type = 'full' } = sq);
+                  
+                  // Map verbose type names to short ones
+                  if (type === 'top-left') type = 'half-tl';
+                  if (type === 'top-right') type = 'half-tr';
+                  if (type === 'bottom-left') type = 'half-bl';
+                  if (type === 'bottom-right') type = 'half-br';
+                }
+                // Skip if out of bounds
+                if (x < 0 || x >= cols || y < 0 || y >= rows) return null;
+                
+                const color = fig.color || colors[fIdx % colors.length];
+                return (
+                  <g key={sIdx}>
+                    {renderSquare(x, y, type, color)}
+                  </g>
+                );
+              });
+            })()}
             
             {/* Optional text label for the figure */}
             {fig.label && fig.labelPos && (
