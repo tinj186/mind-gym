@@ -96,10 +96,10 @@ ${isMCQ ? `Generate EXACTLY 4 options:
   }
   else if (activeVariant === 'standard_subtracting_cut_out') {
     const unit = Math.random() < 0.5 ? "cm" : "m";
-    const totalArea = getRandomInt(40, 80);
-    const cutOutCount = getRandomInt(1, 3);
+    const cutOutCount = getRandomInt(1, 5); // Primary 3 can handle up to 5 items comfortably
     const cutOutArea = getRandomInt(5, 12);
     const totalCutOut = cutOutCount * cutOutArea;
+    const totalArea = totalCutOut + getRandomInt(20, 60); // Ensure total area is always comfortably larger than the cutout
     const remainingArea = totalArea - totalCutOut;
     
     const name = getRandomNames(1);
