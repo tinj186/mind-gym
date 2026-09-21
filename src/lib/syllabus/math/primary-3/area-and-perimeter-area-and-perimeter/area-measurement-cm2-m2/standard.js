@@ -1,3 +1,5 @@
+import { getRandomName, getRandomItem } from '../../../../../utils/variable-bank.js';
+
 export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, getFormatInstructions) => {
   let visualEngineStr = `{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }`;
   let inputRequirementStr = null;
@@ -99,6 +101,10 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     const cutOutArea = getRandomInt(5, 12);
     const totalCutOut = cutOutCount * cutOutArea;
     const remainingArea = totalArea - totalCutOut;
+    
+    const name = getRandomName();
+    const item = getRandomItem();
+    const shape = Math.random() < 0.5 ? "square" : "triangle";
 
     visualEngineStr = JSON.stringify({
       componentToRender: "BAR_MODEL",
@@ -107,29 +113,21 @@ ${isMCQ ? `Generate EXACTLY 4 options:
         modelType: 'PART_WHOLE',
         parts: [
           { segments: 1, value: remainingArea, displayValue: "?", bgClass: 'bg-slate-400 text-white' },
-          { segments: 1, value: totalCutOut, label: `Cut: ${totalCutOut} ${unit}²`, bgClass: 'bg-red-500 text-white' }
+          ...Array(cutOutCount).fill({ segments: 1, value: cutOutArea, label: `Cut: ${cutOutArea} ${unit}²`, bgClass: 'bg-red-500 text-white' })
         ],
         whole: `${totalArea} ${unit}²`
       }
     });
 
-    let askText = `A piece of paper has an area of ${totalArea} ${unit}². ${cutOutCount > 1 ? `Two sections of ${cutOutArea} ${unit}² each are` : `A square of ${cutOutArea} ${unit}² is`} cut out. What is the remaining area?`;
+    let askText = `STORY: ${name} has a ${item} with a total area of ${totalArea} ${unit}². ${name} cuts out ${cutOutCount} identical ${shape}s. Each ${shape} has an area of ${cutOutArea} ${unit}². What is the area of the remaining ${item}?`;
     let finalAnswer = `${remainingArea} ${unit}²`;
     let sysSolutionSteps = `"""1. Find the total area removed: ${cutOutCount} x ${cutOutArea} = ${totalCutOut}.\\n2. Subtract the removed area from the total area.\\n3. ${totalArea} - ${totalCutOut} = ${remainingArea}.\\n4. The remaining area is ${remainingArea} ${unit}²."""`;
 
-    if (isShort) {
-      askText = `A piece of paper has an area of ${totalArea} ${unit}². A square of ${cutOutArea} ${unit}² is cut out. What is the remaining area?`;
-      if (cutOutCount > 1) {
-         askText = `A piece of paper has an area of ${totalArea} ${unit}². ${cutOutCount} identical squares of ${cutOutArea} ${unit}² are cut out. What is the remaining area?`;
-      }
-    } else if (isMCQ) {
-      askText = `Total area is ${totalArea} ${unit}². ${cutOutCount} sections of ${cutOutArea} ${unit}² each are removed. Remaining area?`;
-    } else if (isStructure) {
-      askText = `A rectangular wooden board has a total area of ${totalArea} ${unit}². Jia Hao cuts out ${cutOutCount} identical triangles. Each triangle has an area of ${cutOutArea} ${unit}². What is the area of the remaining wooden board?`;
+    if (isStructure) {
       inputRequirementStr = JSON.stringify({
         inputType: "MULTI_STEP_INPUT",
         steps: [
-          { label: `Write the working equation to find the total area of the ${cutOutCount} cut-out triangles:`, expectedAnswer: cutOutCount > 1 ? `${cutOutCount} x ${cutOutArea} = ${totalCutOut}` : `${cutOutArea} = ${totalCutOut}`, acceptedAnswers: cutOutCount === 2 ? [`${cutOutArea} + ${cutOutArea} = ${totalCutOut}`] : [] },
+          { label: `Write the working equation to find the total area of the ${cutOutCount} cut-out ${shape}s:`, expectedAnswer: cutOutCount > 1 ? `${cutOutCount} x ${cutOutArea} = ${totalCutOut}` : `${cutOutArea} = ${totalCutOut}`, acceptedAnswers: cutOutCount === 2 ? [`${cutOutArea} + ${cutOutArea} = ${totalCutOut}`] : [] },
           { label: "Write the working equation to find the remaining area:", expectedAnswer: `${totalArea} - ${totalCutOut} = ${remainingArea}`, acceptedAnswers: [] },
           { label: "Remaining area:", expectedAnswer: `${remainingArea} ${unit}²`, acceptedAnswers: [`${remainingArea}`] }
         ]
@@ -147,7 +145,8 @@ Type: ${zodType}
 Difficulty: ${zodDiff}
 
 CRITICAL INSTRUCTION: You MUST construct the "content" object using the EXACT strings provided below:
-- For content.questionText, use: "${askText}"
+- For content.questionText, rewrite the following STORY replacing the placeholders. Preserve exact math values. NEVER add extra questions. DO NOT include "STORY:" prefix.
+${askText}
 - For content.finalAnswer, use: "${finalAnswer}"
 - For content.hint, use: "Subtract the cut out area from the total area."
 - For content.solutionSteps, use: ${sysSolutionSteps}
