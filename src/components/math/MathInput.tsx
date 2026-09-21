@@ -317,7 +317,7 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
       try {
           mfe.menuToggleVisibility = "hidden";
           mfe.virtualKeyboardToggleVisibility = "hidden";
-          mfe.mathVirtualKeyboardPolicy = isDesktop ? "manual" : "auto";
+          mfe.mathVirtualKeyboardPolicy = "manual";
           mfe.readOnly = disabled;
           mfe.letterShapeStyle = "upright";
           mfe.smartMode = false;
@@ -434,10 +434,12 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
     };
 
     const onClick = () => {
-      // Only pop up the virtual keyboard on Desktop if they explicitly click/tap the field.
-      // Tabbing into it via keyboard should not obstruct the screen.
-      if (isDesktop && currentMf && currentMf.executeCommand) {
+      if (currentMf && currentMf.executeCommand) {
         try {
+          const mvk = (window as any).mathVirtualKeyboard;
+          if (mvk && mvk.activeMathfield !== currentMf) {
+            mvk.activeMathfield = currentMf;
+          }
           currentMf.executeCommand("showVirtualKeyboard");
         } catch(e) {}
       }
@@ -462,6 +464,7 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
     currentMf.addEventListener('commit', onCommitEvent);
     currentMf.addEventListener('focusin', onFocusIn);
     currentMf.addEventListener('focusout', onFocusOut);
+    currentMf.addEventListener('pointerdown', onClick);
     currentMf.addEventListener('click', onClick);
     
     const handleGlobalClick = (e: Event) => {
@@ -488,6 +491,7 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
       currentMf.removeEventListener('commit', onCommitEvent);
       currentMf.removeEventListener('focusin', onFocusIn);
       currentMf.removeEventListener('focusout', onFocusOut);
+      currentMf.removeEventListener('pointerdown', onClick);
       currentMf.removeEventListener('click', onClick);
       window.removeEventListener('pointerdown', handleGlobalClick, { capture: true } as any);
     };
@@ -674,7 +678,7 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
             tabIndex={0}
             menu-toggle-visibility="hidden"
             virtual-keyboard-toggle-visibility="hidden"
-            math-virtual-keyboard-policy={isDesktop ? "manual" : "auto"}
+            math-virtual-keyboard-policy="manual"
             style={{
               display: 'block',
               minHeight: '2.5rem',
