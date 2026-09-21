@@ -164,6 +164,11 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     const totalArea = items * unitArea;
     const isFindingUnit = Math.random() < 0.5;
 
+    const name = getRandomNames(1);
+    const itemObj = getRandomCountableItems(1);
+    // Remove the trailing 's' if any to get singular form
+    const itemSingular = (itemObj.item || "piece of paper").replace(/s$/, '');
+
     let askText = "";
     let finalAnswer = "";
     let sysSolutionSteps = "";
@@ -181,17 +186,14 @@ ${isMCQ ? `Generate EXACTLY 4 options:
       finalAnswer = `${unitArea} ${unit}²`;
       sysSolutionSteps = `"""1. Divide the total area by the number of items.\\n2. ${totalArea} / ${items} = ${unitArea}.\\n3. The area of 1 item is ${unitArea} ${unit}²."""`;
 
-      if (isShort) {
-        askText = `${items} identical square tiles have a total area of ${totalArea} ${unit}². What is the area of 1 tile?`;
-      } else if (isMCQ) {
-        askText = `${items} identical tiles have a total area of ${totalArea} ${unit}². What is the area of 1 tile?`;
-      } else if (isStructure) {
-        askText = `A bathroom wall is covered with ${items} identical tiles. The total area of the tiles is ${totalArea} ${unit}². What is the area of 1 tile?`;
+      askText = `STORY: ${name} has ${items} identical ${itemSingular}s. The total area of the ${itemSingular}s is ${totalArea} ${unit}². What is the area of 1 ${itemSingular}?`;
+
+      if (isStructure) {
         inputRequirementStr = JSON.stringify({
           inputType: "MULTI_STEP_INPUT",
           steps: [
-            { label: "Write the working equation to find the area of 1 tile:", expectedAnswer: `${totalArea} / ${items} = ${unitArea}`, acceptedAnswers: [`${totalArea} \\\\div ${items} = ${unitArea}`] },
-            { label: "Area of 1 tile:", expectedAnswer: `${unitArea} ${unit}²`, acceptedAnswers: [`${unitArea}`] }
+            { label: `Write the working equation to find the area of 1 ${itemSingular}:`, expectedAnswer: `${totalArea} / ${items} = ${unitArea}`, acceptedAnswers: [`${totalArea} \\\\div ${items} = ${unitArea}`] },
+            { label: `Area of 1 ${itemSingular}:`, expectedAnswer: `${unitArea} ${unit}²`, acceptedAnswers: [`${unitArea}`] }
           ]
         });
       }
@@ -208,12 +210,9 @@ ${isMCQ ? `Generate EXACTLY 4 options:
       finalAnswer = `${totalArea} ${unit}²`;
       sysSolutionSteps = `"""1. Multiply the number of items by the area of 1 item.\\n2. ${items} x ${unitArea} = ${totalArea}.\\n3. The total area is ${totalArea} ${unit}²."""`;
 
-      if (isShort) {
-        askText = `A floor is covered by ${items} identical rugs. Each rug has an area of ${unitArea} ${unit}². What is the total area covered?`;
-      } else if (isMCQ) {
-        askText = `${items} rugs are ${unitArea} ${unit}² each. Total area?`;
-      } else if (isStructure) {
-        askText = `A bathroom wall is covered with ${items} identical tiles. Each tile has an area of ${unitArea} ${unit}². What is the total area of the tiles on the wall?`;
+      askText = `STORY: ${name} has ${items} identical ${itemSingular}s. Each ${itemSingular} has an area of ${unitArea} ${unit}². What is the total area of the ${itemSingular}s?`;
+
+      if (isStructure) {
         inputRequirementStr = JSON.stringify({
           inputType: "MULTI_STEP_INPUT",
           steps: [
@@ -235,7 +234,8 @@ Type: ${zodType}
 Difficulty: ${zodDiff}
 
 CRITICAL INSTRUCTION: You MUST construct the "content" object using the EXACT strings provided below:
-- For content.questionText, use: "${askText}"
+- For content.questionText, rewrite the following STORY replacing the placeholders. Preserve exact math values. NEVER add extra questions. DO NOT include "STORY:" prefix.
+${askText}
 - For content.finalAnswer, use: "${finalAnswer}"
 - For content.hint, use: "${isFindingUnit ? "Divide the total area by the number of items." : "Multiply the area of one item by the number of items."}"
 - For content.solutionSteps, use: ${sysSolutionSteps}
