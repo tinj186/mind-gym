@@ -436,6 +436,7 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
     const onClick = () => {
       if (currentMf && currentMf.executeCommand) {
         try {
+          currentMf.focus(); // FORCE FOCUS RESTORE
           const mvk = (window as any).mathVirtualKeyboard;
           if (mvk && mvk.activeMathfield !== currentMf) {
             mvk.activeMathfield = currentMf;
