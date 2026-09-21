@@ -1,4 +1,4 @@
-import { getRandomName, getRandomItem } from '../../../../../utils/variable-bank.js';
+import { getRandomNames, getRandomCountableItems } from '../../../../../utils/variable-bank.js';
 
 export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, getFormatInstructions) => {
   let visualEngineStr = `{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }`;
@@ -102,8 +102,8 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     const totalCutOut = cutOutCount * cutOutArea;
     const remainingArea = totalArea - totalCutOut;
     
-    const name = getRandomName();
-    const item = getRandomItem();
+    const name = getRandomNames(1);
+    const item = getRandomCountableItems(1).item || "piece of paper";
     const shape = Math.random() < 0.5 ? "square" : "triangle";
 
     visualEngineStr = JSON.stringify({
