@@ -51,16 +51,13 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       }
     });
 
-    let askText = `Find the area of the shaded shape drawn on the 1 ${unit} grid.`;
+    let askText = `Look at the shaded figure on the 1 ${unit} grid. It contains both full squares and half-squares. Find the total area.`;
+    if (isShort || isMCQ) askText = `Find the area of the shaded shape drawn on the 1 ${unit} grid.`;
+
     let finalAnswer = `${area} ${unit}²`;
     let sysSolutionSteps = `"""1. Count the full squares: ${full}.\\n2. Count the half-squares: ${halves}.\\n3. Combine the half-squares into full squares: ${halves} / 2 = ${halves/2}.\\n4. Add them together: ${full} + ${halves/2} = ${area}.\\n5. The total area is ${area} ${unit}²."""`;
 
-    if (isShort) {
-      askText = `Find the area of the shaded shape drawn on the 1 ${unit} grid.`;
-    } else if (isMCQ) {
-      askText = `What is the area of a figure with ${full} whole squares and ${halves} half-squares on a 1 ${unit} grid?`;
-    } else if (isStructure) {
-      askText = `Look at the shaded figure on the 1 ${unit} grid. It contains both full squares and half-squares. Find the total area.`;
+    if (isStructure) {
       inputRequirementStr = JSON.stringify({
         inputType: "MULTI_STEP_INPUT",
         steps: [
@@ -83,11 +80,7 @@ Type: ${zodType}
 Difficulty: ${zodDiff}
 
 CRITICAL INSTRUCTION: You MUST construct the "content" object using the EXACT strings provided below:
-- For content.questionText, use: "${askText}"
-- For content.finalAnswer, use: "${finalAnswer}"
-- For content.hint, use: "2 half-squares make 1 full square."
-- For content.solutionSteps, use: ${sysSolutionSteps}
-${isMCQ ? `Generate EXACTLY 4 options:
+- For content.questionText, ${isStructure ? `rewrite the following STORY replacing the placeholders. Preserve exact math values. NEVER add extra questions. DO NOT include "STORY:" prefix.\\nSTORY: ${askText}` : `use: "${askText}"`}
 - "${finalAnswer}"
 - "${area + 1} ${unit}²"
 - "${full + halves} ${unit}²"
@@ -452,7 +445,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     } else {
       // Find Hole (B = A - C)
       askText = `STORY: ${name} had a solid shape with a total area of ${outerArea} ${unit}². ${name} erased the middle to create an empty ${object}. Look at the remaining shaded path on the grid. What is the area of the empty ${object}?`;
-      if (isShort || isMCQ) askText = `The total area of the solid shape was ${outerArea} ${unit}². Look at the remaining shaded path on the grid. What is the area of the empty space?`;
+      if (isShort || isMCQ) askText = `Look at the shape drawn on the grid. Find the area of the empty space.`;
 
       finalAnswer = `${innerArea} ${unit}²`;
       sysSolutionSteps = `"""1. The total area of the solid shape was ${outerArea}.\\n2. Count the number of shaded squares left in the path: ${pathArea}.\\n3. Subtract the path area from the total area to find the empty space: ${outerArea} - ${pathArea} = ${innerArea}.\\n4. The area of the empty ${object} is ${innerArea} ${unit}²."""`;
