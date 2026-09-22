@@ -81,6 +81,10 @@ Difficulty: ${zodDiff}
 
 CRITICAL INSTRUCTION: You MUST construct the "content" object using the EXACT strings provided below:
 - For content.questionText, ${isStructure ? `rewrite the following STORY replacing the placeholders. Preserve exact math values. NEVER add extra questions. DO NOT include "STORY:" prefix.\\nSTORY: ${askText}` : `use: "${askText}"`}
+- For content.finalAnswer, use: "${finalAnswer}"
+- For content.hint, use: "2 half-squares make 1 full square."
+- For content.solutionSteps, use: ${sysSolutionSteps}
+${isMCQ ? `Generate EXACTLY 4 options:
 - "${finalAnswer}"
 - "${area + 1} ${unit}²"
 - "${full + halves} ${unit}²"
