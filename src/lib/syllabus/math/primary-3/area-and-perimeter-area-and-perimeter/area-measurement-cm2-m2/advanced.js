@@ -20,22 +20,24 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
 
     visualEngineStr = JSON.stringify({
       componentToRender: "BAR_MODEL",
-      componentData: [
-        {
-          isStatic: true,
-          modelType: 'COMPARISON',
-          bar1: { layoutSize: areaA, segments: 1, value: areaA, name: "Figure X", displayValue: `${areaA}` },
-          bar2: { layoutSize: areaB, segments: 1, value: areaB, name: "Figure Y", displayValue: "?" },
-          difference: { displayValue: `${diff1} larger` }
-        },
-        {
-          isStatic: true,
-          modelType: 'COMPARISON',
-          bar1: { layoutSize: areaB, segments: 1, value: areaB, name: "Figure Y", displayValue: "?" },
-          bar2: { layoutSize: areaC, segments: 1, value: areaC, name: "Figure Z", displayValue: "?" },
-          difference: { displayValue: `${diff2} smaller` }
-        }
-      ]
+      componentData: {
+        models: [
+          {
+            isStatic: true,
+            modelType: 'COMPARISON',
+            bar1: { layoutSize: areaA, segments: 1, value: areaA, name: "Figure X", displayValue: `${areaA}` },
+            bar2: { layoutSize: areaB, segments: 1, value: areaB, name: "Figure Y", displayValue: "?" },
+            difference: { displayValue: `${diff1} larger` }
+          },
+          {
+            isStatic: true,
+            modelType: 'COMPARISON',
+            bar1: { layoutSize: areaB, segments: 1, value: areaB, name: "Figure Y", displayValue: "?" },
+            bar2: { layoutSize: areaC, segments: 1, value: areaC, name: "Figure Z", displayValue: "?" },
+            difference: { displayValue: `${diff2} smaller` }
+          }
+        ]
+      }
     });
 
     let askText = `Figure X has an area of ${areaA} ${unit}². Figure Y has an area ${diff1} ${unit}² larger than Figure X. Figure Z has an area ${diff2} ${unit}² smaller than Figure Y. What is the total area of all three figures?`;
