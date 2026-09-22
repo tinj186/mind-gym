@@ -25,16 +25,11 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
           {
             isStatic: true,
             modelType: 'COMPARISON',
-            bar1: { layoutSize: areaA, segments: 1, value: areaA, name: "Figure X", displayValue: `${areaA}` },
-            bar2: { layoutSize: areaB, segments: 1, value: areaB, name: "Figure Y", displayValue: "?" },
-            difference: { displayValue: `${diff1} larger` }
-          },
-          {
-            isStatic: true,
-            modelType: 'COMPARISON',
-            bar1: { layoutSize: areaB, segments: 1, value: areaB, name: "Figure Y", displayValue: "?" },
-            bar2: { layoutSize: areaC, segments: 1, value: areaC, name: "Figure Z", displayValue: "?" },
-            difference: { displayValue: `${diff2} smaller` }
+            bars: [
+              { layoutSize: areaA, segments: 1, value: areaA, name: "Figure X", displayValue: `${areaA}`, difference: { displayValue: `${diff1}` } },
+              { layoutSize: areaB, segments: 1, value: areaB, name: "Figure Y", displayValue: "?" },
+              { layoutSize: areaC, segments: 1, value: areaC, name: "Figure Z", displayValue: "?", difference: { displayValue: `${diff2}` } }
+            ]
           }
         ]
       }

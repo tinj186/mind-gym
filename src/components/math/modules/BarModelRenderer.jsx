@@ -151,7 +151,7 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
   }
 
       if (m.modelType === 'COMPARISON' || m.type === 'COMPARISON') {
-        const hasSegments = m.bar1?.segments || m.bar2?.segments;
+        const hasSegments = m.bar1?.segments || m.bar2?.segments || (m.bars && m.bars.some(b => b.segments));
     
         const getLayoutValue = (bar) => {
             if (!bar) return 0;
@@ -164,18 +164,19 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
         }
     };
 
-        const v1 = getLayoutValue(m.bar1);
-        const v2 = getLayoutValue(m.bar2);
-    const maxVal = Math.max(v1, v2, 1);
+        const barsToRender = m.bars || [m.bar1, m.bar2].filter(Boolean);
+        const maxVal = Math.max(...barsToRender.map(getLayoutValue), 1);
 
         return (
           <div key={index} className="relative my-6 p-6 bg-slate-50 rounded-3xl border border-slate-100 shadow-sm">
         <div className="flex w-full items-start">
           <div className="flex-1 space-y-4 min-w-[200px]">
-              {[m.bar1, m.bar2].map((bar, idx) => {
+              {barsToRender.map((bar, idx) => {
             if (!bar) return null;
           const inputKey = `bar_${idx}`;
           const userVal = toolState[inputKey];
+          const diffKey = `diff_${idx}`;
+          const diffVal = toolState[diffKey] || toolState['diff'];
           
           return (
             <div key={idx} className="flex flex-col">
@@ -187,7 +188,7 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
                   <div
                     style={{ width: `${(getLayoutValue(bar) / maxVal) * 100}%` }}
                     className={`relative h-full flex items-center justify-end px-4 text-sm font-black text-white rounded-lg border border-slate-200 shadow-inner overflow-hidden ${
-                      idx === 0 ? 'bg-blue-500' : 'bg-amber-500'
+                      idx === 0 ? 'bg-blue-500' : (idx === 1 ? 'bg-amber-500' : (idx === 2 ? 'bg-emerald-500' : 'bg-purple-500'))
                     }`}
                   >
                     <UnitSegments value={bar.segments || bar.value} />
@@ -205,14 +206,14 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
                       {idx === 0 ? (
                         <div className="absolute -top-5 flex flex-col items-center justify-end w-full h-8">
                           <span className="text-sm font-black text-slate-500 bg-slate-50 px-2 absolute -top-3 z-10">
-                            {toolState['diff'] ? <span className="text-indigo-600">{toolState['diff']}</span> : (m.difference?.displayValue !== undefined ? m.difference.displayValue : '?')}
+                            {diffVal ? <span className="text-indigo-600">{diffVal}</span> : (bar.difference?.displayValue !== undefined ? bar.difference.displayValue : (m.difference?.displayValue !== undefined ? m.difference.displayValue : '?'))}
                           </span>
                           <div className="w-[calc(100%-16px)] h-2 border-x-2 border-t-2 border-slate-400 opacity-60 rounded-t-md"></div>
                         </div>
                       ) : (
                         <div className="absolute -bottom-5 flex flex-col items-center justify-start w-full h-8">
                           <span className="text-sm font-black text-slate-500 bg-slate-50 px-2 absolute -bottom-3 z-10">
-                            {toolState['diff'] ? <span className="text-indigo-600">{toolState['diff']}</span> : (m.difference?.displayValue !== undefined ? m.difference.displayValue : '?')}
+                            {diffVal ? <span className="text-indigo-600">{diffVal}</span> : (bar.difference?.displayValue !== undefined ? bar.difference.displayValue : (m.difference?.displayValue !== undefined ? m.difference.displayValue : '?'))}
                           </span>
                           <div className="w-[calc(100%-16px)] h-2 border-x-2 border-b-2 border-slate-400 opacity-60 rounded-b-md"></div>
                         </div>
