@@ -253,6 +253,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     const coveredArea = items * unitArea;
     const totalArea = coveredArea + getRandomInt(20, 60); // Ensure totalArea > coveredArea safely
     const remainingArea = totalArea - coveredArea;
+    const isFindingTotal = Math.random() < 0.5;
 
     const name = getRandomNames(1);
     const itemObj = getRandomCountableItems(1);
@@ -260,32 +261,66 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     const surfaces = ["board", "table", "floor", "wall", "piece of paper", "mat"];
     const surface = surfaces[Math.floor(Math.random() * surfaces.length)];
 
-    visualEngineStr = JSON.stringify({
-      componentToRender: "BAR_MODEL",
-      componentData: {
-        isStatic: true,
-        modelType: 'PART_WHOLE',
-        parts: [
-          ...Array(items).fill({ segments: 1, value: unitArea, label: `${unitArea}`, bgClass: 'bg-blue-500 text-white' }),
-          { segments: 1, value: remainingArea, displayValue: "?", bgClass: 'bg-slate-400 text-white' }
-        ],
-        whole: `${totalArea} ${unit}²`
-      }
-    });
+    let askText = "";
+    let finalAnswer = "";
+    let sysSolutionSteps = "";
 
-    let askText = `STORY: ${name} has a ${surface} with a total area of ${totalArea} ${unit}². ${name} places ${items} identical ${itemSingular}s on it. Each ${itemSingular} has an area of ${unitArea} ${unit}². How much empty area is left on the ${surface}?`;
-    let finalAnswer = `${remainingArea} ${unit}²`;
-    let sysSolutionSteps = `"""1. Find the total area covered by the ${itemSingular}s: ${items} x ${unitArea} = ${coveredArea}.\\n2. Subtract the covered area from the total area: ${totalArea} - ${coveredArea} = ${remainingArea}.\\n3. The remaining empty area is ${remainingArea} ${unit}²."""`;
-
-    if (isStructure) {
-      inputRequirementStr = JSON.stringify({
-        inputType: "MULTI_STEP_INPUT",
-        steps: [
-          { label: `Write the working equation to find the total area of the ${items} ${itemSingular}s:`, expectedAnswer: `${items} x ${unitArea} = ${coveredArea}`, acceptedAnswers: [`${unitArea} x ${items} = ${coveredArea}`] },
-          { label: "Write the working equation to find the remaining empty area:", expectedAnswer: `${totalArea} - ${coveredArea} = ${remainingArea}`, acceptedAnswers: [] },
-          { label: "Empty area:", expectedAnswer: `${remainingArea} ${unit}²`, acceptedAnswers: [`${remainingArea}`] }
-        ]
+    if (isFindingTotal) {
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL",
+        componentData: {
+          isStatic: true,
+          modelType: 'PART_WHOLE',
+          parts: [
+            ...Array(items).fill({ segments: 1, value: unitArea, label: `${unitArea}`, bgClass: 'bg-blue-500 text-white' }),
+            { segments: 1, value: remainingArea, label: `${remainingArea}`, bgClass: 'bg-slate-400 text-white' }
+          ],
+          whole: "?"
+        }
       });
+
+      askText = `STORY: ${name} places ${items} identical ${itemSingular}s on a ${surface}. Each ${itemSingular} has an area of ${unitArea} ${unit}². There is ${remainingArea} ${unit}² of empty area left on the ${surface}. What is the total area of the ${surface}?`;
+      finalAnswer = `${totalArea} ${unit}²`;
+      sysSolutionSteps = `"""1. Find the total area covered by the ${itemSingular}s: ${items} x ${unitArea} = ${coveredArea}.\\n2. Add the covered area to the remaining empty area: ${coveredArea} + ${remainingArea} = ${totalArea}.\\n3. The total area of the ${surface} is ${totalArea} ${unit}²."""`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: `Write the working equation to find the total area of the ${items} ${itemSingular}s:`, expectedAnswer: `${items} x ${unitArea} = ${coveredArea}`, acceptedAnswers: [`${unitArea} x ${items} = ${coveredArea}`] },
+            { label: `Write the working equation to find the total area of the ${surface}:`, expectedAnswer: `${coveredArea} + ${remainingArea} = ${totalArea}`, acceptedAnswers: [`${remainingArea} + ${coveredArea} = ${totalArea}`] },
+            { label: "Total area:", expectedAnswer: `${totalArea} ${unit}²`, acceptedAnswers: [`${totalArea}`] }
+          ]
+        });
+      }
+    } else {
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL",
+        componentData: {
+          isStatic: true,
+          modelType: 'PART_WHOLE',
+          parts: [
+            ...Array(items).fill({ segments: 1, value: unitArea, label: `${unitArea}`, bgClass: 'bg-blue-500 text-white' }),
+            { segments: 1, value: remainingArea, displayValue: "?", bgClass: 'bg-slate-400 text-white' }
+          ],
+          whole: `${totalArea} ${unit}²`
+        }
+      });
+
+      askText = `STORY: ${name} has a ${surface} with a total area of ${totalArea} ${unit}². ${name} places ${items} identical ${itemSingular}s on it. Each ${itemSingular} has an area of ${unitArea} ${unit}². How much empty area is left on the ${surface}?`;
+      finalAnswer = `${remainingArea} ${unit}²`;
+      sysSolutionSteps = `"""1. Find the total area covered by the ${itemSingular}s: ${items} x ${unitArea} = ${coveredArea}.\\n2. Subtract the covered area from the total area: ${totalArea} - ${coveredArea} = ${remainingArea}.\\n3. The remaining empty area is ${remainingArea} ${unit}²."""`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: `Write the working equation to find the total area of the ${items} ${itemSingular}s:`, expectedAnswer: `${items} x ${unitArea} = ${coveredArea}`, acceptedAnswers: [`${unitArea} x ${items} = ${coveredArea}`] },
+            { label: "Write the working equation to find the remaining empty area:", expectedAnswer: `${totalArea} - ${coveredArea} = ${remainingArea}`, acceptedAnswers: [] },
+            { label: "Empty area:", expectedAnswer: `${remainingArea} ${unit}²`, acceptedAnswers: [`${remainingArea}`] }
+          ]
+        });
+      }
     }
 
     if (!isStructure && !isMCQ) {
@@ -302,12 +337,12 @@ CRITICAL INSTRUCTION: You MUST construct the "content" object using the EXACT st
 - For content.questionText, rewrite the following STORY replacing the placeholders. Preserve exact math values. NEVER add extra questions. DO NOT include "STORY:" prefix.
 ${askText}
 - For content.finalAnswer, use: "${finalAnswer}"
-- For content.hint, use: "Find the total covered area first, then subtract it from the total area."
+- For content.hint, use: "${isFindingTotal ? "Find the total covered area first, then add it to the empty area." : "Find the total covered area first, then subtract it from the total area."}"
 - For content.solutionSteps, use: ${sysSolutionSteps}
 ${isMCQ ? `Generate EXACTLY 4 options:
 - "${finalAnswer}"
-- "${remainingArea + unitArea} ${unit}²"
-- "${totalArea - unitArea} ${unit}²"
+- "${isFindingTotal ? remainingArea : remainingArea + unitArea} ${unit}²"
+- "${isFindingTotal ? totalArea - items : totalArea - unitArea} ${unit}²"
 - "${coveredArea} ${unit}²"` : ''}
 `;
   }
