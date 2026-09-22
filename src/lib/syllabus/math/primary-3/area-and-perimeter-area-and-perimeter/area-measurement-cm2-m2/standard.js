@@ -248,11 +248,17 @@ ${isMCQ ? `Generate EXACTLY 4 options:
   }
   else if (activeVariant === 'standard_grouping_with_remainder') {
     const unit = Math.random() < 0.5 ? "cm" : "m";
-    const totalArea = getRandomInt(60, 100);
     const items = getRandomInt(3, 5);
     const unitArea = getRandomInt(10, 15);
     const coveredArea = items * unitArea;
-    const remainingArea = totalArea - coveredArea; // Make sure totalArea > coveredArea
+    const totalArea = coveredArea + getRandomInt(20, 60); // Ensure totalArea > coveredArea safely
+    const remainingArea = totalArea - coveredArea;
+
+    const name = getRandomNames(1);
+    const itemObj = getRandomCountableItems(1);
+    const itemSingular = (itemObj.item || "sticker").replace(/s$/, '');
+    const surfaces = ["board", "table", "floor", "wall", "piece of paper", "mat"];
+    const surface = surfaces[Math.floor(Math.random() * surfaces.length)];
 
     visualEngineStr = JSON.stringify({
       componentToRender: "BAR_MODEL",
@@ -267,19 +273,15 @@ ${isMCQ ? `Generate EXACTLY 4 options:
       }
     });
 
-    let askText = `A display board has a total area of ${totalArea} ${unit}². Sarah pins ${items} identical photos on it. Each photo has an area of ${unitArea} ${unit}². How much empty area is left on the display board?`;
+    let askText = `STORY: ${name} has a ${surface} with a total area of ${totalArea} ${unit}². ${name} places ${items} identical ${itemSingular}s on it. Each ${itemSingular} has an area of ${unitArea} ${unit}². How much empty area is left on the ${surface}?`;
     let finalAnswer = `${remainingArea} ${unit}²`;
-    let sysSolutionSteps = `"""1. Find the total area covered by the photos: ${items} x ${unitArea} = ${coveredArea}.\\n2. Subtract the covered area from the total area: ${totalArea} - ${coveredArea} = ${remainingArea}.\\n3. The remaining empty area is ${remainingArea} ${unit}²."""`;
+    let sysSolutionSteps = `"""1. Find the total area covered by the ${itemSingular}s: ${items} x ${unitArea} = ${coveredArea}.\\n2. Subtract the covered area from the total area: ${totalArea} - ${coveredArea} = ${remainingArea}.\\n3. The remaining empty area is ${remainingArea} ${unit}²."""`;
 
-    if (isShort) {
-      askText = `A wall has an area of ${totalArea} ${unit}². A painter paints ${items} sections of ${unitArea} ${unit}² each. How much area is left to paint?`;
-    } else if (isMCQ) {
-      askText = `Total area is ${totalArea} ${unit}². Covered by ${items} stickers of ${unitArea} ${unit}² each. Uncovered area?`;
-    } else if (isStructure) {
+    if (isStructure) {
       inputRequirementStr = JSON.stringify({
         inputType: "MULTI_STEP_INPUT",
         steps: [
-          { label: `Write the working equation to find the total area of the ${items} photos:`, expectedAnswer: `${items} x ${unitArea} = ${coveredArea}`, acceptedAnswers: [`${unitArea} x ${items} = ${coveredArea}`] },
+          { label: `Write the working equation to find the total area of the ${items} ${itemSingular}s:`, expectedAnswer: `${items} x ${unitArea} = ${coveredArea}`, acceptedAnswers: [`${unitArea} x ${items} = ${coveredArea}`] },
           { label: "Write the working equation to find the remaining empty area:", expectedAnswer: `${totalArea} - ${coveredArea} = ${remainingArea}`, acceptedAnswers: [] },
           { label: "Empty area:", expectedAnswer: `${remainingArea} ${unit}²`, acceptedAnswers: [`${remainingArea}`] }
         ]
@@ -297,7 +299,8 @@ Type: ${zodType}
 Difficulty: ${zodDiff}
 
 CRITICAL INSTRUCTION: You MUST construct the "content" object using the EXACT strings provided below:
-- For content.questionText, use: "${askText}"
+- For content.questionText, rewrite the following STORY replacing the placeholders. Preserve exact math values. NEVER add extra questions. DO NOT include "STORY:" prefix.
+${askText}
 - For content.finalAnswer, use: "${finalAnswer}"
 - For content.hint, use: "Find the total covered area first, then subtract it from the total area."
 - For content.solutionSteps, use: ${sysSolutionSteps}
