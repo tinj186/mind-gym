@@ -120,6 +120,8 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     });
 
     let askText = `STORY: ${name} has a ${item} with a total area of ${totalArea} ${unit}². ${name} cuts out ${cutOutCount} identical ${shape}s. Each ${shape} has an area of ${cutOutArea} ${unit}². What is the area of the remaining ${item}?`;
+    if (isShort || isMCQ) askText = `A total area is ${totalArea} ${unit}². ${cutOutCount} identical ${shape}s of ${cutOutArea} ${unit}² each are removed. What is the remaining area?`;
+
     let finalAnswer = `${remainingArea} ${unit}²`;
     let sysSolutionSteps = `"""1. Find the total area removed: ${cutOutCount} x ${cutOutArea} = ${totalCutOut}.\\n2. Subtract the removed area from the total area.\\n3. ${totalArea} - ${totalCutOut} = ${remainingArea}.\\n4. The remaining area is ${remainingArea} ${unit}²."""`;
 
@@ -145,8 +147,7 @@ Type: ${zodType}
 Difficulty: ${zodDiff}
 
 CRITICAL INSTRUCTION: You MUST construct the "content" object using the EXACT strings provided below:
-- For content.questionText, rewrite the following STORY replacing the placeholders. Preserve exact math values. NEVER add extra questions. DO NOT include "STORY:" prefix.
-${askText}
+- For content.questionText, ${isStructure ? `rewrite the following STORY replacing the placeholders. Preserve exact math values. NEVER add extra questions. DO NOT include "STORY:" prefix.\\n${askText}` : `use: "${askText}"`}
 - For content.finalAnswer, use: "${finalAnswer}"
 - For content.hint, use: "Subtract the cut out area from the total area."
 - For content.solutionSteps, use: ${sysSolutionSteps}
@@ -187,6 +188,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
       sysSolutionSteps = `"""1. Divide the total area by the number of items.\\n2. ${totalArea} / ${items} = ${unitArea}.\\n3. The area of 1 item is ${unitArea} ${unit}²."""`;
 
       askText = `STORY: ${name} has ${items} identical ${itemSingular}s. The total area of the ${itemSingular}s is ${totalArea} ${unit}². What is the area of 1 ${itemSingular}?`;
+      if (isShort || isMCQ) askText = `The total area of ${items} identical shapes is ${totalArea} ${unit}². What is the area of 1 shape?`;
 
       if (isStructure) {
         inputRequirementStr = JSON.stringify({
@@ -211,6 +213,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
       sysSolutionSteps = `"""1. Multiply the number of items by the area of 1 item.\\n2. ${items} x ${unitArea} = ${totalArea}.\\n3. The total area is ${totalArea} ${unit}²."""`;
 
       askText = `STORY: ${name} has ${items} identical ${itemSingular}s. Each ${itemSingular} has an area of ${unitArea} ${unit}². What is the total area of the ${itemSingular}s?`;
+      if (isShort || isMCQ) askText = `What is the total area of ${items} identical shapes if each shape is ${unitArea} ${unit}²?`;
 
       if (isStructure) {
         inputRequirementStr = JSON.stringify({
@@ -234,8 +237,7 @@ Type: ${zodType}
 Difficulty: ${zodDiff}
 
 CRITICAL INSTRUCTION: You MUST construct the "content" object using the EXACT strings provided below:
-- For content.questionText, rewrite the following STORY replacing the placeholders. Preserve exact math values. NEVER add extra questions. DO NOT include "STORY:" prefix.
-${askText}
+- For content.questionText, ${isStructure ? `rewrite the following STORY replacing the placeholders. Preserve exact math values. NEVER add extra questions. DO NOT include "STORY:" prefix.\\n${askText}` : `use: "${askText}"`}
 - For content.finalAnswer, use: "${finalAnswer}"
 - For content.hint, use: "${isFindingUnit ? "Divide the total area by the number of items." : "Multiply the area of one item by the number of items."}"
 - For content.solutionSteps, use: ${sysSolutionSteps}
@@ -280,6 +282,8 @@ ${isMCQ ? `Generate EXACTLY 4 options:
       });
 
       askText = `STORY: ${name} places ${items} identical ${itemSingular}s on a ${surface}. Each ${itemSingular} has an area of ${unitArea} ${unit}². There is ${remainingArea} ${unit}² of empty area left on the ${surface}. What is the total area of the ${surface}?`;
+      if (isShort || isMCQ) askText = `${items} identical shapes of ${unitArea} ${unit}² each are placed on a surface. There is ${remainingArea} ${unit}² of empty area left. What is the total area of the surface?`;
+
       finalAnswer = `${totalArea} ${unit}²`;
       sysSolutionSteps = `"""1. Find the total area covered by the ${itemSingular}s: ${items} x ${unitArea} = ${coveredArea}.\\n2. Add the covered area to the remaining empty area: ${coveredArea} + ${remainingArea} = ${totalArea}.\\n3. The total area of the ${surface} is ${totalArea} ${unit}²."""`;
 
@@ -308,6 +312,8 @@ ${isMCQ ? `Generate EXACTLY 4 options:
       });
 
       askText = `STORY: ${name} has a ${surface} with a total area of ${totalArea} ${unit}². ${name} places ${items} identical ${itemSingular}s on it. Each ${itemSingular} has an area of ${unitArea} ${unit}². How much empty area is left on the ${surface}?`;
+      if (isShort || isMCQ) askText = `A surface has a total area of ${totalArea} ${unit}². ${items} identical shapes of ${unitArea} ${unit}² each are placed on it. How much empty area is left?`;
+
       finalAnswer = `${remainingArea} ${unit}²`;
       sysSolutionSteps = `"""1. Find the total area covered by the ${itemSingular}s: ${items} x ${unitArea} = ${coveredArea}.\\n2. Subtract the covered area from the total area: ${totalArea} - ${coveredArea} = ${remainingArea}.\\n3. The remaining empty area is ${remainingArea} ${unit}²."""`;
 
@@ -334,8 +340,7 @@ Type: ${zodType}
 Difficulty: ${zodDiff}
 
 CRITICAL INSTRUCTION: You MUST construct the "content" object using the EXACT strings provided below:
-- For content.questionText, rewrite the following STORY replacing the placeholders. Preserve exact math values. NEVER add extra questions. DO NOT include "STORY:" prefix.
-${askText}
+- For content.questionText, ${isStructure ? `rewrite the following STORY replacing the placeholders. Preserve exact math values. NEVER add extra questions. DO NOT include "STORY:" prefix.\\n${askText}` : `use: "${askText}"`}
 - For content.finalAnswer, use: "${finalAnswer}"
 - For content.hint, use: "${isFindingTotal ? "Find the total covered area first, then add it to the empty area." : "Find the total covered area first, then subtract it from the total area."}"
 - For content.solutionSteps, use: ${sysSolutionSteps}
@@ -409,6 +414,8 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     if (mode === 0) {
       // Find Path (C = A - B)
       askText = `STORY: ${name} is designing a ${surface} on a grid. The shaded part is a walking path, and the empty center is a ${object}. Find the total area of the shaded walking path.`;
+      if (isShort || isMCQ) askText = `Look at the shape drawn on the grid. Find the area of the shaded path.`;
+
       finalAnswer = `${pathArea} ${unit}²`;
       sysSolutionSteps = `"""1. Count the number of squares in the whole shape (including the empty center): ${outerArea}.\\n2. Count the number of squares in the empty center: ${innerArea}.\\n3. Subtract the empty center from the whole shape: ${outerArea} - ${innerArea} = ${pathArea}.\\n4. The area of the shaded path is ${pathArea} ${unit}²."""`;
 
@@ -426,6 +433,8 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     } else if (mode === 1) {
       // Find Whole (A = C + B)
       askText = `STORY: ${name} is designing a ${surface} on a grid. The shaded part is a walking path, and the empty center is a ${object}. If the ${object} was also filled in, what would be the total area of the whole shape?`;
+      if (isShort || isMCQ) askText = `Look at the shape drawn on the grid. If the empty center was filled in, what would be the total area of the whole shape?`;
+
       finalAnswer = `${outerArea} ${unit}²`;
       sysSolutionSteps = `"""1. Count the number of shaded squares in the path: ${pathArea}.\\n2. Count the number of empty squares for the ${object}: ${innerArea}.\\n3. Add them together to find the whole area: ${pathArea} + ${innerArea} = ${outerArea}.\\n4. The total area of the whole shape is ${outerArea} ${unit}²."""`;
 
@@ -443,6 +452,8 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     } else {
       // Find Hole (B = A - C)
       askText = `STORY: ${name} had a solid shape with a total area of ${outerArea} ${unit}². ${name} erased the middle to create an empty ${object}. Look at the remaining shaded path on the grid. What is the area of the empty ${object}?`;
+      if (isShort || isMCQ) askText = `The total area of the solid shape was ${outerArea} ${unit}². Look at the remaining shaded path on the grid. What is the area of the empty space?`;
+
       finalAnswer = `${innerArea} ${unit}²`;
       sysSolutionSteps = `"""1. The total area of the solid shape was ${outerArea}.\\n2. Count the number of shaded squares left in the path: ${pathArea}.\\n3. Subtract the path area from the total area to find the empty space: ${outerArea} - ${pathArea} = ${innerArea}.\\n4. The area of the empty ${object} is ${innerArea} ${unit}²."""`;
 
@@ -473,8 +484,7 @@ Type: ${zodType}
 Difficulty: ${zodDiff}
 
 CRITICAL INSTRUCTION: You MUST construct the "content" object using the EXACT strings provided below:
-- For content.questionText, rewrite the following STORY replacing the placeholders. Preserve exact math values. NEVER add extra questions. DO NOT include "STORY:" prefix.
-${askText}
+- For content.questionText, ${isStructure ? `rewrite the following STORY replacing the placeholders. Preserve exact math values. NEVER add extra questions. DO NOT include "STORY:" prefix.\\n${askText}` : `use: "${askText}"`}
 - For content.finalAnswer, use: "${finalAnswer}"
 - For content.hint, use: "${hintText}"
 - For content.solutionSteps, use: ${sysSolutionSteps}
