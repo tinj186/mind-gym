@@ -120,7 +120,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     });
 
     let askText = `STORY: ${name} has a ${item} with a total area of ${totalArea} ${unit}². ${name} cuts out ${cutOutCount} identical ${shape}s. Each ${shape} has an area of ${cutOutArea} ${unit}². What is the area of the remaining ${item}?`;
-    if (isShort || isMCQ) askText = `A total area is ${totalArea} ${unit}². ${cutOutCount} identical ${shape}s of ${cutOutArea} ${unit}² each are removed. What is the remaining area?`;
+    if (isShort || isMCQ) askText = `Based on the model, find the remaining area in ${unit}².`;
 
     let finalAnswer = `${remainingArea} ${unit}²`;
     let sysSolutionSteps = `"""1. Find the total area removed: ${cutOutCount} x ${cutOutArea} = ${totalCutOut}.\\n2. Subtract the removed area from the total area.\\n3. ${totalArea} - ${totalCutOut} = ${remainingArea}.\\n4. The remaining area is ${remainingArea} ${unit}²."""`;
@@ -188,7 +188,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
       sysSolutionSteps = `"""1. Divide the total area by the number of items.\\n2. ${totalArea} / ${items} = ${unitArea}.\\n3. The area of 1 item is ${unitArea} ${unit}²."""`;
 
       askText = `STORY: ${name} has ${items} identical ${itemSingular}s. The total area of the ${itemSingular}s is ${totalArea} ${unit}². What is the area of 1 ${itemSingular}?`;
-      if (isShort || isMCQ) askText = `The total area of ${items} identical shapes is ${totalArea} ${unit}². What is the area of 1 shape?`;
+      if (isShort || isMCQ) askText = `Based on the model, find the area of 1 shape in ${unit}².`;
 
       if (isStructure) {
         inputRequirementStr = JSON.stringify({
@@ -213,7 +213,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
       sysSolutionSteps = `"""1. Multiply the number of items by the area of 1 item.\\n2. ${items} x ${unitArea} = ${totalArea}.\\n3. The total area is ${totalArea} ${unit}²."""`;
 
       askText = `STORY: ${name} has ${items} identical ${itemSingular}s. Each ${itemSingular} has an area of ${unitArea} ${unit}². What is the total area of the ${itemSingular}s?`;
-      if (isShort || isMCQ) askText = `What is the total area of ${items} identical shapes if each shape is ${unitArea} ${unit}²?`;
+      if (isShort || isMCQ) askText = `Based on the model, find the total area in ${unit}².`;
 
       if (isStructure) {
         inputRequirementStr = JSON.stringify({
@@ -282,7 +282,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
       });
 
       askText = `STORY: ${name} places ${items} identical ${itemSingular}s on a ${surface}. Each ${itemSingular} has an area of ${unitArea} ${unit}². There is ${remainingArea} ${unit}² of empty area left on the ${surface}. What is the total area of the ${surface}?`;
-      if (isShort || isMCQ) askText = `${items} identical shapes of ${unitArea} ${unit}² each are placed on a surface. There is ${remainingArea} ${unit}² of empty area left. What is the total area of the surface?`;
+      if (isShort || isMCQ) askText = `Based on the model, find the total area in ${unit}².`;
 
       finalAnswer = `${totalArea} ${unit}²`;
       sysSolutionSteps = `"""1. Find the total area covered by the ${itemSingular}s: ${items} x ${unitArea} = ${coveredArea}.\\n2. Add the covered area to the remaining empty area: ${coveredArea} + ${remainingArea} = ${totalArea}.\\n3. The total area of the ${surface} is ${totalArea} ${unit}²."""`;
@@ -312,7 +312,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
       });
 
       askText = `STORY: ${name} has a ${surface} with a total area of ${totalArea} ${unit}². ${name} places ${items} identical ${itemSingular}s on it. Each ${itemSingular} has an area of ${unitArea} ${unit}². How much empty area is left on the ${surface}?`;
-      if (isShort || isMCQ) askText = `A surface has a total area of ${totalArea} ${unit}². ${items} identical shapes of ${unitArea} ${unit}² each are placed on it. How much empty area is left?`;
+      if (isShort || isMCQ) askText = `Based on the model, find the remaining empty area in ${unit}².`;
 
       finalAnswer = `${remainingArea} ${unit}²`;
       sysSolutionSteps = `"""1. Find the total area covered by the ${itemSingular}s: ${items} x ${unitArea} = ${coveredArea}.\\n2. Subtract the covered area from the total area: ${totalArea} - ${coveredArea} = ${remainingArea}.\\n3. The remaining empty area is ${remainingArea} ${unit}²."""`;
