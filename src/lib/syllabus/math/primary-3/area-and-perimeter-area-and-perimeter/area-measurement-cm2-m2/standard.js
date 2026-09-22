@@ -348,25 +348,48 @@ ${isMCQ ? `Generate EXACTLY 4 options:
   }
   else if (activeVariant === 'standard_donut_hollow_center') {
     const unit = Math.random() < 0.5 ? "cm" : "m";
-    const outerW = getRandomInt(5, 7);
+    const outerW = getRandomInt(4, 6);
     const outerH = getRandomInt(4, 6);
-    const innerW = getRandomInt(2, outerW - 2);
-    const innerH = getRandomInt(2, outerH - 2);
     
-    const outerArea = outerW * outerH;
-    const innerArea = innerW * innerH;
-    const pathArea = outerArea - innerArea;
-
-    let shaded = [];
+    // Generate a full block
+    let fullSquares = [];
     for(let i=0; i<outerW; i++){
       for(let j=0; j<outerH; j++){
-        // Check if inside inner hole
-        const isHole = (i >= 1 && i < 1 + innerW) && (j >= 1 && j < 1 + innerH);
-        if (!isHole) {
-          shaded.push([1 + i, 1 + j]);
-        }
+        fullSquares.push({x: i, y: j});
       }
     }
+    
+    // Randomly carve out edges to make the outer shape irregular
+    if (Math.random() < 0.5) fullSquares = fullSquares.filter(s => !(s.x === 0 && s.y === 0)); // top-left
+    if (Math.random() < 0.5) fullSquares = fullSquares.filter(s => !(s.x === outerW-1 && s.y === 0)); // top-right
+    if (Math.random() < 0.5) fullSquares = fullSquares.filter(s => !(s.x === 0 && s.y === outerH-1)); // bottom-left
+    if (Math.random() < 0.5) fullSquares = fullSquares.filter(s => !(s.x === outerW-1 && s.y === outerH-1)); // bottom-right
+    
+    // Generate an irregular hole in the middle (usually 2x2, maybe missing 1 block)
+    const holeX = Math.floor(outerW/2) - 1;
+    const holeY = Math.floor(outerH/2) - 1;
+    let holeSquares = [
+      {x: holeX, y: holeY}, {x: holeX+1, y: holeY},
+      {x: holeX, y: holeY+1}, {x: holeX+1, y: holeY+1}
+    ];
+    // Randomly remove one block to make the hole irregular (like an L-shape)
+    if (Math.random() < 0.5) {
+      holeSquares.pop();
+    }
+    
+    const outerArea = fullSquares.length;
+    const innerArea = holeSquares.length;
+    const pathArea = outerArea - innerArea;
+    
+    const shaded = fullSquares
+      .filter(s => !holeSquares.some(h => h.x === s.x && h.y === s.y))
+      .map(s => [s.x + 1, s.y + 1]);
+
+    const name = getRandomNames(1);
+    const surfaces = ["garden", "courtyard", "park", "playground", "plaza"];
+    const surface = surfaces[Math.floor(Math.random() * surfaces.length)];
+    const objects = ["pond", "fountain", "sandbox", "statue", "flower bed"];
+    const object = objects[Math.floor(Math.random() * objects.length)];
 
     visualEngineStr = JSON.stringify({
       componentToRender: "SQUARE_GRID_SHAPE",
@@ -377,30 +400,71 @@ ${isMCQ ? `Generate EXACTLY 4 options:
       }
     });
 
-    let askText = `Look at the grid. What is the area of the shaded border in ${unit}²?`;
-    let finalAnswer = `${pathArea} ${unit}²`;
-    let sysSolutionSteps = `"""1. Find the area of the large outer rectangle: ${outerW} x ${outerH} = ${outerArea}.\\n2. Find the area of the empty inner hole: ${innerW} x ${innerH} = ${innerArea}.\\n3. Subtract the inner hole from the outer rectangle: ${outerArea} - ${innerArea} = ${pathArea}.\\n4. The area of the shaded path is ${pathArea} ${unit}²."""`;
+    const mode = getRandomInt(0, 2); // 0: find path (c), 1: find whole (a), 2: find hole (b)
+    
+    let askText = "";
+    let finalAnswer = "";
+    let sysSolutionSteps = "";
 
-    if (isShort) {
-      askText = `Look at the grid. What is the area of the shaded border in ${unit}²?`;
-    } else if (isMCQ) {
-      askText = `A ${outerW}×${outerH} rectangle of squares has a ${innerW}×${innerH} hole in it. What is the area of the shaded part?`;
-    } else if (isStructure) {
-      askText = `A garden path is built around a rectangular pond on a 1 ${unit} grid. Find the total area of the shaded path.`;
-      inputRequirementStr = JSON.stringify({
-        inputType: "MULTI_STEP_INPUT",
-        steps: [
-          { label: "Write the working equation to find the area of the whole shape (including the pond):", expectedAnswer: `${outerW} x ${outerH} = ${outerArea}`, acceptedAnswers: [] },
-          { label: "Write the working equation to find the area of the empty pond:", expectedAnswer: `${innerW} x ${innerH} = ${innerArea}`, acceptedAnswers: [] },
-          { label: "Write the working equation to subtract the pond from the whole shape:", expectedAnswer: `${outerArea} - ${innerArea} = ${pathArea}`, acceptedAnswers: [] },
-          { label: "Area of the path:", expectedAnswer: `${pathArea} ${unit}²`, acceptedAnswers: [`${pathArea}`] }
-        ]
-      });
+    if (mode === 0) {
+      // Find Path (C = A - B)
+      askText = `STORY: ${name} is designing a ${surface} on a grid. The shaded part is a walking path, and the empty center is a ${object}. Find the total area of the shaded walking path.`;
+      finalAnswer = `${pathArea} ${unit}²`;
+      sysSolutionSteps = `"""1. Count the number of squares in the whole shape (including the empty center): ${outerArea}.\\n2. Count the number of squares in the empty center: ${innerArea}.\\n3. Subtract the empty center from the whole shape: ${outerArea} - ${innerArea} = ${pathArea}.\\n4. The area of the shaded path is ${pathArea} ${unit}²."""`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: `Count the number of squares for the whole shape (including the empty ${object}):`, expectedAnswer: `${outerArea}`, acceptedAnswers: [] },
+            { label: `Count the number of empty squares for the ${object}:`, expectedAnswer: `${innerArea}`, acceptedAnswers: [] },
+            { label: "Write the working equation to find the area of the shaded path:", expectedAnswer: `${outerArea} - ${innerArea} = ${pathArea}`, acceptedAnswers: [] },
+            { label: "Area of the path:", expectedAnswer: `${pathArea} ${unit}²`, acceptedAnswers: [`${pathArea}`] }
+          ]
+        });
+      }
+    } else if (mode === 1) {
+      // Find Whole (A = C + B)
+      askText = `STORY: ${name} is designing a ${surface} on a grid. The shaded part is a walking path, and the empty center is a ${object}. If the ${object} was also filled in, what would be the total area of the whole shape?`;
+      finalAnswer = `${outerArea} ${unit}²`;
+      sysSolutionSteps = `"""1. Count the number of shaded squares in the path: ${pathArea}.\\n2. Count the number of empty squares for the ${object}: ${innerArea}.\\n3. Add them together to find the whole area: ${pathArea} + ${innerArea} = ${outerArea}.\\n4. The total area of the whole shape is ${outerArea} ${unit}²."""`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: "Count the number of shaded squares for the path:", expectedAnswer: `${pathArea}`, acceptedAnswers: [] },
+            { label: `Count the number of empty squares for the ${object}:`, expectedAnswer: `${innerArea}`, acceptedAnswers: [] },
+            { label: "Write the working equation to find the total area of the whole shape:", expectedAnswer: `${pathArea} + ${innerArea} = ${outerArea}`, acceptedAnswers: [`${innerArea} + ${pathArea} = ${outerArea}`] },
+            { label: "Area of the whole shape:", expectedAnswer: `${outerArea} ${unit}²`, acceptedAnswers: [`${outerArea}`] }
+          ]
+        });
+      }
+    } else {
+      // Find Hole (B = A - C)
+      askText = `STORY: ${name} had a solid shape with a total area of ${outerArea} ${unit}². ${name} erased the middle to create an empty ${object}. Look at the remaining shaded path on the grid. What is the area of the empty ${object}?`;
+      finalAnswer = `${innerArea} ${unit}²`;
+      sysSolutionSteps = `"""1. The total area of the solid shape was ${outerArea}.\\n2. Count the number of shaded squares left in the path: ${pathArea}.\\n3. Subtract the path area from the total area to find the empty space: ${outerArea} - ${pathArea} = ${innerArea}.\\n4. The area of the empty ${object} is ${innerArea} ${unit}²."""`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: "Count the number of shaded squares for the path:", expectedAnswer: `${pathArea}`, acceptedAnswers: [] },
+            { label: `Write the working equation to find the area of the empty ${object}:`, expectedAnswer: `${outerArea} - ${pathArea} = ${innerArea}`, acceptedAnswers: [] },
+            { label: `Area of the ${object}:`, expectedAnswer: `${innerArea} ${unit}²`, acceptedAnswers: [`${innerArea}`] }
+          ]
+        });
+      }
     }
 
     if (!isStructure && !isMCQ) {
       inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
     }
+
+    let hintText = "Count the whole shape and the empty center, then subtract.";
+    if (mode === 1) hintText = "Count the shaded path and the empty center, then add them together.";
+    if (mode === 2) hintText = "Subtract the shaded path area from the total area given in the story.";
 
     systemPrompt = `
 You are generating a Primary 3 Math question.
@@ -409,15 +473,16 @@ Type: ${zodType}
 Difficulty: ${zodDiff}
 
 CRITICAL INSTRUCTION: You MUST construct the "content" object using the EXACT strings provided below:
-- For content.questionText, use: "${askText}"
+- For content.questionText, rewrite the following STORY replacing the placeholders. Preserve exact math values. NEVER add extra questions. DO NOT include "STORY:" prefix.
+${askText}
 - For content.finalAnswer, use: "${finalAnswer}"
-- For content.hint, use: "Find the large area, find the small inner area, and subtract."
+- For content.hint, use: "${hintText}"
 - For content.solutionSteps, use: ${sysSolutionSteps}
 ${isMCQ ? `Generate EXACTLY 4 options:
 - "${finalAnswer}"
-- "${outerArea} ${unit}²"
-- "${innerArea} ${unit}²"
-- "${pathArea + innerArea} ${unit}²"` : ''}
+- "${mode === 0 ? outerArea : mode === 1 ? pathArea : pathArea} ${unit}²"
+- "${mode === 0 ? innerArea : mode === 1 ? innerArea : outerArea} ${unit}²"
+- "${mode === 0 ? pathArea + 2 : mode === 1 ? outerArea + 1 : innerArea + 2} ${unit}²"` : ''}
 `;
   }
 
