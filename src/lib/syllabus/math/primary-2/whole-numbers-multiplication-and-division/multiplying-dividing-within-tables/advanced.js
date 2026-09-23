@@ -59,8 +59,8 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
 
     answer = `${perFriend}`;
     questionText = getQText(
-      `${context.name} has ${bags} bags of ${selectedContextItem}. There are ${perBag} ${selectedContextItem} in each bag. ${context.name} shares all the ${selectedContextItem} equally with ${friends} friends. How many ${selectedContextItem} does each friend get?`,
-      `${context.name} has ${bags} bags of ${selectedContextItem}. There are ${perBag} in each bag. ${context.name} shares them equally with ${friends} friends. How many does each friend get?`
+      `${context.name} has ${bags} bags of ${selectedContextItem}. There are ${perBag} ${selectedContextItem} in each bag. ${context.name} gives all the ${selectedContextItem} equally to ${friends} friends. How many ${selectedContextItem} does each friend get?`,
+      `${context.name} has ${bags} bags of ${selectedContextItem}. There are ${perBag} in each bag. ${context.name} gives them equally to ${friends} friends. How many does each friend get?`
     );
     hint = `First, find the total number of ${selectedContextItem} by multiplying. Then share them equally by dividing.`;
     solutionSteps = [
