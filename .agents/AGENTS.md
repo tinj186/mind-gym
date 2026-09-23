@@ -25,3 +25,6 @@
 
 ## Database Optimization Rules
 - **Database-Level Processing (Supabase Payload Limits):** Never use massive `findMany` or `queryRaw` (e.g., `json_agg`) queries to pull thousands of rows into Node.js simply to calculate counts, groupings, or to push data back into another table. Always push the heavy computational and data-transfer lifting to PostgreSQL (e.g., use Prisma's `groupBy` for inventory counting, or `INSERT INTO ... SELECT` for internal backups). This prevents huge data payloads from crashing Supabase bandwidth limits and Node.js memory.
+
+## Workflow Rules
+- **Git Pushing:** Do not run `git push` automatically after commits. Only push when explicitly requested by the user (or at the end of the day/session).

@@ -85,18 +85,36 @@ export default function SquareGridShape({ data }) {
             
             {/* Optional text label for the figure */}
             {fig.label && fig.labelPos && (
-              <text 
-                x={fig.labelPos.x * cellSize + padding} 
-                y={fig.labelPos.y * cellSize + padding} 
-                fill="#0f172a" 
-                fontSize="16" 
-                fontWeight="bold"
-                textAnchor="middle"
-                alignmentBaseline="middle"
-                className="drop-shadow-sm"
-              >
-                {fig.label}
-              </text>
+              <g>
+                {/* White outline for readability over grid lines */}
+                <text 
+                  x={fig.labelPos.x * cellSize + padding} 
+                  y={fig.labelPos.y * cellSize + padding} 
+                  fill="none" 
+                  stroke="white"
+                  strokeWidth="4"
+                  strokeLinejoin="round"
+                  fontSize="16" 
+                  fontWeight="bold"
+                  textAnchor="middle"
+                  alignmentBaseline="middle"
+                >
+                  {fig.label}
+                </text>
+                {/* Main text */}
+                <text 
+                  x={fig.labelPos.x * cellSize + padding} 
+                  y={fig.labelPos.y * cellSize + padding} 
+                  fill="#0f172a" 
+                  fontSize="16" 
+                  fontWeight="bold"
+                  textAnchor="middle"
+                  alignmentBaseline="middle"
+                  className="drop-shadow-sm"
+                >
+                  {fig.label}
+                </text>
+              </g>
             )}
           </g>
         ))}

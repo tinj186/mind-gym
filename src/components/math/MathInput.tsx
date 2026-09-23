@@ -323,7 +323,6 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
           mfe.smartMode = false;
           mfe.defaultMode = "math";
           mfe.smartFence = false;
-          mfe.mathModeSpace = "\\ ";
           mfe.popoverPolicy = "none";
           
           try {
