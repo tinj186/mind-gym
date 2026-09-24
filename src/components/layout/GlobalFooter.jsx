@@ -7,7 +7,7 @@ export default function GlobalFooter() {
   const pathname = usePathname();
   
   // Hide footer on workout and arena pages to prevent accidental clicks when using the virtual keyboard
-  if (pathname?.startsWith('/workout') || pathname?.startsWith('/arena')) {
+  if (pathname?.startsWith('/math/workout') || pathname?.startsWith('/math/exam') || pathname?.startsWith('/workout') || pathname?.startsWith('/arena')) {
     return null;
   }
   return (
