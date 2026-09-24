@@ -1,6 +1,15 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function GlobalFooter() {
+  const pathname = usePathname();
+  
+  // Hide footer on workout and arena pages to prevent accidental clicks when using the virtual keyboard
+  if (pathname?.startsWith('/workout') || pathname?.startsWith('/arena')) {
+    return null;
+  }
   return (
     <footer className="bg-slate-900 border-t border-slate-800 py-12 print:hidden">
       <div className="max-w-7xl mx-auto px-6">
