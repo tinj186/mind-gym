@@ -227,7 +227,7 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
       rows.push([
         { label: "0", command: ["insert", "0"] }, 
         { label: ".", command: ["insert", "."] },
-        { label: "'", command: ["insert", "'"] },
+        { label: "'", command: ["insert", "’"] },
         { label: "=", command: ["insert", "="], class: "action font-black text-blue-600" },
         { label: "+", command: ["insert", "+"], class: "action font-black" },
         { label: "⏎", command: ["insert", "\\Omega"], class: "action font-black text-white bg-blue-600" }
@@ -254,7 +254,7 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
           { label: "a", command: ["insert", "a"] }, { label: "s", command: ["insert", "s"] }, { label: "d", command: ["insert", "d"] },
           { label: "f", command: ["insert", "f"] }, { label: "g", command: ["insert", "g"] }, { label: "h", command: ["insert", "h"] },
           { label: "j", command: ["insert", "j"] }, { label: "k", command: ["insert", "k"] }, { label: "l", command: ["insert", "l"] },
-          { label: "'", command: ["insert", "'"], class: "font-black text-emerald-600" } 
+          { label: "'", command: ["insert", "’"], class: "font-black text-emerald-600" } 
         ],
         [
           { label: "z", command: ["insert", "z"] }, { label: "x", command: ["insert", "x"] }, { label: "c", command: ["insert", "c"] },
@@ -263,7 +263,7 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
           { label: "⌫", command: ["deleteBackward"], class: "action font-black text-rose-500 bg-rose-50" }
         ],
         [
-          { label: "space", command: ["insert", "\\:"], width: 7 },
+          { label: "space", command: ["insert", "~"], width: 7 },
           { label: "⏎", command: ["insert", "\\Omega"], class: "action font-black text-white bg-blue-600", width: 3 }
         ]
       ];
@@ -323,7 +323,7 @@ export default function MathInput({ id, name, value, onChange, onEnter, disabled
           mfe.smartMode = false;
           mfe.defaultMode = "math";
           mfe.smartFence = false;
-          mfe.mathModeSpace = "\\:";
+          mfe.mathModeSpace = "~";
           mfe.popoverPolicy = "none";
           
           try {
