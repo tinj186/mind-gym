@@ -5,15 +5,15 @@ function getRandomInt(min, max) {
 }
 
 export const foundationLogic = (activeVariant, isMCQ, isShort, isStructure, topic, zodType, zodDiff, getFormatInstructions) => {
-  let visualEngineStr = `"{}"`;
-  let inputRequirementStr = `""`;
+  let visualEngineStr = JSON.stringify({ componentToRender: "NONE", componentData: {} });
+  let inputRequirementStr = "";
   let systemPrompt = ``;
 
   const unit = Math.random() < 0.5 ? "cm" : "m";
   const person = getRandomNames(1)[0];
-  const place = getRandomLocations(1)[0];
-  const itemObj = getRandomLengthItems(1)[0];
-  const item = itemObj ? itemObj.item : "box";
+  const mPlaces = ["garden", "playground", "room", "hall", "park"];
+  const cmItems = ["photo frame", "card", "stamp", "tile", "sticker", "piece of cardboard", "label"];
+  const item = unit === "m" ? mPlaces[getRandomInt(0, mPlaces.length - 1)] : cmItems[getRandomInt(0, cmItems.length - 1)];
 
   if (activeVariant === 'foundation_perimeter_square') {
     // 4×S = P
@@ -28,7 +28,7 @@ export const foundationLogic = (activeVariant, isMCQ, isShort, isStructure, topi
     let sysSolutionSteps = "";
     
     visualEngineStr = JSON.stringify({
-      componentToRender: "GeometryPolygon",
+      componentToRender: "GEOMETRY_POLYGON",
       componentData: {
         vertices: [{x: 0, y: 0}, {x: side*10, y: 0}, {x: side*10, y: side*10}, {x: 0, y: side*10}],
         edgeLabels: [
@@ -43,7 +43,7 @@ export const foundationLogic = (activeVariant, isMCQ, isShort, isStructure, topi
     });
 
     if (mode === 1) {
-      askText = `STORY: ${person} has a square ${place}. The length of one side is ${side} ${unit}. What is the perimeter of the ${place}?`;
+      askText = `STORY: ${person} has a square ${item}. The length of one side is ${side} ${unit}. What is the perimeter of the ${item}?`;
       finalAnswer = `${perimeter} ${unit}`;
       sysSolutionSteps = `"""1. A square has 4 equal sides.\\n2. Perimeter = ${side} x 4 = ${perimeter} ${unit}."""`;
       
@@ -56,12 +56,12 @@ export const foundationLogic = (activeVariant, isMCQ, isShort, isStructure, topi
           inputType: "MULTI_STEP_INPUT",
           steps: [
             { label: "Write the working equation to find the perimeter:", expectedAnswer: `${side} x 4 = ${perimeter}`, acceptedAnswers: [`4 x ${side} = ${perimeter}`, `${side} + ${side} + ${side} + ${side} = ${perimeter}`] },
-            { label: `Perimeter in ${unit}:`, expectedAnswer: `${perimeter}`, acceptedAnswers: [] }
+            { label: `Final perimeter:`, expectedAnswer: `${perimeter} ${unit}`, acceptedAnswers: [`${perimeter}${unit}`] }
           ]
         });
       }
     } else {
-      askText = `STORY: ${person} has a square ${place}. The total perimeter of the ${place} is ${perimeter} ${unit}. Find the length of one side of the ${place}.`;
+      askText = `STORY: ${person} has a square ${item}. The total perimeter of the ${item} is ${perimeter} ${unit}. Find the length of one side of the ${item}.`;
       finalAnswer = `${side} ${unit}`;
       sysSolutionSteps = `"""1. A square has 4 equal sides.\\n2. Length of one side = ${perimeter} / 4 = ${side} ${unit}."""`;
       
@@ -74,7 +74,7 @@ export const foundationLogic = (activeVariant, isMCQ, isShort, isStructure, topi
           inputType: "MULTI_STEP_INPUT",
           steps: [
             { label: "Write the working equation to find the length of one side:", expectedAnswer: `${perimeter} / 4 = ${side}`, acceptedAnswers: [`${perimeter} \\\\div 4 = ${side}`] },
-            { label: `Length of one side in ${unit}:`, expectedAnswer: `${side}`, acceptedAnswers: [] }
+            { label: `Length of one side:`, expectedAnswer: `${side} ${unit}`, acceptedAnswers: [`${side}${unit}`] }
           ]
         });
       }
@@ -115,7 +115,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     let sysSolutionSteps = "";
 
     visualEngineStr = JSON.stringify({
-      componentToRender: "GeometryPolygon",
+      componentToRender: "GEOMETRY_POLYGON",
       componentData: {
         vertices: [{x: 0, y: 0}, {x: L*10, y: 0}, {x: L*10, y: W*10}, {x: 0, y: W*10}],
         edgeLabels: [
@@ -145,7 +145,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
             { label: "Write the working equation to find the total length of the two known widths:", expectedAnswer: `${W} + ${W} = ${W*2}`, acceptedAnswers: [`${W} x 2 = ${W*2}`] },
             { label: "Write the working equation to find the total length of the two known lengths:", expectedAnswer: `${L} + ${L} = ${L*2}`, acceptedAnswers: [`${L} x 2 = ${L*2}`] },
             { label: "Write the working equation to find the total perimeter:", expectedAnswer: `${L*2} + ${W*2} = ${P}`, acceptedAnswers: [`${L} + ${W} + ${L} + ${W} = ${P}`] },
-            { label: `Perimeter in ${unit}:`, expectedAnswer: `${P}`, acceptedAnswers: [] }
+            { label: `Final perimeter:`, expectedAnswer: `${P} ${unit}`, acceptedAnswers: [`${P}${unit}`] }
           ]
         });
       }
@@ -165,7 +165,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
             { label: "Write the working equation to find the total length of the two known widths:", expectedAnswer: `${W} + ${W} = ${W*2}`, acceptedAnswers: [`${W} x 2 = ${W*2}`] },
             { label: "Write the working equation to find the remaining perimeter for the two lengths:", expectedAnswer: `${P} - ${W*2} = ${P - W*2}`, acceptedAnswers: [] },
             { label: "Write the working equation to find one length:", expectedAnswer: `${P - W*2} / 2 = ${L}`, acceptedAnswers: [`${P - W*2} \\\\div 2 = ${L}`] },
-            { label: `Length in ${unit}:`, expectedAnswer: `${L}`, acceptedAnswers: [] }
+            { label: `Final length:`, expectedAnswer: `${L} ${unit}`, acceptedAnswers: [`${L}${unit}`] }
           ]
         });
       }
@@ -232,7 +232,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     }
 
     visualEngineStr = JSON.stringify({
-      componentToRender: "GeometryPolygon",
+      componentToRender: "GEOMETRY_POLYGON",
       componentData: {
         vertices: [
           {x: 0, y: 0}, 
@@ -253,7 +253,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     let sysSolutionSteps = "";
 
     if (mode === 1) {
-      askText = `STORY: ${person} builds a rectilinear garden. The six sides measure ${sides.join(', ')} ${unit}. What is the total perimeter of the garden?`;
+      askText = `STORY: ${person} builds a rectilinear ${item}. The six sides measure ${sides.join(', ')} ${unit}. What is the total perimeter of the ${item}?`;
       finalAnswer = `${P} ${unit}`;
       sysSolutionSteps = `"""1. Add all the outer sides together.\\n2. ${sides.join(' + ')} = ${P} ${unit}."""`;
       
@@ -266,7 +266,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
           inputType: "MULTI_STEP_INPUT",
           steps: [
             { label: "Write the working equation to find the total perimeter:", expectedAnswer: `${sides.join(' + ')} = ${P}`, acceptedAnswers: [] },
-            { label: `Perimeter in ${unit}:`, expectedAnswer: `${P}`, acceptedAnswers: [] }
+            { label: `Final perimeter:`, expectedAnswer: `${P} ${unit}`, acceptedAnswers: [`${P}${unit}`] }
           ]
         });
       }
@@ -274,7 +274,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
       let knownSides = sides.slice();
       knownSides.splice(missingIndex, 1);
       
-      askText = `STORY: ${person} builds a rectilinear garden with 6 sides. The known sides are ${knownSides.join(', ')} ${unit}. The total perimeter is ${P} ${unit}. Find the length of the missing side.`;
+      askText = `STORY: ${person} builds a rectilinear ${item} with 6 sides. The known sides are ${knownSides.join(', ')} ${unit}. The total perimeter is ${P} ${unit}. Find the length of the missing side.`;
       finalAnswer = `${missingSide} ${unit}`;
       sysSolutionSteps = `"""1. Add the known sides: ${knownSides.join(' + ')} = ${knownSum} ${unit}.\\n2. Subtract from the total perimeter: ${P} - ${knownSum} = ${missingSide} ${unit}."""`;
       
@@ -288,7 +288,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
           steps: [
             { label: "Write the working equation to find the total length of the known sides:", expectedAnswer: `${knownSides.join(' + ')} = ${knownSum}`, acceptedAnswers: [] },
             { label: "Write the working equation to find the missing side:", expectedAnswer: `${P} - ${knownSum} = ${missingSide}`, acceptedAnswers: [] },
-            { label: `Length of the missing side in ${unit}:`, expectedAnswer: `${missingSide}`, acceptedAnswers: [] }
+            { label: `Length of the missing side:`, expectedAnswer: `${missingSide} ${unit}`, acceptedAnswers: [`${missingSide}${unit}`] }
           ]
         });
       }
@@ -329,7 +329,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     const longer = P1 > P2 ? "square" : P1 < P2 ? "rectangle" : "neither";
 
     visualEngineStr = JSON.stringify({
-      componentToRender: "GeometryPolygon", // Alternatively render two shapes side by side if supported, or no rendering. For now, we omit rendering as the prompt says "Two separate shapes" which might be tricky in one SVG unless we offset them.
+      componentToRender: "GEOMETRY_POLYGON", // Alternatively render two shapes side by side if supported, or no rendering. For now, we omit rendering as the prompt says "Two separate shapes" which might be tricky in one SVG unless we offset them.
       componentData: {
         vertices: [{x: 0, y: 0}, {x: s*10, y: 0}, {x: s*10, y: s*10}, {x: 0, y: s*10}, 
                    {x: s*10 + 20, y: 0}, {x: s*10 + 20 + L*10, y: 0}, {x: s*10 + 20 + L*10, y: W*10}, {x: s*10 + 20, y: W*10}],
@@ -342,7 +342,10 @@ ${isMCQ ? `Generate EXACTLY 4 options:
       }
     });
     // Let's just disable visualEngine for comparison since drawing two shapes with current GeometryPolygon logic connects them into one path.
-    visualEngineStr = `"{}"`;
+    visualEngineStr = JSON.stringify({
+      componentToRender: "NONE",
+      componentData: {}
+    });
 
     let askText = `STORY: ${person} draws a square with a side of ${s} ${unit}. Then, ${person} draws a rectangle with a length of ${L} ${unit} and a width of ${W} ${unit}. How much longer is the perimeter of the ${longer} than the other shape?`;
     let finalAnswer = `${diff} ${unit}`;
@@ -363,7 +366,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
           { label: "Write the working equation to find the perimeter of the square:", expectedAnswer: `${s} x 4 = ${P1}`, acceptedAnswers: [`4 x ${s} = ${P1}`, `${s} + ${s} + ${s} + ${s} = ${P1}`] },
           { label: "Write the working equation to find the perimeter of the rectangle:", expectedAnswer: `${L} + ${W} + ${L} + ${W} = ${P2}`, acceptedAnswers: [`${L}*2 + ${W}*2 = ${P2}`, `${L*2} + ${W*2} = ${P2}`] },
           { label: "Write the working equation to find the difference:", expectedAnswer: `${Math.max(P1, P2)} - ${Math.min(P1, P2)} = ${diff}`, acceptedAnswers: [] },
-          { label: `Difference in ${unit}:`, expectedAnswer: `${diff}`, acceptedAnswers: [] }
+          { label: `Difference:`, expectedAnswer: `${diff} ${unit}`, acceptedAnswers: [`${diff}${unit}`] }
         ]
       });
     }
@@ -398,7 +401,7 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     const totalCost = P * cost;
 
     visualEngineStr = JSON.stringify({
-      componentToRender: "GeometryPolygon",
+      componentToRender: "GEOMETRY_POLYGON",
       componentData: {
         vertices: [{x: 0, y: 0}, {x: L*10, y: 0}, {x: L*10, y: W*10}, {x: 0, y: W*10}],
         edgeLabels: [`${L} ${unit}`, `${W} ${unit}`, null, null],
@@ -407,12 +410,18 @@ ${isMCQ ? `Generate EXACTLY 4 options:
       }
     });
 
-    let askText = `STORY: ${person} wants to build a fence around a rectangular garden. The garden has a length of ${L} ${unit} and a width of ${W} ${unit}. The fencing material costs $${cost} per ${unit}. How much will ${person} pay in total?`;
+    let templates = [
+      `STORY: ${person} wants to put a border around a rectangular ${item}. The ${item} has a length of ${L} ${unit} and a width of ${W} ${unit}. The border material costs $${cost} per ${unit}. How much will ${person} pay in total?`,
+      `STORY: ${person} is attaching a decorative ribbon along the edges of a rectangular ${item}. The length is ${L} ${unit} and the width is ${W} ${unit}. The ribbon costs $${cost} for every ${unit}. What is the total cost of the ribbon?`,
+      `STORY: ${person} needs to place a protective lining around the perimeter of a rectangular ${item}. The ${item} measures ${L} ${unit} by ${W} ${unit}. If the lining is priced at $${cost} per ${unit}, calculate the total amount ${person} has to pay.`
+    ];
+    let askText = templates[getRandomInt(0, templates.length - 1)];
+    
     let finalAnswer = `$${totalCost}`;
     let sysSolutionSteps = `"""1. Perimeter = ${L} + ${W} + ${L} + ${W} = ${P} ${unit}.\\n2. Total cost = ${P} x ${cost} = $${totalCost}."""`;
 
     if (isShort) {
-      askText = `A rectangular room is ${L} ${unit} by ${W} ${unit}. Border costs $${cost} per ${unit}. What is the total cost?`;
+      askText = `A rectangular ${item} is ${L} ${unit} by ${W} ${unit}. The material costs $${cost} per ${unit}. What is the total cost?`;
     } else if (isMCQ) {
       askText = `Rectangle: ${L} ${unit} by ${W} ${unit}. Cost: $${cost}/${unit}. Total cost?`;
     } else if (isStructure) {

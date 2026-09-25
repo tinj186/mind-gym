@@ -220,6 +220,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
         .replace(/\\cdot/g, '*') // Normalize multiplication dot
         .replace(/(?<=\d)\s*[xX]\s*(?=\d)/g, '*') // Normalize letter x used as multiplication between numbers
         .replace(/^\s*[xX]\s*$/g, '*') // Normalize standalone x as multiplication symbol
+        .replace(/\\colon/g, ':') // Normalize MathLive colon (used for time/ratios)
         .replace(/[\u200B-\u200D\uFEFF]/g, '') // Strip zero-width invisible characters
         .replace(/’/g, "'") // Normalize typographic apostrophes from MathInput bypass
         .replace(/\\/g, '') // Any remaining latex slashes

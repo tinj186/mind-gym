@@ -51,10 +51,10 @@ OUTPUT FORMAT (Return ONLY valid JSON matching this schema, with NO markdown for
     "type": "${zodType}",
     "difficulty": "${zodDiff}"
   },
+  "visualEngine": ${visualEngineStr},
+  "inputRequirement": ${inputReq},
   "content": {
     "questionText": "string",
-    "visualEngine": ${visualEngineStr},
-    "inputRequirement": ${inputReq},
     "hint": "string",
     "solutionSteps": "string",
     "options": ${optionsStr},

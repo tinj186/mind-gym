@@ -241,6 +241,20 @@ export const HEIGHT_SUBJECTS_POOL = [
   "bookshelf", "door", "flagpole"
 ];
 
+export const CM_RECTANGLE_ITEMS_POOL = [
+  "photo frame", "card", "sticker", "painting", "book", "tile", "mousepad", "envelope",
+  "post-it note", "stamp", "tablet screen", "phone screen", "poster", "certificate", "calendar",
+  "notebook", "clipboard", "bookmark", "tray", "placemat", "origami paper",
+  "business card", "greeting card", "index card", "flashcard", "name tag", "playing card", "sketchpad"
+];
+
+export const M_RECTANGLE_ITEMS_POOL = [
+  "garden", "swimming pool", "stage", "room", "field", "playground", "park", "basketball court",
+  "hall", "classroom", "carpet", "rug", "courtyard", "car park", "lawn", "paddock", "tennis court",
+  "volleyball court", "dance floor", "dining room", "balcony", "patio", "deck", "warehouse",
+  "factory floor", "gymnasium", "rooftop", "exhibition booth"
+];
+
 export const getRandomLengthItems = (count = 1) => {
   const shuffled = [...LENGTH_ITEMS_POOL].sort(() => 0.5 - Math.random());
   return count === 1 ? makeCompatibleArray(shuffled[0]) : shuffled.slice(0, count);
@@ -248,6 +262,12 @@ export const getRandomLengthItems = (count = 1) => {
 
 export const getRandomHeightSubjects = (count = 1) => {
   const shuffled = [...HEIGHT_SUBJECTS_POOL].sort(() => 0.5 - Math.random());
+  return count === 1 ? makeCompatibleArray(shuffled[0]) : shuffled.slice(0, count);
+};
+
+export const getRandomRectangleItems = (unit = "cm", count = 1) => {
+  const pool = unit === "m" ? M_RECTANGLE_ITEMS_POOL : CM_RECTANGLE_ITEMS_POOL;
+  const shuffled = [...pool].sort(() => 0.5 - Math.random());
   return count === 1 ? makeCompatibleArray(shuffled[0]) : shuffled.slice(0, count);
 };
 
