@@ -58,6 +58,7 @@ export const UniversalQuestionSchema = z.object({
       'TIMELINE',
       'SQUARE_GRID_SHAPE',
       'GEOMETRY_POLYGON',
+      'ANGLE_VISUALIZER',
       'AREA_PERIMETER_EXPLORER',
       'NONE',
     ]), // Registered native visual engines

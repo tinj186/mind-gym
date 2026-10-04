@@ -96,11 +96,11 @@ export const standardLogic = function (
     }
     else if (falseType === 2) {
       answer = `${_f1} ÷ ${_p} = ${_f2}`;
-      correctEq = `${_f1} x ${_f2} = ${_p}`; // 5 x 6 = 30 instead of 5 ÷ 30 = 6
+      correctEq = `${_p} ÷ ${_f1} = ${_f2}`;
     }
     else {
       answer = `${_f2} ÷ ${_p} = ${_f1}`;
-      correctEq = `${_f2} x ${_f1} = ${_p}`;
+      correctEq = `${_p} ÷ ${_f2} = ${_f1}`;
     }
 
     const validEq = `${_f1} x ${_f2} = ${_p}`;
@@ -119,7 +119,7 @@ export const standardLogic = function (
     }
 
     if (isStructure) {
-      inputRequirementStr = `{\n    "inputType": "MULTI_STEP_INPUT",\n    "steps": [\n      { "label": "The equation that is FALSE is", "expectedAnswer": "${answer}" },\n      { "label": "To make it true, what should that equation be?", "expectedAnswer": "${correctEq}" }\n    ]\n  }`;
+      inputRequirementStr = `{\n    "inputType": "MULTI_STEP_INPUT",\n    "steps": [\n      { "label": "The equation that is FALSE is", "expectedAnswer": "${answer}" },\n      { "label": "Which related equation is missing from the list?", "expectedAnswer": "${validEq}" }\n    ]\n  }`;
     }
 
     customConstraints = `

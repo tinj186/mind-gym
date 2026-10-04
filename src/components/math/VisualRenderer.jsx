@@ -11,7 +11,7 @@ export const ESSENTIAL_VISUALS = [
   "SHAPE_DISPLAY", "SHAPE_3D", "SHAPE_3D_PATTERN", "PLACE_VALUE_CHART", "VERTICAL_ALGORITHM", "LONG_DIVISION",
   "GRID_DISPLAY", "GRID_DRAWING_CANVAS", "FRACTION_DISPLAY",
   "MASS_SCALE", "VOLUME_BEAKER", "STATIC_IMAGE", "HTML_CONTENT", "BAR_MODEL", "FACT_TRIANGLE",
-  "SQUARE_GRID_SHAPE", "GEOMETRY_POLYGON", "AREA_PERIMETER_EXPLORER"
+  "SQUARE_GRID_SHAPE", "GEOMETRY_POLYGON", "AREA_PERIMETER_EXPLORER", "ANGLE_VISUALIZER"
   // "PICTURE_GRAPH_DISPLAY" // Not essential, lazy-loaded
 ];
 
@@ -54,6 +54,8 @@ const GeometryPolygon = lazy(() => import('./modules/GeometryPolygon'));
 const TimeLine = lazy(() => import('./modules/TimeLine'));
 const Timetable = lazy(() => import('./modules/Timetable'));
 const AreaPerimeterExplorer = lazy(() => import('./modules/AreaPerimeterExplorer'));
+const AngleVisualizer = lazy(() => import('./modules/AngleVisualizer'));
+
 export default function VisualRenderer({ type, ...props }) {
   const activeType = (
     type || 
@@ -139,6 +141,7 @@ export default function VisualRenderer({ type, ...props }) {
           case 'FRACTION_DISPLAY': return <FractionDisplay data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
           case 'SQUARE_GRID_SHAPE': return <SquareGridShape data={props.visualEngine?.componentData || props.data} />;
           case 'GEOMETRY_POLYGON': return <GeometryPolygon data={props.visualEngine?.componentData || props.data} />;
+          case 'ANGLE_VISUALIZER': return <AngleVisualizer data={props.visualEngine?.componentData || props.data} />;
           case 'STATIC_IMAGE': {
             const data = props.visualEngine?.componentData || props.data || {};
             return (

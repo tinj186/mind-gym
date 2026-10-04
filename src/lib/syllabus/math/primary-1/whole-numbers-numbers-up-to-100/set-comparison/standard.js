@@ -298,7 +298,7 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
     const answer = statementIsTrue ? "True" : "False";
     
     const questionTextRaw = `True or False: The total number of ${selectedContextItem.item} in Set A and Set B is greater than ${target}.`;
-    const questionTextShort = `Total > ${target}? (True/False):`;
+    const questionTextShort = `Is the total more than ${target}? (True/False):`;
     const questionText = getQText(questionTextRaw, questionTextShort);
 
     let defectMap = null;
