@@ -24,6 +24,9 @@ export default function ScratchpadDrawer({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [hasDrawn, setHasDrawn] = useState(false);
+  const handleStrokeCountChange = React.useCallback((count) => {
+    setHasDrawn(count > 1);
+  }, []);
 
   // Auto-detect Apple Pencil proximity or stylus touch
   useEffect(() => {
@@ -56,20 +59,17 @@ export default function ScratchpadDrawer({
 
   return (
     <>
-      {/* 1. Dim Backdrop (Clean dim background WITHOUT blur) */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            key="scratchpad-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            onClick={() => setIsOpen(false)}
-            className="fixed inset-0 z-[60] bg-black/40 transition-opacity"
-          />
-        )}
-      </AnimatePresence>
+      {/* 1. Hardware-Accelerated Dim Backdrop (Zero flash, zero re-render flicker) */}
+      <div
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(false);
+        }}
+        aria-hidden="true"
+        className={`fixed inset-0 z-[60] bg-black/40 transition-opacity duration-300 ease-out ${
+          isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+      />
 
       {/* 2. Slide-Out Drawer Panel (Always mounted so drawings are NEVER wiped on close!) */}
       <motion.aside
@@ -82,7 +82,10 @@ export default function ScratchpadDrawer({
         {/* 🎯 THE DUAL-STATE PULL TAB: Sits at the same vertical location to Open & Close */}
         <button
           type="button"
-          onClick={() => setIsOpen((prev) => !prev)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsOpen((prev) => !prev);
+          }}
           title={isOpen ? "Close Scratchpad" : "Open Math Scratchpad (Press 'S')"}
           style={{ pointerEvents: 'auto' }}
           className="absolute -left-11 top-1/2 -translate-y-1/2 z-50 bg-slate-900 hover:bg-indigo-600 text-white py-4 px-2.5 rounded-l-2xl shadow-[-6px_4px_16px_rgba(0,0,0,0.25)] border-l-2 border-t-2 border-b-2 border-slate-700 hover:border-indigo-400 flex flex-col items-center gap-2 group cursor-pointer transition-colors"
@@ -111,7 +114,7 @@ export default function ScratchpadDrawer({
             title="Math Working Space"
             fullHeight={true}
             allowTouchByDefault={true}
-            onStrokeCountChange={(count) => setHasDrawn(count > 1)}
+            onStrokeCountChange={handleStrokeCountChange}
             onClose={() => setIsOpen(false)}
           />
         </div>

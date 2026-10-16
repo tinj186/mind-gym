@@ -105,6 +105,11 @@ export default function ScribbleBox({
     // Restore previous drawings
     if (tempCanvas.width > 0 && tempCanvas.height > 0) {
       ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width / dpr, tempCanvas.height / dpr);
+    } else if (historyRef.current.length === 0) {
+      // Synchronously capture blank initial state on first valid size - NO asynchronous timers!
+      const initialSnapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      historyRef.current = [initialSnapshot];
+      historyIndexRef.current = 0;
     }
   }, []);
 
@@ -118,6 +123,12 @@ export default function ScribbleBox({
     }
     return () => ro.disconnect();
   }, [resizeCanvas, isExpanded]);
+
+  // Keep callback in ref to prevent dependency re-creation
+  const onStrokeCountChangeRef = useRef(onStrokeCountChange);
+  useEffect(() => {
+    onStrokeCountChangeRef.current = onStrokeCountChange;
+  }, [onStrokeCountChange]);
 
   // --------------------------------------------------------------------------
   // 2. Snapshot & History Management
@@ -141,10 +152,10 @@ export default function ScribbleBox({
     setCanUndo(historyIndexRef.current > 0);
     setCanRedo(false);
 
-    if (onStrokeCountChange) {
-      onStrokeCountChange(historyRef.current.length);
+    if (onStrokeCountChangeRef.current) {
+      onStrokeCountChangeRef.current(historyRef.current.length);
     }
-  }, [onStrokeCountChange]);
+  }, []);
 
   const undo = useCallback(() => {
     if (historyIndexRef.current <= 0) return;
@@ -179,17 +190,6 @@ export default function ScribbleBox({
     const dpr = window.devicePixelRatio || 1;
     ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
     saveSnapshot();
-  }, [saveSnapshot]);
-
-  // Initial blank snapshot (only on fresh question init)
-  useEffect(() => {
-    if (historyRef.current.length > 0) return;
-    const timer = setTimeout(() => {
-      if (historyRef.current.length === 0) {
-        saveSnapshot();
-      }
-    }, 100);
-    return () => clearTimeout(timer);
   }, [saveSnapshot]);
 
   // --------------------------------------------------------------------------
