@@ -1,4 +1,4 @@
-import { getMeasurementAppropriateUnits, getRandomNames } from '@/lib/utils/variable-bank';
+import { getMeasurementAppropriateUnits, getRandomNames } from '../../../../../utils/variable-bank.js';
 
 export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions, getQText) => {
   let visualEngineStr = `{
@@ -8,6 +8,8 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
 
   let inputRequirementStr = null;
   let systemPrompt = "";
+  let askText = "";
+  let actualAnswer = "";
 
   const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
   const isCrossUnit = Math.random() > 0.5;
@@ -153,7 +155,7 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       (activeVariant === 'standard_difference_lengths' ? 'longer' : activeVariant === 'standard_difference_masses' ? 'heavier' : 'more') :
       (activeVariant === 'standard_difference_lengths' ? 'shorter' : activeVariant === 'standard_difference_masses' ? 'lighter' : 'less');
 
-    let structureText, shortText, actualAnswer, equation;
+    let structureText, shortText, equation;
 
     if (activeVariant === 'standard_difference_volumes') {
       structureText = `Container A is a ${firstObj} that holds ${firstVal} ${firstUnit} of water. Container B is a ${secondObj} that holds ${secondVal} ${secondUnit} of water. How much ${finalAdj} water does Container ${askFirst ? 'A' : 'B'} hold than Container ${askFirst ? 'B' : 'A'}?`;
@@ -168,7 +170,7 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
     const unitEquation = `${Math.max(baseValA, compareValB)} ${baseUnit} - ${Math.min(baseValA, compareValB)} ${baseUnit} = ${actualAnswer}`;
     equation = noUnitEquation;
 
-    const askText = getQText(structureText, shortText);
+    askText = getQText(structureText, shortText);
 
     if (isStructure) {
       inputRequirementStr = `{"inputType": "MULTI_STEP_INPUT", "steps": [
@@ -296,7 +298,7 @@ Use EXACTLY these JSON values:
     const structureText = `Object A is a ${items[0]} (${dispA}). Object B is a ${items[1]} (${dispB}). Object C is a ${items[2]} (${dispC}). Order the objects from ${orderAdj}.`;
     const shortText = `A: ${items[0]} (${dispA}), B: ${items[1]} (${dispB}), C: ${items[2]} (${dispC}). Order from ${orderAdj}:`;
 
-    const askText = getQText(structureText, shortText);
+    askText = getQText(structureText, shortText);
 
     let sortedObjects = [
       { id: 'A', val: vals[0], disp: dispA },
@@ -306,7 +308,7 @@ Use EXACTLY these JSON values:
 
     sortedObjects.sort((a, b) => isAscending ? a.val - b.val : b.val - a.val);
 
-    const actualAnswer = sortedObjects.map(o => o.id).join(', ');
+    actualAnswer = sortedObjects.map(o => o.id).join(', ');
 
     if (isStructure) {
       const label1 = isAscending ? (attribute === 'long' ? 'Shortest' : 'Lightest') : (attribute === 'long' ? 'Longest' : 'Heaviest');
@@ -359,6 +361,6 @@ solutionSteps: """${conversionStep ? conversionStep : ''}\\n${stepOffset + 1}. T
     }
   }
 
-  const aiPrompt = systemPrompt + "\\n" + getFormatInstructions(visualEngineStr, inputRequirementStr);
+  const aiPrompt = systemPrompt + "\n" + getFormatInstructions(visualEngineStr, inputRequirementStr, askText, actualAnswer);
   return { aiPrompt };
 };

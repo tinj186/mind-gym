@@ -1,4 +1,4 @@
-import { getMeasurementAppropriateUnits, getRandomNames } from '@/lib/utils/variable-bank';
+import { getMeasurementAppropriateUnits, getRandomNames } from '../../../../../utils/variable-bank.js';
 
 export const foundationLogic = (activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions, getQText) => {
   let visualEngineStr = `{
@@ -8,6 +8,9 @@ export const foundationLogic = (activeVariant, difficulty, type, isMCQ, isShort,
 
   let inputRequirementStr = null;
   let systemPrompt = "";
+  let askText = "";
+  let actualAnswer = "";
+  let sysFinalAnswer = undefined;
 
   const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
   const isShorterLighterLess = Math.random() > 0.5;
@@ -121,7 +124,7 @@ export const foundationLogic = (activeVariant, difficulty, type, isMCQ, isShort,
       : `A: ${objA} (${valA} ${unit}), B: ${objB} (${valB} ${unit}). The ${comparisonAdj} object is:`;
 
 
-    let askText = getQText(structureText, shortText);
+    askText = getQText(structureText, shortText);
 
     let expectedWinner;
     if (isShorterLighterLess) {
@@ -131,7 +134,7 @@ export const foundationLogic = (activeVariant, difficulty, type, isMCQ, isShort,
     }
 
     const answer = `Container ${expectedWinner}`.replace('Container Container', 'Container').replace('Object Object', 'Object'); // Just 'A' or 'B', or we can enforce it.
-    const actualAnswer = activeVariant === 'foundation_compare_two_volumes' ? `Container ${expectedWinner}` : `Object ${expectedWinner}`;
+    actualAnswer = activeVariant === 'foundation_compare_two_volumes' ? `Container ${expectedWinner}` : `Object ${expectedWinner}`;
 
     if (isStructure) {
       const diff = Math.abs(valA - valB);
@@ -212,7 +215,7 @@ solutionSteps: ${sysSolutionSteps}
 `;
     }
   } else if (activeVariant.includes('identify')) {
-    let items, unit, attribute, comparisonAdj;
+    let items, vals, unit, attribute, comparisonAdj;
 
     if (activeVariant === 'foundation_identify_longest_shortest') {
       unit = Math.random() > 0.5 ? 'cm' : 'm';
@@ -241,12 +244,12 @@ solutionSteps: ${sysSolutionSteps}
 const structureText = `Object A is a ${items[0]} (${vals[0]} ${unit}). Object B is a ${items[1]} (${vals[1]} ${unit}). Object C is a ${items[2]} (${vals[2]} ${unit}). Object D is a ${items[3]} (${vals[3]} ${unit}). Which object is the ${comparisonAdj}?`;
     const shortText = `A: ${items[0]} (${vals[0]} ${unit}), B: ${items[1]} (${vals[1]} ${unit}), C: ${items[2]} (${vals[2]} ${unit}), D: ${items[3]} (${vals[3]} ${unit}). The ${comparisonAdj} object is:`;
 
-    let askText = getQText(structureText, shortText);
+    askText = getQText(structureText, shortText);
 
     let targetVal = isShorterLighterLess ? Math.min(...vals) : Math.max(...vals);
     let targetIndex = vals.indexOf(targetVal);
     let expectedWinner = ['A', 'B', 'C', 'D'][targetIndex];
-    const actualAnswer = `Object ${expectedWinner}`;
+    actualAnswer = `Object ${expectedWinner}`;
 
     if (isStructure) {
       const otherIndices = [0, 1, 2, 3].filter(i => i !== targetIndex);
@@ -336,6 +339,7 @@ solutionSteps: ${sysSolutionSteps}
     }
   }
 
-  const aiPrompt = systemPrompt + "\\n" + getFormatInstructions(visualEngineStr, inputRequirementStr);
+  const finalAns = typeof sysFinalAnswer !== 'undefined' ? sysFinalAnswer : (typeof actualAnswer !== 'undefined' ? actualAnswer : null);
+  const aiPrompt = systemPrompt + "\n" + getFormatInstructions(visualEngineStr, inputRequirementStr, askText, finalAns);
   return { aiPrompt };
 };

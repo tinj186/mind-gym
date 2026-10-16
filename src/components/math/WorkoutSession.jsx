@@ -13,6 +13,7 @@ import MathInput from '@/components/math/MathInput'; // Advanced Math Input
 import confetti from 'canvas-confetti';
 
 import ExamReviewBoard from '@/components/math/ExamReviewBoard';
+import ScratchpadDrawer from '@/components/math/ScratchpadDrawer';
 
 export default function WorkoutSession({ studentId, level, initialQuestions = [], initialIndex = 0, initialLog = [], title = "Daily Training Sequence", mode = "daily", subtopicId, isSandbox = false }) {
   const dragControls = useDragControls();
@@ -294,6 +295,8 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
         }
       }
 
+
+
       // Serialize answer for logs
       submittedAnswer = JSON.stringify(submittedAnswer);
     } else {
@@ -345,6 +348,17 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
         isCorrect = true;
       }
     }
+
+    // STRICT VISUAL MARKING VALIDATION
+    // For MCQ questions, evaluation is always purely based on the option selected (bypassing canvas drawing validation)
+    const isMCQQuestion = normalizedQuestion.inputRequirement?.inputType === 'MCQ_BUTTONS' || 
+      (normalizedQuestion.options && normalizedQuestion.options.length > 0 && normalizedQuestion.inputRequirement?.inputType !== 'MULTI_STEP_INPUT');
+    if (isCorrect && !isMCQQuestion && normalizedQuestion.visualEngine?.componentToRender === 'LINE_AND_POLYGON') {
+      if (window.__polygonMarkingsValid === false) {
+        isCorrect = false;
+      }
+    }
+
     if (isCorrect) {
       setFeedback('correct');
       const result = {
@@ -688,6 +702,9 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* 4. Slide-Out Math Scratchpad for iPad & Desktop */}
+      <ScratchpadDrawer questionId={normalizedQuestion?.id} />
     </div>
   );
 }

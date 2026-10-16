@@ -1,6 +1,6 @@
-import { foundationLogic } from './measurement-comparison/foundation';
-import { standardLogic } from './measurement-comparison/standard';
-import { advancedLogic } from './measurement-comparison/advanced';
+import { foundationLogic } from './measurement-comparison/foundation.js';
+import { standardLogic } from './measurement-comparison/standard.js';
+import { advancedLogic } from './measurement-comparison/advanced.js';
 
 export const p2MeasurementComparisonBlueprint = {
   title: 'Measurement Comparison',
@@ -39,7 +39,11 @@ export const p2MeasurementComparisonBlueprint = {
       return shortText || structureText;
     };
     
-    const getFormatInstructions = (visualEngineStr = `{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }`, inputRequirementStr = null) => `OUTPUT FORMAT (Return ONLY valid JSON matching this schema, with NO markdown formatting, NO \`\`\`json blocks, and NO trailing characters/braces):
+    const getFormatInstructions = (visualEngineStr = `{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }`, inputRequirementStr = null, exactQuestionText = null, exactFinalAnswer = null) => {
+      const qTextStr = exactQuestionText ? JSON.stringify(Array.isArray(exactQuestionText) ? exactQuestionText : exactQuestionText.split(/(?<=\.|\?) /).map(s => s.trim())) : `["string (Line 1)", "string (Line 2)"]`;
+      const finalAnsStr = exactFinalAnswer !== null && exactFinalAnswer !== undefined ? JSON.stringify(String(exactFinalAnswer)) : `"string (The exact final answer)"`;
+      return `CRITICAL INSTRUCTION: You MUST use the EXACT "questionText" and "finalAnswer" values provided in the template below. DO NOT rephrase, change, invert, or rewrite the problem statements!
+OUTPUT FORMAT (Return ONLY valid JSON matching this schema, with NO markdown formatting, NO \`\`\`json blocks, and NO trailing characters/braces):
 {
   "meta": {
     "level": "${level}",
@@ -49,15 +53,16 @@ export const p2MeasurementComparisonBlueprint = {
     "difficulty": "${zodDiff}"
   },
   "content": {
-    "questionText": ["string (Line 1)", "string (Line 2)"] (Array of strings for the full question text. Break into multiple lines if needed.),
+    "questionText": ${qTextStr},
     "options": ["string", "string", "string", "string"] (ONLY if MCQ, otherwise empty array),
     "defectMap": { "distractor1": "Error category", "distractor2": "Error category" } (ONLY if MCQ, otherwise empty object),
     "hint": "string (Pedagogical hint)",
     "solutionSteps": ["string (Step 1)", "string (Step 2)"] (Array of strings for the step-by-step model solution. Break down the logic into distinct steps.),
-    "finalAnswer": "string (The exact final answer)"
+    "finalAnswer": ${finalAnsStr}
   },
   "visualEngine": ${visualEngineStr}${inputRequirementStr ? `,\n  "inputRequirement": ${inputRequirementStr}` : ''}
 }`;
+    };
 
     if (difficulty.toLowerCase() === 'foundation') {
       return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions, getQText);

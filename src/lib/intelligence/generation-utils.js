@@ -1,5 +1,5 @@
-import { UniversalQuestionSchema } from '@/app/api/admin/generate/questionSchema';
-import { DIFFICULTY_DEFINITIONS } from '@/lib/syllabus';
+import { UniversalQuestionSchema } from '../../app/api/admin/generate/questionSchema.js';
+import { DIFFICULTY_DEFINITIONS } from '../syllabus.js';
 
 /**
  * Builds a specialized prompt for the AI based on Singapore MOE Syllabus constraints.
@@ -211,11 +211,11 @@ export function processAiQuestion(q, context) {
       strand: strand || blueprintMeta?.strand || "Number and Algebra",
       isApproved: false,
       finalAnswer: validatedData.content.finalAnswer,
-      options: validatedData.meta.type === 'MCQ' ? (validatedData.content.options || []) : [],
-      question: Array.isArray(validatedData.content.questionText) ? validatedData.content.questionText.join('\n') : validatedData.content.questionText,
-      solution: Array.isArray(validatedData.content.solutionSteps) ? 
-        validatedData.content.solutionSteps.map((s, i) => `${i + 1}. ${s}`).join('\n') : 
-        validatedData.content.solutionSteps,
+      options: (validatedData.meta.type === 'MCQ' || type === 'MCQ') ? parseAiOptions(validatedData.content.options) : null,
+      question: (Array.isArray(validatedData.content.questionText) ? validatedData.content.questionText.join('\n') : String(validatedData.content.questionText)).replace(/<br\s*\/?>/gi, '\n').replace(/\\n/g, '\n'),
+      solution: (Array.isArray(validatedData.content.solutionSteps) ? 
+        validatedData.content.solutionSteps.map((s, i) => `${i + 1}. ${String(s).replace(/^(\d+\.)+\s*/, '')}`).join('<br/>') : 
+        String(validatedData.content.solutionSteps)).replace(/(^|<br\s*\/?>|\n)\s*(\d+)\.\s*(\d+)\.\s*/g, '$1$2. ').replace(/\\n/g, '<br/>').replace(/\n/g, '<br/>'),
       hint: validatedData.content.hint || null,
       modelData: {
         ...safeData,
@@ -261,13 +261,16 @@ export function processAiQuestion(q, context) {
       if (Array.isArray(rawSolution)) {
         rawSolution = rawSolution.map((s, i) => {
           if (typeof s === 'object') return `${i + 1}. ` + Object.entries(s).map(([k, v]) => `${k}: ${v}`).join(', ');
-          return `${i + 1}. ${String(s)}`;
+          return `${i + 1}. ${String(s).replace(/^(\d+\.)+\s*/, '')}`;
         }).join('\n');
       } else if (typeof rawSolution === 'object') {
         rawSolution = JSON.stringify(rawSolution);
       } else {
         rawSolution = String(rawSolution);
       }
+
+      // Convert both literal string "\n" and actual newline characters into HTML breaks, and strip any duplicate numbering (e.g. "1. 1.")
+      rawSolution = rawSolution.replace(/(^|<br\s*\/?>|\n)\s*(\d+)\.\s*(\d+)\.\s*/g, '$1$2. ').replace(/\\n/g, '<br/>').replace(/\n/g, '<br/>');
 
       return {
         level, topic, subtopic: subtopic || "", heuristic: heuristic || "Standard",

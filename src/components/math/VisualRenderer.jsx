@@ -11,11 +11,13 @@ export const ESSENTIAL_VISUALS = [
   "SHAPE_DISPLAY", "SHAPE_3D", "SHAPE_3D_PATTERN", "PLACE_VALUE_CHART", "VERTICAL_ALGORITHM", "LONG_DIVISION",
   "GRID_DISPLAY", "GRID_DRAWING_CANVAS", "FRACTION_DISPLAY",
   "MASS_SCALE", "VOLUME_BEAKER", "STATIC_IMAGE", "HTML_CONTENT", "BAR_MODEL", "FACT_TRIANGLE",
-  "SQUARE_GRID_SHAPE", "GEOMETRY_POLYGON", "AREA_PERIMETER_EXPLORER", "ANGLE_VISUALIZER"
+  "SQUARE_GRID_SHAPE", "GEOMETRY_POLYGON", "AREA_PERIMETER_EXPLORER", "ANGLE_VISUALIZER", "LINE_AND_POLYGON",
+  "BAR_GRAPH", "BAR_GRAPH_VISUALIZER"
   // "PICTURE_GRAPH_DISPLAY" // Not essential, lazy-loaded
 ];
 
 // 🚀 Lazy-loaded modules (Only downloaded by the browser if the question requires it)
+const BarGraphVisualizer = lazy(() => import('./modules/BarGraphVisualizer'));
 const MeasurementUnit = lazy(() => import('./modules/MeasurementUnit'));
 const MeasurementRuler = lazy(() => import('./modules/MeasurementRuler'));
 const MassScale = lazy(() => import('./modules/MassScale'));
@@ -55,6 +57,7 @@ const TimeLine = lazy(() => import('./modules/TimeLine'));
 const Timetable = lazy(() => import('./modules/Timetable'));
 const AreaPerimeterExplorer = lazy(() => import('./modules/AreaPerimeterExplorer'));
 const AngleVisualizer = lazy(() => import('./modules/AngleVisualizer'));
+const LineAndPolygonVisualizer = lazy(() => import('./modules/LineAndPolygonVisualizer'));
 
 export default function VisualRenderer({ type, ...props }) {
   const activeType = (
@@ -142,6 +145,9 @@ export default function VisualRenderer({ type, ...props }) {
           case 'SQUARE_GRID_SHAPE': return <SquareGridShape data={props.visualEngine?.componentData || props.data} />;
           case 'GEOMETRY_POLYGON': return <GeometryPolygon data={props.visualEngine?.componentData || props.data} />;
           case 'ANGLE_VISUALIZER': return <AngleVisualizer data={props.visualEngine?.componentData || props.data} />;
+          case 'LINE_AND_POLYGON': return <LineAndPolygonVisualizer data={props.visualEngine?.componentData || props.data} />;
+          case 'BAR_GRAPH':
+          case 'BAR_GRAPH_VISUALIZER': return <BarGraphVisualizer data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
           case 'STATIC_IMAGE': {
             const data = props.visualEngine?.componentData || props.data || {};
             return (

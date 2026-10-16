@@ -60,6 +60,9 @@ export const UniversalQuestionSchema = z.object({
       'GEOMETRY_POLYGON',
       'ANGLE_VISUALIZER',
       'AREA_PERIMETER_EXPLORER',
+      'LINE_AND_POLYGON',
+      'BAR_GRAPH',
+      'BAR_GRAPH_VISUALIZER',
       'NONE',
     ]), // Registered native visual engines
     componentData: z.record(z.any()).nullable(),

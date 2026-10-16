@@ -1,4 +1,4 @@
-import { getMeasurementAppropriateUnits, getRandomNames } from '@/lib/utils/variable-bank';
+import { getMeasurementAppropriateUnits, getRandomNames } from '../../../../../utils/variable-bank.js';
 
 export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions, getQText) => {
   let visualEngineStr = `{
@@ -191,6 +191,6 @@ solutionSteps: """${conversionStep ? conversionStep : ''}${solutionStepsForB}${s
 `;
   }
 
-  const aiPrompt = systemPrompt + "\\n" + getFormatInstructions(visualEngineStr, inputRequirementStr);
+  const aiPrompt = systemPrompt + "\n" + getFormatInstructions(visualEngineStr, inputRequirementStr, askText, actualAnswer);
   return { aiPrompt };
 };
