@@ -29,7 +29,7 @@ import {
  * 5. Stroke Smoothing: Uses mid-point quadratic Bezier curves for fluid ink lines.
  */
 export default function ScribbleBox({
-  title = "Math Scratchpad",
+  title = "Math Working Space",
   initialHeight = 320,
   fullHeight = false,
   allowTouchByDefault = true,
@@ -76,9 +76,11 @@ export default function ScribbleBox({
     const container = containerRef.current;
     if (!canvas || !container) return;
 
+    const rect = container.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return; // Prevent zero-size canvas wipe during slide animation!
+
     const ctx = canvas.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
-    const rect = container.getBoundingClientRect();
 
     // Cache current content before resizing
     const tempCanvas = document.createElement('canvas');
@@ -179,10 +181,13 @@ export default function ScribbleBox({
     saveSnapshot();
   }, [saveSnapshot]);
 
-  // Initial blank snapshot
+  // Initial blank snapshot (only on fresh question init)
   useEffect(() => {
+    if (historyRef.current.length > 0) return;
     const timer = setTimeout(() => {
-      saveSnapshot();
+      if (historyRef.current.length === 0) {
+        saveSnapshot();
+      }
     }, 100);
     return () => clearTimeout(timer);
   }, [saveSnapshot]);
@@ -345,23 +350,28 @@ export default function ScribbleBox({
 
   return (
     <div className={`flex flex-col ${fullHeight ? 'h-full flex-1 rounded-none border-0' : 'border-2 border-slate-300 rounded-3xl'} bg-slate-50 overflow-hidden shadow-sm transition-all duration-300 ${className}`}>
-      {/* Header Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 bg-white border-b border-slate-200 select-none">
-        {/* Left: Title & Mode Indicator */}
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600">
+      {/* Header Toolbar: Fixed height, flex-nowrap to prevent ANY layout jumping */}
+      <div className="flex items-center justify-between gap-3 px-4 py-2 bg-white border-b border-slate-200 select-none min-h-[56px] flex-nowrap overflow-x-auto">
+        {/* Left: Combined Single Title & Status Indicator */}
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 shrink-0">
             <Sparkles className="w-4 h-4" />
           </div>
           <div>
-            <h4 className="text-sm font-black text-slate-800 tracking-tight leading-none">{title}</h4>
-            <p className="text-[11px] font-medium text-slate-500 mt-0.5">
-              {penOnlyMode ? "Apple Pencil Active (Palm Ignored)" : "Pen & Touch Mode"}
+            <div className="flex items-center gap-1.5">
+              <h4 className="text-xs sm:text-sm font-black text-slate-800 tracking-tight leading-none">{title}</h4>
+              <span className="text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider shrink-0">
+                iPad Ready
+              </span>
+            </div>
+            <p className="text-[10px] font-medium text-slate-500 mt-0.5">
+              {penOnlyMode ? "Apple Pencil (Palms Ignored)" : "Pen & Touch Mode"}
             </p>
           </div>
         </div>
 
-        {/* Center: Tools & Colors */}
-        <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl">
+        {/* Center: Tools & Colors (Always Fixed Width & Layout) */}
+        <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl shrink-0">
           {/* Pen Tool */}
           <button
             type="button"
@@ -392,33 +402,39 @@ export default function ScribbleBox({
 
           <div className="h-4 w-[1px] bg-slate-300 mx-0.5" />
 
-          {/* Color Palette */}
-          {tool === 'pen' && (
-            <div className="flex items-center gap-1 px-1">
-              {inkColors.map((c) => (
-                <button
-                  key={c.value}
-                  type="button"
-                  title={c.label}
-                  onClick={() => setColor(c.value)}
-                  className={`w-5 h-5 rounded-full transition-transform flex items-center justify-center ${
-                    color === c.value ? 'scale-125 ring-2 ring-indigo-500 ring-offset-1' : 'hover:scale-110 opacity-80'
-                  }`}
-                  style={{ backgroundColor: c.value }}
-                >
-                  {color === c.value && <Check className="w-2.5 h-2.5 text-white stroke-[3]" />}
-                </button>
-              ))}
-            </div>
-          )}
+          {/* Color Palette: ALWAYS visible, never unmounted to prevent jumping! */}
+          <div className="flex items-center gap-1 px-1">
+            {inkColors.map((c) => (
+              <button
+                key={c.value}
+                type="button"
+                title={tool === 'eraser' ? `Switch to Pen (${c.label})` : c.label}
+                onClick={() => {
+                  setColor(c.value);
+                  setTool('pen'); // Tapping any color immediately activates pen!
+                }}
+                className={`w-5 h-5 rounded-full transition-all flex items-center justify-center ${
+                  tool === 'pen' && color === c.value 
+                    ? 'scale-125 ring-2 ring-indigo-500 ring-offset-1 opacity-100' 
+                    : tool === 'eraser'
+                    ? 'opacity-60 hover:opacity-100 hover:scale-110'
+                    : 'hover:scale-110 opacity-80'
+                }`}
+                style={{ backgroundColor: c.value }}
+              >
+                {tool === 'pen' && color === c.value && <Check className="w-2.5 h-2.5 text-white stroke-[3]" />}
+              </button>
+            ))}
+          </div>
 
-          {/* Stroke Width Selector */}
+          {/* Stroke Width Selector: Works for both Pen and Eraser */}
           <div className="flex items-center gap-1 ml-1 px-1">
             {[2, 4, 6].map((w) => (
               <button
                 key={w}
                 type="button"
                 onClick={() => setStrokeWidth(w)}
+                title={tool === 'eraser' ? `Eraser Size: ${w === 2 ? 'Small' : w === 4 ? 'Medium' : 'Large'}` : `Pen Width: ${w === 2 ? 'Fine' : w === 4 ? 'Medium' : 'Bold'}`}
                 className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black transition-all ${
                   strokeWidth === w ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-200'
                 }`}
@@ -430,7 +446,7 @@ export default function ScribbleBox({
         </div>
 
         {/* Right: Palm Toggle, Background, Undo/Redo & Clear */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 shrink-0">
           {/* Palm Rejection Toggle */}
           <button
             type="button"

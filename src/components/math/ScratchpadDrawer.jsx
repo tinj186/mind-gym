@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PenTool, ChevronRight, Sparkles } from 'lucide-react';
+import { PenTool, ChevronRight } from 'lucide-react';
 import ScribbleBox from '@/components/math/ScribbleBox';
 
 /**
@@ -10,12 +10,12 @@ import ScribbleBox from '@/components/math/ScribbleBox';
  * 
  * An Apple Pencil & touch-ready slide-out scratchpad drawer for workout sessions.
  * 
- * Behavior:
- * - On iPad / Tablets: Students can slide it out from the right edge with a stylus tap,
- *   do their working alongside the question, and slide it back in anytime.
- * - On Laptops / Desktops: Stays neatly tucked as a minimal floating tab on the right edge,
- *   available whenever rough calculations are needed.
- * - State Preservation: Scribbles remain intact when sliding in and out.
+ * Improvements:
+ * 1. Clean dim background without blur (question and options remain fully legible).
+ * 2. Canvas state is fully preserved across drawer open/close during the same question;
+ *    only resets when moving to a new question (keyed by questionId).
+ * 3. The pull tab sits at the exact same vertical location to both open and close the drawer.
+ * 4. Single unified title header ("Math Working Space") directly in ScribbleBox.
  */
 export default function ScratchpadDrawer({
   questionId,
@@ -25,10 +25,9 @@ export default function ScratchpadDrawer({
   const [isOpen, setIsOpen] = useState(false);
   const [hasDrawn, setHasDrawn] = useState(false);
 
-  // Optional: Auto-detect Apple Pencil proximity or stylus hover
+  // Auto-detect Apple Pencil proximity or stylus touch
   useEffect(() => {
     const handlePointerDown = (e) => {
-      // If stylus is used and autoOpenOnPencil is enabled, open drawer
       if (autoOpenOnPencil && e.pointerType === 'pen' && !isOpen) {
         setIsOpen(true);
       }
@@ -57,37 +56,7 @@ export default function ScratchpadDrawer({
 
   return (
     <>
-      {/* 1. Floating Slide-Out Trigger Tab (Fixed on Right Edge) */}
-      <AnimatePresence>
-        {!isOpen && (
-          <motion.button
-            key="scratchpad-tab"
-            type="button"
-            initial={{ x: 60, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: 60, opacity: 0 }}
-            whileHover={{ x: -6 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setIsOpen(true)}
-            title="Open Math Scratchpad (Press 'S')"
-            className={`fixed right-0 top-1/2 -translate-y-1/2 z-40 bg-slate-900 hover:bg-indigo-600 text-white py-4 px-2.5 rounded-l-2xl shadow-[0_10px_30px_rgba(0,0,0,0.25)] border-l-2 border-t-2 border-b-2 border-slate-700 hover:border-indigo-400 flex flex-col items-center gap-2 group cursor-pointer transition-colors ${className}`}
-          >
-            <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-              <PenTool className="w-4 h-4 text-indigo-300 group-hover:text-white transition-colors" />
-            </div>
-            
-            <span className="[writing-mode:vertical-rl] text-[11px] font-black tracking-widest uppercase rotate-180 text-slate-300 group-hover:text-white select-none">
-              Scratchpad
-            </span>
-
-            {hasDrawn && (
-              <span className="w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-slate-900 animate-pulse mt-1" />
-            )}
-          </motion.button>
-        )}
-      </AnimatePresence>
-
-      {/* 2. Slide-Over Backdrop (Light, Click to close) */}
+      {/* 1. Dim Backdrop (Clean dim background WITHOUT blur) */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -95,66 +64,58 @@ export default function ScratchpadDrawer({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
             onClick={() => setIsOpen(false)}
-            className="fixed inset-0 z-[60] bg-slate-900/20 backdrop-blur-[2px] transition-opacity"
+            className="fixed inset-0 z-[60] bg-black/40 transition-opacity"
           />
         )}
       </AnimatePresence>
 
-      {/* 3. Slide-Out Drawer Panel */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.aside
-            key="scratchpad-panel"
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 28, stiffness: 240 }}
-            className="fixed inset-y-0 right-0 z-[70] w-full sm:w-[480px] lg:w-[560px] max-w-[92vw] bg-white shadow-[-15px_0_50px_rgba(0,0,0,0.25)] border-l-4 border-slate-900 flex flex-col overflow-hidden"
-          >
-            {/* Drawer Header Status Bar */}
-            <div className="flex items-center justify-between px-5 py-3 bg-slate-900 text-white select-none">
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300">
-                  <Sparkles className="w-3.5 h-3.5" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-black tracking-wider uppercase text-slate-100 flex items-center gap-1.5">
-                    Math Working Space
-                    <span className="text-[10px] bg-indigo-500 text-white px-1.5 py-0.5 rounded font-bold">
-                      iPad Ready
-                    </span>
-                  </h3>
-                  <p className="text-[10px] text-slate-400 font-mono">
-                    Rest palm freely with Apple Pencil
-                  </p>
-                </div>
-              </div>
+      {/* 2. Slide-Out Drawer Panel (Always mounted so drawings are NEVER wiped on close!) */}
+      <motion.aside
+        initial={false}
+        animate={{ x: isOpen ? '0%' : '100%' }}
+        transition={{ type: 'spring', damping: 28, stiffness: 240 }}
+        style={{ pointerEvents: isOpen ? 'auto' : 'none' }}
+        className={`fixed inset-y-0 right-0 z-[70] w-full sm:w-[500px] lg:w-[580px] max-w-[92vw] bg-white shadow-[-15px_0_40px_rgba(0,0,0,0.3)] border-l-2 border-slate-300 flex flex-col ${className}`}
+      >
+        {/* 🎯 THE DUAL-STATE PULL TAB: Sits at the same vertical location to Open & Close */}
+        <button
+          type="button"
+          onClick={() => setIsOpen((prev) => !prev)}
+          title={isOpen ? "Close Scratchpad" : "Open Math Scratchpad (Press 'S')"}
+          style={{ pointerEvents: 'auto' }}
+          className="absolute -left-11 top-1/2 -translate-y-1/2 z-50 bg-slate-900 hover:bg-indigo-600 text-white py-4 px-2.5 rounded-l-2xl shadow-[-6px_4px_16px_rgba(0,0,0,0.25)] border-l-2 border-t-2 border-b-2 border-slate-700 hover:border-indigo-400 flex flex-col items-center gap-2 group cursor-pointer transition-colors"
+        >
+          <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+            {isOpen ? (
+              <ChevronRight className="w-4 h-4 text-indigo-300 group-hover:text-white transition-transform group-hover:translate-x-0.5" />
+            ) : (
+              <PenTool className="w-4 h-4 text-indigo-300 group-hover:text-white transition-colors" />
+            )}
+          </div>
+          
+          <span className="[writing-mode:vertical-rl] text-[11px] font-black tracking-widest uppercase rotate-180 text-slate-300 group-hover:text-white select-none">
+            {isOpen ? "Close" : "Scratchpad"}
+          </span>
 
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold transition-all border border-slate-700"
-              >
-                <span>Hide</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+          {!isOpen && hasDrawn && (
+            <span className="w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-slate-900 animate-pulse mt-1" />
+          )}
+        </button>
 
-            {/* Embedded High-Performance Scribble Canvas */}
-            <div className="flex-1 w-full overflow-hidden relative">
-              <ScribbleBox
-                key={questionId || 'global-scratchpad'}
-                title="Working Paper"
-                fullHeight={true}
-                allowTouchByDefault={true}
-                onStrokeCountChange={(count) => setHasDrawn(count > 1)}
-                onClose={() => setIsOpen(false)}
-              />
-            </div>
-          </motion.aside>
-        )}
-      </AnimatePresence>
+        {/* 🎨 The Single Unified ScribbleBox Header & Canvas */}
+        <div className="flex-1 w-full h-full overflow-hidden relative">
+          <ScribbleBox
+            key={questionId || 'math-scratchpad'}
+            title="Math Working Space"
+            fullHeight={true}
+            allowTouchByDefault={true}
+            onStrokeCountChange={(count) => setHasDrawn(count > 1)}
+            onClose={() => setIsOpen(false)}
+          />
+        </div>
+      </motion.aside>
     </>
   );
 }
