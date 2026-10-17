@@ -12,6 +12,8 @@ import MathInput from '@/components/math/MathInput';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import GroupingWorkspace from '@/components/tools/GroupingWorkspace';
 import BarModelWorkspace from '@/components/tools/BarModelWorkspace';
+import ScratchpadDrawer from '@/components/math/ScratchpadDrawer';
+
 export default function ArenaSession({ studentId, level, examPaper, durationMinutes }) {
   const dragControls = useDragControls();
   const router = useRouter();
@@ -686,6 +688,8 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
         )}
       </AnimatePresence>
 
+      {/* 4. Slide-Out Math Scratchpad for iPad & Desktop */}
+      <ScratchpadDrawer questionId={normalizedQuestion?.id} />
     </div>
   );
 }
