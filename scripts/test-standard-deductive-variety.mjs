@@ -1,0 +1,63 @@
+import { p3GraphAxisScalesBlueprint } from '../src/lib/syllabus/math/primary-3/data-representation-and-interpretation-bar-graphs/graph-axis-scales.js';
+
+console.log('Testing standard_deductive_axis_labeling variety...');
+
+const types = ['structured', 'mcq', 'short question'];
+
+for (let i = 1; i <= 30; i++) {
+  const type = types[i % 3];
+  const res = p3GraphAxisScalesBlueprint.generate('standard', 'standard_deductive_axis_labeling', type);
+  
+  if (!res || !res.aiPrompt) {
+    throw new Error(`Failed to generate aiPrompt on iteration ${i}`);
+  }
+
+  // Verify showScaleNumbers is false
+  if (!res.aiPrompt.includes('"showScaleNumbers":false') && !res.aiPrompt.includes('"showScaleNumbers": false')) {
+    throw new Error(`Iteration ${i} is missing showScaleNumbers: false`);
+  }
+
+  // Check MCQ requirements
+  if (type === 'mcq') {
+    const optMatch = res.aiPrompt.match(/Generate EXACTLY 4 options in "content\.options":/);
+    if (!optMatch) {
+      throw new Error(`MCQ missing 4 exact options prompt on iteration ${i}`);
+    }
+  }
+
+  // Check Structured requirements
+  if (type === 'structured') {
+    if (!res.aiPrompt.includes('"inputType": "MULTI_STEP_INPUT"') && !res.aiPrompt.includes('"inputType":"MULTI_STEP_INPUT"')) {
+      throw new Error(`Structured question missing MULTI_STEP_INPUT on iteration ${i}`);
+    }
+    // Must include working equation step
+    if (!res.aiPrompt.includes('Write the working equation')) {
+      throw new Error(`Structured question missing 'Write the working equation' step on iteration ${i}`);
+    }
+  }
+}
+
+console.log('✅ 30/30 randomized generations passed all assertions!');
+
+// Let's print out 8 samples showing the different varieties
+console.log('\n--- SAMPLE GENERATIONS ---');
+for (let i = 1; i <= 8; i++) {
+  const res = p3GraphAxisScalesBlueprint.generate('standard', 'standard_deductive_axis_labeling', 'structured');
+  
+  const qMatch = res.aiPrompt.match(/CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string[^\n]*\n"([^"]+)"/);
+  const jsonStart = res.aiPrompt.indexOf('{');
+  const jsonEnd = res.aiPrompt.lastIndexOf('}');
+  if (jsonStart !== -1 && jsonEnd !== -1) {
+    try {
+      const parsed = JSON.parse(res.aiPrompt.slice(jsonStart, jsonEnd + 1));
+      console.log(`\n[Sample ${i}]`);
+      console.log('Question:', parsed.questionText);
+      if (parsed.inputRequirement && parsed.inputRequirement.steps) {
+        console.log('Steps:');
+        parsed.inputRequirement.steps.forEach(s => console.log(`  - ${s.label} -> [${s.expectedAnswer}] (Accepted: ${s.acceptedAnswers?.length || 0})`));
+      }
+    } catch (e) {
+      console.log('Could not parse schema JSON:', e.message);
+    }
+  }
+}
