@@ -404,100 +404,386 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
   // Variant 12: Scale Translation & Block Projection
   // --------------------------------------------------------------------------
   } else if (canonicalVariant === 'advanced_scale_translation_block_projection') {
-    const scale1 = Math.random() > 0.5 ? 10 : 20;
-    const newScale = 50;
-    const theme = getRandomBarGraphTheme(4, 'zoo_visitors') || getRandomBarGraphTheme(4);
-    const orientation = Math.random() > 0.5 ? 'vertical' : 'horizontal';
-    const cat = theme.items[0];
-
-    const isHalf = Math.random() > 0.5;
-    const blocksNeeded = getRandomInt(2, 6); // 2, 3, 4, 5, 6 blocks on new graph
-    const newTotal = blocksNeeded * newScale; // 100, 150, 200, 250, 300
-
-    let startVal;
-    let low, high;
-    if (isHalf) {
-      const halfStep = scale1 / 2;
-      const maxBlocks1 = Math.floor((newTotal - halfStep) / scale1);
-      const b1 = Math.max(1, getRandomInt(Math.max(1, maxBlocks1 - 4), Math.max(1, maxBlocks1 - 1)));
-      low = b1 * scale1;
-      startVal = low + halfStep;
-      high = low + scale1;
-    } else {
-      const maxBlocks1 = Math.floor((newTotal - scale1) / scale1);
-      const b1 = Math.max(1, getRandomInt(Math.max(1, maxBlocks1 - 3), maxBlocks1));
-      startVal = b1 * scale1;
-      low = startVal;
-      high = startVal + scale1;
-    }
-    const delta = newTotal - startVal;
-
-    const colors = getRandomPaletteColors(3);
-    const otherVal1 = isHalf ? low : Math.max(scale1, startVal - scale1);
-    const otherVal2 = isHalf ? high : startVal + scale1;
-    const data = [
-      { category: cat, value: startVal, color: colors[0] },
-      { category: theme.items[1], value: otherVal1, color: colors[1] },
-      { category: theme.items[2], value: otherVal2, color: colors[2] }
+    const scalePairOptions = [
+      { scale1: 10, scale2: 50 },
+      { scale1: 10, scale2: 25 },
+      { scale1: 20, scale2: 50 },
+      { scale1: 20, scale2: 100 },
+      { scale1: 25, scale2: 50 },
+      { scale1: 25, scale2: 100 },
+      { scale1: 5, scale2: 20 },
+      { scale1: 5, scale2: 50 }
     ];
+    const pair = scalePairOptions[getRandomInt(0, scalePairOptions.length - 1)];
+    const scale1 = pair.scale1;
+    const scale2 = pair.scale2;
 
-    visualEngineStr = JSON.stringify({
-      componentToRender: "BAR_GRAPH",
-      componentData: {
-        title: theme.title,
-        xAxisLabel: theme.xAxisLabel,
-        yAxisLabel: theme.yAxisLabel,
-        data,
-        scaleStep: scale1,
-        orientation,
-        showGridLines: true
+    const barCount = Math.random() > 0.5 ? 4 : 3;
+    const theme = getRandomBarGraphTheme(barCount);
+    const orientation = Math.random() > 0.5 ? 'vertical' : 'horizontal';
+
+    // 4 inquiry sub-varieties: 'addition', 'subtraction', 'combined', 'reverse_working'
+    const subTypes = ['addition', 'subtraction', 'combined', 'reverse_working'];
+    const subType = subTypes[getRandomInt(0, subTypes.length - 1)];
+
+    if (subType === 'addition') {
+      const catIdx = getRandomInt(0, barCount - 1);
+      const cat = theme.items[catIdx];
+
+      const blocksNeededOptions = [3, 4, 5, 6];
+      const blocksNeeded = blocksNeededOptions[getRandomInt(0, blocksNeededOptions.length - 1)];
+      const newTotal = blocksNeeded * scale2;
+
+      const isHalf = Math.random() > 0.5 && (scale1 % 2 === 0);
+      let startVal;
+      if (isHalf) {
+        const halfStep = scale1 / 2;
+        const maxBlocks1 = Math.floor((newTotal - halfStep) / scale1);
+        const b1 = Math.max(1, getRandomInt(Math.max(1, maxBlocks1 - 3), Math.max(1, maxBlocks1 - 1)));
+        startVal = b1 * scale1 + halfStep;
+      } else {
+        const maxBlocks1 = Math.floor((newTotal - scale1) / scale1);
+        const b1 = Math.max(1, getRandomInt(Math.max(1, maxBlocks1 - 3), maxBlocks1));
+        startVal = b1 * scale1;
       }
-    });
+      const delta = newTotal - startVal;
 
-    if (isStructure) {
-      const readingDesc = isHalf ? `ends exactly halfway between ${low} and ${high}` : `shows ${startVal} ${theme.unit}`;
-      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the ${theme.title.toLowerCase()} on a scale of ${scale1}. The bar for ${cat} ${readingDesc}. The next day, exactly ${delta} more ${theme.unit} are added. The goal is to draw a new graph where 1 grid block stands for ${newScale} ${theme.unit}. Read the current amount, add the new amount, and calculate exactly how many grid blocks tall the new bar must be."`;
-      const stepsArr = [
-        {
-          label: `Exact number of ${theme.unit} for ${cat} shown on the current graph:`,
-          expectedAnswer: String(startVal),
-          acceptedAnswers: [String(startVal)]
-        },
-        {
-          label: `Write the working equation to find the new total after adding ${delta} more ${theme.unit}:`,
-          expectedAnswer: `${startVal} + ${delta} = ${newTotal}`,
-          acceptedAnswers: getAdditionAcceptedAnswers(startVal, delta, newTotal)
-        },
-        {
-          label: `Write the working equation to find how many grid blocks are needed for the new graph (Total ÷ New Scale of ${newScale}):`,
-          expectedAnswer: `${newTotal} / ${newScale} = ${blocksNeeded}`,
-          acceptedAnswers: getDivisionAcceptedAnswers(newTotal, newScale, blocksNeeded)
-        },
-        {
-          label: `Number of grid blocks tall:`,
-          expectedAnswer: String(blocksNeeded),
-          acceptedAnswers: [String(blocksNeeded)]
+      const addVerbs = ['added', 'donated', 'collected', 'received', 'baked', 'produced', 'packed', 'gathered'];
+      const verb = addVerbs[getRandomInt(0, addVerbs.length - 1)];
+
+      const colors = getRandomPaletteColors(barCount);
+      const data = theme.items.map((item, idx) => {
+        if (idx === catIdx) return { category: item, value: startVal, color: colors[idx] };
+        const bOther = getRandomInt(1, Math.max(2, Math.floor(startVal / scale1) + 2));
+        const valOther = (Math.random() > 0.5 && scale1 % 2 === 0) ? (bOther * scale1 + scale1 / 2) : (bOther * scale1);
+        return { category: item, value: valOther, color: colors[idx] };
+      });
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_GRAPH",
+        componentData: {
+          title: theme.title,
+          xAxisLabel: theme.xAxisLabel,
+          yAxisLabel: theme.yAxisLabel,
+          data,
+          scaleStep: scale1,
+          orientation,
+          showGridLines: true
         }
-      ];
-      inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
-      finalAnswer = String(blocksNeeded);
-    } else if (isMCQ) {
-      const readingDesc = isHalf ? `stops halfway between ${low} and ${high} (${startVal} ${theme.unit})` : `equals ${startVal} ${theme.unit}`;
-      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The graph (scale of ${scale1}) shows that the bar for ${cat} ${readingDesc}. After adding ${delta} more ${theme.unit}, to chart the new total on a graph where 1 block = ${newScale} ${theme.unit}, how many blocks tall must the bar be?"`;
-      inputRequirementStr = JSON.stringify({ inputType: "MCQ_BUTTONS" });
-      finalAnswer = String(blocksNeeded);
-      const opts = getFourOptions(finalAnswer, [
-        String(blocksNeeded + 1),
-        String(Math.max(1, blocksNeeded - 1)),
-        String(blocksNeeded + 2),
-        String(Math.round(startVal / scale1))
-      ]);
-      mcqOptionsPrompt = `Generate EXACTLY 4 options in "content.options":\n- "${opts[0]}"\n- "${opts[1]}"\n- "${opts[2]}"\n- "${opts[3]}"\nCRITICAL: The options array MUST contain exactly these 4 options. One option MUST match finalAnswer ("${finalAnswer}") exactly.`;
+      });
+
+      if (isStructure) {
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the ${theme.title.toLowerCase()} on a scale of ${scale1}. Look at the bar for ${cat}. Next, exactly ${delta} more ${theme.unit} are ${verb}. If you want to draw a new graph where 1 grid block stands for ${scale2} ${theme.unit}, read the current amount from the graph, add the new amount, and calculate exactly how many grid blocks tall the new bar must be."`;
+        const stepsArr = [
+          {
+            label: `Number of ${theme.unit} for ${cat} shown on the current graph:`,
+            expectedAnswer: String(startVal),
+            acceptedAnswers: [String(startVal)]
+          },
+          {
+            label: `Write the working equation to find the new total after adding ${delta} more ${theme.unit}:`,
+            expectedAnswer: `${startVal} + ${delta} = ${newTotal}`,
+            acceptedAnswers: getAdditionAcceptedAnswers(startVal, delta, newTotal)
+          },
+          {
+            label: `Write the working equation to find how many grid blocks are needed for the new graph (Total ÷ New Scale of ${scale2}):`,
+            expectedAnswer: `${newTotal} / ${scale2} = ${blocksNeeded}`,
+            acceptedAnswers: getDivisionAcceptedAnswers(newTotal, scale2, blocksNeeded)
+          },
+          {
+            label: `Number of grid blocks tall:`,
+            expectedAnswer: String(blocksNeeded),
+            acceptedAnswers: [String(blocksNeeded)]
+          }
+        ];
+        inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
+        finalAnswer = String(blocksNeeded);
+      } else if (isMCQ) {
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph (scale of ${scale1}) shows the ${theme.title.toLowerCase()}. After ${delta} more ${theme.unit} are ${verb} for ${cat}, to draw the new total on a graph where 1 grid block = ${scale2} ${theme.unit}, how many grid blocks tall must the bar be?"`;
+        inputRequirementStr = JSON.stringify({ inputType: "MCQ_BUTTONS" });
+        finalAnswer = String(blocksNeeded);
+        const opts = getFourOptions(finalAnswer, [
+          String(blocksNeeded + 1),
+          String(Math.max(1, blocksNeeded - 1)),
+          String(blocksNeeded + 2),
+          String(Math.max(1, blocksNeeded - 2))
+        ]);
+        mcqOptionsPrompt = `Generate EXACTLY 4 options in "content.options":\n- "${opts[0]}"\n- "${opts[1]}"\n- "${opts[2]}"\n- "${opts[3]}"\nCRITICAL: The options array MUST contain exactly these 4 options. One option MUST match finalAnswer ("${finalAnswer}") exactly.`;
+      } else {
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"On a bar graph with a scale of ${scale1}, ${cat} has some ${theme.unit}. After ${delta} more ${theme.unit} are ${verb}, the new total is drawn on a graph with a scale of ${scale2} per block. How many grid blocks tall will the new bar be?"`;
+        inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
+        finalAnswer = String(blocksNeeded);
+      }
+
+    } else if (subType === 'subtraction') {
+      const catIdx = getRandomInt(0, barCount - 1);
+      const cat = theme.items[catIdx];
+
+      const blocksNeededOptions = [2, 3, 4, 5];
+      const blocksNeeded = blocksNeededOptions[getRandomInt(0, blocksNeededOptions.length - 1)];
+      const newTotal = blocksNeeded * scale2;
+
+      const isHalf = Math.random() > 0.5 && (scale1 % 2 === 0);
+      let startVal;
+      if (isHalf) {
+        const halfStep = scale1 / 2;
+        const minBlocks1 = Math.ceil((newTotal + halfStep) / scale1);
+        const b1 = getRandomInt(minBlocks1, minBlocks1 + 3);
+        startVal = b1 * scale1 + halfStep;
+      } else {
+        const minBlocks1 = Math.ceil((newTotal + scale1) / scale1);
+        const b1 = getRandomInt(minBlocks1, minBlocks1 + 3);
+        startVal = b1 * scale1;
+      }
+      const delta = startVal - newTotal;
+
+      const removeVerbs = ['sold', 'given away', 'eaten', 'distributed', 'used', 'borrowed'];
+      const verb = removeVerbs[getRandomInt(0, removeVerbs.length - 1)];
+
+      const colors = getRandomPaletteColors(barCount);
+      const data = theme.items.map((item, idx) => {
+        if (idx === catIdx) return { category: item, value: startVal, color: colors[idx] };
+        const bOther = getRandomInt(1, Math.max(2, Math.floor(startVal / scale1)));
+        const valOther = (Math.random() > 0.5 && scale1 % 2 === 0) ? (bOther * scale1 + scale1 / 2) : (bOther * scale1);
+        return { category: item, value: valOther, color: colors[idx] };
+      });
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_GRAPH",
+        componentData: {
+          title: theme.title,
+          xAxisLabel: theme.xAxisLabel,
+          yAxisLabel: theme.yAxisLabel,
+          data,
+          scaleStep: scale1,
+          orientation,
+          showGridLines: true
+        }
+      });
+
+      if (isStructure) {
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the ${theme.title.toLowerCase()} on a scale of ${scale1}. Look at the bar for ${cat}. Then, exactly ${delta} ${theme.unit} are ${verb}. If you draw the remaining amount on a new graph where 1 grid block stands for ${scale2} ${theme.unit}, read the current amount from the graph, subtract the amount removed, and calculate how many grid blocks tall the new bar must be."`;
+        const stepsArr = [
+          {
+            label: `Number of ${theme.unit} for ${cat} shown on the current graph:`,
+            expectedAnswer: String(startVal),
+            acceptedAnswers: [String(startVal)]
+          },
+          {
+            label: `Write the working equation to find the remaining amount after removing ${delta} ${theme.unit}:`,
+            expectedAnswer: `${startVal} - ${delta} = ${newTotal}`,
+            acceptedAnswers: getSubtractionAcceptedAnswers(startVal, delta, newTotal)
+          },
+          {
+            label: `Write the working equation to find how many grid blocks are needed for the new graph (Remaining ÷ New Scale of ${scale2}):`,
+            expectedAnswer: `${newTotal} / ${scale2} = ${blocksNeeded}`,
+            acceptedAnswers: getDivisionAcceptedAnswers(newTotal, scale2, blocksNeeded)
+          },
+          {
+            label: `Number of grid blocks tall:`,
+            expectedAnswer: String(blocksNeeded),
+            acceptedAnswers: [String(blocksNeeded)]
+          }
+        ];
+        inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
+        finalAnswer = String(blocksNeeded);
+      } else if (isMCQ) {
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph (scale of ${scale1}) shows the ${theme.title.toLowerCase()}. After ${delta} ${theme.unit} are ${verb} from ${cat}, to draw the remaining amount on a graph where 1 grid block = ${scale2} ${theme.unit}, how many grid blocks tall must the bar be?"`;
+        inputRequirementStr = JSON.stringify({ inputType: "MCQ_BUTTONS" });
+        finalAnswer = String(blocksNeeded);
+        const opts = getFourOptions(finalAnswer, [
+          String(blocksNeeded + 1),
+          String(Math.max(1, blocksNeeded - 1)),
+          String(blocksNeeded + 2),
+          String(Math.max(1, blocksNeeded - 2))
+        ]);
+        mcqOptionsPrompt = `Generate EXACTLY 4 options in "content.options":\n- "${opts[0]}"\n- "${opts[1]}"\n- "${opts[2]}"\n- "${opts[3]}"\nCRITICAL: The options array MUST contain exactly these 4 options. One option MUST match finalAnswer ("${finalAnswer}") exactly.`;
+      } else {
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"On a bar graph with a scale of ${scale1}, ${cat} has some ${theme.unit}. If ${delta} ${theme.unit} are ${verb}, and the remaining amount is drawn on a new graph with a scale of ${scale2} per block, how many grid blocks tall will the bar be?"`;
+        inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
+        finalAnswer = String(blocksNeeded);
+      }
+
+    } else if (subType === 'combined') {
+      const idx1 = 0;
+      const idx2 = 1;
+      const cat1 = theme.items[idx1];
+      const cat2 = theme.items[idx2];
+
+      const blocksNeededOptions = [3, 4, 5, 6];
+      const blocksNeeded = blocksNeededOptions[getRandomInt(0, blocksNeededOptions.length - 1)];
+      const combinedTotal = blocksNeeded * scale2;
+
+      const isHalf1 = Math.random() > 0.5 && (scale1 % 2 === 0);
+      const halfStep = scale1 / 2;
+      let val1, val2;
+      if (isHalf1) {
+        const maxB1 = Math.floor((combinedTotal - halfStep - scale1) / scale1);
+        const b1 = Math.max(1, getRandomInt(1, Math.max(1, maxB1)));
+        val1 = b1 * scale1 + halfStep;
+        val2 = combinedTotal - val1;
+      } else {
+        const maxB1 = Math.floor((combinedTotal - scale1) / scale1);
+        const b1 = Math.max(1, getRandomInt(1, Math.max(1, maxB1)));
+        val1 = b1 * scale1;
+        val2 = combinedTotal - val1;
+      }
+
+      const colors = getRandomPaletteColors(barCount);
+      const data = theme.items.map((item, idx) => {
+        if (idx === idx1) return { category: item, value: val1, color: colors[idx] };
+        if (idx === idx2) return { category: item, value: val2, color: colors[idx] };
+        const bOther = getRandomInt(1, Math.max(2, Math.floor(val1 / scale1)));
+        const valOther = (Math.random() > 0.5 && scale1 % 2 === 0) ? (bOther * scale1 + scale1 / 2) : (bOther * scale1);
+        return { category: item, value: valOther, color: colors[idx] };
+      });
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_GRAPH",
+        componentData: {
+          title: theme.title,
+          xAxisLabel: theme.xAxisLabel,
+          yAxisLabel: theme.yAxisLabel,
+          data,
+          scaleStep: scale1,
+          orientation,
+          showGridLines: true
+        }
+      });
+
+      if (isStructure) {
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the ${theme.title.toLowerCase()} on a scale of ${scale1}. A summary bar is to be drawn on a new graph combining ${cat1} and ${cat2} together, where 1 grid block stands for ${scale2} ${theme.unit}. Read the values of both categories from the graph, find their combined sum, and calculate how many grid blocks tall the new combined bar must be."`;
+        const stepsArr = [
+          {
+            label: `Number of ${theme.unit} for ${cat1} shown on the graph:`,
+            expectedAnswer: String(val1),
+            acceptedAnswers: [String(val1)]
+          },
+          {
+            label: `Number of ${theme.unit} for ${cat2} shown on the graph:`,
+            expectedAnswer: String(val2),
+            acceptedAnswers: [String(val2)]
+          },
+          {
+            label: `Write the working equation to find the combined total of ${cat1} and ${cat2}:`,
+            expectedAnswer: `${val1} + ${val2} = ${combinedTotal}`,
+            acceptedAnswers: getAdditionAcceptedAnswers(val1, val2, combinedTotal)
+          },
+          {
+            label: `Write the working equation to find how many grid blocks are needed for the new graph (Combined Total ÷ New Scale of ${scale2}):`,
+            expectedAnswer: `${combinedTotal} / ${scale2} = ${blocksNeeded}`,
+            acceptedAnswers: getDivisionAcceptedAnswers(combinedTotal, scale2, blocksNeeded)
+          },
+          {
+            label: `Number of grid blocks tall:`,
+            expectedAnswer: String(blocksNeeded),
+            acceptedAnswers: [String(blocksNeeded)]
+          }
+        ];
+        inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
+        finalAnswer = String(blocksNeeded);
+      } else if (isMCQ) {
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph (scale of ${scale1}) shows the ${theme.title.toLowerCase()}. If the combined total of ${cat1} and ${cat2} is drawn on a new graph where 1 block = ${scale2} ${theme.unit}, how many grid blocks tall must the combined bar be?"`;
+        inputRequirementStr = JSON.stringify({ inputType: "MCQ_BUTTONS" });
+        finalAnswer = String(blocksNeeded);
+        const opts = getFourOptions(finalAnswer, [
+          String(blocksNeeded + 1),
+          String(Math.max(1, blocksNeeded - 1)),
+          String(blocksNeeded + 2),
+          String(Math.max(1, blocksNeeded - 2))
+        ]);
+        mcqOptionsPrompt = `Generate EXACTLY 4 options in "content.options":\n- "${opts[0]}"\n- "${opts[1]}"\n- "${opts[2]}"\n- "${opts[3]}"\nCRITICAL: The options array MUST contain exactly these 4 options. One option MUST match finalAnswer ("${finalAnswer}") exactly.`;
+      } else {
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"On a bar graph with a scale of ${scale1}, what is the height in grid blocks if the combined total of ${cat1} and ${cat2} is drawn on a new graph with a scale of ${scale2} per block?"`;
+        inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
+        finalAnswer = String(blocksNeeded);
+      }
+
     } else {
-      const readingDesc = isHalf ? `stops halfway between ${low} and ${high}` : `shows ${startVal} ${theme.unit}`;
-      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A bar on a scale of ${scale1} ${readingDesc}. You receive ${delta} more ${theme.unit}. If you draw your new total on a graph with a scale of ${newScale} per block, how many grid blocks tall will the bar be?"`;
-      inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
-      finalAnswer = String(blocksNeeded);
+      // reverse_working
+      const catIdx = getRandomInt(0, barCount - 1);
+      const cat = theme.items[catIdx];
+
+      const blocksNew = getRandomInt(3, 6);
+      const newTotal = blocksNew * scale2;
+
+      const isHalf = Math.random() > 0.5 && (scale1 % 2 === 0);
+      let startVal;
+      if (isHalf) {
+        const halfStep = scale1 / 2;
+        const maxBlocks1 = Math.floor((newTotal - halfStep) / scale1);
+        const b1 = Math.max(1, getRandomInt(Math.max(1, maxBlocks1 - 3), Math.max(1, maxBlocks1 - 1)));
+        startVal = b1 * scale1 + halfStep;
+      } else {
+        const maxBlocks1 = Math.floor((newTotal - scale1) / scale1);
+        const b1 = Math.max(1, getRandomInt(Math.max(1, maxBlocks1 - 3), maxBlocks1));
+        startVal = b1 * scale1;
+      }
+      const delta = newTotal - startVal;
+
+      const colors = getRandomPaletteColors(barCount);
+      const data = theme.items.map((item, idx) => {
+        if (idx === catIdx) return { category: item, value: startVal, color: colors[idx] };
+        const bOther = getRandomInt(1, Math.max(2, Math.floor(startVal / scale1) + 2));
+        const valOther = (Math.random() > 0.5 && scale1 % 2 === 0) ? (bOther * scale1 + scale1 / 2) : (bOther * scale1);
+        return { category: item, value: valOther, color: colors[idx] };
+      });
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_GRAPH",
+        componentData: {
+          title: theme.title,
+          xAxisLabel: theme.xAxisLabel,
+          yAxisLabel: theme.yAxisLabel,
+          data,
+          scaleStep: scale1,
+          orientation,
+          showGridLines: true
+        }
+      });
+
+      if (isStructure) {
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the ${theme.title.toLowerCase()} on a scale of ${scale1}. Look at the bar for ${cat}. Later, additional ${theme.unit} were added, and the new total was drawn on a new graph where 1 grid block stands for ${scale2} ${theme.unit}. On the new graph, the bar is exactly ${blocksNew} grid blocks tall. Read the current amount from the graph, determine the new total, and calculate how many ${theme.unit} were added."`;
+        const stepsArr = [
+          {
+            label: `Number of ${theme.unit} for ${cat} shown on the current graph:`,
+            expectedAnswer: String(startVal),
+            acceptedAnswers: [String(startVal)]
+          },
+          {
+            label: `Write the working equation to find the new total on the new graph (${blocksNew} blocks x ${scale2}):`,
+            expectedAnswer: `${blocksNew} x ${scale2} = ${newTotal}`,
+            acceptedAnswers: getMultiplicationAcceptedAnswers(blocksNew, scale2, newTotal)
+          },
+          {
+            label: `Write the working equation to find how many ${theme.unit} were added (New Total - Current):`,
+            expectedAnswer: `${newTotal} - ${startVal} = ${delta}`,
+            acceptedAnswers: getSubtractionAcceptedAnswers(newTotal, startVal, delta)
+          },
+          {
+            label: `Number of ${theme.unit} added:`,
+            expectedAnswer: String(delta),
+            acceptedAnswers: [String(delta)]
+          }
+        ];
+        inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
+        finalAnswer = String(delta);
+      } else if (isMCQ) {
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar for ${cat} is shown on a scale of ${scale1}. Later, more ${theme.unit} were added and drawn on a new graph (scale of ${scale2} per block) as a bar ${blocksNew} blocks tall. How many ${theme.unit} were added?"`;
+        inputRequirementStr = JSON.stringify({ inputType: "MCQ_BUTTONS" });
+        finalAnswer = String(delta);
+        const opts = getFourOptions(finalAnswer, [
+          String(delta + scale2),
+          String(Math.max(scale1, delta - scale2)),
+          String(newTotal),
+          String(startVal)
+        ]);
+        mcqOptionsPrompt = `Generate EXACTLY 4 options in "content.options":\n- "${opts[0]}"\n- "${opts[1]}"\n- "${opts[2]}"\n- "${opts[3]}"\nCRITICAL: The options array MUST contain exactly these 4 options. One option MUST match finalAnswer ("${finalAnswer}") exactly.`;
+      } else {
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A bar for ${cat} is shown on a scale of ${scale1}. After more ${theme.unit} are added, the new total is drawn ${blocksNew} grid blocks tall on a graph with a scale of ${scale2} per block. How many ${theme.unit} were added?"`;
+        inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
+        finalAnswer = String(delta);
+      }
     }
 
   // --------------------------------------------------------------------------
