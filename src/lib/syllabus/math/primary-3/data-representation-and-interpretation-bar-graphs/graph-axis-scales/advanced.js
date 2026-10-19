@@ -218,12 +218,12 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
             acceptedAnswers: getSubtractionAcceptedAnswers(bA, bB, diffBlocks)
           },
           {
-            label: `Write the working equation to find the value of 1 grid block (${diffVal} ${theme.unit} ÷ ${diffBlocks} blocks):`,
+            label: `Write the working equation to find the value of 1 grid block:`,
             expectedAnswer: `${diffVal} / ${diffBlocks} = ${scaleStep}`,
             acceptedAnswers: getDivisionAcceptedAnswers(diffVal, diffBlocks, scaleStep)
           },
           {
-            label: `Write the working equation to find the value of ${catC} (grid blocks x value of 1 block):`,
+            label: `Write the working equation to find the value of ${catC}:`,
             expectedAnswer: `${bC} x ${scaleStep} = ${valC}`,
             acceptedAnswers: getMultiplicationAcceptedAnswers(bC, scaleStep, valC)
           },
@@ -244,7 +244,7 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
             acceptedAnswers: getSubtractionAcceptedAnswers(bA, bB, diffBlocks)
           },
           {
-            label: `Write the working equation to find the value of 1 grid block (${diffVal} ${theme.unit} ÷ ${diffBlocks} blocks):`,
+            label: `Write the working equation to find the value of 1 grid block:`,
             expectedAnswer: `${diffVal} / ${diffBlocks} = ${scaleStep}`,
             acceptedAnswers: getDivisionAcceptedAnswers(diffVal, diffBlocks, scaleStep)
           },
@@ -254,7 +254,7 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
             acceptedAnswers: [String(totalBlocks)]
           },
           {
-            label: `Write the working equation to find the total ${theme.unit} across all categories (total blocks x value of 1 block):`,
+            label: `Write the working equation to find the total ${theme.unit} across all categories:`,
             expectedAnswer: `${totalBlocks} x ${scaleStep} = ${grandTotal}`,
             acceptedAnswers: [
               ...getMultiplicationAcceptedAnswers(totalBlocks, scaleStep, grandTotal),
@@ -280,17 +280,17 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
             acceptedAnswers: getSubtractionAcceptedAnswers(bA, bB, diffBlocks)
           },
           {
-            label: `Write the working equation to find the value of 1 grid block (${diffVal} ${theme.unit} ÷ ${diffBlocks} blocks):`,
+            label: `Write the working equation to find the value of 1 grid block:`,
             expectedAnswer: `${diffVal} / ${diffBlocks} = ${scaleStep}`,
             acceptedAnswers: getDivisionAcceptedAnswers(diffVal, diffBlocks, scaleStep)
           },
           {
-            label: `Write the working equation to find the value of ${catC} (grid blocks x value of 1 block):`,
+            label: `Write the working equation to find the value of ${catC}:`,
             expectedAnswer: `${bC} x ${scaleStep} = ${valC}`,
             acceptedAnswers: getMultiplicationAcceptedAnswers(bC, scaleStep, valC)
           },
           {
-            label: `Write the working equation to find the total ${theme.unit} across all categories (total blocks x value of 1 block):`,
+            label: `Write the working equation to find the total ${theme.unit} across all categories:`,
             expectedAnswer: `${totalBlocks} x ${scaleStep} = ${grandTotal}`,
             acceptedAnswers: [
               ...getMultiplicationAcceptedAnswers(totalBlocks, scaleStep, grandTotal),
@@ -319,7 +319,7 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
             acceptedAnswers: getSubtractionAcceptedAnswers(bA, bB, diffBlocks)
           },
           {
-            label: `Write the working equation to find the value of 1 grid block (${diffVal} ${theme.unit} ÷ ${diffBlocks} blocks):`,
+            label: `Write the working equation to find the value of 1 grid block:`,
             expectedAnswer: `${diffVal} / ${diffBlocks} = ${scaleStep}`,
             acceptedAnswers: getDivisionAcceptedAnswers(diffVal, diffBlocks, scaleStep)
           },
@@ -329,7 +329,7 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
             acceptedAnswers: getAdditionAcceptedAnswers(bA, bC, combinedBlocks)
           },
           {
-            label: `Write the working equation to find the combined total for ${catA} and ${catC} (combined blocks x value of 1 block):`,
+            label: `Write the working equation to find the combined total for ${catA} and ${catC}:`,
             expectedAnswer: `${combinedBlocks} x ${scaleStep} = ${combinedVal}`,
             acceptedAnswers: [
               ...getMultiplicationAcceptedAnswers(combinedBlocks, scaleStep, combinedVal),
@@ -473,20 +473,20 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
       });
 
       if (isStructure) {
-        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the ${theme.title.toLowerCase()} on a scale of ${scale1}. Look at the bar for ${cat}. Next, exactly ${delta} more ${theme.unit} are ${verb}. If you want to draw a new graph where 1 grid block stands for ${scale2} ${theme.unit}, read the current amount from the graph, add the new amount, and calculate exactly how many grid blocks tall the new bar must be."`;
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the ${theme.title.toLowerCase()}. Later, ${delta} more ${theme.unit} are ${verb} for ${cat}. If the new total is drawn on a new graph where 1 grid block stands for ${scale2} ${theme.unit}, how many grid blocks tall will the bar for ${cat} be?"`;
         const stepsArr = [
           {
-            label: `Number of ${theme.unit} for ${cat} shown on the current graph:`,
+            label: `Number of ${theme.unit} for ${cat} on the graph:`,
             expectedAnswer: String(startVal),
             acceptedAnswers: [String(startVal)]
           },
           {
-            label: `Write the working equation to find the new total after adding ${delta} more ${theme.unit}:`,
+            label: `Write the working equation to find the new total of ${cat}:`,
             expectedAnswer: `${startVal} + ${delta} = ${newTotal}`,
             acceptedAnswers: getAdditionAcceptedAnswers(startVal, delta, newTotal)
           },
           {
-            label: `Write the working equation to find how many grid blocks are needed for the new graph (Total ÷ New Scale of ${scale2}):`,
+            label: `Write the working equation to find the number of grid blocks needed on the new graph:`,
             expectedAnswer: `${newTotal} / ${scale2} = ${blocksNeeded}`,
             acceptedAnswers: getDivisionAcceptedAnswers(newTotal, scale2, blocksNeeded)
           },
@@ -499,7 +499,7 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
         inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
         finalAnswer = String(blocksNeeded);
       } else if (isMCQ) {
-        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph (scale of ${scale1}) shows the ${theme.title.toLowerCase()}. After ${delta} more ${theme.unit} are ${verb} for ${cat}, to draw the new total on a graph where 1 grid block = ${scale2} ${theme.unit}, how many grid blocks tall must the bar be?"`;
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the ${theme.title.toLowerCase()}. After ${delta} more ${theme.unit} are ${verb} for ${cat}, the new total is drawn on a new graph where 1 grid block stands for ${scale2} ${theme.unit}. How many grid blocks tall will the bar for ${cat} be?"`;
         inputRequirementStr = JSON.stringify({ inputType: "MCQ_BUTTONS" });
         finalAnswer = String(blocksNeeded);
         const opts = getFourOptions(finalAnswer, [
@@ -510,7 +510,7 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
         ]);
         mcqOptionsPrompt = `Generate EXACTLY 4 options in "content.options":\n- "${opts[0]}"\n- "${opts[1]}"\n- "${opts[2]}"\n- "${opts[3]}"\nCRITICAL: The options array MUST contain exactly these 4 options. One option MUST match finalAnswer ("${finalAnswer}") exactly.`;
       } else {
-        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"On a bar graph with a scale of ${scale1}, ${cat} has some ${theme.unit}. After ${delta} more ${theme.unit} are ${verb}, the new total is drawn on a graph with a scale of ${scale2} per block. How many grid blocks tall will the new bar be?"`;
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the ${theme.title.toLowerCase()}. After ${delta} more ${theme.unit} are ${verb} for ${cat}, the new total is drawn on a new graph where 1 grid block stands for ${scale2} ${theme.unit}. How many grid blocks tall will the bar be?"`;
         inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
         finalAnswer = String(blocksNeeded);
       }
@@ -562,20 +562,20 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
       });
 
       if (isStructure) {
-        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the ${theme.title.toLowerCase()} on a scale of ${scale1}. Look at the bar for ${cat}. Then, exactly ${delta} ${theme.unit} are ${verb}. If you draw the remaining amount on a new graph where 1 grid block stands for ${scale2} ${theme.unit}, read the current amount from the graph, subtract the amount removed, and calculate how many grid blocks tall the new bar must be."`;
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the ${theme.title.toLowerCase()}. Later, ${delta} ${theme.unit} are ${verb} from ${cat}. If the remaining amount is drawn on a new graph where 1 grid block stands for ${scale2} ${theme.unit}, how many grid blocks tall will the bar for ${cat} be?"`;
         const stepsArr = [
           {
-            label: `Number of ${theme.unit} for ${cat} shown on the current graph:`,
+            label: `Number of ${theme.unit} for ${cat} on the graph:`,
             expectedAnswer: String(startVal),
             acceptedAnswers: [String(startVal)]
           },
           {
-            label: `Write the working equation to find the remaining amount after removing ${delta} ${theme.unit}:`,
+            label: `Write the working equation to find the remaining amount of ${cat}:`,
             expectedAnswer: `${startVal} - ${delta} = ${newTotal}`,
             acceptedAnswers: getSubtractionAcceptedAnswers(startVal, delta, newTotal)
           },
           {
-            label: `Write the working equation to find how many grid blocks are needed for the new graph (Remaining ÷ New Scale of ${scale2}):`,
+            label: `Write the working equation to find the number of grid blocks needed on the new graph:`,
             expectedAnswer: `${newTotal} / ${scale2} = ${blocksNeeded}`,
             acceptedAnswers: getDivisionAcceptedAnswers(newTotal, scale2, blocksNeeded)
           },
@@ -588,7 +588,7 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
         inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
         finalAnswer = String(blocksNeeded);
       } else if (isMCQ) {
-        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph (scale of ${scale1}) shows the ${theme.title.toLowerCase()}. After ${delta} ${theme.unit} are ${verb} from ${cat}, to draw the remaining amount on a graph where 1 grid block = ${scale2} ${theme.unit}, how many grid blocks tall must the bar be?"`;
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the ${theme.title.toLowerCase()}. After ${delta} ${theme.unit} are ${verb} from ${cat}, the remaining amount is drawn on a new graph where 1 grid block stands for ${scale2} ${theme.unit}. How many grid blocks tall will the bar for ${cat} be?"`;
         inputRequirementStr = JSON.stringify({ inputType: "MCQ_BUTTONS" });
         finalAnswer = String(blocksNeeded);
         const opts = getFourOptions(finalAnswer, [
@@ -599,7 +599,7 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
         ]);
         mcqOptionsPrompt = `Generate EXACTLY 4 options in "content.options":\n- "${opts[0]}"\n- "${opts[1]}"\n- "${opts[2]}"\n- "${opts[3]}"\nCRITICAL: The options array MUST contain exactly these 4 options. One option MUST match finalAnswer ("${finalAnswer}") exactly.`;
       } else {
-        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"On a bar graph with a scale of ${scale1}, ${cat} has some ${theme.unit}. If ${delta} ${theme.unit} are ${verb}, and the remaining amount is drawn on a new graph with a scale of ${scale2} per block, how many grid blocks tall will the bar be?"`;
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the ${theme.title.toLowerCase()}. If ${delta} ${theme.unit} are ${verb} from ${cat}, and the remaining amount is drawn on a new graph where 1 grid block stands for ${scale2} ${theme.unit}, how many grid blocks tall will the bar be?"`;
         inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
         finalAnswer = String(blocksNeeded);
       }
@@ -652,15 +652,15 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
       });
 
       if (isStructure) {
-        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the ${theme.title.toLowerCase()} on a scale of ${scale1}. A summary bar is to be drawn on a new graph combining ${cat1} and ${cat2} together, where 1 grid block stands for ${scale2} ${theme.unit}. Read the values of both categories from the graph, find their combined sum, and calculate how many grid blocks tall the new combined bar must be."`;
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the ${theme.title.toLowerCase()}. If the combined total of ${cat1} and ${cat2} is drawn as a summary bar on a new graph where 1 grid block stands for ${scale2} ${theme.unit}, how many grid blocks tall will the summary bar be?"`;
         const stepsArr = [
           {
-            label: `Number of ${theme.unit} for ${cat1} shown on the graph:`,
+            label: `Number of ${theme.unit} for ${cat1} on the graph:`,
             expectedAnswer: String(val1),
             acceptedAnswers: [String(val1)]
           },
           {
-            label: `Number of ${theme.unit} for ${cat2} shown on the graph:`,
+            label: `Number of ${theme.unit} for ${cat2} on the graph:`,
             expectedAnswer: String(val2),
             acceptedAnswers: [String(val2)]
           },
@@ -670,7 +670,7 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
             acceptedAnswers: getAdditionAcceptedAnswers(val1, val2, combinedTotal)
           },
           {
-            label: `Write the working equation to find how many grid blocks are needed for the new graph (Combined Total ÷ New Scale of ${scale2}):`,
+            label: `Write the working equation to find the number of grid blocks needed on the new graph:`,
             expectedAnswer: `${combinedTotal} / ${scale2} = ${blocksNeeded}`,
             acceptedAnswers: getDivisionAcceptedAnswers(combinedTotal, scale2, blocksNeeded)
           },
@@ -683,7 +683,7 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
         inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
         finalAnswer = String(blocksNeeded);
       } else if (isMCQ) {
-        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph (scale of ${scale1}) shows the ${theme.title.toLowerCase()}. If the combined total of ${cat1} and ${cat2} is drawn on a new graph where 1 block = ${scale2} ${theme.unit}, how many grid blocks tall must the combined bar be?"`;
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the ${theme.title.toLowerCase()}. If the combined total of ${cat1} and ${cat2} is drawn on a new graph where 1 grid block stands for ${scale2} ${theme.unit}, how many grid blocks tall will the combined bar be?"`;
         inputRequirementStr = JSON.stringify({ inputType: "MCQ_BUTTONS" });
         finalAnswer = String(blocksNeeded);
         const opts = getFourOptions(finalAnswer, [
@@ -694,7 +694,7 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
         ]);
         mcqOptionsPrompt = `Generate EXACTLY 4 options in "content.options":\n- "${opts[0]}"\n- "${opts[1]}"\n- "${opts[2]}"\n- "${opts[3]}"\nCRITICAL: The options array MUST contain exactly these 4 options. One option MUST match finalAnswer ("${finalAnswer}") exactly.`;
       } else {
-        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"On a bar graph with a scale of ${scale1}, what is the height in grid blocks if the combined total of ${cat1} and ${cat2} is drawn on a new graph with a scale of ${scale2} per block?"`;
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the ${theme.title.toLowerCase()}. If the combined total of ${cat1} and ${cat2} is drawn on a new graph where 1 grid block stands for ${scale2} ${theme.unit}, how many grid blocks tall will the combined bar be?"`;
         inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
         finalAnswer = String(blocksNeeded);
       }
@@ -743,20 +743,20 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
       });
 
       if (isStructure) {
-        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the ${theme.title.toLowerCase()} on a scale of ${scale1}. Look at the bar for ${cat}. Later, additional ${theme.unit} were added, and the new total was drawn on a new graph where 1 grid block stands for ${scale2} ${theme.unit}. On the new graph, the bar is exactly ${blocksNew} grid blocks tall. Read the current amount from the graph, determine the new total, and calculate how many ${theme.unit} were added."`;
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the ${theme.title.toLowerCase()}. Later, more ${theme.unit} were added to ${cat}, and the new total was drawn on a new graph where 1 grid block stands for ${scale2} ${theme.unit}. On the new graph, the bar for ${cat} is ${blocksNew} grid blocks tall. How many ${theme.unit} were added?"`;
         const stepsArr = [
           {
-            label: `Number of ${theme.unit} for ${cat} shown on the current graph:`,
+            label: `Number of ${theme.unit} for ${cat} on the graph:`,
             expectedAnswer: String(startVal),
             acceptedAnswers: [String(startVal)]
           },
           {
-            label: `Write the working equation to find the new total on the new graph (${blocksNew} blocks x ${scale2}):`,
+            label: `Write the working equation to find the new total on the new graph:`,
             expectedAnswer: `${blocksNew} x ${scale2} = ${newTotal}`,
             acceptedAnswers: getMultiplicationAcceptedAnswers(blocksNew, scale2, newTotal)
           },
           {
-            label: `Write the working equation to find how many ${theme.unit} were added (New Total - Current):`,
+            label: `Write the working equation to find how many ${theme.unit} were added:`,
             expectedAnswer: `${newTotal} - ${startVal} = ${delta}`,
             acceptedAnswers: getSubtractionAcceptedAnswers(newTotal, startVal, delta)
           },
@@ -769,7 +769,7 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
         inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
         finalAnswer = String(delta);
       } else if (isMCQ) {
-        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar for ${cat} is shown on a scale of ${scale1}. Later, more ${theme.unit} were added and drawn on a new graph (scale of ${scale2} per block) as a bar ${blocksNew} blocks tall. How many ${theme.unit} were added?"`;
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the ${theme.title.toLowerCase()}. Later, more ${theme.unit} were added to ${cat} and drawn on a new graph where 1 grid block stands for ${scale2} ${theme.unit} as a bar ${blocksNew} grid blocks tall. How many ${theme.unit} were added?"`;
         inputRequirementStr = JSON.stringify({ inputType: "MCQ_BUTTONS" });
         finalAnswer = String(delta);
         const opts = getFourOptions(finalAnswer, [
@@ -780,7 +780,7 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
         ]);
         mcqOptionsPrompt = `Generate EXACTLY 4 options in "content.options":\n- "${opts[0]}"\n- "${opts[1]}"\n- "${opts[2]}"\n- "${opts[3]}"\nCRITICAL: The options array MUST contain exactly these 4 options. One option MUST match finalAnswer ("${finalAnswer}") exactly.`;
       } else {
-        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A bar for ${cat} is shown on a scale of ${scale1}. After more ${theme.unit} are added, the new total is drawn ${blocksNew} grid blocks tall on a graph with a scale of ${scale2} per block. How many ${theme.unit} were added?"`;
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the ${theme.title.toLowerCase()}. After more ${theme.unit} are added to ${cat}, the new total is drawn ${blocksNew} grid blocks tall on a new graph where 1 grid block stands for ${scale2} ${theme.unit}. How many ${theme.unit} were added?"`;
         inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
         finalAnswer = String(delta);
       }
@@ -835,7 +835,7 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
     });
 
     if (isStructure) {
-      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph tracks the number of ${finTheme.unit} ${finTheme.verb || 'sold'}, but the axis numbers on the graph are missing. The grand total of all ${finTheme.unit} sold across the ${barCount} categories is exactly ${grandTotal} ${finTheme.unit}. Count the grid blocks to deduce the scale. Look at the bar for ${catTarget}, which is exactly ${bTarget} grid blocks tall. If every ${singularUnit} in ${catTarget} is sold for $${price}, calculate the exact number of ${catTarget} sold, and then find the total money collected from them."`;
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph tracks the number of ${finTheme.unit} ${finTheme.verb || 'sold'}, but the axis numbers on the graph are missing. The grand total of all ${finTheme.unit} sold across all categories is exactly ${grandTotal} ${finTheme.unit}. If every ${singularUnit} in ${catTarget} is sold for $${price}, find the total money collected from ${catTarget}."`;
       const stepsArr = [
         {
           label: `Total number of grid blocks across all ${barCount} categories:`,
@@ -843,17 +843,17 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
           acceptedAnswers: [String(totalBlocks)]
         },
         {
-          label: `Write the working equation to find the value of 1 grid block (${grandTotal} ${finTheme.unit} ÷ Total blocks):`,
+          label: `Write the working equation to find the value of 1 grid block:`,
           expectedAnswer: `${grandTotal} / ${totalBlocks} = ${scaleStep}`,
           acceptedAnswers: getDivisionAcceptedAnswers(grandTotal, totalBlocks, scaleStep)
         },
         {
-          label: `Write the working equation to find the exact number of ${catTarget} sold (${bTarget} blocks):`,
+          label: `Write the working equation to find the exact number of ${catTarget} sold:`,
           expectedAnswer: `${bTarget} x ${scaleStep} = ${qty}`,
           acceptedAnswers: getMultiplicationAcceptedAnswers(bTarget, scaleStep, qty)
         },
         {
-          label: `Write the working equation to find the total money collected from ${catTarget} (Quantity x $${price}):`,
+          label: `Write the working equation to find the total money collected from ${catTarget}:`,
           expectedAnswer: `${qty} x ${price} = ${totalCost}`,
           acceptedAnswers: getMultiplicationAcceptedAnswers(qty, price, totalCost)
         }
@@ -861,7 +861,7 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
       inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
       finalAnswer = String(totalCost);
     } else if (isMCQ) {
-      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"Blank axis. The total for all ${barCount} bars is ${grandTotal} ${finTheme.unit}. The bar for ${catTarget} is ${bTarget} blocks tall out of ${totalBlocks} total blocks. If each ${singularUnit} costs $${price}, how much money did ${catTarget} make?"`;
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The axis numbers on the bar graph are missing. The grand total across all categories is ${grandTotal} ${finTheme.unit}. If each ${singularUnit} in ${catTarget} is sold for $${price}, how much money was collected from ${catTarget}?"`;
       inputRequirementStr = JSON.stringify({ inputType: "MCQ_BUTTONS" });
       finalAnswer = `$${totalCost}`;
       const opts = getFourOptions(finalAnswer, [
@@ -872,7 +872,7 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
       ]);
       mcqOptionsPrompt = `Generate EXACTLY 4 options in "content.options":\n- "${opts[0]}"\n- "${opts[1]}"\n- "${opts[2]}"\n- "${opts[3]}"\nCRITICAL: The options array MUST contain exactly these 4 options. One option MUST match finalAnswer ("${finalAnswer}") exactly.`;
     } else {
-      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"Blank axis. The grand total is ${grandTotal} ${finTheme.unit}. Total blocks = ${totalBlocks}. The bar for ${catTarget} is ${bTarget} blocks tall. If each ${singularUnit} in ${catTarget} costs $${price}, what is the total cost of ${catTarget}?"`;
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The axis numbers on the bar graph are missing. The grand total across all categories is ${grandTotal} ${finTheme.unit}. If each ${singularUnit} in ${catTarget} costs $${price}, how much money was collected from ${catTarget}?"`;
       inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
       finalAnswer = String(totalCost);
     }
@@ -921,7 +921,7 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
 
     if (isStructure) {
       const containerName = eqTheme.containersPlural || 'groups';
-      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the number of ${eqTheme.unit} in ${catA} and ${catB}. The scale is in steps of ${scaleStep}. ${catA} has ${valA} ${eqTheme.unit} (${bA} blocks tall). ${catB} has ${valB} ${eqTheme.unit} (${bB} blocks tall). We want both ${containerName} to hold the exact same number of ${eqTheme.unit}. Calculate the number of ${eqTheme.unit} that must be moved from ${catA} to ${catB}. Then, determine how many grid blocks shorter ${catA}'s bar will become on the graph."`;
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the number of ${eqTheme.unit} in ${catA} and ${catB}. Some ${eqTheme.unit} are moved from ${catA} to ${catB} so that both ${containerName} have the exact same number of ${eqTheme.unit}. How many grid blocks shorter will the bar for ${catA} become?"`;
       const stepsArr = [
         {
           label: `Write the working equation to find the difference in ${eqTheme.unit} between the two ${containerName}:`,
@@ -929,12 +929,12 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
           acceptedAnswers: getSubtractionAcceptedAnswers(valA, valB, valDiff)
         },
         {
-          label: `Write the working equation to find how many ${eqTheme.unit} must be moved (Half the difference):`,
+          label: `Write the working equation to find how many ${eqTheme.unit} must be moved:`,
           expectedAnswer: `${valDiff} / 2 = ${itemsMoved}`,
           acceptedAnswers: getDivisionAcceptedAnswers(valDiff, 2, itemsMoved)
         },
         {
-          label: `Because 1 grid block is ${scaleStep} ${eqTheme.unit}, write the working equation to find how many blocks ${catA} will drop by (${itemsMoved} ÷ ${scaleStep}):`,
+          label: `Write the working equation to find how many grid blocks ${catA}'s bar will drop by:`,
           expectedAnswer: `${itemsMoved} / ${scaleStep} = ${blocksDropped}`,
           acceptedAnswers: getDivisionAcceptedAnswers(itemsMoved, scaleStep, blocksDropped)
         },
@@ -947,7 +947,7 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
       inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
       finalAnswer = String(blocksDropped);
     } else if (isMCQ) {
-      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"Scale of ${scaleStep}. ${catA} has ${valA} ${eqTheme.unit}. ${catB} has ${valB} ${eqTheme.unit}. You move ${eqTheme.unit} from ${catA} to ${catB} until they are equal. How many grid blocks shorter will ${catA}'s bar become?"`;
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the number of ${eqTheme.unit} in ${catA} and ${catB}. If ${eqTheme.unit} are moved from ${catA} to ${catB} so that both have equal amounts, how many grid blocks shorter will ${catA}'s bar become?"`;
       inputRequirementStr = JSON.stringify({ inputType: "MCQ_BUTTONS" });
       finalAnswer = String(blocksDropped);
       const opts = getFourOptions(finalAnswer, [
@@ -958,7 +958,7 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
       ]);
       mcqOptionsPrompt = `Generate EXACTLY 4 options in "content.options":\n- "${opts[0]}"\n- "${opts[1]}"\n- "${opts[2]}"\n- "${opts[3]}"\nCRITICAL: The options array MUST contain exactly these 4 options. One option MUST match finalAnswer ("${finalAnswer}") exactly.`;
     } else {
-      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"Scale is ${scaleStep}. ${catA} is ${valA} (${bA} blocks). ${catB} is ${valB} (${bB} blocks). To make them equal, you must move ${eqTheme.unit} from ${catA} to ${catB}. How many grid blocks will ${catA}'s bar drop by?"`;
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the number of ${eqTheme.unit} in ${catA} and ${catB}. Items are transferred from ${catA} to ${catB} until they have the same amount. How many grid blocks shorter will ${catA}'s bar become?"`;
       inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
       finalAnswer = String(blocksDropped);
     }
@@ -1020,7 +1020,7 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
     });
 
     if (isStructure) {
-      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A school set a goal to collect exactly ${goal} ${sfTheme.unit} for a food drive over 4 weeks. The bar graph uses a scale of ${scaleStep}. The bars for ${cat1}, ${cat2}, and ${cat3} are shown. Some bars end halfway between grid lines. Read the graph to calculate the total collected so far. Then, find the shortage needed for ${cat4}, and determine exactly how many grid blocks tall the ${cat4} bar must be drawn to reach the goal."`;
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A goal was set to collect exactly ${goal} ${sfTheme.unit} across all 4 categories. The bar graph shows the amounts collected for ${cat1}, ${cat2}, and ${cat3}. To reach the goal, how many grid blocks tall must the bar for ${cat4} be drawn?"`;
       const stepsArr = [
         {
           label: `Write the working equation to find the total ${sfTheme.unit} collected in ${cat1}, ${cat2}, and ${cat3}:`,
@@ -1028,12 +1028,12 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
           acceptedAnswers: getThreeAdditionAcceptedAnswers(val1, val2, val3, sum123)
         },
         {
-          label: `Write the working equation to find the shortage needed for ${cat4} (Goal - Collected):`,
+          label: `Write the working equation to find the shortage needed for ${cat4}:`,
           expectedAnswer: `${goal} - ${sum123} = ${shortage}`,
           acceptedAnswers: getSubtractionAcceptedAnswers(goal, sum123, shortage)
         },
         {
-          label: `Write the working equation to find how many grid blocks are needed for ${cat4} (Shortage ÷ Scale of ${scaleStep}):`,
+          label: `Write the working equation to find how many grid blocks tall the bar for ${cat4} must be:`,
           expectedAnswer: `${shortage} / ${scaleStep} = ${blocksNeeded}`,
           acceptedAnswers: getDivisionAcceptedAnswers(shortage, scaleStep, blocksNeeded)
         },
@@ -1046,7 +1046,7 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
       inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
       finalAnswer = String(blocksNeeded);
     } else if (isMCQ) {
-      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"Scale of ${scaleStep}. ${cat1} = ${val1}, ${cat2} = ${val2}, ${cat3} = ${val3}. Goal = ${goal} ${sfTheme.unit}. How many grid blocks tall should the bar for ${cat4} be?"`;
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A goal was set to collect ${goal} ${sfTheme.unit} across all 4 categories. Based on the bar graph, how many grid blocks tall must the bar for ${cat4} be drawn to reach the goal?"`;
       inputRequirementStr = JSON.stringify({ inputType: "MCQ_BUTTONS" });
       finalAnswer = String(blocksNeeded);
       const opts = getFourOptions(finalAnswer, [
@@ -1057,7 +1057,7 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
       ]);
       mcqOptionsPrompt = `Generate EXACTLY 4 options in "content.options":\n- "${opts[0]}"\n- "${opts[1]}"\n- "${opts[2]}"\n- "${opts[3]}"\nCRITICAL: The options array MUST contain exactly these 4 options. One option MUST match finalAnswer ("${finalAnswer}") exactly.`;
     } else {
-      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A graph (scale of ${scaleStep}) shows ${cat1} (${val1}), ${cat2} (${val2}), and ${cat3} (${val3}). The total goal for all 4 periods is ${goal} ${sfTheme.unit}. For ${cat4} to hit the exact goal, how many grid blocks tall must the ${cat4} bar be drawn?"`;
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A goal was set to collect ${goal} ${sfTheme.unit} across all 4 categories. Based on the bar graph, how many grid blocks tall must the bar for ${cat4} be drawn to reach the goal?"`;
       inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
       finalAnswer = String(blocksNeeded);
     }
