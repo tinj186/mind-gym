@@ -25,8 +25,8 @@ export const p3GraphAxisScalesBlueprint = {
     //    'advanced_missing_scale_value_difference_deduction': 'Missing Scale via Value Difference Deduction',
     //    'advanced_scale_translation_block_projection': 'Scale Translation & Block Projection',
     //    'advanced_blank_axis_financial_application': 'Blank Axis Financial Application',
-    'advanced_equalizing_transfer_grid_block_shift': 'Equalizing Transfer (Grid Block Shift)',
-    //    'advanced_target_shortfall_bar_height_prediction': 'Target Shortfall & Bar Height Prediction'
+    //    'advanced_equalizing_transfer_grid_block_shift': 'Equalizing Transfer (Grid Block Shift)',
+    'advanced_target_shortfall_bar_height_prediction': 'Target Shortfall & Bar Height Prediction'
   },
   generate: function (difficulty, activeVariant, type) {
     const safeType = String(type || 'short question').toLowerCase();
