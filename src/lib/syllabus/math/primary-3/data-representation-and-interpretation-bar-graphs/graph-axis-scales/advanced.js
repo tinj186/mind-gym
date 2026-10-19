@@ -404,20 +404,6 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
   // Variant 12: Scale Translation & Block Projection
   // --------------------------------------------------------------------------
   } else if (canonicalVariant === 'advanced_scale_translation_block_projection') {
-    const scalePairOptions = [
-      { scale1: 10, scale2: 50 },
-      { scale1: 10, scale2: 25 },
-      { scale1: 20, scale2: 50 },
-      { scale1: 20, scale2: 100 },
-      { scale1: 25, scale2: 50 },
-      { scale1: 25, scale2: 100 },
-      { scale1: 5, scale2: 20 },
-      { scale1: 5, scale2: 50 }
-    ];
-    const pair = scalePairOptions[getRandomInt(0, scalePairOptions.length - 1)];
-    const scale1 = pair.scale1;
-    const scale2 = pair.scale2;
-
     const barCount = Math.random() > 0.5 ? 4 : 3;
     const theme = getRandomBarGraphTheme(barCount);
     const orientation = Math.random() > 0.5 ? 'vertical' : 'horizontal';
@@ -430,21 +416,31 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
       const catIdx = getRandomInt(0, barCount - 1);
       const cat = theme.items[catIdx];
 
-      const blocksNeededOptions = [3, 4, 5, 6];
-      const blocksNeeded = blocksNeededOptions[getRandomInt(0, blocksNeededOptions.length - 1)];
+      // Curate pairs with moderate ratios so Graph 1 has 3-6 blocks, and Graph 2 has 2-5 blocks
+      const addConfigs = [
+        { scale1: 5, scale2: 10, blocksRange: [4, 5, 6], minB1: 3, maxB1: 5 },
+        { scale1: 5, scale2: 20, blocksRange: [3, 4], minB1: 3, maxB1: 5 },
+        { scale1: 10, scale2: 20, blocksRange: [3, 4, 5], minB1: 3, maxB1: 5 },
+        { scale1: 10, scale2: 25, blocksRange: [3, 4], minB1: 3, maxB1: 5 },
+        { scale1: 10, scale2: 50, blocksRange: [2, 3], minB1: 3, maxB1: 6 },
+        { scale1: 20, scale2: 50, blocksRange: [3, 4], minB1: 3, maxB1: 5 },
+        { scale1: 25, scale2: 50, blocksRange: [3, 4], minB1: 3, maxB1: 5 },
+        { scale1: 50, scale2: 100, blocksRange: [3, 4], minB1: 3, maxB1: 5 }
+      ];
+      const cfg = addConfigs[getRandomInt(0, addConfigs.length - 1)];
+      const scale1 = cfg.scale1;
+      const scale2 = cfg.scale2;
+
+      const blocksNeeded = cfg.blocksRange[getRandomInt(0, cfg.blocksRange.length - 1)];
       const newTotal = blocksNeeded * scale2;
 
-      const isHalf = Math.random() > 0.5 && (scale1 % 2 === 0);
-      let startVal;
-      if (isHalf) {
-        const halfStep = scale1 / 2;
-        const maxBlocks1 = Math.floor((newTotal - halfStep) / scale1);
-        const b1 = Math.max(1, getRandomInt(Math.max(1, maxBlocks1 - 3), Math.max(1, maxBlocks1 - 1)));
-        startVal = b1 * scale1 + halfStep;
-      } else {
-        const maxBlocks1 = Math.floor((newTotal - scale1) / scale1);
-        const b1 = Math.max(1, getRandomInt(Math.max(1, maxBlocks1 - 3), maxBlocks1));
-        startVal = b1 * scale1;
+      const maxB1 = Math.min(cfg.maxB1, Math.floor((newTotal - scale1) / scale1));
+      const minB1 = Math.min(cfg.minB1, maxB1);
+      const b1 = getRandomInt(minB1, maxB1);
+
+      let startVal = b1 * scale1;
+      if (scale1 % 2 === 0 && Math.random() > 0.5 && (startVal + scale1 / 2 < newTotal)) {
+        startVal += scale1 / 2;
       }
       const delta = newTotal - startVal;
 
@@ -454,7 +450,7 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
       const colors = getRandomPaletteColors(barCount);
       const data = theme.items.map((item, idx) => {
         if (idx === catIdx) return { category: item, value: startVal, color: colors[idx] };
-        const bOther = getRandomInt(1, Math.max(2, Math.floor(startVal / scale1) + 2));
+        const bOther = getRandomInt(2, Math.min(6, b1 + 1));
         const valOther = (Math.random() > 0.5 && scale1 % 2 === 0) ? (bOther * scale1 + scale1 / 2) : (bOther * scale1);
         return { category: item, value: valOther, color: colors[idx] };
       });
@@ -519,21 +515,26 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
       const catIdx = getRandomInt(0, barCount - 1);
       const cat = theme.items[catIdx];
 
-      const blocksNeededOptions = [2, 3, 4, 5];
-      const blocksNeeded = blocksNeededOptions[getRandomInt(0, blocksNeededOptions.length - 1)];
+      // Curate pairs for subtraction: newTotal = blocksNeeded * scale2 < startVal <= 7 * scale1
+      const subConfigs = [
+        { scale1: 5, scale2: 10, blocksNeeded: 2, minB1: 5, maxB1: 6 },
+        { scale1: 10, scale2: 20, blocksNeeded: 2, minB1: 5, maxB1: 6 },
+        { scale1: 10, scale2: 25, blocksNeeded: 2, minB1: 6, maxB1: 7 },
+        { scale1: 20, scale2: 50, blocksNeeded: 2, minB1: 6, maxB1: 7 },
+        { scale1: 25, scale2: 50, blocksNeeded: 2, minB1: 5, maxB1: 6 },
+        { scale1: 50, scale2: 100, blocksNeeded: 2, minB1: 5, maxB1: 6 }
+      ];
+      const cfg = subConfigs[getRandomInt(0, subConfigs.length - 1)];
+      const scale1 = cfg.scale1;
+      const scale2 = cfg.scale2;
+
+      const blocksNeeded = cfg.blocksNeeded;
       const newTotal = blocksNeeded * scale2;
 
-      const isHalf = Math.random() > 0.5 && (scale1 % 2 === 0);
-      let startVal;
-      if (isHalf) {
-        const halfStep = scale1 / 2;
-        const minBlocks1 = Math.ceil((newTotal + halfStep) / scale1);
-        const b1 = getRandomInt(minBlocks1, minBlocks1 + 3);
-        startVal = b1 * scale1 + halfStep;
-      } else {
-        const minBlocks1 = Math.ceil((newTotal + scale1) / scale1);
-        const b1 = getRandomInt(minBlocks1, minBlocks1 + 3);
-        startVal = b1 * scale1;
+      const b1 = getRandomInt(cfg.minB1, cfg.maxB1);
+      let startVal = b1 * scale1;
+      if (scale1 % 2 === 0 && Math.random() > 0.5) {
+        startVal += scale1 / 2;
       }
       const delta = startVal - newTotal;
 
@@ -543,7 +544,7 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
       const colors = getRandomPaletteColors(barCount);
       const data = theme.items.map((item, idx) => {
         if (idx === catIdx) return { category: item, value: startVal, color: colors[idx] };
-        const bOther = getRandomInt(1, Math.max(2, Math.floor(startVal / scale1)));
+        const bOther = getRandomInt(2, Math.min(6, b1));
         const valOther = (Math.random() > 0.5 && scale1 % 2 === 0) ? (bOther * scale1 + scale1 / 2) : (bOther * scale1);
         return { category: item, value: valOther, color: colors[idx] };
       });
@@ -610,30 +611,30 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
       const cat1 = theme.items[idx1];
       const cat2 = theme.items[idx2];
 
-      const blocksNeededOptions = [3, 4, 5, 6];
-      const blocksNeeded = blocksNeededOptions[getRandomInt(0, blocksNeededOptions.length - 1)];
-      const combinedTotal = blocksNeeded * scale2;
+      const combConfigs = [
+        { scale1: 5, scale2: 10, pairs: [[3, 3], [4, 4], [3, 5], [4, 6]] },
+        { scale1: 5, scale2: 20, pairs: [[3, 5], [4, 4], [5, 7]] },
+        { scale1: 10, scale2: 20, pairs: [[2, 4], [3, 3], [3, 5], [4, 4]] },
+        { scale1: 10, scale2: 25, pairs: [[4, 6], [5, 5], [3, 7]] },
+        { scale1: 20, scale2: 50, pairs: [[2, 3], [4, 6]] },
+        { scale1: 25, scale2: 50, pairs: [[2, 4], [3, 3], [4, 4]] },
+        { scale1: 50, scale2: 100, pairs: [[2, 4], [3, 3], [4, 4]] }
+      ];
+      const cfg = combConfigs[getRandomInt(0, combConfigs.length - 1)];
+      const scale1 = cfg.scale1;
+      const scale2 = cfg.scale2;
 
-      const isHalf1 = Math.random() > 0.5 && (scale1 % 2 === 0);
-      const halfStep = scale1 / 2;
-      let val1, val2;
-      if (isHalf1) {
-        const maxB1 = Math.floor((combinedTotal - halfStep - scale1) / scale1);
-        const b1 = Math.max(1, getRandomInt(1, Math.max(1, maxB1)));
-        val1 = b1 * scale1 + halfStep;
-        val2 = combinedTotal - val1;
-      } else {
-        const maxB1 = Math.floor((combinedTotal - scale1) / scale1);
-        const b1 = Math.max(1, getRandomInt(1, Math.max(1, maxB1)));
-        val1 = b1 * scale1;
-        val2 = combinedTotal - val1;
-      }
+      const p = cfg.pairs[getRandomInt(0, cfg.pairs.length - 1)];
+      const val1 = p[0] * scale1;
+      const val2 = p[1] * scale1;
+      const combinedTotal = val1 + val2;
+      const blocksNeeded = Math.round(combinedTotal / scale2);
 
       const colors = getRandomPaletteColors(barCount);
       const data = theme.items.map((item, idx) => {
         if (idx === idx1) return { category: item, value: val1, color: colors[idx] };
         if (idx === idx2) return { category: item, value: val2, color: colors[idx] };
-        const bOther = getRandomInt(1, Math.max(2, Math.floor(val1 / scale1)));
+        const bOther = getRandomInt(2, 5);
         const valOther = (Math.random() > 0.5 && scale1 % 2 === 0) ? (bOther * scale1 + scale1 / 2) : (bOther * scale1);
         return { category: item, value: valOther, color: colors[idx] };
       });
@@ -704,27 +705,37 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
       const catIdx = getRandomInt(0, barCount - 1);
       const cat = theme.items[catIdx];
 
-      const blocksNew = getRandomInt(3, 6);
+      const revConfigs = [
+        { scale1: 5, scale2: 10, blocksRange: [4, 5, 6], minB1: 4, maxB1: 6 },
+        { scale1: 5, scale2: 20, blocksRange: [3, 4], minB1: 4, maxB1: 6 },
+        { scale1: 10, scale2: 20, blocksRange: [3, 4, 5], minB1: 3, maxB1: 5 },
+        { scale1: 10, scale2: 25, blocksRange: [3, 4], minB1: 4, maxB1: 6 },
+        { scale1: 10, scale2: 50, blocksRange: [2, 3], minB1: 4, maxB1: 6 },
+        { scale1: 20, scale2: 50, blocksRange: [3, 4], minB1: 3, maxB1: 5 },
+        { scale1: 25, scale2: 50, blocksRange: [3, 4], minB1: 3, maxB1: 5 },
+        { scale1: 50, scale2: 100, blocksRange: [3, 4], minB1: 3, maxB1: 5 }
+      ];
+      const cfg = revConfigs[getRandomInt(0, revConfigs.length - 1)];
+      const scale1 = cfg.scale1;
+      const scale2 = cfg.scale2;
+
+      const blocksNew = cfg.blocksRange[getRandomInt(0, cfg.blocksRange.length - 1)];
       const newTotal = blocksNew * scale2;
 
-      const isHalf = Math.random() > 0.5 && (scale1 % 2 === 0);
-      let startVal;
-      if (isHalf) {
-        const halfStep = scale1 / 2;
-        const maxBlocks1 = Math.floor((newTotal - halfStep) / scale1);
-        const b1 = Math.max(1, getRandomInt(Math.max(1, maxBlocks1 - 3), Math.max(1, maxBlocks1 - 1)));
-        startVal = b1 * scale1 + halfStep;
-      } else {
-        const maxBlocks1 = Math.floor((newTotal - scale1) / scale1);
-        const b1 = Math.max(1, getRandomInt(Math.max(1, maxBlocks1 - 3), maxBlocks1));
-        startVal = b1 * scale1;
+      const maxB1 = Math.min(cfg.maxB1, Math.floor((newTotal - scale1) / scale1));
+      const minB1 = Math.min(cfg.minB1, maxB1);
+      const b1 = getRandomInt(minB1, maxB1);
+
+      let startVal = b1 * scale1;
+      if (scale1 % 2 === 0 && Math.random() > 0.5 && (startVal + scale1 / 2 < newTotal)) {
+        startVal += scale1 / 2;
       }
       const delta = newTotal - startVal;
 
       const colors = getRandomPaletteColors(barCount);
       const data = theme.items.map((item, idx) => {
         if (idx === catIdx) return { category: item, value: startVal, color: colors[idx] };
-        const bOther = getRandomInt(1, Math.max(2, Math.floor(startVal / scale1) + 2));
+        const bOther = getRandomInt(2, Math.min(6, b1 + 1));
         const valOther = (Math.random() > 0.5 && scale1 % 2 === 0) ? (bOther * scale1 + scale1 / 2) : (bOther * scale1);
         return { category: item, value: valOther, color: colors[idx] };
       });
