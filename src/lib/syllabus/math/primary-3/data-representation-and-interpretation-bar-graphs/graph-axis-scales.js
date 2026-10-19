@@ -23,9 +23,9 @@ export const p3GraphAxisScalesBlueprint = {
 
     // 🔴 Advanced Level (Logical Deduction, Block Projection, & Scale Mapping)
     //    'advanced_missing_scale_value_difference_deduction': 'Missing Scale via Value Difference Deduction',
-    'advanced_scale_translation_block_projection': 'Scale Translation & Block Projection',
+    //    'advanced_scale_translation_block_projection': 'Scale Translation & Block Projection',
     //    'advanced_blank_axis_financial_application': 'Blank Axis Financial Application',
-    //    'advanced_equalizing_transfer_grid_block_shift': 'Equalizing Transfer (Grid Block Shift)',
+    'advanced_equalizing_transfer_grid_block_shift': 'Equalizing Transfer (Grid Block Shift)',
     //    'advanced_target_shortfall_bar_height_prediction': 'Target Shortfall & Bar Height Prediction'
   },
   generate: function (difficulty, activeVariant, type) {
