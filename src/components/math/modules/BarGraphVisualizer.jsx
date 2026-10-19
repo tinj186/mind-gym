@@ -23,7 +23,8 @@ export default function BarGraphVisualizer({ data: inputData, hideCardStyles = f
     orientation = 'vertical',
     showGridLines = true,
     missingBar = '',
-    maxScale: explicitMaxScale = null
+    maxScale: explicitMaxScale = null,
+    showScaleNumbers = true
   } = inputData;
 
   const isHorizontal = String(orientation).toLowerCase() === 'horizontal';
@@ -117,15 +118,17 @@ export default function BarGraphVisualizer({ data: inputData, hideCardStyles = f
                     strokeWidth={1.5}
                   />
                   {/* Tick label */}
-                  <text
-                    x={x}
-                    y={marginTop + plotHeight + 20}
-                    textAnchor="middle"
-                    className="text-xs font-bold fill-slate-700"
-                    fontSize="11"
-                  >
-                    {val}
-                  </text>
+                  {showScaleNumbers && (
+                    <text
+                      x={x}
+                      y={marginTop + plotHeight + 20}
+                      textAnchor="middle"
+                      className="text-xs font-bold fill-slate-700"
+                      fontSize="11"
+                    >
+                      {val}
+                    </text>
+                  )}
                 </g>
               );
             })}
@@ -309,15 +312,17 @@ export default function BarGraphVisualizer({ data: inputData, hideCardStyles = f
                   strokeWidth={1.5}
                 />
                 {/* Tick label */}
-                <text
-                  x={marginLeft - 10}
-                  y={y + 4}
-                  textAnchor="end"
-                  className="text-xs font-bold fill-slate-700"
-                  fontSize="11"
-                >
-                  {val}
-                </text>
+                {showScaleNumbers && (
+                  <text
+                    x={marginLeft - 10}
+                    y={y + 4}
+                    textAnchor="end"
+                    className="text-xs font-bold fill-slate-700"
+                    fontSize="11"
+                  >
+                    {val}
+                  </text>
+                )}
               </g>
             );
           })}

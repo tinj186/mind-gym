@@ -1,0 +1,621 @@
+import {
+  getRandomBarGraphTheme,
+  getRandomNames,
+  getRandomPaletteColors,
+  getRandomFinancialTheme,
+  getRandomEqualizingTheme,
+  getRandomTargetShortfallTheme
+} from '../../../../../utils/variable-bank.js';
+
+const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+const getFourOptions = (correctVal, candidateDistractors = []) => {
+  const set = new Set([String(correctVal)]);
+  for (const d of candidateDistractors) {
+    if (d !== undefined && d !== null && String(d).trim() !== '' && !set.has(String(d)) && set.size < 4) {
+      set.add(String(d));
+    }
+  }
+
+  const rawStr = String(correctVal).replace(/^\$/, '');
+  const isDollar = String(correctVal).startsWith('$');
+  const num = Number(rawStr);
+  const step = (!isNaN(num) && Number.isInteger(num)) ? 1 : 0.5;
+  let delta = 1;
+
+  while (set.size < 4) {
+    if (!isNaN(num)) {
+      const offset = (set.size % 2 === 1 ? delta : -delta) * (step >= 1 ? (num >= 20 ? 10 : (num >= 10 ? 5 : 1)) : 0.5);
+      const val = num + offset;
+      if (val > 0) {
+        const valStr = Number.isInteger(val) ? String(val) : String(Number(val.toFixed(1)));
+        const candidate = isDollar ? `$${valStr}` : valStr;
+        if (!set.has(candidate)) set.add(candidate);
+      }
+    } else {
+      set.add(`Option ${set.size + 1}`);
+    }
+    delta++;
+  }
+  return Array.from(set);
+};
+
+const getMultiplicationAcceptedAnswers = (a, b, product) => {
+  const ans = new Set([String(product)]);
+  const symbols = ['x', 'X', '×', '*'];
+  for (const sym of symbols) {
+    ans.add(`${a} ${sym} ${b} = ${product}`);
+    ans.add(`${b} ${sym} ${a} = ${product}`);
+    ans.add(`${a}${sym}${b}=${product}`);
+    ans.add(`${b}${sym}${a}=${product}`);
+    ans.add(`$${product}`);
+    ans.add(`${a} ${sym} ${b} = $${product}`);
+    ans.add(`${b} ${sym} ${a} = $${product}`);
+    ans.add(`${a}${sym}${b}=$${product}`);
+    ans.add(`${b}${sym}${a}=$${product}`);
+    ans.add(`${a} ${sym} $${b} = $${product}`);
+    ans.add(`${a}${sym}$${b}=$${product}`);
+    ans.add(`$${b} ${sym} ${a} = $${product}`);
+    ans.add(`$${b}${sym}${a}=$${product}`);
+  }
+  return Array.from(ans);
+};
+
+const getDivisionAcceptedAnswers = (total, divisor, quotient) => {
+  const ans = new Set([String(quotient)]);
+  const symbols = ['÷', '/'];
+  for (const sym of symbols) {
+    ans.add(`${total} ${sym} ${divisor} = ${quotient}`);
+    ans.add(`${total}${sym}${divisor}=${quotient}`);
+    ans.add(`$${quotient}`);
+    ans.add(`${total} ${sym} ${divisor} = $${quotient}`);
+    ans.add(`${total}${sym}${divisor}=$${quotient}`);
+    ans.add(`$${total} ${sym} ${divisor} = $${quotient}`);
+    ans.add(`$${total}${sym}${divisor}=$${quotient}`);
+  }
+  return Array.from(ans);
+};
+
+const getAdditionAcceptedAnswers = (a, b, sum) => {
+  const ans = new Set([String(sum)]);
+  ans.add(`${a} + ${b} = ${sum}`);
+  ans.add(`${b} + ${a} = ${sum}`);
+  ans.add(`${a}+${b}=${sum}`);
+  ans.add(`${b}+${a}=${sum}`);
+  ans.add(`$${sum}`);
+  ans.add(`${a} + ${b} = $${sum}`);
+  ans.add(`${b} + ${a} = $${sum}`);
+  ans.add(`${a}+${b}=$${sum}`);
+  ans.add(`${b}+${a}=$${sum}`);
+  return Array.from(ans);
+};
+
+const getThreeAdditionAcceptedAnswers = (a, b, c, sum) => {
+  const ans = new Set([String(sum)]);
+  const perms = [
+    [a, b, c], [a, c, b],
+    [b, a, c], [b, c, a],
+    [c, a, b], [c, b, a]
+  ];
+  for (const [x, y, z] of perms) {
+    ans.add(`${x} + ${y} + ${z} = ${sum}`);
+    ans.add(`${x}+${y}+${z}=${sum}`);
+    ans.add(`${x} + ${y + z} = ${sum}`);
+    ans.add(`${x}+${y + z}=${sum}`);
+    ans.add(`${x + y} + ${z} = ${sum}`);
+    ans.add(`${x + y}+${z}=${sum}`);
+  }
+  return Array.from(ans);
+};
+
+const getSubtractionAcceptedAnswers = (a, b, diff) => {
+  const ans = new Set([String(diff)]);
+  ans.add(`${a} - ${b} = ${diff}`);
+  ans.add(`${a}-${b}=${diff}`);
+  ans.add(`$${diff}`);
+  ans.add(`${a} - ${b} = $${diff}`);
+  ans.add(`${a}-${b}=$${diff}`);
+  return Array.from(ans);
+};
+
+export const generateAdvanced = (variant, type, getFormatInstructions) => {
+  const safeType = String(type || 'short question').toLowerCase();
+  const isMCQ = safeType === 'mcq';
+  const isShort = safeType === 'short question';
+  const isStructure = !isMCQ && !isShort;
+
+  let askText = '';
+  let finalAnswer = '';
+  let visualEngineStr = '';
+  let inputRequirementStr = '';
+  let mcqOptionsPrompt = '';
+
+  // Map legacy aliases to canonical 5 new variants
+  let canonicalVariant = variant;
+  if (variant === 'advanced_missing_scale_missing_bar' || variant === 'advanced_axis_deduction_stated_differences') {
+    canonicalVariant = 'advanced_missing_scale_value_difference_deduction';
+  } else if (variant === 'advanced_drawing_translation_blocks') {
+    canonicalVariant = 'advanced_scale_translation_block_projection';
+  } else if (variant === 'advanced_financial_large_scales_halfway') {
+    canonicalVariant = 'advanced_blank_axis_financial_application';
+  } else if (variant === 'advanced_fractional_ratio_halfway') {
+    canonicalVariant = 'advanced_equalizing_transfer_grid_block_shift';
+  }
+
+  // --------------------------------------------------------------------------
+  // Variant 11: Missing Scale via Value Difference Deduction
+  // --------------------------------------------------------------------------
+  if (canonicalVariant === 'advanced_missing_scale_value_difference_deduction') {
+    const scaleOptions = [5, 10, 20, 25, 50];
+    const scaleStep = scaleOptions[getRandomInt(0, scaleOptions.length - 1)];
+    const theme = getRandomBarGraphTheme(4, 'game_points') || getRandomBarGraphTheme(4);
+    const orientation = Math.random() > 0.5 ? 'vertical' : 'horizontal';
+
+    // Choose blocks: A > B, C is target
+    const diffBlocks = getRandomInt(3, 5); // 3, 4, 5
+    const bB = getRandomInt(2, 4); // 2, 3, 4
+    const bA = bB + diffBlocks; // 5 to 9
+    let bC = getRandomInt(3, 7);
+    if (bC === bA) bC = bA - 1;
+    if (bC === bB) bC = bB + 1;
+
+    const diffVal = diffBlocks * scaleStep;
+    const valA = bA * scaleStep;
+    const valB = bB * scaleStep;
+    const valC = bC * scaleStep;
+
+    const catA = theme.items[0];
+    const catB = theme.items[1];
+    const catC = theme.items[2];
+
+    const colors = getRandomPaletteColors(3);
+    const data = [
+      { category: catA, value: valA, color: colors[0] },
+      { category: catB, value: valB, color: colors[1] },
+      { category: catC, value: valC, color: colors[2] }
+    ];
+
+    visualEngineStr = JSON.stringify({
+      componentToRender: "BAR_GRAPH",
+      componentData: {
+        title: theme.title,
+        xAxisLabel: theme.xAxisLabel,
+        yAxisLabel: theme.yAxisLabel,
+        data,
+        scaleStep,
+        orientation,
+        showGridLines: true,
+        showScaleNumbers: false
+      }
+    });
+
+    if (isStructure) {
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the ${theme.title.toLowerCase()}, but the axis numbers are missing. You can see that ${catA}'s bar is ${bA} grid blocks tall, and ${catB}'s bar is ${bB} grid blocks tall. The teacher tells you that ${catA} collected exactly ${diffVal} ${theme.unit} more than ${catB}. Find the difference in grid blocks between them, use it to calculate what 1 grid block stands for, and then determine the exact number of ${theme.unit} collected by ${catC}, whose bar is ${bC} grid blocks tall."`;
+      const stepsArr = [
+        {
+          label: `Write the working equation to find the difference in grid blocks between ${catA} and ${catB}:`,
+          expectedAnswer: `${bA} - ${bB} = ${diffBlocks}`,
+          acceptedAnswers: getSubtractionAcceptedAnswers(bA, bB, diffBlocks)
+        },
+        {
+          label: `Write the working equation to find the value of 1 grid block (${diffVal} ${theme.unit} ÷ ${diffBlocks} blocks):`,
+          expectedAnswer: `${diffVal} / ${diffBlocks} = ${scaleStep}`,
+          acceptedAnswers: getDivisionAcceptedAnswers(diffVal, diffBlocks, scaleStep)
+        },
+        {
+          label: `Write the working equation to find ${catC}'s ${theme.unit} (${bC} blocks x value of 1 block):`,
+          expectedAnswer: `${bC} x ${scaleStep} = ${valC}`,
+          acceptedAnswers: getMultiplicationAcceptedAnswers(bC, scaleStep, valC)
+        },
+        {
+          label: `${theme.unit.charAt(0).toUpperCase() + theme.unit.slice(1)} collected by ${catC}:`,
+          expectedAnswer: String(valC),
+          acceptedAnswers: [String(valC)]
+        }
+      ];
+      inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
+      finalAnswer = String(valC);
+    } else if (isMCQ) {
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"Blank axis. ${catA} (${bA} blocks) has ${diffVal} more ${theme.unit} than ${catB} (${bB} blocks). How many ${theme.unit} does ${catC} (${bC} blocks) represent?"`;
+      inputRequirementStr = JSON.stringify({ inputType: "MCQ_BUTTONS" });
+      finalAnswer = String(valC);
+      const opts = getFourOptions(finalAnswer, [
+        String(valC + scaleStep),
+        String(Math.max(scaleStep, valC - scaleStep)),
+        String(valB),
+        String(valA)
+      ]);
+      mcqOptionsPrompt = `Generate EXACTLY 4 options in "content.options":\n- "${opts[0]}"\n- "${opts[1]}"\n- "${opts[2]}"\n- "${opts[3]}"\nCRITICAL: The options array MUST contain exactly these 4 options. One option MUST match finalAnswer ("${finalAnswer}") exactly.`;
+    } else {
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The axis is blank. ${catA} is ${bA} blocks tall. ${catB} is ${bB} blocks tall. The text says ${catA} represents ${diffVal} more ${theme.unit} than ${catB}. What is the value of ${catC}, which is ${bC} blocks tall?"`;
+      inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
+      finalAnswer = String(valC);
+    }
+
+  // --------------------------------------------------------------------------
+  // Variant 12: Scale Translation & Block Projection
+  // --------------------------------------------------------------------------
+  } else if (canonicalVariant === 'advanced_scale_translation_block_projection') {
+    const scale1 = Math.random() > 0.5 ? 10 : 20;
+    const newScale = 50;
+    const theme = getRandomBarGraphTheme(4, 'zoo_visitors') || getRandomBarGraphTheme(4);
+    const orientation = Math.random() > 0.5 ? 'vertical' : 'horizontal';
+    const cat = theme.items[0];
+
+    const isHalf = Math.random() > 0.5;
+    const blocksNeeded = getRandomInt(2, 6); // 2, 3, 4, 5, 6 blocks on new graph
+    const newTotal = blocksNeeded * newScale; // 100, 150, 200, 250, 300
+
+    let startVal;
+    let low, high;
+    if (isHalf) {
+      const halfStep = scale1 / 2;
+      const maxBlocks1 = Math.floor((newTotal - halfStep) / scale1);
+      const b1 = Math.max(1, getRandomInt(Math.max(1, maxBlocks1 - 4), Math.max(1, maxBlocks1 - 1)));
+      low = b1 * scale1;
+      startVal = low + halfStep;
+      high = low + scale1;
+    } else {
+      const maxBlocks1 = Math.floor((newTotal - scale1) / scale1);
+      const b1 = Math.max(1, getRandomInt(Math.max(1, maxBlocks1 - 3), maxBlocks1));
+      startVal = b1 * scale1;
+      low = startVal;
+      high = startVal + scale1;
+    }
+    const delta = newTotal - startVal;
+
+    const colors = getRandomPaletteColors(3);
+    const otherVal1 = isHalf ? low : Math.max(scale1, startVal - scale1);
+    const otherVal2 = isHalf ? high : startVal + scale1;
+    const data = [
+      { category: cat, value: startVal, color: colors[0] },
+      { category: theme.items[1], value: otherVal1, color: colors[1] },
+      { category: theme.items[2], value: otherVal2, color: colors[2] }
+    ];
+
+    visualEngineStr = JSON.stringify({
+      componentToRender: "BAR_GRAPH",
+      componentData: {
+        title: theme.title,
+        xAxisLabel: theme.xAxisLabel,
+        yAxisLabel: theme.yAxisLabel,
+        data,
+        scaleStep: scale1,
+        orientation,
+        showGridLines: true
+      }
+    });
+
+    if (isStructure) {
+      const readingDesc = isHalf ? `ends exactly halfway between ${low} and ${high}` : `shows ${startVal} ${theme.unit}`;
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the ${theme.title.toLowerCase()} on a scale of ${scale1}. The bar for ${cat} ${readingDesc}. The next day, exactly ${delta} more ${theme.unit} are added. The goal is to draw a new graph where 1 grid block stands for ${newScale} ${theme.unit}. Read the current amount, add the new amount, and calculate exactly how many grid blocks tall the new bar must be."`;
+      const stepsArr = [
+        {
+          label: `Exact number of ${theme.unit} for ${cat} shown on the current graph:`,
+          expectedAnswer: String(startVal),
+          acceptedAnswers: [String(startVal)]
+        },
+        {
+          label: `Write the working equation to find the new total after adding ${delta} more ${theme.unit}:`,
+          expectedAnswer: `${startVal} + ${delta} = ${newTotal}`,
+          acceptedAnswers: getAdditionAcceptedAnswers(startVal, delta, newTotal)
+        },
+        {
+          label: `Write the working equation to find how many grid blocks are needed for the new graph (Total ÷ New Scale of ${newScale}):`,
+          expectedAnswer: `${newTotal} / ${newScale} = ${blocksNeeded}`,
+          acceptedAnswers: getDivisionAcceptedAnswers(newTotal, newScale, blocksNeeded)
+        },
+        {
+          label: `Number of grid blocks tall:`,
+          expectedAnswer: String(blocksNeeded),
+          acceptedAnswers: [String(blocksNeeded)]
+        }
+      ];
+      inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
+      finalAnswer = String(blocksNeeded);
+    } else if (isMCQ) {
+      const readingDesc = isHalf ? `stops halfway between ${low} and ${high} (${startVal} ${theme.unit})` : `equals ${startVal} ${theme.unit}`;
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The graph (scale of ${scale1}) shows that the bar for ${cat} ${readingDesc}. After adding ${delta} more ${theme.unit}, to chart the new total on a graph where 1 block = ${newScale} ${theme.unit}, how many blocks tall must the bar be?"`;
+      inputRequirementStr = JSON.stringify({ inputType: "MCQ_BUTTONS" });
+      finalAnswer = String(blocksNeeded);
+      const opts = getFourOptions(finalAnswer, [
+        String(blocksNeeded + 1),
+        String(Math.max(1, blocksNeeded - 1)),
+        String(blocksNeeded + 2),
+        String(Math.round(startVal / scale1))
+      ]);
+      mcqOptionsPrompt = `Generate EXACTLY 4 options in "content.options":\n- "${opts[0]}"\n- "${opts[1]}"\n- "${opts[2]}"\n- "${opts[3]}"\nCRITICAL: The options array MUST contain exactly these 4 options. One option MUST match finalAnswer ("${finalAnswer}") exactly.`;
+    } else {
+      const readingDesc = isHalf ? `stops halfway between ${low} and ${high}` : `shows ${startVal} ${theme.unit}`;
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A bar on a scale of ${scale1} ${readingDesc}. You receive ${delta} more ${theme.unit}. If you draw your new total on a graph with a scale of ${newScale} per block, how many grid blocks tall will the bar be?"`;
+      inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
+      finalAnswer = String(blocksNeeded);
+    }
+
+  // --------------------------------------------------------------------------
+  // Variant 13: Blank Axis Financial Application
+  // --------------------------------------------------------------------------
+  } else if (canonicalVariant === 'advanced_blank_axis_financial_application') {
+    const finTheme = getRandomFinancialTheme(4);
+    const orientation = Math.random() > 0.5 ? 'vertical' : 'horizontal';
+
+    // 3 or 4 bars
+    const barCount = Math.random() > 0.5 ? 4 : 3;
+    const blocksPool = barCount === 4
+      ? [getRandomInt(3, 6), getRandomInt(4, 7), getRandomInt(2, 5), getRandomInt(3, 6)]
+      : [getRandomInt(2, 4), getRandomInt(4, 6), getRandomInt(3, 5)];
+    const totalBlocks = blocksPool.reduce((acc, b) => acc + b, 0);
+
+    const scaleOptions = [10, 20, 25, 30, 40, 50];
+    const scaleStep = scaleOptions[getRandomInt(0, scaleOptions.length - 1)];
+    const grandTotal = totalBlocks * scaleStep;
+
+    const targetIdx = getRandomInt(0, barCount - 1);
+    const bTarget = blocksPool[targetIdx];
+    const qty = bTarget * scaleStep;
+    const price = finTheme.prices[targetIdx] || getRandomInt(2, 5);
+    const totalCost = qty * price;
+
+    const catTarget = finTheme.items[targetIdx];
+    const singularUnit = finTheme.unit.endsWith('s') ? finTheme.unit.slice(0, -1) : finTheme.unit;
+
+    const colors = getRandomPaletteColors(barCount);
+    const data = blocksPool.map((b, i) => ({
+      category: finTheme.items[i],
+      value: b * scaleStep,
+      color: colors[i]
+    }));
+
+    visualEngineStr = JSON.stringify({
+      componentToRender: "BAR_GRAPH",
+      componentData: {
+        title: finTheme.title,
+        xAxisLabel: finTheme.xAxisLabel,
+        yAxisLabel: finTheme.yAxisLabel,
+        data,
+        scaleStep,
+        orientation,
+        showGridLines: true,
+        showScaleNumbers: false
+      }
+    });
+
+    if (isStructure) {
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph tracks the number of ${finTheme.unit} ${finTheme.verb || 'sold'}, but the axis numbers on the graph are missing. The grand total of all ${finTheme.unit} sold across the ${barCount} categories is exactly ${grandTotal} ${finTheme.unit}. Count the grid blocks to deduce the scale. Look at the bar for ${catTarget}, which is exactly ${bTarget} grid blocks tall. If every ${singularUnit} in ${catTarget} is sold for $${price}, calculate the exact number of ${catTarget} sold, and then find the total money collected from them."`;
+      const stepsArr = [
+        {
+          label: `Total number of grid blocks across all ${barCount} categories:`,
+          expectedAnswer: String(totalBlocks),
+          acceptedAnswers: [String(totalBlocks)]
+        },
+        {
+          label: `Write the working equation to find the value of 1 grid block (${grandTotal} ${finTheme.unit} ÷ Total blocks):`,
+          expectedAnswer: `${grandTotal} / ${totalBlocks} = ${scaleStep}`,
+          acceptedAnswers: getDivisionAcceptedAnswers(grandTotal, totalBlocks, scaleStep)
+        },
+        {
+          label: `Write the working equation to find the exact number of ${catTarget} sold (${bTarget} blocks):`,
+          expectedAnswer: `${bTarget} x ${scaleStep} = ${qty}`,
+          acceptedAnswers: getMultiplicationAcceptedAnswers(bTarget, scaleStep, qty)
+        },
+        {
+          label: `Write the working equation to find the total money collected from ${catTarget} (Quantity x $${price}):`,
+          expectedAnswer: `${qty} x ${price} = ${totalCost}`,
+          acceptedAnswers: getMultiplicationAcceptedAnswers(qty, price, totalCost)
+        }
+      ];
+      inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
+      finalAnswer = String(totalCost);
+    } else if (isMCQ) {
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"Blank axis. The total for all ${barCount} bars is ${grandTotal} ${finTheme.unit}. The bar for ${catTarget} is ${bTarget} blocks tall out of ${totalBlocks} total blocks. If each ${singularUnit} costs $${price}, how much money did ${catTarget} make?"`;
+      inputRequirementStr = JSON.stringify({ inputType: "MCQ_BUTTONS" });
+      finalAnswer = `$${totalCost}`;
+      const opts = getFourOptions(finalAnswer, [
+        `$${qty}`,
+        `$${totalBlocks * price}`,
+        `$${Math.round(grandTotal * price / barCount)}`,
+        `$${totalCost + scaleStep * price}`
+      ]);
+      mcqOptionsPrompt = `Generate EXACTLY 4 options in "content.options":\n- "${opts[0]}"\n- "${opts[1]}"\n- "${opts[2]}"\n- "${opts[3]}"\nCRITICAL: The options array MUST contain exactly these 4 options. One option MUST match finalAnswer ("${finalAnswer}") exactly.`;
+    } else {
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"Blank axis. The grand total is ${grandTotal} ${finTheme.unit}. Total blocks = ${totalBlocks}. The bar for ${catTarget} is ${bTarget} blocks tall. If each ${singularUnit} in ${catTarget} costs $${price}, what is the total cost of ${catTarget}?"`;
+      inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
+      finalAnswer = String(totalCost);
+    }
+
+  // --------------------------------------------------------------------------
+  // Variant 14: Equalizing Transfer (Grid Block Shift)
+  // --------------------------------------------------------------------------
+  } else if (canonicalVariant === 'advanced_equalizing_transfer_grid_block_shift') {
+    const scaleOptions = [10, 20, 50];
+    const scaleStep = scaleOptions[getRandomInt(0, scaleOptions.length - 1)];
+    const eqTheme = getRandomEqualizingTheme(3);
+    const orientation = Math.random() > 0.5 ? 'vertical' : 'horizontal';
+
+    // bA > bB, diffBlocks is EVEN (2, 4, 6)
+    const blocksDropped = getRandomInt(1, 3); // 1, 2, 3
+    const diffBlocks = blocksDropped * 2; // 2, 4, 6
+    const bB = getRandomInt(2, 4); // 2, 3, 4
+    const bA = bB + diffBlocks; // 4 to 10
+
+    const valA = bA * scaleStep;
+    const valB = bB * scaleStep;
+    const valDiff = valA - valB;
+    const itemsMoved = valDiff / 2;
+
+    const catA = eqTheme.items[0];
+    const catB = eqTheme.items[1];
+
+    const colors = getRandomPaletteColors(2);
+    const data = [
+      { category: catA, value: valA, color: colors[0] },
+      { category: catB, value: valB, color: colors[1] }
+    ];
+
+    visualEngineStr = JSON.stringify({
+      componentToRender: "BAR_GRAPH",
+      componentData: {
+        title: eqTheme.title,
+        xAxisLabel: eqTheme.xAxisLabel,
+        yAxisLabel: eqTheme.yAxisLabel,
+        data,
+        scaleStep,
+        orientation,
+        showGridLines: true
+      }
+    });
+
+    if (isStructure) {
+      const containerName = eqTheme.containersPlural || 'groups';
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"The bar graph shows the number of ${eqTheme.unit} in ${catA} and ${catB}. The scale is in steps of ${scaleStep}. ${catA} has ${valA} ${eqTheme.unit} (${bA} blocks tall). ${catB} has ${valB} ${eqTheme.unit} (${bB} blocks tall). We want both ${containerName} to hold the exact same number of ${eqTheme.unit}. Calculate the number of ${eqTheme.unit} that must be moved from ${catA} to ${catB}. Then, determine how many grid blocks shorter ${catA}'s bar will become on the graph."`;
+      const stepsArr = [
+        {
+          label: `Write the working equation to find the difference in ${eqTheme.unit} between the two ${containerName}:`,
+          expectedAnswer: `${valA} - ${valB} = ${valDiff}`,
+          acceptedAnswers: getSubtractionAcceptedAnswers(valA, valB, valDiff)
+        },
+        {
+          label: `Write the working equation to find how many ${eqTheme.unit} must be moved (Half the difference):`,
+          expectedAnswer: `${valDiff} / 2 = ${itemsMoved}`,
+          acceptedAnswers: getDivisionAcceptedAnswers(valDiff, 2, itemsMoved)
+        },
+        {
+          label: `Because 1 grid block is ${scaleStep} ${eqTheme.unit}, write the working equation to find how many blocks ${catA} will drop by (${itemsMoved} ÷ ${scaleStep}):`,
+          expectedAnswer: `${itemsMoved} / ${scaleStep} = ${blocksDropped}`,
+          acceptedAnswers: getDivisionAcceptedAnswers(itemsMoved, scaleStep, blocksDropped)
+        },
+        {
+          label: `Number of grid blocks ${catA} will drop by:`,
+          expectedAnswer: String(blocksDropped),
+          acceptedAnswers: [String(blocksDropped)]
+        }
+      ];
+      inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
+      finalAnswer = String(blocksDropped);
+    } else if (isMCQ) {
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"Scale of ${scaleStep}. ${catA} has ${valA} ${eqTheme.unit}. ${catB} has ${valB} ${eqTheme.unit}. You move ${eqTheme.unit} from ${catA} to ${catB} until they are equal. How many grid blocks shorter will ${catA}'s bar become?"`;
+      inputRequirementStr = JSON.stringify({ inputType: "MCQ_BUTTONS" });
+      finalAnswer = String(blocksDropped);
+      const opts = getFourOptions(finalAnswer, [
+        String(diffBlocks),
+        String(blocksDropped + 1),
+        String(Math.max(1, blocksDropped - 1) === blocksDropped ? blocksDropped + 2 : Math.max(1, blocksDropped - 1)),
+        String(blocksDropped + 3)
+      ]);
+      mcqOptionsPrompt = `Generate EXACTLY 4 options in "content.options":\n- "${opts[0]}"\n- "${opts[1]}"\n- "${opts[2]}"\n- "${opts[3]}"\nCRITICAL: The options array MUST contain exactly these 4 options. One option MUST match finalAnswer ("${finalAnswer}") exactly.`;
+    } else {
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"Scale is ${scaleStep}. ${catA} is ${valA} (${bA} blocks). ${catB} is ${valB} (${bB} blocks). To make them equal, you must move ${eqTheme.unit} from ${catA} to ${catB}. How many grid blocks will ${catA}'s bar drop by?"`;
+      inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
+      finalAnswer = String(blocksDropped);
+    }
+
+  // --------------------------------------------------------------------------
+  // Variant 15: Target Shortfall & Bar Height Prediction
+  // --------------------------------------------------------------------------
+  } else {
+    // advanced_target_shortfall_bar_height_prediction
+    const scaleOptions = [50, 100];
+    const scaleStep = scaleOptions[getRandomInt(0, 1)];
+
+    const sfTheme = getRandomTargetShortfallTheme(4);
+    const orientation = Math.random() > 0.5 ? 'vertical' : 'horizontal';
+
+    const periods = sfTheme.items && sfTheme.items.length >= 4 ? sfTheme.items.slice(0, 4) : ["Week 1", "Week 2", "Week 3", "Week 4"];
+    const cat1 = periods[0];
+    const cat2 = periods[1];
+    const cat3 = periods[2];
+    const cat4 = periods[3]; // The missing 4th bar
+
+    // Generate values for 1, 2, 3 where one or two can land on halfway marks
+    const possibleBlocks = [2, 2.5, 3, 3.5, 4];
+    const b1 = possibleBlocks[getRandomInt(0, possibleBlocks.length - 1)];
+    const b2 = possibleBlocks[getRandomInt(0, possibleBlocks.length - 1)];
+    const b3 = possibleBlocks[getRandomInt(0, possibleBlocks.length - 1)];
+
+    const val1 = b1 * scaleStep;
+    const val2 = b2 * scaleStep;
+    const val3 = b3 * scaleStep;
+    const sum123 = val1 + val2 + val3;
+
+    // blocksNeeded for 4th period
+    const blocksNeededOptions = [2, 2.5, 3, 3.5, 4];
+    const blocksNeeded = blocksNeededOptions[getRandomInt(0, blocksNeededOptions.length - 1)];
+    const shortage = blocksNeeded * scaleStep;
+    const goal = sum123 + shortage;
+
+    const colors = getRandomPaletteColors(4);
+    const data = [
+      { category: cat1, value: val1, color: colors[0] },
+      { category: cat2, value: val2, color: colors[1] },
+      { category: cat3, value: val3, color: colors[2] },
+      { category: cat4, value: 0, color: colors[3] }
+    ];
+
+    visualEngineStr = JSON.stringify({
+      componentToRender: "BAR_GRAPH",
+      componentData: {
+        title: sfTheme.title,
+        xAxisLabel: sfTheme.xAxisLabel,
+        yAxisLabel: sfTheme.yAxisLabel,
+        data,
+        scaleStep,
+        orientation,
+        showGridLines: true,
+        missingBar: cat4
+      }
+    });
+
+    if (isStructure) {
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A school set a goal to collect exactly ${goal} ${sfTheme.unit} for a food drive over 4 weeks. The bar graph uses a scale of ${scaleStep}. The bars for ${cat1}, ${cat2}, and ${cat3} are shown. Some bars end halfway between grid lines. Read the graph to calculate the total collected so far. Then, find the shortage needed for ${cat4}, and determine exactly how many grid blocks tall the ${cat4} bar must be drawn to reach the goal."`;
+      const stepsArr = [
+        {
+          label: `Write the working equation to find the total ${sfTheme.unit} collected in ${cat1}, ${cat2}, and ${cat3}:`,
+          expectedAnswer: `${val1} + ${val2} + ${val3} = ${sum123}`,
+          acceptedAnswers: getThreeAdditionAcceptedAnswers(val1, val2, val3, sum123)
+        },
+        {
+          label: `Write the working equation to find the shortage needed for ${cat4} (Goal - Collected):`,
+          expectedAnswer: `${goal} - ${sum123} = ${shortage}`,
+          acceptedAnswers: getSubtractionAcceptedAnswers(goal, sum123, shortage)
+        },
+        {
+          label: `Write the working equation to find how many grid blocks are needed for ${cat4} (Shortage ÷ Scale of ${scaleStep}):`,
+          expectedAnswer: `${shortage} / ${scaleStep} = ${blocksNeeded}`,
+          acceptedAnswers: getDivisionAcceptedAnswers(shortage, scaleStep, blocksNeeded)
+        },
+        {
+          label: `Number of grid blocks tall:`,
+          expectedAnswer: String(blocksNeeded),
+          acceptedAnswers: [String(blocksNeeded)]
+        }
+      ];
+      inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
+      finalAnswer = String(blocksNeeded);
+    } else if (isMCQ) {
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"Scale of ${scaleStep}. ${cat1} = ${val1}, ${cat2} = ${val2}, ${cat3} = ${val3}. Goal = ${goal} ${sfTheme.unit}. How many grid blocks tall should the bar for ${cat4} be?"`;
+      inputRequirementStr = JSON.stringify({ inputType: "MCQ_BUTTONS" });
+      finalAnswer = String(blocksNeeded);
+      const opts = getFourOptions(finalAnswer, [
+        String(blocksNeeded + 1),
+        String(blocksNeeded - 0.5 > 0 ? blocksNeeded - 0.5 : blocksNeeded + 1.5),
+        String(blocksNeeded + 0.5),
+        String(blocksNeeded - 1 > 0 ? blocksNeeded - 1 : blocksNeeded + 2)
+      ]);
+      mcqOptionsPrompt = `Generate EXACTLY 4 options in "content.options":\n- "${opts[0]}"\n- "${opts[1]}"\n- "${opts[2]}"\n- "${opts[3]}"\nCRITICAL: The options array MUST contain exactly these 4 options. One option MUST match finalAnswer ("${finalAnswer}") exactly.`;
+    } else {
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A graph (scale of ${scaleStep}) shows ${cat1} (${val1}), ${cat2} (${val2}), and ${cat3} (${val3}). The total goal for all 4 periods is ${goal} ${sfTheme.unit}. For ${cat4} to hit the exact goal, how many grid blocks tall must the ${cat4} bar be drawn?"`;
+      inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
+      finalAnswer = String(blocksNeeded);
+    }
+  }
+
+  const aiPrompt = `CRITICAL INSTRUCTIONS:
+1. You MUST use the exact "questionText" provided below.
+2. You MUST use the exact "finalAnswer" provided below.
+3. Generate detailed, pedagogical "solutionSteps" explaining the reading of the bar graph and calculation.
+${mcqOptionsPrompt}
+
+${getFormatInstructions(visualEngineStr, inputRequirementStr, askText, finalAnswer)}`;
+
+  return { aiPrompt };
+};

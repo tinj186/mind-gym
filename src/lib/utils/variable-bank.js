@@ -352,6 +352,94 @@ export const BAR_GRAPH_THEMES = [
     yAxisLabel: "Cupcakes Baked",
     items: ["Amy", "Betty", "Cindy", "Diana"],
     unit: "cupcakes"
+  },
+  {
+    id: "pens_sold",
+    title: "Pens Sold by Stationery Shop",
+    xAxisLabel: "Color of Pen",
+    yAxisLabel: "Number of Pens Sold",
+    items: ["Blue Pens", "Black Pens", "Red Pens", "Green Pens"],
+    unit: "pens"
+  },
+  {
+    id: "car_park_colors",
+    title: "Cars in a Car Park",
+    xAxisLabel: "Color of Car",
+    yAxisLabel: "Number of Cars",
+    items: ["White", "Silver", "Black", "Red", "Blue"],
+    unit: "cars"
+  },
+  {
+    id: "pets_sold",
+    title: "Pets Sold at Pet Shop",
+    xAxisLabel: "Type of Pet",
+    yAxisLabel: "Number of Pets Sold",
+    items: ["Cats", "Dogs", "Rabbits", "Hamsters", "Birds"],
+    unit: "pets"
+  },
+  {
+    id: "factory_production",
+    title: "Toys Produced in Factory",
+    xAxisLabel: "Day",
+    yAxisLabel: "Number of Toys Produced",
+    items: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    unit: "toys"
+  },
+  {
+    id: "sticker_collections",
+    title: "Stickers Collected by Classes",
+    xAxisLabel: "Class",
+    yAxisLabel: "Number of Stickers",
+    items: ["Class 3A", "Class 3B", "Class 3C", "Class 3D"],
+    unit: "stickers"
+  },
+  {
+    id: "marbles_collected",
+    title: "Marbles Collected by Pupils",
+    xAxisLabel: "Pupil",
+    yAxisLabel: "Number of Marbles",
+    items: ["John", "Peter", "David", "Sam", "Lucas"],
+    unit: "marbles"
+  },
+  {
+    id: "bakery_buns",
+    title: "Buns Sold by Bakery",
+    xAxisLabel: "Type of Bun",
+    yAxisLabel: "Number of Buns Sold",
+    items: ["Chocolate Buns", "Butter Buns", "Kaya Buns", "Cheese Buns"],
+    unit: "buns"
+  },
+  {
+    id: "beads_collected",
+    title: "Colored Beads in Jar",
+    xAxisLabel: "Color of Bead",
+    yAxisLabel: "Number of Beads",
+    items: ["Red Beads", "Blue Beads", "Green Beads", "Yellow Beads"],
+    unit: "beads"
+  },
+  {
+    id: "vegetables_harvested",
+    title: "Vegetables Harvested by Farmer",
+    xAxisLabel: "Vegetable",
+    yAxisLabel: "Number of Vegetables",
+    items: ["Carrots", "Potatoes", "Onions", "Cabbages"],
+    unit: "vegetables"
+  },
+  {
+    id: "weekly_profits",
+    title: "Weekly Profits of Shop",
+    xAxisLabel: "Week",
+    yAxisLabel: "Profit ($)",
+    items: ["Week 1", "Week 2", "Week 3", "Week 4"],
+    unit: "dollars"
+  },
+  {
+    id: "game_points",
+    title: "Points Scored by Teams",
+    xAxisLabel: "Team",
+    yAxisLabel: "Points Scored",
+    items: ["Team A", "Team B", "Team C", "Team D"],
+    unit: "points"
   }
 ];
 
@@ -366,6 +454,29 @@ export const getRandomBarGraphTheme = (itemCount = 4, specificThemeId = null) =>
     ...selectedTheme,
     items
   };
+};
+
+export const BAR_GRAPH_PALETTES = [
+  // Vibrant Rainbow
+  ['#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4'],
+  // Cool Oceana (Teal, Cyan, Blue, Indigo)
+  ['#0ea5e9', '#06b6d4', '#3b82f6', '#6366f1', '#14b8a6', '#2563eb'],
+  // Sunset Warmth (Amber, Orange, Rose, Coral)
+  ['#f59e0b', '#f97316', '#ef4444', '#f43f5e', '#fb923c', '#e11d48'],
+  // Emerald Mint (Mint, Emerald, Lime, Green)
+  ['#10b981', '#059669', '#84cc16', '#14b8a6', '#22c55e', '#15803d'],
+  // Berry Violet (Purple, Violet, Pink, Fuchsia)
+  ['#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#7c3aed', '#c026d3'],
+  // Modern Vibrant Contrast
+  ['#4f46e5', '#10b981', '#f43f5e', '#eab308', '#0284c7', '#9333ea'],
+  // Coral & Sky
+  ['#0284c7', '#f43f5e', '#10b981', '#f59e0b', '#6366f1', '#14b8a6']
+];
+
+export const getRandomPaletteColors = (count = 4) => {
+  const palette = BAR_GRAPH_PALETTES[Math.floor(Math.random() * BAR_GRAPH_PALETTES.length)];
+  const shuffled = [...palette].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
 };
 
 // ----------------------------------------------------------------------------
