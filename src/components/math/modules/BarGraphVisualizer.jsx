@@ -55,7 +55,9 @@ export default function BarGraphVisualizer({ data: inputData, hideCardStyles = f
     // -------------------------------------------------------------
     // HORIZONTAL ORIENTATION (Categories on Y, Values on X)
     // -------------------------------------------------------------
-    const marginLeft = 100;
+    const maxCatLen = Math.max(...data.map(d => String(d.category || '').length), 5);
+    const labelOffset = yAxisLabel ? 42 : 16;
+    const marginLeft = Math.max(130, Math.min(190, labelOffset + Math.round(maxCatLen * 8) + 16));
     const marginRight = 30;
     const marginTop = 40;
     const marginBottom = 60;
@@ -230,10 +232,10 @@ export default function BarGraphVisualizer({ data: inputData, hideCardStyles = f
             {/* Y-Axis Label */}
             {yAxisLabel && (
               <text
-                x={20}
+                x={18}
                 y={marginTop + plotHeight / 2}
                 textAnchor="middle"
-                transform={`rotate(-90 20 ${marginTop + plotHeight / 2})`}
+                transform={`rotate(-90 18 ${marginTop + plotHeight / 2})`}
                 className="text-xs font-black fill-slate-900 uppercase tracking-wider"
                 fontSize="12"
               >
@@ -249,7 +251,8 @@ export default function BarGraphVisualizer({ data: inputData, hideCardStyles = f
   // -------------------------------------------------------------
   // VERTICAL ORIENTATION (Categories on X, Values on Y)
   // -------------------------------------------------------------
-  const marginLeft = 70;
+  const maxTickLen = Math.max(...ticks.map(t => String(t).length), 1);
+  const marginLeft = Math.max(70, Math.min(100, 38 + maxTickLen * 8));
   const marginRight = 30;
   const marginTop = 40;
   const marginBottom = 65;

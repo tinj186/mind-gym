@@ -2491,3 +2491,15 @@ export const getRandomLiquids = (count = 1) => {
   const shuffled = [...LIQUIDS_POOL].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
 };
+
+export const getSingularUnit = (unit) => {
+  if (!unit) return 'item';
+  const u = String(unit).toLowerCase().trim();
+  if (u === 'pastries') return 'pastry';
+  if (u === 'potatoes') return 'potato';
+  if (u === 'tomatoes') return 'tomato';
+  if (u.endsWith('ies')) return u.slice(0, -3) + 'y';
+  if (u.endsWith('ses')) return u.slice(0, -2);
+  if (u.endsWith('s') && !u.endsWith('ss')) return u.slice(0, -1);
+  return u;
+};
