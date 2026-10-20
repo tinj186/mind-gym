@@ -9,8 +9,8 @@ import { Analytics } from "@vercel/analytics/next";
 
 export const metadata = {
   title: 'The Learn Reps | Free Primary Math Worksheets (Singapore MOE)',
-  description: 'Generate free, syllabus-aligned Primary 1 math worksheets. Upgrade to the S$29.90 Annual Pass for automated marking and granular \'Synapse Strength\' performance tracking.',
-  keywords: 'Primary 1 Math, Singapore MOE Syllabus, Auto-marked Worksheets, P1 math time worksheets, How to teach P1 time and duration Singapore',
+  description: 'Generate free, syllabus-aligned Primary 1, Primary 2, and Primary 3 math worksheets. Upgrade to the S$29.90 Annual Pass for automated marking and granular \'Synapse Strength\' performance tracking.',
+  keywords: 'Primary 1 Math, Primary 2 Math, Primary 3 Math, Singapore MOE Syllabus, Auto-marked Worksheets, P1 math time worksheets, P3 bar graphs worksheets, How to teach primary math Singapore',
 };
 
 export default function RootLayout({ children }) {

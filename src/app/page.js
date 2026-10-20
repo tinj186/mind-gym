@@ -12,8 +12,8 @@ import ContactForm from '@/components/support/ContactForm';
 export default function PublicLandingPage() {
   const router = useRouter();
   
-  const [level, setLevel] = useState('Primary 2');
-  const [topic, setTopic] = useState('Data Representation and Interpretation - Picture Graphs with Scales');
+  const [level, setLevel] = useState('Primary 3');
+  const [topic, setTopic] = useState('Data Representation and Interpretation - Bar Graphs');
   const [isGenerating, setIsGenerating] = useState(false);
   const [worksheet, setWorksheet] = useState(null);
   const [error, setError] = useState('');
@@ -88,28 +88,44 @@ export default function PublicLandingPage() {
       { value: "Geometry - 2D Shapes", label: "2D Shapes" },
       { value: "Geometry - 3D Shapes", label: "3D Shapes" },
       { value: "Data Representation and Interpretation - Picture Graphs with Scales", label: "Picture Graphs with Scales" }
+    ],
+    "Primary 3": [
+      { value: "Whole Numbers - Numbers up to 10 000", label: "Whole Numbers (up to 10 000)" },
+      { value: "Whole Numbers - Addition and Subtraction", label: "Addition & Subtraction" },
+      { value: "Whole Numbers - Multiplication and Division", label: "Multiplication & Division" },
+      { value: "Fractions - Equivalent fractions", label: "Equivalent Fractions" },
+      { value: "Fractions - Addition and Subtraction", label: "Fractions (Addition/Subtraction)" },
+      { value: "Money - Money", label: "Money" },
+      { value: "Measurement - Length, Mass and Volume", label: "Length, Mass & Volume" },
+      { value: "Measurement - Time", label: "Time" },
+      { value: "Area and Perimeter - Area and Perimeter", label: "Area & Perimeter" },
+      { value: "Geometry - Angles", label: "Angles" },
+      { value: "Geometry - Perpendicular and Parallel Lines", label: "Perpendicular & Parallel Lines" },
+      { value: "Data Representation and Interpretation - Bar Graphs", label: "Bar Graphs" }
     ]
   };
 
-  const [availableTopics, setAvailableTopics] = useState(topicsByLevel['Primary 2'].slice(0, 3));
+  const [availableTopics, setAvailableTopics] = useState(topicsByLevel['Primary 3']);
 
-  // Randomize topics on mount to prevent hydration mismatch while still providing randomness
+  // Randomize selected topic on mount to prevent hydration mismatch while still providing randomness
   useEffect(() => {
-    const shuffled = [...topicsByLevel['Primary 2']].sort(() => 0.5 - Math.random());
-    const initialRandom = shuffled.slice(0, 3);
-    setAvailableTopics(initialRandom);
-    setTopic(initialRandom[0].value);
+    const list = topicsByLevel['Primary 3'];
+    const randomTopic = list[Math.floor(Math.random() * list.length)];
+    setAvailableTopics(list);
+    setTopic(randomTopic.value);
   }, []);
 
   const handleLevelChange = (e) => {
     const newLevel = e.target.value;
     setLevel(newLevel);
     
-    const shuffled = [...topicsByLevel[newLevel]].sort(() => 0.5 - Math.random());
-    const random3 = shuffled.slice(0, 3);
+    const list = topicsByLevel[newLevel] || [];
+    const randomTopic = list[Math.floor(Math.random() * list.length)] || list[0];
     
-    setAvailableTopics(random3);
-    setTopic(random3[0].value);
+    setAvailableTopics(list);
+    if (randomTopic) {
+      setTopic(randomTopic.value);
+    }
   };
 
 
@@ -147,6 +163,7 @@ export default function PublicLandingPage() {
               >
                 <option value="Primary 1">Primary 1</option>
                 <option value="Primary 2">Primary 2</option>
+                <option value="Primary 3">Primary 3</option>
               </select>
             </div>
             

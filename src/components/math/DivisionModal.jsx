@@ -40,7 +40,7 @@ export default function DivisionModal({ studentId, isOpen, onClose }) {
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
           {divisions.map((level) => {
-            const isAvailable = level === 'Primary 1' || level === 'Primary 2';
+            const isAvailable = level === 'Primary 1' || level === 'Primary 2' || level === 'Primary 3';
             return (
               <button
                 key={level}

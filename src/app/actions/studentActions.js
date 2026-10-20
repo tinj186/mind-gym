@@ -17,6 +17,8 @@ export async function updateStudentDivision(studentId, level) {
     },
   });
   revalidatePath("/");
+  revalidatePath("/math");
+  revalidatePath("/hub");
 }
 
 /**

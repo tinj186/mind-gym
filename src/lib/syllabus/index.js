@@ -227,7 +227,8 @@ export const blueprintRegistry = {
 
   'Primary 3-Statistics - Data Representation and Interpretation - Bar Graphs-Bar Graph Interpretation': p3BarGraphInterpretationBlueprint,
   'Primary 3-Data Representation and Interpretation - Bar Graphs-Bar Graph Interpretation': p3BarGraphInterpretationBlueprint,
-  'Primary 3-Statistics - Data Representation and Interpretation - Bar Graphs-Graph Axis Scales': p3GraphAxisScalesBlueprint
+  'Primary 3-Statistics - Data Representation and Interpretation - Bar Graphs-Graph Axis Scales': p3GraphAxisScalesBlueprint,
+  'Primary 3-Data Representation and Interpretation - Bar Graphs-Graph Axis Scales': p3GraphAxisScalesBlueprint
 };
 
 /**
