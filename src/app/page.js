@@ -135,23 +135,23 @@ export default function PublicLandingPage() {
       {/* Hero Section */}
       <main className="max-w-4xl mx-auto px-6 py-16 text-center">
         <h1 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter leading-tight mb-6 print:hidden">
-          Build Flawless <span className="text-blue-600">Math</span> Mastery. <br/>Eliminate "Bad Form".
+          Stop fighting over <span className="text-blue-600">assessment books</span>. <br/>Let our smart platform guide your child through MOE Primary Math.
         </h1>
         <h2 className="text-xl md:text-2xl font-bold text-slate-700 mb-6 max-w-3xl mx-auto print:hidden">
-          Adaptive Primary Math Practice for the Singapore MOE Syllabus.
+          Interactive, adaptive math practice designed strictly for the Singapore MOE Syllabus.
         </h2>
         <p className="text-xl text-slate-600 mb-6 max-w-2xl mx-auto font-medium print:hidden">
-          Learning shouldn’t be a guessing game. Our adaptive platform acts as an intelligent coach—isolating specific learning bottlenecks, identifying exact cognitive "defect codes," and generating precise daily workouts to build the right neural pathways.
+          Learning shouldn't be a guessing game. Our platform acts as a digital tutor—isolating specific learning bottlenecks, identifying exact careless mistakes and knowledge gaps, and generating precise daily practices so your child actually understands the concepts instead of just memorizing the answers.
         </p>
         <p className="text-sm text-slate-500 mb-12 max-w-xl mx-auto print:hidden">
-          Experience the Universal Engine. Generate Singapore syllabus-aligned Math worksheets instantly, or unlock automated marking and granular performance tracking with the Annual Pass for S$29.90 (Try it free for 7 days!).
+          Unlimited, Adaptive Practice Questions. Try our interactive tools instantly below, or unlock automated marking, multi-step working canvases, and granular performance tracking with the Annual Pass for just S$29.90 (Try it free for 7 days!).
         </p>
 
-        {/* Free Worksheet Generator Tool */}
+        {/* Free Worksheet / Interactive Workout Tool */}
         <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-xl text-left max-w-3xl mx-auto relative overflow-hidden print:overflow-visible print:border-0 print:shadow-none print:p-0">
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-emerald-400 print:hidden"></div>
           
-          <h2 className="text-2xl font-black mb-6">Free Worksheet Generator</h2>
+          <h2 className="text-2xl font-black mb-6">Try a Free Interactive Math Workout</h2>
           
           <form onSubmit={handleGenerate} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end print:hidden">
             <div>
