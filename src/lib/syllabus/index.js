@@ -1,3 +1,4 @@
+import { primary4Registry } from './math/primary-4/index.js';
 import { ordinalsBlueprint } from './math/primary-1/whole-numbers-numbers-up-to-100/ordinals';
 import { countingBlueprint } from './math/primary-1/whole-numbers-numbers-up-to-100/counting';
 import { placeValuesBlueprint } from './math/primary-1/whole-numbers-numbers-up-to-100/place_values';
@@ -228,7 +229,10 @@ export const blueprintRegistry = {
   'Primary 3-Statistics - Data Representation and Interpretation - Bar Graphs-Bar Graph Interpretation': p3BarGraphInterpretationBlueprint,
   'Primary 3-Data Representation and Interpretation - Bar Graphs-Bar Graph Interpretation': p3BarGraphInterpretationBlueprint,
   'Primary 3-Statistics - Data Representation and Interpretation - Bar Graphs-Graph Axis Scales': p3GraphAxisScalesBlueprint,
-  'Primary 3-Data Representation and Interpretation - Bar Graphs-Graph Axis Scales': p3GraphAxisScalesBlueprint
+  'Primary 3-Data Representation and Interpretation - Bar Graphs-Graph Axis Scales': p3GraphAxisScalesBlueprint,
+
+  // Primary 4
+  ...primary4Registry
 };
 
 /**
