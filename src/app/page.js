@@ -105,26 +105,26 @@ export default function PublicLandingPage() {
     ]
   };
 
-  const [availableTopics, setAvailableTopics] = useState(topicsByLevel['Primary 3']);
+  const [availableTopics, setAvailableTopics] = useState(topicsByLevel['Primary 3'].slice(0, 3));
 
-  // Randomize selected topic on mount to prevent hydration mismatch while still providing randomness
+  // Randomize 3 topics on mount to prevent hydration mismatch while providing variety
   useEffect(() => {
-    const list = topicsByLevel['Primary 3'];
-    const randomTopic = list[Math.floor(Math.random() * list.length)];
-    setAvailableTopics(list);
-    setTopic(randomTopic.value);
+    const shuffled = [...topicsByLevel['Primary 3']].sort(() => 0.5 - Math.random());
+    const random3 = shuffled.slice(0, 3);
+    setAvailableTopics(random3);
+    setTopic(random3[0].value);
   }, []);
 
   const handleLevelChange = (e) => {
     const newLevel = e.target.value;
     setLevel(newLevel);
     
-    const list = topicsByLevel[newLevel] || [];
-    const randomTopic = list[Math.floor(Math.random() * list.length)] || list[0];
+    const shuffled = [...(topicsByLevel[newLevel] || [])].sort(() => 0.5 - Math.random());
+    const random3 = shuffled.slice(0, 3);
     
-    setAvailableTopics(list);
-    if (randomTopic) {
-      setTopic(randomTopic.value);
+    setAvailableTopics(random3);
+    if (random3.length > 0) {
+      setTopic(random3[0].value);
     }
   };
 
