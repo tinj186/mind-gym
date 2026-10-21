@@ -64,6 +64,7 @@ export const UniversalQuestionSchema = z.object({
       'BAR_GRAPH',
       'BAR_GRAPH_VISUALIZER',
       'PLACE_VALUE_CHART',
+      'NUMBER_LINE',
       'NONE',
     ]), // Registered native visual engines
     componentData: z.record(z.any()).nullable(),

@@ -12,7 +12,7 @@ export const ESSENTIAL_VISUALS = [
   "GRID_DISPLAY", "GRID_DRAWING_CANVAS", "FRACTION_DISPLAY",
   "MASS_SCALE", "VOLUME_BEAKER", "STATIC_IMAGE", "HTML_CONTENT", "BAR_MODEL", "FACT_TRIANGLE",
   "SQUARE_GRID_SHAPE", "GEOMETRY_POLYGON", "AREA_PERIMETER_EXPLORER", "ANGLE_VISUALIZER", "LINE_AND_POLYGON",
-  "BAR_GRAPH", "BAR_GRAPH_VISUALIZER"
+  "BAR_GRAPH", "BAR_GRAPH_VISUALIZER", "NUMBER_LINE"
   // "PICTURE_GRAPH_DISPLAY" // Not essential, lazy-loaded
 ];
 
@@ -58,6 +58,7 @@ const Timetable = lazy(() => import('./modules/Timetable'));
 const AreaPerimeterExplorer = lazy(() => import('./modules/AreaPerimeterExplorer'));
 const AngleVisualizer = lazy(() => import('./modules/AngleVisualizer'));
 const LineAndPolygonVisualizer = lazy(() => import('./modules/LineAndPolygonVisualizer'));
+const NumberLine = lazy(() => import('./modules/NumberLine'));
 
 export default function VisualRenderer({ type, ...props }) {
   const activeType = (
@@ -109,6 +110,7 @@ export default function VisualRenderer({ type, ...props }) {
           }
           case 'NUMBER_CARDS': return <NumberCards {...props} />;
           case 'NUMBER_PATTERN': return <NumberPattern {...props} />;
+          case 'NUMBER_LINE': return <NumberLine data={props.visualEngine?.componentData || props.data} />;
           case 'EQUAL_GROUPS': return <EqualGroups {...props} />;
           case 'GROUPING_WORKSPACE': return <GroupingWorkspaceModule {...props} />;
           case 'ORDINAL_LINE': return <OrdinalLine {...props} />;

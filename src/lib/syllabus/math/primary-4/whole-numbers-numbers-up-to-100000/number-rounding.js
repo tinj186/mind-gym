@@ -28,8 +28,23 @@ export const p4NumberRoundingBlueprint = {
 
   variants: {
     foundation_default: 'Basic conceptual understanding and direct computation.',
+    foundation_round_nearest_10: 'Round 4-digit or 5-digit number to the nearest ten.',
+    foundation_round_nearest_100: 'Round 4-digit or 5-digit number to the nearest hundred.',
+    foundation_round_nearest_1000: 'Round 4-digit or 5-digit number to the nearest thousand.',
+    foundation_midpoint_rule: 'Apply the halfway rule (5, 50, 500) rounding up.',
+    foundation_identify_rounding_digit: 'Identify the decision digit used to round up or down.',
     standard_default: 'Standard syllabus-aligned application and multi-step reasoning.',
-    advanced_default: 'Challenging heuristic and integrated problem-solving.'
+    standard_cascade_nine: 'Rounding causing cascading carry-overs across 9s.',
+    standard_which_numbers_round_to: 'Identify which number falls within a target rounding range.',
+    standard_find_smallest_largest_bound: 'Find the smallest or greatest whole number that rounds to a given value.',
+    standard_estimation_sum_difference: 'Estimate sum or difference by rounding each number first.',
+    standard_round_same_number_multiple_ways: 'Round the same number to multiple place values and compare.',
+    advanced_default: 'Challenging heuristic and integrated problem-solving.',
+    advanced_dual_rounding_mystery: 'Find mystery number satisfying two simultaneous rounding conditions.',
+    advanced_difference_between_bounds: 'Find difference between maximum and minimum bounds of rounded numbers.',
+    advanced_digits_card_rounding: 'Form greatest or smallest number from digit cards satisfying rounding target.',
+    advanced_bounds_difference_optimization: 'Optimization of maximum difference using upper and lower bounds.',
+    advanced_interval_count: 'Count the total number of whole numbers in a rounding interval.'
   },
 
   generate: function (difficulty, activeVariant, type) {
