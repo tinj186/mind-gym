@@ -28,8 +28,8 @@ export const p4NumberNotationBlueprint = {
 
   variants: {
     //    foundation_to_words_exact_thousands: 'Convert exact ten thousands between numerals and words (e.g. 40 000 <-> forty thousand).',
-    foundation_to_words_thousands_hundreds: 'Convert 5-digit numbers ending in hundreds between numerals and words (e.g. 35 400 <-> thirty-five thousand, four hundred).',
-    //    foundation_to_words_zero_hundreds: 'Write 5-digit numbers with zero hundreds in words (e.g. 42 035).',
+    //    foundation_to_words_thousands_hundreds: 'Convert 5-digit numbers ending in hundreds between numerals and words (e.g. 35 400 <-> thirty-five thousand, four hundred).',
+    foundation_to_words_zero_hundreds: 'Convert 5-digit numbers with zero hundreds between numerals and words (e.g. 42 035 <-> forty-two thousand and thirty-five).',
     //    foundation_to_words_zero_tens_hundreds: 'Write 5-digit numbers with zero hundreds and tens in words (e.g. 80 009).',
     //    foundation_to_words_general: 'Write general 5-digit numbers in words (e.g. 58 327).',
 

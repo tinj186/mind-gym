@@ -179,14 +179,63 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         };
       }
     }
+  } else if (activeVariant === 'foundation_to_words_zero_hundreds') {
+    // 5-digit with zero hundreds e.g. 42 035, 68 019
+    const th = Math.floor(Math.random() * 80) + 11; // 11 to 90
+    const tensOnes = Math.floor(Math.random() * 89) + 10; // 10 to 98
+    num = (th * 1000) + tensOnes;
+    const words = numberToWords(num);
+    const remPart = (num % 1000).toString().padStart(3, '0');
+    const formattedNum = `${th} ${remPart}`;
+    const isWordsToNumeral = Math.random() < 0.5;
+
+    if (isWordsToNumeral) {
+      // Direction: Words to Numeral (concise question)
+      finalAnswer = num.toString();
+      promptInstruction = `- Question stem: "Write ${words} in numerals."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isMCQ) {
+        const d1 = `${th}${tensOnes}`; // dropped zero hundreds placeholder e.g. 4235
+        const d2 = `${th}${tensOnes}0`; // shifted tens into hundreds e.g. 42350
+        const d3 = `${th}00${tensOnes}`; // extra zero placeholder e.g. 420035
+
+        const set = new Set([finalAnswer, d1, d2, d3]);
+        while (set.size < 4) {
+          set.add(((th * 1000) + 100 + tensOnes).toString());
+        }
+        options = Array.from(set).sort(() => Math.random() - 0.5);
+        defectMap = {
+          [d1]: "DROPPED_ZERO_PLACEHOLDER",
+          [d2]: "SHIFTED_TENS_TO_HUNDREDS",
+          [d3]: "EXTRA_ZERO_PLACEHOLDER"
+        };
+      }
+    } else {
+      // Direction: Numeral to Words (concise question)
+      finalAnswer = words;
+      promptInstruction = `- Question stem: "Write ${formattedNum} in words."\\n- The finalAnswer must be the words entirely lowercased exactly as follows: "${finalAnswer}".`;
+
+      if (isMCQ) {
+        const d1 = words.replace(' and ', ' '); // missing "and"
+        const hVal = Math.floor(tensOnes / 10);
+        const remVal = tensOnes % 10;
+        const d2 = numberToWords((th * 1000) + (hVal * 100) + (remVal * 10)); // shifted
+        const d3 = numberToWords((th * 1000) + (hVal * 100) + remVal); // replaced zero with digit
+
+        const set = new Set([finalAnswer, d1, d2, d3]);
+        while (set.size < 4) {
+          set.add(numberToWords(num + 100));
+        }
+        options = Array.from(set).sort(() => Math.random() - 0.5);
+        defectMap = {
+          [d1]: "MISSING_CONJUNCTION_AND",
+          [d2]: "SHIFTED_TENS_TO_HUNDREDS",
+          [d3]: "PLACE_VALUE_MISALIGNMENT"
+        };
+      }
+    }
   } else {
-    if (activeVariant === 'foundation_to_words_zero_hundreds') {
-      // 5-digit with zero hundreds e.g. 42 035
-      const th = Math.floor(Math.random() * 80) + 11;
-      const t = Math.floor(Math.random() * 8) + 2;
-      const o = Math.floor(Math.random() * 9) + 1;
-      num = (th * 1000) + (t * 10) + o;
-    } else if (activeVariant === 'foundation_to_words_zero_tens_hundreds') {
+    if (activeVariant === 'foundation_to_words_zero_tens_hundreds') {
       // 5-digit with 00 in hundreds/tens e.g. 60 008 or 74 005
       const th = Math.floor(Math.random() * 80) + 11;
       const o = Math.floor(Math.random() * 9) + 1;
