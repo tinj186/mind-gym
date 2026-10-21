@@ -16,8 +16,8 @@ export default function NumberPattern({ data, attempts }) {
     <div className="my-8 flex flex-wrap items-center justify-center gap-4 p-8 bg-slate-50 rounded-[2.5rem] border-2 border-slate-200 select-none">
       {sequence.map((num, idx) => (
         <React.Fragment key={idx}>
-          <div className={`w-20 h-20 rounded-full flex items-center justify-center border-4 border-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all ${num === '?' || num === '' ? 'bg-slate-200 animate-pulse' : 'bg-white'}`}>
-            <span className="text-2xl font-black text-slate-900">
+          <div className={`min-w-20 px-3.5 h-20 rounded-full flex items-center justify-center border-4 border-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all ${num === '?' || num === '' ? 'bg-slate-200 animate-pulse' : 'bg-white'}`}>
+            <span className={`${String(num).length > 4 ? 'text-lg sm:text-xl' : 'text-2xl'} font-black text-slate-900 tracking-tight`}>
               {num === '?' ? '' : num}
             </span>
           </div>
