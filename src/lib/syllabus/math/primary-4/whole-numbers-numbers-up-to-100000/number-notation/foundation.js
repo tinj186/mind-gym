@@ -126,13 +126,61 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         };
       }
     }
+  } else if (activeVariant === 'foundation_to_words_thousands_hundreds') {
+    // 5-digit ending in 00 e.g. 35 400
+    const th = Math.floor(Math.random() * 80) + 11; // 11 to 90
+    const h = Math.floor(Math.random() * 9) + 1;    // 1 to 9
+    num = (th * 1000) + (h * 100);
+    const words = numberToWords(num);
+    const formattedNum = `${th} ${h}00`;
+    const isWordsToNumeral = Math.random() < 0.5;
+
+    if (isWordsToNumeral) {
+      // Direction: Words to Numeral (concise question)
+      finalAnswer = num.toString();
+      promptInstruction = `- Question stem: "Write ${words} in numerals."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isMCQ) {
+        const d1 = Math.floor(num / 10).toString(); // dropped zero e.g. 3540
+        const d2 = ((th * 1000) + (h * 10)).toString(); // confused tens with hundreds e.g. 35040
+        const d3 = ((th * 10000) + (h * 100)).toString(); // extra zero / misplaced place value e.g. 350400
+
+        const set = new Set([finalAnswer, d1, d2, d3]);
+        while (set.size < 4) {
+          set.add(((th * 1000) + ((h === 9 ? 8 : h + 1) * 100)).toString());
+        }
+        options = Array.from(set).sort(() => Math.random() - 0.5);
+        defectMap = {
+          [d1]: "DROPPED_PLACE_VALUE_ZERO",
+          [d2]: "CONFUSED_TENS_WITH_HUNDREDS",
+          [d3]: "EXTRA_PLACE_VALUE_ZERO"
+        };
+      }
+    } else {
+      // Direction: Numeral to Words (concise question)
+      finalAnswer = words;
+      promptInstruction = `- Question stem: "Write ${formattedNum} in words."\\n- The finalAnswer must be the words entirely lowercased exactly as follows: "${finalAnswer}".`;
+
+      if (isMCQ) {
+        const d1 = words.replace(',', ' and'); // syntax error: e.g. thirty-five thousand and four hundred
+        const tensWords = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+        const d2 = `${numberToWords(th * 1000)} and ${tensWords[h] || 'forty'}`; // confused tens with hundreds
+        const d3 = numberToWords((th * 1000) + ((h === 9 ? 8 : h + 1) * 100)); // off by a hundred
+
+        const set = new Set([finalAnswer, d1, d2, d3]);
+        while (set.size < 4) {
+          set.add(numberToWords(num + 1000));
+        }
+        options = Array.from(set).sort(() => Math.random() - 0.5);
+        defectMap = {
+          [d1]: "INCORRECT_CONJUNCTION_AND",
+          [d2]: "CONFUSED_TENS_WITH_HUNDREDS",
+          [d3]: "OFF_BY_HUNDRED"
+        };
+      }
+    }
   } else {
-    if (activeVariant === 'foundation_to_words_thousands_hundreds') {
-      // 5-digit ending in 00 e.g. 35 400
-      const th = Math.floor(Math.random() * 80) + 11;
-      const h = Math.floor(Math.random() * 9) + 1;
-      num = (th * 1000) + (h * 100);
-    } else if (activeVariant === 'foundation_to_words_zero_hundreds') {
+    if (activeVariant === 'foundation_to_words_zero_hundreds') {
       // 5-digit with zero hundreds e.g. 42 035
       const th = Math.floor(Math.random() * 80) + 11;
       const t = Math.floor(Math.random() * 8) + 2;
