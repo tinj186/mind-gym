@@ -27,19 +27,18 @@ export const p4ApproximationSymbolBlueprint = {
   },
 
   variants: {
-    foundation_default: 'Basic conceptual understanding and direct computation.',
     foundation_symbol_meaning: 'Understand the mathematical definition of the ≈ symbol.',
     foundation_choose_correct_symbol: 'Choose between = and ≈ for direct numerical statements.',
     foundation_complete_approx_statement: 'Complete an approximation statement for a given rounding unit.',
     foundation_identify_rounding_place_from_approx: 'Identify which place value a number was rounded to from an approximation statement.',
     foundation_true_false_statement: 'Distinguish between mathematically true and false approximation sentences.',
-    standard_default: 'Standard syllabus-aligned application and multi-step reasoning.',
+
     standard_correct_symbol_choice_multi: 'Determine whether = or ≈ belongs in multi-term arithmetic expressions.',
     standard_approx_degree_identification: 'Analyze multi-digit numbers that round to the same value across multiple place values.',
     standard_find_original_from_approx: 'Identify possible original numbers given an approximation statement.',
     standard_error_analysis: 'Diagnose and correct student mistakes involving the = and ≈ symbols.',
     standard_estimation_chain: 'Complete formal multi-step estimation calculation chains.',
-    advanced_default: 'Challenging heuristic and integrated problem-solving.',
+
     advanced_symbol_chain_conventions: 'Evaluate strict Singapore MOE symbol conventions across estimation sentences.',
     advanced_dual_statement_validity: 'Determine the mathematical truth value of simultaneous approximation claims.',
     advanced_range_of_approx_expression: 'Calculate maximum possible differences from approximate values.',

@@ -27,21 +27,18 @@ export const p4NumberComparisonAndOrderingBlueprint = {
   },
 
   variants: {
-    foundation_default: 'Basic conceptual understanding and direct computation.',
     foundation_compare_greater_ten_thousands: 'Compare two 5-digit numbers with different ten thousands digits (find greater).',
     foundation_compare_smaller_ten_thousands: 'Compare two 5-digit numbers with different ten thousands digits (find smaller).',
     foundation_compare_greater_thousands: 'Compare two 5-digit numbers with same ten thousands, different thousands (find greater).',
     foundation_compare_smaller_thousands: 'Compare two 5-digit numbers with same ten thousands, different thousands (find smaller).',
     foundation_compare_hundreds_tens: 'Compare two 5-digit numbers with matching lead digits (compare hundreds/tens).',
 
-    standard_default: 'Standard syllabus-aligned application and multi-step reasoning.',
     standard_order_asc_diff_ten_thousands: 'Arrange 4 numbers (different ten thousands) in ascending order.',
     standard_order_desc_diff_ten_thousands: 'Arrange 4 numbers (different ten thousands) in descending order.',
     standard_order_asc_same_ten_thousands: 'Arrange 4 numbers (same ten thousands) in ascending order.',
     standard_order_desc_same_ten_thousands: 'Arrange 4 numbers (same ten thousands) in descending order.',
     standard_order_mixed_digits: 'Arrange 4 numbers containing a mixture of 4-digit and 5-digit numbers.',
 
-    advanced_default: 'Challenging heuristic and integrated problem-solving.',
     advanced_form_greatest_5_digit: 'Form the greatest 5-digit number using 5 given cards.',
     advanced_form_smallest_5_digit: 'Form the smallest 5-digit number using 5 given cards.',
     advanced_form_greatest_even: 'Form the greatest 5-digit even number using 5 given cards.',

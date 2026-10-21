@@ -27,7 +27,6 @@ export const p4NumberPatternsBlueprint = {
   },
 
   variants: {
-    foundation_default: 'Basic conceptual understanding and direct computation.',
     foundation_add_10: 'Count on by 10 within 100 000.',
     foundation_subtract_10: 'Count back by 10 within 100 000.',
     foundation_add_100: 'Count on by 100 within 100 000.',
@@ -36,16 +35,15 @@ export const p4NumberPatternsBlueprint = {
     foundation_subtract_1000: 'Count back by 1000 within 100 000.',
     foundation_add_10000: 'Count on by 10 000 within 100 000.',
     foundation_subtract_10000: 'Count back by 10 000 within 100 000.',
-    standard_default: 'Standard syllabus-aligned application and multi-step reasoning.',
+
     standard_add_cross_thousands: 'Count on crossing thousands boundary.',
     standard_subtract_cross_thousands: 'Count back crossing thousands boundary.',
     standard_add_cross_ten_thousands: 'Count on crossing ten-thousands boundary.',
     standard_subtract_cross_ten_thousands: 'Count back crossing ten-thousands boundary.',
     standard_reach_100000: 'Number sequences approaching or reaching 100 000.',
-    advanced_default: 'Challenging heuristic and integrated problem-solving.',
+
     advanced_alternating_add_sub: 'Two-step alternating rule with addition and subtraction.',
     advanced_alternating_add_add: 'Two-step alternating rule with two different additions.',
-    growing_jumps: 'Number sequence with increasing jump increments.',
     advanced_growing_jumps: 'Number sequence with increasing jump increments.',
     advanced_large_jumps: 'Sequences with non-standard step sizes (e.g. 1250, 2500, 5000).',
     advanced_two_missing_terms: 'Find sum of two missing terms (A + B) in a sequence.'
