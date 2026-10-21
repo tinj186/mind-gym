@@ -28,8 +28,25 @@ export const p4PlaceValuesTenThousandsBlueprint = {
 
   variants: {
     foundation_default: 'Basic conceptual understanding and direct computation.',
+    foundation_visual: 'Look at the place value chart. Identify the 5-digit number shown.',
+    foundation_identify_place: 'Identify which digit is in a specific place value (ten thousands to ones).',
+    foundation_build_from_parts: 'Find the total number from given ten thousands, thousands, hundreds, tens, and ones.',
+    foundation_expanded_form_addition: 'Calculate the total of an expanded form addition up to 100 000.',
+    foundation_place_value_representation: 'Identify how many ten thousands a specific digit represents.',
+
     standard_default: 'Standard syllabus-aligned application and multi-step reasoning.',
-    advanced_default: 'Challenging heuristic and integrated problem-solving.'
+    standard_digit_value: 'Identify the value of a specific digit in a 5-digit number.',
+    standard_digit_with_value: 'Identify which digit has a given value in a 5-digit number.',
+    standard_expanded_form_missing: 'Find the missing number in a 5-digit expanded form equation.',
+    standard_greatest_value_digit: 'Identify which digit has the greatest or smallest value in a 5-digit number.',
+    standard_mystery_number_values: 'Solve a 5-digit mystery number from jumbled place value clues.',
+
+    advanced_default: 'Challenging heuristic and integrated problem-solving.',
+    advanced_decomposition: 'Decompose or reconstruct numbers from non-standard place value groupings.',
+    advanced_regrouping: 'Regroup tens, hundreds, and thousands into a 5-digit number.',
+    advanced_value_riddles: 'Solve multi-step place value riddles using relational clues and digit sums.',
+    advanced_difference_between_values: 'Find the difference between the values of two digits in a 5-digit number.',
+    advanced_forming_numbers: 'Form the smallest or greatest 5-digit even/odd number with constraints using given digits.'
   },
 
   generate: function (difficulty, activeVariant, type) {
