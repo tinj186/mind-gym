@@ -234,40 +234,116 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         };
       }
     }
-  } else {
-    if (activeVariant === 'foundation_to_words_zero_tens_hundreds') {
-      // 5-digit with 00 in hundreds/tens e.g. 60 008 or 74 005
-      const th = Math.floor(Math.random() * 80) + 11;
-      const o = Math.floor(Math.random() * 9) + 1;
-      num = (th * 1000) + o;
-    } else {
-      // General 5-digit number e.g. 58 327
-      const th = Math.floor(Math.random() * 80) + 11;
-      const h = Math.floor(Math.random() * 9) + 1;
-      const t = Math.floor(Math.random() * 8) + 2;
-      const o = Math.floor(Math.random() * 9) + 1;
-      num = (th * 1000) + (h * 100) + (t * 10) + o;
-    }
+  } else if (activeVariant === 'foundation_to_words_zero_tens_hundreds') {
+    // 5-digit with 00 in hundreds/tens e.g. 80 009 or 74 005
+    const th = Math.floor(Math.random() * 80) + 11;
+    const o = Math.floor(Math.random() * 9) + 1;
+    num = (th * 1000) + o;
+    const words = numberToWords(num);
+    const formattedNum = `${th} 00${o}`;
+    const isWordsToNumeral = Math.random() < 0.5;
 
-    finalAnswer = numberToWords(num);
+    if (isWordsToNumeral) {
+      // Direction: Words to Numeral (concise question)
+      finalAnswer = num.toString();
+      promptInstruction = `- Question stem: "Write ${words} in numerals."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isMCQ) {
+        const d1 = `${th}0${o}`; // dropped one zero placeholder e.g. 8009
+        const d2 = `${th}${o}0`; // shifted ones to tens e.g. 8090
+        const d3 = `${th}${o}00`; // shifted ones to hundreds e.g. 80900
+
+        const set = new Set([finalAnswer, d1, d2, d3]);
+        while (set.size < 4) {
+          set.add(((th * 1000) + (o === 9 ? 8 : o + 1)).toString());
+        }
+        options = Array.from(set).sort(() => Math.random() - 0.5);
+        defectMap = {
+          [d1]: "DROPPED_ZERO_PLACEHOLDER",
+          [d2]: "CONFUSED_ONES_WITH_TENS",
+          [d3]: "CONFUSED_ONES_WITH_HUNDREDS"
+        };
+      }
+    } else {
+      // Direction: Numeral to Words (concise question)
+      finalAnswer = words;
+      promptInstruction = `- Question stem: "Write ${formattedNum} in words."\\n- The finalAnswer must be the words entirely lowercased exactly as follows: "${finalAnswer}".`;
+
+      if (isMCQ) {
+        const d1 = words.replace(' and ', ' '); // missing "and"
+        const tensWords = ['', 'ten', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+        const onesWords = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+        const d2 = `${numberToWords(th * 1000)} and ${tensWords[o]}`; // shifted ones to tens
+        const d3 = `${numberToWords(th * 1000)}, ${onesWords[o]} hundred`; // shifted ones to hundreds
+
+        const set = new Set([finalAnswer, d1, d2, d3]);
+        while (set.size < 4) {
+          set.add(numberToWords(num + 10));
+        }
+        options = Array.from(set).sort(() => Math.random() - 0.5);
+        defectMap = {
+          [d1]: "MISSING_CONJUNCTION_AND",
+          [d2]: "CONFUSED_ONES_WITH_TENS",
+          [d3]: "CONFUSED_ONES_WITH_HUNDREDS"
+        };
+      }
+    }
+  } else {
+    // General 5-digit number e.g. 58 327
+    const th = Math.floor(Math.random() * 80) + 11;
+    const h = Math.floor(Math.random() * 9) + 1;
+    const t = Math.floor(Math.random() * 8) + 2;
+    const o = Math.floor(Math.random() * 9) + 1;
+    num = (th * 1000) + (h * 100) + (t * 10) + o;
+    const words = numberToWords(num);
     const thPart = Math.floor(num / 1000);
     const remPart = (num % 1000).toString().padStart(3, '0');
     const formattedNum = `${thPart} ${remPart}`;
-    promptInstruction = `- Question stem: "Write ${formattedNum} in words."\\n- The finalAnswer must be the words entirely lowercased exactly as follows: "${finalAnswer}".`;
+    const isWordsToNumeral = Math.random() < 0.5;
 
-    if (isMCQ) {
-      const d1 = numberToWords(num).replace(' and ', ' ');
-      const d2 = numberToWords(num + 100);
-      const d3 = numberToWords(num - 10 > 10000 ? num - 10 : num + 10);
-      const set = new Set([finalAnswer, d1, d2, d3]);
-      while (set.size < 4) {
-        set.add(numberToWords(num + Math.floor(Math.random() * 20 - 10) * 1000));
+    if (isWordsToNumeral) {
+      // Direction: Words to Numeral (concise question)
+      finalAnswer = num.toString();
+      promptInstruction = `- Question stem: "Write ${words} in numerals."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isMCQ) {
+        const d1 = ((th * 1000) + (h * 100) + (o * 10) + t).toString(); // swapped tens and ones
+        const d2 = ((th * 1000) + (t * 100) + (h * 10) + o).toString(); // swapped hundreds and tens
+        const d3 = (num + (h >= 5 ? -100 : 100)).toString(); // off by a hundred
+
+        const set = new Set([finalAnswer, d1, d2, d3]);
+        while (set.size < 4) {
+          set.add((num + 1000).toString());
+        }
+        options = Array.from(set).sort(() => Math.random() - 0.5);
+        defectMap = {
+          [d1]: "SWAPPED_TENS_ONES_DIGITS",
+          [d2]: "SWAPPED_HUNDREDS_TENS_DIGITS",
+          [d3]: "OFF_BY_HUNDRED"
+        };
       }
-      options = Array.from(set).sort(() => Math.random() - 0.5);
-      defectMap = {
-        [d1]: "NOTATION_SYNTAX_ERROR",
-        [d2]: "PLACE_VALUE_MISALIGNMENT"
-      };
+    } else {
+      // Direction: Numeral to Words (concise question)
+      finalAnswer = words;
+      promptInstruction = `- Question stem: "Write ${formattedNum} in words."\\n- The finalAnswer must be the words entirely lowercased exactly as follows: "${finalAnswer}".`;
+
+      if (isMCQ) {
+        const d1 = words.replace(' and ', ' '); // missing "and"
+        const swappedNum = (th * 1000) + (h * 100) + (o * 10) + t;
+        const d2 = numberToWords(swappedNum); // swapped tens and ones words
+        const d3 = numberToWords(num + (h >= 5 ? -100 : 100)); // off by a hundred
+
+        const set = new Set([finalAnswer, d1, d2, d3]);
+        while (set.size < 4) {
+          set.add(numberToWords(num + 1000));
+        }
+        options = Array.from(set).sort(() => Math.random() - 0.5);
+        defectMap = {
+          [d1]: "MISSING_CONJUNCTION_AND",
+          [d2]: "SWAPPED_TENS_ONES_DIGITS",
+          [d3]: "OFF_BY_HUNDRED"
+        };
+      }
     }
   }
 
