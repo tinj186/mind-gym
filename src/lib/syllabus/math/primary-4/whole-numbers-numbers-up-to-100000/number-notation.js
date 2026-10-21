@@ -28,8 +28,25 @@ export const p4NumberNotationBlueprint = {
 
   variants: {
     foundation_default: 'Basic conceptual understanding and direct computation.',
+    foundation_to_words_exact_thousands: 'Write exact ten thousands in words (e.g. 40 000 -> forty thousand).',
+    foundation_to_words_thousands_hundreds: 'Write 5-digit numbers ending in hundreds in words (e.g. 35 400).',
+    foundation_to_words_zero_hundreds: 'Write 5-digit numbers with zero hundreds in words (e.g. 42 035).',
+    foundation_to_words_zero_tens_hundreds: 'Write 5-digit numbers with zero hundreds and tens in words (e.g. 80 009).',
+    foundation_to_words_general: 'Write general 5-digit numbers in words (e.g. 58 327).',
+
     standard_default: 'Standard syllabus-aligned application and multi-step reasoning.',
-    advanced_default: 'Challenging heuristic and integrated problem-solving.'
+    standard_to_numeral_exact_thousands: 'Convert exact ten thousands in words to numerals.',
+    standard_to_numeral_zero_hundreds: 'Convert words with zero hundreds to numerals (e.g. 65 018).',
+    standard_to_numeral_zero_tens_hundreds: 'Convert words with zero hundreds and tens to numerals (e.g. 90 004).',
+    standard_to_numeral_general: 'Convert general 5-digit number words to numerals.',
+    standard_to_numeral_with_thousands_group: 'Convert compound thousands and hundreds words to numerals.',
+
+    advanced_default: 'Challenging heuristic and integrated problem-solving.',
+    advanced_identify_spelling_error: 'Spot incorrect spelling or notation in 5-digit number words.',
+    advanced_mixed_place_values_to_words: 'Convert non-standard mixed place values to words.',
+    advanced_mystery_number_to_words: 'Solve a 5-digit mystery riddle and write the result in words.',
+    advanced_forming_numbers_to_words: 'Form the greatest or smallest 5-digit odd/even number and write in words.',
+    advanced_numeral_to_words_with_condition: 'Calculate a conditioned 5-digit number and express the result in words.'
   },
 
   generate: function (difficulty, activeVariant, type) {
