@@ -62,25 +62,154 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   }
 
   if (activeVariant === 'advanced_identify_spelling_error') {
-    // Spot the incorrectly written number in words
-    const commonErrors = [
-      { correct: "forty thousand", wrong: "fourty thousand" },
-      { correct: "fifteen thousand", wrong: "fiveteen thousand" },
-      { correct: "twelve thousand", wrong: "twelth thousand" },
-      { correct: "eighty thousand", wrong: "eightty thousand" },
-      { correct: "ninety thousand", wrong: "ninty thousand" }
+    // Dynamic generation across 12 irregular spelling & notation rules in Singapore P4:
+    const errorTypes = [
+      {
+        correct: 'forty',
+        wrong: 'fourty',
+        explanation: "'forty' drops the letter 'u' (unlike 'four' or 'fourteen')",
+        generateNum: () => (Math.floor(Math.random() * 10) + 40) * 1000 + Math.floor(Math.random() * 900) + 20
+      },
+      {
+        correct: 'ninety',
+        wrong: 'ninty',
+        explanation: "'ninety' retains the letter 'e' (unlike 'ninth')",
+        generateNum: () => (Math.floor(Math.random() * 10) + 90) * 1000 + Math.floor(Math.random() * 900) + 20
+      },
+      {
+        correct: 'eighty',
+        wrong: 'eightty',
+        explanation: "'eighty' has only one 't'",
+        generateNum: () => (Math.floor(Math.random() * 10) + 80) * 1000 + Math.floor(Math.random() * 900) + 20
+      },
+      {
+        correct: 'fifty',
+        wrong: 'fivety',
+        explanation: "'fifty' uses 'fif-', not 'five-'",
+        generateNum: () => (Math.floor(Math.random() * 10) + 50) * 1000 + Math.floor(Math.random() * 900) + 20
+      },
+      {
+        correct: 'fifteen',
+        wrong: 'fiveteen',
+        explanation: "'fifteen' uses 'fif-', not 'five-'",
+        generateNum: () => Math.random() < 0.5 ? 15000 + Math.floor(Math.random() * 900) + 20 : (Math.floor(Math.random() * 70) + 20) * 1000 + 15
+      },
+      {
+        correct: 'fourteen',
+        wrong: 'forteen',
+        explanation: "'fourteen' retains 'four', unlike 'forty'",
+        generateNum: () => Math.random() < 0.5 ? 14000 + Math.floor(Math.random() * 900) + 20 : (Math.floor(Math.random() * 70) + 20) * 1000 + 14
+      },
+      {
+        correct: 'twelve',
+        wrong: 'twelth',
+        explanation: "'twelve' ends in '-ve'",
+        generateNum: () => Math.random() < 0.5 ? 12000 + Math.floor(Math.random() * 900) + 20 : (Math.floor(Math.random() * 70) + 20) * 1000 + 12
+      },
+      {
+        correct: 'eighteen',
+        wrong: 'eightteen',
+        explanation: "'eighteen' has only one 't'",
+        generateNum: () => Math.random() < 0.5 ? 18000 + Math.floor(Math.random() * 900) + 20 : (Math.floor(Math.random() * 70) + 20) * 1000 + 18
+      },
+      {
+        correct: 'nineteen',
+        wrong: 'nineten',
+        explanation: "'nineteen' ends with '-teen'",
+        generateNum: () => Math.random() < 0.5 ? 19000 + Math.floor(Math.random() * 900) + 20 : (Math.floor(Math.random() * 70) + 20) * 1000 + 19
+      },
+      {
+        correct: 'hundred',
+        wrong: 'hunderd',
+        explanation: "'hundred' ends with '-red'",
+        generateNum: () => {
+          const th = Math.floor(Math.random() * 70) + 20;
+          const h = Math.floor(Math.random() * 8) + 1;
+          return (th * 1000) + (h * 100) + Math.floor(Math.random() * 80) + 10;
+        }
+      },
+      {
+        correct: 'thousand',
+        wrong: 'thousands',
+        explanation: "'thousand' is not pluralized when used in number notation",
+        generateNum: () => (Math.floor(Math.random() * 70) + 20) * 1000 + Math.floor(Math.random() * 900) + 20
+      },
+      {
+        correct: 'thousand',
+        wrong: 'thousend',
+        explanation: "'thousand' is spelled with 'a-n-d'",
+        generateNum: () => (Math.floor(Math.random() * 70) + 20) * 1000 + Math.floor(Math.random() * 900) + 20
+      }
     ];
-    const picked = commonErrors[Math.floor(Math.random() * commonErrors.length)];
-    finalAnswer = picked.wrong;
 
-    promptInstruction = `- Question stem: "Which of the following numbers is written INCORRECTLY in words?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    const rule = errorTypes[Math.floor(Math.random() * errorTypes.length)];
+    const num = rule.generateNum();
+    const correctWords = numberToWords(num);
+    const wrongWords = correctWords.replace(new RegExp(`\\b${rule.correct}\\b`), rule.wrong);
 
-    const otherCorrect = commonErrors.filter(e => e.wrong !== picked.wrong).slice(0, 3).map(e => e.correct);
-    options = [finalAnswer, ...otherCorrect].sort(() => Math.random() - 0.5);
-    defectMap = {
-      [otherCorrect[0]]: "NOTATION_SYNTAX_ERROR",
-      [otherCorrect[1]]: "NOTATION_SYNTAX_ERROR"
-    };
+    if (isMCQ) {
+      const isSpotWrong = Math.random() < 0.5;
+
+      if (isSpotWrong) {
+        // Mode 1: Identify the number written INCORRECTLY
+        finalAnswer = wrongWords;
+        promptInstruction = `- Question stem: "Which of the following numbers is written INCORRECTLY in words?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+        const set = new Set([finalAnswer]);
+        let attempts = 0;
+        while (set.size < 4 && attempts < 30) {
+          attempts++;
+          const randTh = Math.floor(Math.random() * 80) + 11;
+          const randRem = Math.floor(Math.random() * 900) + 20;
+          const cleanNum = (randTh * 1000) + randRem;
+          if (cleanNum !== num) {
+            set.add(numberToWords(cleanNum));
+          }
+        }
+        options = Array.from(set).sort(() => Math.random() - 0.5);
+        defectMap = {};
+        options.forEach(opt => {
+          if (opt !== finalAnswer) defectMap[opt] = "PROPERLY_SPELLED_NOTATION";
+        });
+      } else {
+        // Mode 2: Identify the number written CORRECTLY
+        finalAnswer = correctWords;
+        promptInstruction = `- Question stem: "Which of the following is the CORRECT spelling in words for ${num.toLocaleString()}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+        const d1 = wrongWords;
+        const d2 = correctWords.replace(/\bthousand\b/, 'thousands');
+        const d3 = correctWords.replace(/\bthousand\b/, 'thousend');
+        const set = new Set([finalAnswer, d1, d2, d3]);
+        if (set.size < 4) set.add(correctWords.replace(/\bhundred\b/, 'hunderd'));
+        let offset = 100;
+        while (set.size < 4) {
+          set.add(numberToWords(num + offset));
+          offset += 100;
+        }
+        options = Array.from(set).sort(() => Math.random() - 0.5);
+        defectMap = {};
+        options.forEach(opt => {
+          if (opt !== finalAnswer) defectMap[opt] = "NOTATION_SYNTAX_ERROR";
+        });
+      }
+    } else {
+      // Short question: direct, brief stems
+      const shortType = Math.floor(Math.random() * 3);
+
+      if (shortType === 0) {
+        // Mode 1: Identify the misspelled word
+        finalAnswer = rule.wrong;
+        promptInstruction = `- Question stem: "Which word is spelled incorrectly in '${wrongWords}'?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+      } else if (shortType === 1) {
+        // Mode 2: Correct the misspelled word
+        finalAnswer = rule.correct;
+        promptInstruction = `- Question stem: "A student wrote ${num.toLocaleString()} as '${wrongWords}'. What is the correct spelling of the misspelled word '${rule.wrong}'?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+      } else {
+        // Mode 3: Write the full correct words
+        finalAnswer = correctWords;
+        promptInstruction = `- Question stem: "Correct the spelling error in '${wrongWords}' by writing the full number correctly in words."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+      }
+    }
   } else if (activeVariant === 'advanced_mixed_place_values_to_words') {
     const tth = Math.floor(Math.random() * 5) + 3; // 3 to 7
     const extraH = Math.floor(Math.random() * 15) + 12; // 12 to 26
