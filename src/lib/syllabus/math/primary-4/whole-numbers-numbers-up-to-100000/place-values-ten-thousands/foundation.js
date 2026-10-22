@@ -27,15 +27,17 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
 
     visualEngineStr = `{\n    "componentToRender": "PLACE_VALUE_CHART",\n    "componentData": { "tenThousands": ${tth}, "thousands": ${th}, "hundreds": ${h}, "tens": ${t}, "ones": ${o} }\n  }`;
     finalAnswer = num.toString();
-    promptInstruction = `- Question stem: "Look at the place value chart. What number is shown?"\\n- The target answer is ${num}.`;
+    promptInstruction = `- Question stem: "Look at the place value chart. What number is shown?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
     if (isMCQ) {
       const d1 = (tth * 1000) + (th * 100) + (h * 10) + o; // dropped ten thousands column
       const d2 = num + 1000;
       const d3 = num - 100;
       const set = new Set([finalAnswer, d1.toString(), d2.toString(), d3.toString()]);
+      let offset = 20;
       while (set.size < 4) {
-        set.add((num + (Math.floor(Math.random() * 20) - 10) * 10).toString());
+        set.add((num + offset).toString());
+        offset += 10;
       }
       options = Array.from(set).sort(() => Math.random() - 0.5);
       defectMap = {
