@@ -515,11 +515,11 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       dist3 = ((thPrefix + tensOrOnes) * 1000); // thousands (85 000)
     }
 
-    if (isToNumeral) {
-      finalAnswer = num.toString();
-      promptInstruction = `- Question stem: "Which of the following numerals represents '${numberToWords(num)}'?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    if (isMCQ) {
+      if (isToNumeral) {
+        finalAnswer = num.toString();
+        promptInstruction = `- Question stem: "Which numeral represents '${numberToWords(num)}'?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
-      if (isMCQ) {
         const d1 = dist1.toString();
         const d2 = dist2.toString();
         const d3 = dist3.toString();
@@ -535,12 +535,10 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           [d2]: "CONFUSED_HUNDREDS_AND_TENS_NOTATION",
           [d3]: "CONFUSED_THOUSANDS_AND_ONES_NOTATION"
         };
-      }
-    } else {
-      finalAnswer = numberToWords(num);
-      promptInstruction = `- Question stem: "Which of the following is the correct word representation of ${num.toLocaleString()}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+      } else {
+        finalAnswer = numberToWords(num);
+        promptInstruction = `- Question stem: "Which of the following is the correct word representation of ${num.toLocaleString()}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
-      if (isMCQ) {
         const d1 = numberToWords(dist1);
         const d2 = numberToWords(dist2);
         const d3 = numberToWords(dist3);
@@ -556,6 +554,29 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           [d2]: "CONFUSED_HUNDREDS_AND_TENS_NOTATION",
           [d3]: "CONFUSED_THOUSANDS_AND_ONES_NOTATION"
         };
+      }
+    } else {
+      // Short question: direct, brief stems without "Which of the following"
+      const shortType = Math.floor(Math.random() * 4);
+      if (shortType === 0) {
+        // Words to numerals
+        finalAnswer = num.toString();
+        promptInstruction = `- Question stem: "Write '${numberToWords(num)}' in numerals."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+      } else if (shortType === 1) {
+        // Numerals to words
+        finalAnswer = numberToWords(num);
+        promptInstruction = `- Question stem: "Write ${num.toLocaleString()} in words."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+      } else if (shortType === 2) {
+        // Greater comparison between two easily confused forms
+        const maxVal = Math.max(num, dist1);
+        finalAnswer = maxVal.toString();
+        promptInstruction = `- Question stem: "Which is greater: ${numberToWords(num)} or ${numberToWords(dist1)}? Write the greater number in numerals."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+      } else {
+        // Difference between two easily confused forms
+        const bigger = Math.max(num, dist1);
+        const smaller = Math.min(num, dist1);
+        finalAnswer = (bigger - smaller).toString();
+        promptInstruction = `- Question stem: "What is the difference between ${numberToWords(bigger)} and ${numberToWords(smaller)} in numerals?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
       }
     }
   }
