@@ -366,8 +366,9 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       }
     }
   } else if (activeVariant === 'standard_simple_computation_to_words') {
-    // Compute place-value sum or difference and express in words
+    // Compute place-value sum or difference with result in either words (50%) or numerical (50%)
     const isAdd = Math.random() < 0.5;
+    const isToWords = Math.random() < 0.5;
     let n1 = 0;
     let n2 = 0;
     let result = 0;
@@ -376,49 +377,107 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       n1 = (Math.floor(Math.random() * 6) + 2) * 10000; // 20 000 to 70 000
       n2 = (Math.floor(Math.random() * 8) + 1) * 1000 + (Math.floor(Math.random() * 8) + 1) * 10; // e.g. 5060
       result = n1 + n2;
-      finalAnswer = numberToWords(result);
-      promptInstruction = `- Question stem: "Find the sum of ${n1.toLocaleString()} and ${n2.toLocaleString()}. Write your answer in words."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
-      if (isMCQ) {
-        const d1 = numberToWords(result + 100);
-        const d2 = numberToWords(result - 10);
-        const d3 = numberToWords(n1 + (n2 * 10 > 30000 ? n2 - 1000 : n2 * 10));
-        const set = new Set([finalAnswer, d1, d2, d3]);
-        let offset = 200;
-        while (set.size < 4) {
-          set.add(numberToWords(result + offset));
-          offset += 100;
+      if (isToWords) {
+        finalAnswer = numberToWords(result);
+        promptInstruction = `- Question stem: "Find the sum of ${n1.toLocaleString()} and ${n2.toLocaleString()}. Write your answer in words."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+        if (isMCQ) {
+          const d1 = numberToWords(result + 100);
+          const d2 = numberToWords(result - 10);
+          const d3 = numberToWords(n1 + (n2 * 10 > 30000 ? n2 - 1000 : n2 * 10));
+          const set = new Set([finalAnswer, d1, d2, d3]);
+          let offset = 200;
+          while (set.size < 4) {
+            set.add(numberToWords(result + offset));
+            offset += 100;
+          }
+          options = Array.from(set).sort(() => Math.random() - 0.5);
+          defectMap = {
+            [d1]: "OFF_BY_HUNDRED",
+            [d2]: "OFF_BY_TEN",
+            [d3]: "PLACE_VALUE_MISALIGNMENT"
+          };
         }
-        options = Array.from(set).sort(() => Math.random() - 0.5);
-        defectMap = {
-          [d1]: "OFF_BY_HUNDRED",
-          [d2]: "OFF_BY_TEN",
-          [d3]: "PLACE_VALUE_MISALIGNMENT"
-        };
+      } else {
+        finalAnswer = result.toString();
+        const useWordsInput = Math.random() < 0.5;
+        if (useWordsInput) {
+          promptInstruction = `- Question stem: "Find the sum of ${numberToWords(n1)} and ${numberToWords(n2)}. Write your answer in numerals."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+        } else {
+          promptInstruction = `- Question stem: "Find the sum of ${n1.toLocaleString()} and ${n2.toLocaleString()}. Write your answer in numerals."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+        }
+
+        if (isMCQ) {
+          const d1 = (result + 100).toString();
+          const d2 = (result - 10).toString();
+          const d3 = (n1 + (n2 * 10 > 30000 ? n2 - 1000 : n2 * 10)).toString();
+          const set = new Set([finalAnswer, d1, d2, d3]);
+          let offset = 200;
+          while (set.size < 4) {
+            set.add((result + offset).toString());
+            offset += 100;
+          }
+          options = Array.from(set).sort(() => Math.random() - 0.5);
+          defectMap = {
+            [d1]: "OFF_BY_HUNDRED",
+            [d2]: "OFF_BY_TEN",
+            [d3]: "PLACE_VALUE_MISALIGNMENT"
+          };
+        }
       }
     } else {
       n1 = (Math.floor(Math.random() * 6) + 3) * 10000; // 30 000 to 80 000
       n2 = (Math.floor(Math.random() * 8) + 1) * 1000; // 1000 to 8000
       result = n1 - n2;
-      finalAnswer = numberToWords(result);
-      promptInstruction = `- Question stem: "Subtract ${n2.toLocaleString()} from ${n1.toLocaleString()}. Write your answer in words."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
-      if (isMCQ) {
-        const d1 = numberToWords(n1 + n2); // added instead of subtracted
-        const d2 = numberToWords(result - 1000);
-        const d3 = numberToWords(result + 1000);
-        const set = new Set([finalAnswer, d1, d2, d3]);
-        let offset = 2000;
-        while (set.size < 4) {
-          set.add(numberToWords(result + offset));
-          offset += 1000;
+      if (isToWords) {
+        finalAnswer = numberToWords(result);
+        promptInstruction = `- Question stem: "Subtract ${n2.toLocaleString()} from ${n1.toLocaleString()}. Write your answer in words."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+        if (isMCQ) {
+          const d1 = numberToWords(n1 + n2); // added instead of subtracted
+          const d2 = numberToWords(result - 1000);
+          const d3 = numberToWords(result + 1000);
+          const set = new Set([finalAnswer, d1, d2, d3]);
+          let offset = 2000;
+          while (set.size < 4) {
+            set.add(numberToWords(result + offset));
+            offset += 1000;
+          }
+          options = Array.from(set).sort(() => Math.random() - 0.5);
+          defectMap = {
+            [d1]: "ADDED_INSTEAD_OF_SUBTRACTED",
+            [d2]: "OFF_BY_THOUSAND",
+            [d3]: "OFF_BY_THOUSAND"
+          };
         }
-        options = Array.from(set).sort(() => Math.random() - 0.5);
-        defectMap = {
-          [d1]: "ADDED_INSTEAD_OF_SUBTRACTED",
-          [d2]: "OFF_BY_THOUSAND",
-          [d3]: "OFF_BY_THOUSAND"
-        };
+      } else {
+        finalAnswer = result.toString();
+        const useWordsInput = Math.random() < 0.5;
+        if (useWordsInput) {
+          promptInstruction = `- Question stem: "Subtract ${numberToWords(n2)} from ${numberToWords(n1)}. Write your answer in numerals."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+        } else {
+          promptInstruction = `- Question stem: "Subtract ${n2.toLocaleString()} from ${n1.toLocaleString()}. Write your answer in numerals."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+        }
+
+        if (isMCQ) {
+          const d1 = (n1 + n2).toString(); // added instead of subtracted
+          const d2 = (result - 1000).toString();
+          const d3 = (result + 1000).toString();
+          const set = new Set([finalAnswer, d1, d2, d3]);
+          let offset = 2000;
+          while (set.size < 4) {
+            set.add((result + offset).toString());
+            offset += 1000;
+          }
+          options = Array.from(set).sort(() => Math.random() - 0.5);
+          defectMap = {
+            [d1]: "ADDED_INSTEAD_OF_SUBTRACTED",
+            [d2]: "OFF_BY_THOUSAND",
+            [d3]: "OFF_BY_THOUSAND"
+          };
+        }
       }
     }
   } else {
