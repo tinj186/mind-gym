@@ -59,7 +59,12 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   }
 
   if (activeVariant === 'standard_expanded_form_to_words') {
-    // Convert expanded form with missing place values into words
+    // Variety:
+    // 1) Presented in numbers, answer in words (50%)
+    // 2) Presented in words, answer in numerical (50%)
+    //    - 2a: Expanded parts in words -> numeral (e.g. forty thousand + seven thousand + fifty + two -> 47052)
+    //    - 2b: Word equation with missing expanded blank -> numeral (e.g. forty-seven thousand and fifty-two = 40 000 + _____ + 50 + 2 -> 7000)
+
     const pattern = Math.floor(Math.random() * 3);
     let parts = [];
     let num = 0;
@@ -89,37 +94,96 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       wrongNum2 = tth + th + (o * 100); // placed ones in hundreds (65 900)
       wrongNum3 = tth + th + 10 + o; // added spurious ten
     } else {
-      // Zero tens: e.g. 80 000 + 400 + 6 = 80 406
+      // Zero tens: e.g. 80 000 + 400 + 6 = 80 406 or 80 000 + 3000 + 400 + 6 = 83 406
+      const hasThousands = Math.random() < 0.5;
       const tth = (Math.floor(Math.random() * 8) + 1) * 10000;
+      const th = hasThousands ? (Math.floor(Math.random() * 8) + 1) * 1000 : 0;
       const h = (Math.floor(Math.random() * 8) + 1) * 100;
       const o = Math.floor(Math.random() * 9) + 1;
-      parts = [tth, h, o];
-      num = tth + h + o;
-      wrongNum1 = tth + h + (o * 10); // placed in tens (80 460)
-      wrongNum2 = tth + (h * 10) + o; // shifted hundreds to thousands
-      wrongNum3 = tth + h; // omitted ones
+      parts = hasThousands ? [tth, th, h, o] : [tth, h, o];
+      num = parts.reduce((a, b) => a + b, 0);
+      wrongNum1 = tth + (th || 0) + h + (o * 10); // placed in tens
+      wrongNum2 = tth + (th || 0) + (h * 10) + o; // shifted hundreds
+      wrongNum3 = tth + (th || 0) + h; // omitted ones
     }
 
-    finalAnswer = numberToWords(num);
-    const partsStr = parts.map(p => p.toLocaleString()).join(' + ');
-    promptInstruction = `- Question stem: "Write the value of ${partsStr} in words."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    const isToWords = Math.random() < 0.5;
 
-    if (isMCQ) {
-      const d1 = numberToWords(wrongNum1);
-      const d2 = numberToWords(wrongNum2);
-      const d3 = numberToWords(wrongNum3);
-      const set = new Set([finalAnswer, d1, d2, d3]);
-      let offset = 100;
-      while (set.size < 4) {
-        set.add(numberToWords(num + offset));
-        offset += 100;
+    if (isToWords) {
+      // Direction 1: Presented in numbers, answer in words
+      finalAnswer = numberToWords(num);
+      const partsStr = parts.map(p => p.toLocaleString()).join(' + ');
+      promptInstruction = `- Question stem: "Write the value of ${partsStr} in words."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isMCQ) {
+        const d1 = numberToWords(wrongNum1);
+        const d2 = numberToWords(wrongNum2);
+        const d3 = numberToWords(wrongNum3);
+        const set = new Set([finalAnswer, d1, d2, d3]);
+        let offset = 100;
+        while (set.size < 4) {
+          set.add(numberToWords(num + offset));
+          offset += 100;
+        }
+        options = Array.from(set).sort(() => Math.random() - 0.5);
+        defectMap = {
+          [d1]: "PLACE_VALUE_MISALIGNMENT",
+          [d2]: "OMITTED_OR_SHIFTED_DIGIT",
+          [d3]: "INCORRECT_EXPANDED_SUM"
+        };
       }
-      options = Array.from(set).sort(() => Math.random() - 0.5);
-      defectMap = {
-        [d1]: "PLACE_VALUE_MISALIGNMENT",
-        [d2]: "OMITTED_OR_SHIFTED_DIGIT",
-        [d3]: "INCORRECT_EXPANDED_SUM"
-      };
+    } else {
+      // Direction 2: Presented in words, answer in numerical
+      const subChoice = Math.random() < 0.5 ? 'expanded_words_to_numeral' : 'missing_blank_in_expanded';
+
+      if (subChoice === 'expanded_words_to_numeral') {
+        const wordsExpression = parts.map(p => numberToWords(p)).join(' + ');
+        finalAnswer = num.toString();
+        promptInstruction = `- Question stem: "Write ${wordsExpression} in numerals."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+        if (isMCQ) {
+          const d1 = wrongNum1.toString();
+          const d2 = wrongNum2.toString();
+          const d3 = wrongNum3.toString();
+          const set = new Set([finalAnswer, d1, d2, d3]);
+          let offset = 100;
+          while (set.size < 4) {
+            set.add((num + offset).toString());
+            offset += 100;
+          }
+          options = Array.from(set).sort(() => Math.random() - 0.5);
+          defectMap = {
+            [d1]: "PLACE_VALUE_MISALIGNMENT",
+            [d2]: "OMITTED_OR_SHIFTED_DIGIT",
+            [d3]: "INCORRECT_EXPANDED_SUM"
+          };
+        }
+      } else {
+        // Missing blank in expanded equation
+        const blankIndex = Math.floor(Math.random() * parts.length);
+        const missingPart = parts[blankIndex];
+        const equationStr = parts.map((p, idx) => idx === blankIndex ? '_____' : p.toLocaleString()).join(' + ');
+        finalAnswer = missingPart.toString();
+        promptInstruction = `- Question stem: "${numberToWords(num)} = ${equationStr}. What is the missing number?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+        if (isMCQ) {
+          const d1 = (missingPart * 10).toString();
+          const d2 = (missingPart >= 10 ? Math.floor(missingPart / 10) : missingPart + 10).toString();
+          const d3 = (missingPart + 100).toString();
+          const set = new Set([finalAnswer, d1, d2, d3]);
+          let offset = 10;
+          while (set.size < 4) {
+            set.add((missingPart + offset).toString());
+            offset += 10;
+          }
+          options = Array.from(set).sort(() => Math.random() - 0.5);
+          defectMap = {
+            [d1]: "EXTRA_PLACE_VALUE_ZERO",
+            [d2]: "DROPPED_PLACE_VALUE_ZERO",
+            [d3]: "WRONG_PLACE_VALUE"
+          };
+        }
+      }
     }
   } else if (activeVariant === 'standard_thousands_units_grouping_to_words') {
     // Singapore MOE Period Grouping (thousands group + units group)
