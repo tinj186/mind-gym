@@ -33,11 +33,11 @@ export const p4NumberNotationBlueprint = {
     foundation_to_words_zero_tens_hundreds: 'Convert 5-digit numbers with zero hundreds and tens between numerals and words (e.g. 80 009 <-> eighty thousand and nine).',
     foundation_to_words_general: 'Convert general 5-digit numbers between numerals and words (e.g. 58 327 <-> fifty-eight thousand, three hundred and twenty-seven).',
 
-    standard_to_numeral_exact_thousands: 'Convert exact ten thousands in words to numerals.',
-    standard_to_numeral_zero_hundreds: 'Convert words with zero hundreds to numerals (e.g. 65 018).',
-    standard_to_numeral_zero_tens_hundreds: 'Convert words with zero hundreds and tens to numerals (e.g. 90 004).',
-    standard_to_numeral_general: 'Convert general 5-digit number words to numerals.',
-    standard_to_numeral_with_thousands_group: 'Convert compound thousands and hundreds words to numerals.',
+    standard_expanded_form_to_words: 'Convert expanded notation with missing place values into words.',
+    standard_thousands_units_grouping_to_words: 'Convert thousands and units grouping statements into words or numerals.',
+    standard_more_less_notation: 'Determine 100 or 1000 more/less than a given number in words or numerals.',
+    standard_simple_computation_to_words: 'Compute a sum or difference of place value parts and express the result in words.',
+    standard_word_notation_discrimination: 'Identify the exact written word form among common place value misconception distractors.',
 
     advanced_identify_spelling_error: 'Spot incorrect spelling or notation in 5-digit number words.',
     advanced_mixed_place_values_to_words: 'Convert non-standard mixed place values to words.',

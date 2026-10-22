@@ -49,77 +49,392 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
   if (!activeVariant || activeVariant === 'standard_default' || activeVariant === 'default') {
     const defaultVariants = [
-      'standard_to_numeral_exact_thousands',
-      'standard_to_numeral_zero_hundreds',
-      'standard_to_numeral_zero_tens_hundreds',
-      'standard_to_numeral_general',
-      'standard_to_numeral_with_thousands_group'
+      'standard_expanded_form_to_words',
+      'standard_thousands_units_grouping_to_words',
+      'standard_more_less_notation',
+      'standard_simple_computation_to_words',
+      'standard_word_notation_discrimination'
     ];
     activeVariant = defaultVariants[Math.floor(Math.random() * defaultVariants.length)];
   }
 
-  let num = 0;
-  let d1 = 0;
-  let d2 = 0;
-  let d3 = 0;
+  if (activeVariant === 'standard_expanded_form_to_words') {
+    // Convert expanded form with missing place values into words
+    const pattern = Math.floor(Math.random() * 3);
+    let parts = [];
+    let num = 0;
+    let wrongNum1 = 0;
+    let wrongNum2 = 0;
+    let wrongNum3 = 0;
 
-  if (activeVariant === 'standard_to_numeral_exact_thousands') {
-    const tth = (Math.floor(Math.random() * 8) + 2) * 10;
-    num = tth * 1000;
-    d1 = num / 10;
-    d2 = num * 10 > 100000 ? num - 10000 : num * 10;
-    d3 = num + 1000;
-  } else if (activeVariant === 'standard_to_numeral_zero_hundreds') {
-    const th = Math.floor(Math.random() * 80) + 11;
-    const t = Math.floor(Math.random() * 8) + 2;
-    const o = Math.floor(Math.random() * 9) + 1;
-    num = (th * 1000) + (t * 10) + o;
-    // Classic place value trap: writing hundreds digit as non-zero or omitting 0
-    d1 = (th * 100) + (t * 10) + o; // omitted 0
-    d2 = (th * 1000) + (t * 100) + o; // shifted tens to hundreds
-    d3 = num + 100;
-  } else if (activeVariant === 'standard_to_numeral_zero_tens_hundreds') {
-    const th = Math.floor(Math.random() * 80) + 11;
-    const o = Math.floor(Math.random() * 9) + 1;
-    num = (th * 1000) + o;
-    // Classic trap: 80 005 written as 8005 or 8050
-    d1 = (th * 100) + o;
-    d2 = (th * 1000) + (o * 10);
-    d3 = (th * 10000) + o;
-  } else if (activeVariant === 'standard_to_numeral_with_thousands_group') {
-    const th = Math.floor(Math.random() * 80) + 11;
-    const h = Math.floor(Math.random() * 9) + 1;
-    num = (th * 1000) + (h * 100);
-    d1 = (th * 100) + h;
-    d2 = num + 10;
-    d3 = (th * 1000) + h;
-  } else {
-    // General 5-digit number
-    const th = Math.floor(Math.random() * 80) + 11;
-    const h = Math.floor(Math.random() * 9) + 1;
-    const t = Math.floor(Math.random() * 8) + 2;
-    const o = Math.floor(Math.random() * 9) + 1;
-    num = (th * 1000) + (h * 100) + (t * 10) + o;
-    d1 = num - 100;
-    d2 = num + 10;
-    d3 = (th * 1000) + (h * 100) + (o * 10) + t; // swapped tens and ones
-  }
-
-  const numWords = numberToWords(num);
-  finalAnswer = num.toString();
-
-  promptInstruction = `- Question stem: "Write ${numWords} in numerals."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
-
-  if (isMCQ) {
-    const set = new Set([finalAnswer, d1.toString(), d2.toString(), d3.toString()]);
-    while (set.size < 4) {
-      set.add((num + Math.floor(Math.random() * 20 - 10) * 10).toString());
+    if (pattern === 0) {
+      // Zero hundreds: e.g. 40 000 + 7000 + 50 + 2 = 47 052
+      const tth = (Math.floor(Math.random() * 8) + 1) * 10000;
+      const th = (Math.floor(Math.random() * 8) + 1) * 1000;
+      const t = (Math.floor(Math.random() * 8) + 2) * 10;
+      const o = Math.floor(Math.random() * 9) + 1;
+      parts = [tth, th, t, o];
+      num = tth + th + t + o;
+      wrongNum1 = tth + th + (t * 10) + o; // placed tens in hundreds
+      wrongNum2 = tth + th + t; // dropped ones
+      wrongNum3 = Math.floor(num / 10); // dropped a zero order
+    } else if (pattern === 1) {
+      // Zero tens and hundreds: e.g. 60 000 + 5000 + 9 = 65 009
+      const tth = (Math.floor(Math.random() * 8) + 1) * 10000;
+      const th = (Math.floor(Math.random() * 8) + 1) * 1000;
+      const o = Math.floor(Math.random() * 9) + 1;
+      parts = [tth, th, o];
+      num = tth + th + o;
+      wrongNum1 = tth + th + (o * 10); // placed ones in tens (65 090)
+      wrongNum2 = tth + th + (o * 100); // placed ones in hundreds (65 900)
+      wrongNum3 = tth + th + 10 + o; // added spurious ten
+    } else {
+      // Zero tens: e.g. 80 000 + 400 + 6 = 80 406
+      const tth = (Math.floor(Math.random() * 8) + 1) * 10000;
+      const h = (Math.floor(Math.random() * 8) + 1) * 100;
+      const o = Math.floor(Math.random() * 9) + 1;
+      parts = [tth, h, o];
+      num = tth + h + o;
+      wrongNum1 = tth + h + (o * 10); // placed in tens (80 460)
+      wrongNum2 = tth + (h * 10) + o; // shifted hundreds to thousands
+      wrongNum3 = tth + h; // omitted ones
     }
-    options = Array.from(set).sort(() => Math.random() - 0.5);
-    defectMap = {
-      [d1.toString()]: "PLACE_VALUE_ZERO_OMISSION",
-      [d2.toString()]: "PLACE_VALUE_MISALIGNMENT"
-    };
+
+    finalAnswer = numberToWords(num);
+    const partsStr = parts.map(p => p.toLocaleString()).join(' + ');
+    promptInstruction = `- Question stem: "Write the value of ${partsStr} in words."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+    if (isMCQ) {
+      const d1 = numberToWords(wrongNum1);
+      const d2 = numberToWords(wrongNum2);
+      const d3 = numberToWords(wrongNum3);
+      const set = new Set([finalAnswer, d1, d2, d3]);
+      let offset = 100;
+      while (set.size < 4) {
+        set.add(numberToWords(num + offset));
+        offset += 100;
+      }
+      options = Array.from(set).sort(() => Math.random() - 0.5);
+      defectMap = {
+        [d1]: "PLACE_VALUE_MISALIGNMENT",
+        [d2]: "OMITTED_OR_SHIFTED_DIGIT",
+        [d3]: "INCORRECT_EXPANDED_SUM"
+      };
+    }
+  } else if (activeVariant === 'standard_thousands_units_grouping_to_words') {
+    // Singapore MOE Period Grouping (thousands group + units group)
+    const subtype = Math.floor(Math.random() * 2); // 0: thousands + ones/tens, 1: thousands + hundreds
+    const isToWords = Math.random() < 0.5;
+
+    if (subtype === 0) {
+      // e.g. 42 thousands and 35 ones = 42 035
+      const th = Math.floor(Math.random() * 80) + 11;
+      const onesVal = Math.floor(Math.random() * 90) + 1; // 1 to 90
+      const num = (th * 1000) + onesVal;
+
+      if (isToWords) {
+        finalAnswer = numberToWords(num);
+        promptInstruction = `- Question stem: "A number is made up of ${th} thousands and ${onesVal} ones. Write this number in words."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+        if (isMCQ) {
+          const d1 = numberToWords(num + 100);
+          const d2 = numberToWords((th * 1000) + (onesVal * 10));
+          const d3 = numberToWords(num < 50000 ? num + 1000 : num - 1000);
+          const set = new Set([finalAnswer, d1, d2, d3]);
+          let offset = 200;
+          while (set.size < 4) {
+            set.add(numberToWords(num + offset));
+            offset += 100;
+          }
+          options = Array.from(set).sort(() => Math.random() - 0.5);
+          defectMap = {
+            [d1]: "ADDED_UNWANTED_HUNDREDS",
+            [d2]: "PLACE_VALUE_ZERO_OMISSION",
+            [d3]: "OFF_BY_THOUSAND"
+          };
+        }
+      } else {
+        finalAnswer = num.toString();
+        promptInstruction = `- Question stem: "A number is made up of ${th} thousands and ${onesVal} ones. Write this number in numerals."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+        if (isMCQ) {
+          const d1 = ((th * 100) + onesVal).toString(); // dropped zero in hundreds
+          const d2 = ((th * 1000) + (onesVal * 10)).toString(); // shifted
+          const d3 = (num + 100).toString();
+          const set = new Set([finalAnswer, d1, d2, d3]);
+          let offset = 200;
+          while (set.size < 4) {
+            set.add((num + offset).toString());
+            offset += 100;
+          }
+          options = Array.from(set).sort(() => Math.random() - 0.5);
+          defectMap = {
+            [d1]: "PLACE_VALUE_ZERO_OMISSION",
+            [d2]: "PLACE_VALUE_MISALIGNMENT",
+            [d3]: "ADDED_UNWANTED_HUNDREDS"
+          };
+        }
+      }
+    } else {
+      // e.g. 58 thousands and 6 hundreds = 58 600
+      const th = Math.floor(Math.random() * 80) + 11;
+      const h = Math.floor(Math.random() * 8) + 1;
+      const num = (th * 1000) + (h * 100);
+
+      if (isToWords) {
+        finalAnswer = numberToWords(num);
+        promptInstruction = `- Question stem: "A number has ${th} thousands and ${h} hundreds. Write this number in words."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+        if (isMCQ) {
+          const d1 = numberToWords((th * 1000) + (h * 10)); // tens instead of hundreds
+          const d2 = numberToWords(num + 10);
+          const d3 = numberToWords((th * 1000) + h); // ones instead of hundreds
+          const set = new Set([finalAnswer, d1, d2, d3]);
+          let offset = 200;
+          while (set.size < 4) {
+            set.add(numberToWords(num + offset));
+            offset += 100;
+          }
+          options = Array.from(set).sort(() => Math.random() - 0.5);
+          defectMap = {
+            [d1]: "CONFUSED_HUNDREDS_WITH_TENS",
+            [d2]: "ADDED_EXTRA_TENS",
+            [d3]: "CONFUSED_HUNDREDS_WITH_ONES"
+          };
+        }
+      } else {
+        finalAnswer = num.toString();
+        promptInstruction = `- Question stem: "A number has ${th} thousands and ${h} hundreds. Write this number in numerals."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+        if (isMCQ) {
+          const d1 = ((th * 1000) + (h * 10)).toString();
+          const d2 = ((th * 100) + h).toString();
+          const d3 = ((th * 1000) + h).toString();
+          const set = new Set([finalAnswer, d1, d2, d3]);
+          let offset = 200;
+          while (set.size < 4) {
+            set.add((num + offset).toString());
+            offset += 100;
+          }
+          options = Array.from(set).sort(() => Math.random() - 0.5);
+          defectMap = {
+            [d1]: "CONFUSED_HUNDREDS_WITH_TENS",
+            [d2]: "PLACE_VALUE_ZERO_OMISSION",
+            [d3]: "CONFUSED_HUNDREDS_WITH_ONES"
+          };
+        }
+      }
+    }
+  } else if (activeVariant === 'standard_more_less_notation') {
+    // 100 or 1000 more/less crossing place value boundary
+    const isMore = Math.random() < 0.5;
+    const isThousand = Math.random() < 0.5;
+    const stepVal = isThousand ? 1000 : 100;
+    const moreLessWord = isMore ? "more" : "less";
+    const isToWords = Math.random() < 0.5;
+
+    let baseNum = 0;
+    let targetNum = 0;
+
+    if (isThousand) {
+      // Cross ten-thousands boundary: e.g. 49 250 + 1000 = 50 250 or 60 400 - 1000 = 59 400
+      const tth = Math.floor(Math.random() * 7) + 2; // 2 to 8
+      if (isMore) {
+        baseNum = (tth * 10000) + 9000 + Math.floor(Math.random() * 800 + 100);
+        targetNum = baseNum + 1000;
+      } else {
+        baseNum = (tth * 10000) + Math.floor(Math.random() * 800 + 100);
+        targetNum = baseNum - 1000;
+      }
+    } else {
+      // Cross thousands boundary: e.g. 54 030 - 100 = 53 930 or 38 920 + 100 = 39 020
+      const thPrefix = Math.floor(Math.random() * 70) + 15;
+      if (isMore) {
+        baseNum = (thPrefix * 1000) + 900 + Math.floor(Math.random() * 80 + 10);
+        targetNum = baseNum + 100;
+      } else {
+        baseNum = (thPrefix * 1000) + Math.floor(Math.random() * 80 + 10);
+        targetNum = baseNum - 100;
+      }
+    }
+
+    if (isToWords) {
+      finalAnswer = numberToWords(targetNum);
+      promptInstruction = `- Question stem: "What is ${stepVal.toLocaleString()} ${moreLessWord} than ${baseNum.toLocaleString()}? Write your answer in words."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isMCQ) {
+        const d1 = numberToWords(isMore ? baseNum - stepVal : baseNum + stepVal); // opposite operation
+        const d2 = numberToWords(targetNum + (isThousand ? 100 : 10)); // wrong step
+        const d3 = numberToWords(baseNum); // unadjusted base number
+        const set = new Set([finalAnswer, d1, d2, d3]);
+        let offset = 200;
+        while (set.size < 4) {
+          set.add(numberToWords(targetNum + offset));
+          offset += 100;
+        }
+        options = Array.from(set).sort(() => Math.random() - 0.5);
+        defectMap = {
+          [d1]: isMore ? "SUBTRACTED_INSTEAD_OF_ADDED" : "ADDED_INSTEAD_OF_SUBTRACTED",
+          [d2]: "WRONG_PLACE_VALUE_STEP",
+          [d3]: "DID_NOT_APPLY_OPERATION"
+        };
+      }
+    } else {
+      finalAnswer = targetNum.toString();
+      promptInstruction = `- Question stem: "What is ${stepVal.toLocaleString()} ${moreLessWord} than ${numberToWords(baseNum)}? Write your answer in numerals."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isMCQ) {
+        const d1 = (isMore ? baseNum - stepVal : baseNum + stepVal).toString();
+        const d2 = (targetNum + (isThousand ? 100 : 10)).toString();
+        const d3 = baseNum.toString();
+        const set = new Set([finalAnswer, d1, d2, d3]);
+        let offset = 200;
+        while (set.size < 4) {
+          set.add((targetNum + offset).toString());
+          offset += 100;
+        }
+        options = Array.from(set).sort(() => Math.random() - 0.5);
+        defectMap = {
+          [d1]: isMore ? "SUBTRACTED_INSTEAD_OF_ADDED" : "ADDED_INSTEAD_OF_SUBTRACTED",
+          [d2]: "WRONG_PLACE_VALUE_STEP",
+          [d3]: "DID_NOT_APPLY_OPERATION"
+        };
+      }
+    }
+  } else if (activeVariant === 'standard_simple_computation_to_words') {
+    // Compute place-value sum or difference and express in words
+    const isAdd = Math.random() < 0.5;
+    let n1 = 0;
+    let n2 = 0;
+    let result = 0;
+
+    if (isAdd) {
+      n1 = (Math.floor(Math.random() * 6) + 2) * 10000; // 20 000 to 70 000
+      n2 = (Math.floor(Math.random() * 8) + 1) * 1000 + (Math.floor(Math.random() * 8) + 1) * 10; // e.g. 5060
+      result = n1 + n2;
+      finalAnswer = numberToWords(result);
+      promptInstruction = `- Question stem: "Find the sum of ${n1.toLocaleString()} and ${n2.toLocaleString()}. Write your answer in words."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isMCQ) {
+        const d1 = numberToWords(result + 100);
+        const d2 = numberToWords(result - 10);
+        const d3 = numberToWords(n1 + (n2 * 10 > 30000 ? n2 - 1000 : n2 * 10));
+        const set = new Set([finalAnswer, d1, d2, d3]);
+        let offset = 200;
+        while (set.size < 4) {
+          set.add(numberToWords(result + offset));
+          offset += 100;
+        }
+        options = Array.from(set).sort(() => Math.random() - 0.5);
+        defectMap = {
+          [d1]: "OFF_BY_HUNDRED",
+          [d2]: "OFF_BY_TEN",
+          [d3]: "PLACE_VALUE_MISALIGNMENT"
+        };
+      }
+    } else {
+      n1 = (Math.floor(Math.random() * 6) + 3) * 10000; // 30 000 to 80 000
+      n2 = (Math.floor(Math.random() * 8) + 1) * 1000; // 1000 to 8000
+      result = n1 - n2;
+      finalAnswer = numberToWords(result);
+      promptInstruction = `- Question stem: "Subtract ${n2.toLocaleString()} from ${n1.toLocaleString()}. Write your answer in words."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isMCQ) {
+        const d1 = numberToWords(n1 + n2); // added instead of subtracted
+        const d2 = numberToWords(result - 1000);
+        const d3 = numberToWords(result + 1000);
+        const set = new Set([finalAnswer, d1, d2, d3]);
+        let offset = 2000;
+        while (set.size < 4) {
+          set.add(numberToWords(result + offset));
+          offset += 1000;
+        }
+        options = Array.from(set).sort(() => Math.random() - 0.5);
+        defectMap = {
+          [d1]: "ADDED_INSTEAD_OF_SUBTRACTED",
+          [d2]: "OFF_BY_THOUSAND",
+          [d3]: "OFF_BY_THOUSAND"
+        };
+      }
+    }
+  } else {
+    // standard_word_notation_discrimination
+    // Discriminate between tricky homophone / zero-trap word notations for numbers with multiple zeroes
+    const thPrefix = (Math.floor(Math.random() * 8) + 2) * 10; // 20, 30, ..., 90
+    const tensOrOnes = Math.floor(Math.random() * 8) + 2; // 2 to 9
+    const isToNumeral = Math.random() < 0.5;
+
+    // Target: e.g. 40 016 or 70 008 or 80 040
+    const trapType = Math.floor(Math.random() * 3);
+    let num = 0;
+    let dist1 = 0;
+    let dist2 = 0;
+    let dist3 = 0;
+
+    if (trapType === 0) {
+      // e.g. 60 014 (teen) vs 60 040 vs 60 140 vs 60 004
+      const teen = Math.floor(Math.random() * 7) + 13; // 13 to 19
+      num = (thPrefix * 1000) + teen;
+      dist1 = (thPrefix * 1000) + ((teen % 10) * 10); // e.g. 60 040
+      dist2 = (thPrefix * 1000) + 100 + ((teen % 10) * 10); // 60 140
+      dist3 = (thPrefix * 1000) + (teen % 10); // 60 004
+    } else if (trapType === 1) {
+      // e.g. 50 070 (exact tens) vs 50 007 vs 50 700 vs 57 000
+      num = (thPrefix * 1000) + (tensOrOnes * 10);
+      dist1 = (thPrefix * 1000) + tensOrOnes; // ones (50 007)
+      dist2 = (thPrefix * 1000) + (tensOrOnes * 100); // hundreds (50 700)
+      dist3 = ((thPrefix + tensOrOnes) * 1000); // thousands (57 000)
+    } else {
+      // e.g. 80 005 (exact ones) vs 80 050 vs 80 500 vs 85 000
+      num = (thPrefix * 1000) + tensOrOnes;
+      dist1 = (thPrefix * 1000) + (tensOrOnes * 10); // tens (80 050)
+      dist2 = (thPrefix * 1000) + (tensOrOnes * 100); // hundreds (80 500)
+      dist3 = ((thPrefix + tensOrOnes) * 1000); // thousands (85 000)
+    }
+
+    if (isToNumeral) {
+      finalAnswer = num.toString();
+      promptInstruction = `- Question stem: "Which of the following numerals represents '${numberToWords(num)}'?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isMCQ) {
+        const d1 = dist1.toString();
+        const d2 = dist2.toString();
+        const d3 = dist3.toString();
+        const set = new Set([finalAnswer, d1, d2, d3]);
+        let offset = 20;
+        while (set.size < 4) {
+          set.add((num + offset).toString());
+          offset += 10;
+        }
+        options = Array.from(set).sort(() => Math.random() - 0.5);
+        defectMap = {
+          [d1]: "CONFUSED_TENS_AND_ONES_NOTATION",
+          [d2]: "CONFUSED_HUNDREDS_AND_TENS_NOTATION",
+          [d3]: "CONFUSED_THOUSANDS_AND_ONES_NOTATION"
+        };
+      }
+    } else {
+      finalAnswer = numberToWords(num);
+      promptInstruction = `- Question stem: "Which of the following is the correct word representation of ${num.toLocaleString()}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isMCQ) {
+        const d1 = numberToWords(dist1);
+        const d2 = numberToWords(dist2);
+        const d3 = numberToWords(dist3);
+        const set = new Set([finalAnswer, d1, d2, d3]);
+        let offset = 20;
+        while (set.size < 4) {
+          set.add(numberToWords(num + offset));
+          offset += 10;
+        }
+        options = Array.from(set).sort(() => Math.random() - 0.5);
+        defectMap = {
+          [d1]: "CONFUSED_TENS_AND_ONES_NOTATION",
+          [d2]: "CONFUSED_HUNDREDS_AND_TENS_NOTATION",
+          [d3]: "CONFUSED_THOUSANDS_AND_ONES_NOTATION"
+        };
+      }
+    }
   }
 
   const inputRequirementStr = isStructure ? `{\n    "inputType": "MULTI_STEP_INPUT"\n  }` : null;
