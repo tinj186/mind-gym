@@ -80,8 +80,10 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       const d2 = (maxP - (qThousands + 499)).toString(); // minimum difference
       const d3 = (maxDiff - 1).toString();
       const set = new Set([finalAnswer, d1, d2, d3]);
+      let offset = 1000;
       while (set.size < 4) {
-        set.add((maxDiff + 1000).toString());
+        set.add((maxDiff + offset).toString());
+        offset += 1000;
       }
       options = Array.from(set).sort(() => Math.random() - 0.5);
       defectMap = {
@@ -136,8 +138,10 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       const d2 = (totalEst + 1000).toString();
       const d3 = (totalEst - 1000).toString();
       const set = new Set([finalAnswer, d1, d2, d3]);
+      let offset = 2000;
       while (set.size < 4) {
-        set.add((totalEst + 2000).toString());
+        set.add((totalEst + offset).toString());
+        offset += 1000;
       }
       options = Array.from(set).sort(() => Math.random() - 0.5);
       defectMap = {

@@ -36,8 +36,10 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         const d2 = ((prefix * 1000) + 900).toString(); // stripped digit
         const d3 = (rounded + 10).toString();
         const set = new Set([finalAnswer, d1, d2, d3]);
+        let offset = 20;
         while (set.size < 4) {
-          set.add((rounded - 10).toString());
+          set.add((rounded + offset).toString());
+          offset += 10;
         }
         options = Array.from(set).sort(() => Math.random() - 0.5);
         defectMap = {
@@ -58,15 +60,18 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
       if (isMCQ) {
         const d1 = ((prefix * 1000) + 900).toString();
-        const d2 = ((prefix * 1000) + 1000).toString();
+        const d2 = ((prefix * 1000) + 800).toString();
         const d3 = (rounded + 100).toString();
         const set = new Set([finalAnswer, d1, d2, d3]);
+        let offset = 200;
         while (set.size < 4) {
-          set.add((rounded - 100).toString());
+          set.add((rounded + offset).toString());
+          offset += 100;
         }
         options = Array.from(set).sort(() => Math.random() - 0.5);
         defectMap = {
           [d1]: "ROUNDED_DOWN_INSTEAD_OF_UP",
+          [d2]: "DROPPED_DIGITS_WITHOUT_CARRY",
           [d3]: "OFF_BY_HUNDRED"
         };
       }
@@ -92,8 +97,10 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         const d2 = (rounded - 10000).toString();
         const d3 = (rounded + 1000).toString();
         const set = new Set([finalAnswer, d1, d2, d3]);
+        let offset = 2000;
         while (set.size < 4) {
-          set.add((rounded + 10000).toString());
+          set.add((rounded + offset).toString());
+          offset += 1000;
         }
         options = Array.from(set).sort(() => Math.random() - 0.5);
         defectMap = {
