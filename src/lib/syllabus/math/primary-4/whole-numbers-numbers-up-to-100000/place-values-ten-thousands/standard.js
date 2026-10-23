@@ -108,22 +108,116 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       };
     }
   } else if (activeVariant === 'standard_greatest_value_digit') {
-    // Lead digit is small (e.g. 2 or 3) while other digits are 8 or 9
-    const tth = Math.floor(Math.random() * 3) + 2; // 2, 3, or 4
-    const th = 8;
-    const h = 9;
-    const t = 7;
-    const o = 9;
-    const num = (tth * 10000) + (th * 1000) + (h * 100) + (t * 10) + o;
-    finalAnswer = tth.toString();
+    // Varieties for comparing digit values across place values and numbers:
+    // Subtype 0: "In which of the following numbers does the digit D have the greatest value?" (MCQ) / "Between X and Y, in which number does D have the greater value?" (Short)
+    // Subtype 1: "In which of the following numbers does the digit D have the smallest value?" (MCQ) / "Between X and Y, in which number does D have the smaller value?" (Short)
+    // Subtype 2: Multiplicative comparison of repeated digits within a number ("In X, how many times is the value of the digit D in the ten thousands place greater than the value of D in the hundreds place?")
+    // Subtype 3 (MCQ): Difference between values of a digit across two numbers ("What is the difference between the values of the digit D in X and Y?")
 
-    promptInstruction = `- Question stem: "Which digit has the greatest value in the number ${num}?"\\n- The finalAnswer must be just the single digit numeral ${finalAnswer} (since its value is ${tth * 10000}, which is greater than the value of any other digit).`;
+    const subtype = isMCQ ? Math.floor(Math.random() * 4) : Math.floor(Math.random() * 3);
+    const d = Math.floor(Math.random() * 8) + 2; // target digit 2 to 9
+    let stem = "";
 
-    if (isMCQ) {
-      options = [finalAnswer, "9", "8", "7"].sort(() => Math.random() - 0.5);
+    if (subtype === 0) {
+      // Subtype 0: Greatest value across numbers
+      const pool = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].filter(x => x !== d);
+      const rnd = () => pool[Math.floor(Math.random() * pool.length)];
+
+      const numTenThousands = (d * 10000) + (rnd() * 1000) + (rnd() * 100) + (rnd() * 10) + rnd();
+      const numThousands = (rnd() * 10000 || 20000) + (d * 1000) + (rnd() * 100) + (rnd() * 10) + rnd();
+      const numHundreds = (rnd() * 10000 || 30000) + (rnd() * 1000) + (d * 100) + (rnd() * 10) + rnd();
+      const numTens = (rnd() * 10000 || 40000) + (rnd() * 1000) + (rnd() * 100) + (d * 10) + rnd();
+
+      finalAnswer = numTenThousands.toString();
+
+      if (isMCQ) {
+        stem = `In which of the following numbers does the digit ${d} have the greatest value?`;
+        options = [finalAnswer, numThousands.toString(), numHundreds.toString(), numTens.toString()].sort(() => Math.random() - 0.5);
+        defectMap = {
+          [numThousands.toString()]: "PLACE_VALUE_MISALIGNMENT",
+          [numHundreds.toString()]: "PLACE_VALUE_MISALIGNMENT"
+        };
+        promptInstruction = `- Question stem: "${stem}"\\n- The finalAnswer must be strictly "${finalAnswer}".\\n- When writing solutionSteps, calculate the value of the digit ${d} in each number: in ${numTenThousands} it is ${d * 10000}, in ${numThousands} it is ${d * 1000}, in ${numHundreds} it is ${d * 100}, in ${numTens} it is ${d * 10}, then state that ${d * 10000} is the greatest.\\n- In the hint, encourage checking which number places ${d} in the ten thousands column.`;
+      } else {
+        stem = `Between the numbers ${numThousands} and ${numTenThousands}, in which number does the digit ${d} have the greater value?`;
+        promptInstruction = `- Question stem: "${stem}"\\n- The finalAnswer must be strictly "${finalAnswer}".\\n- When writing solutionSteps, compare the value of ${d} in ${numThousands} (${d * 1000}) and ${numTenThousands} (${d * 10000}) to conclude ${finalAnswer} has the greater value.\\n- In the hint, compare the place value of the digit ${d} in both numbers.`;
+      }
+    } else if (subtype === 1) {
+      // Subtype 1: Smallest value across numbers
+      const pool = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].filter(x => x !== d);
+      const rnd = () => pool[Math.floor(Math.random() * pool.length)];
+
+      const numTenThousands = (d * 10000) + (rnd() * 1000) + (rnd() * 100) + (rnd() * 10) + rnd();
+      const numThousands = (rnd() * 10000 || 20000) + (d * 1000) + (rnd() * 100) + (rnd() * 10) + rnd();
+      const numHundreds = (rnd() * 10000 || 30000) + (rnd() * 1000) + (d * 100) + (rnd() * 10) + rnd();
+      const numTens = (rnd() * 10000 || 40000) + (rnd() * 1000) + (rnd() * 100) + (d * 10) + rnd();
+
+      finalAnswer = numTens.toString();
+
+      if (isMCQ) {
+        stem = `In which of the following numbers does the digit ${d} have the smallest value?`;
+        options = [finalAnswer, numHundreds.toString(), numThousands.toString(), numTenThousands.toString()].sort(() => Math.random() - 0.5);
+        defectMap = {
+          [numTenThousands.toString()]: "REVERSED_GREATEST_SMALLEST",
+          [numHundreds.toString()]: "PLACE_VALUE_MISALIGNMENT"
+        };
+        promptInstruction = `- Question stem: "${stem}"\\n- The finalAnswer must be strictly "${finalAnswer}".\\n- When writing solutionSteps, calculate the value of ${d} in each number and show that ${d * 10} is the smallest.\\n- In the hint, look for which number has ${d} in the lowest place value column (tens).`;
+      } else {
+        stem = `Between the numbers ${numTenThousands} and ${numTens}, in which number does the digit ${d} have the smaller value?`;
+        promptInstruction = `- Question stem: "${stem}"\\n- The finalAnswer must be strictly "${finalAnswer}".\\n- When writing solutionSteps, compare the value of ${d} in ${numTenThousands} (${d * 10000}) and in ${numTens} (${d * 10}) to conclude ${finalAnswer} has the smaller value.\\n- In the hint, compare the place value of the digit ${d} in each number.`;
+      }
+    } else if (subtype === 2) {
+      // Subtype 2: Multiplicative comparison of repeated digits within a number
+      const p2Choices = [
+        { name: 'thousands', mult: 1000, ratio: 10 },
+        { name: 'hundreds', mult: 100, ratio: 100 },
+        { name: 'tens', mult: 10, ratio: 1000 }
+      ];
+      const p2 = p2Choices[Math.floor(Math.random() * p2Choices.length)];
+
+      const pool = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].filter(x => x !== d);
+      const rnd = () => pool[Math.floor(Math.random() * pool.length)];
+
+      let num = d * 10000;
+      if (p2.name === 'thousands') {
+        num += (d * 1000) + (rnd() * 100) + (rnd() * 10) + rnd();
+      } else if (p2.name === 'hundreds') {
+        num += (rnd() * 1000) + (d * 100) + (rnd() * 10) + rnd();
+      } else {
+        num += (rnd() * 1000) + (rnd() * 100) + (d * 10) + rnd();
+      }
+
+      finalAnswer = p2.ratio.toString();
+      stem = `In the number ${num}, how many times is the value of the digit ${d} in the ten thousands place greater than the value of the digit ${d} in the ${p2.name} place?`;
+      promptInstruction = `- Question stem: "${stem}"\\n- The finalAnswer must be strictly "${finalAnswer}".\\n- When writing solutionSteps, explain that in ${num}, the value of ${d} in the ten thousands place is ${d * 10000}, the value of ${d} in the ${p2.name} place is ${d * p2.mult}, and ${d * 10000} ÷ ${d * p2.mult} = ${finalAnswer}.\\n- In the hint, divide the larger value by the smaller value.`;
+
+      if (isMCQ) {
+        const wrong = ['10', '100', '1000', '10000'].filter(r => r !== finalAnswer);
+        options = [finalAnswer, wrong[0], wrong[1], wrong[2]].sort(() => Math.random() - 0.5);
+        defectMap = {
+          [wrong[0]]: "OFF_BY_FACTOR_OF_10",
+          [wrong[1]]: "OFF_BY_FACTOR_OF_10"
+        };
+      }
+    } else {
+      // Subtype 3 (MCQ): Difference between values of a digit across two numbers
+      const val1 = d * 10000;
+      const val2 = d * 1000;
+      const diff = val1 - val2;
+      finalAnswer = diff.toString();
+
+      const pool = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].filter(x => x !== d);
+      const rnd = () => pool[Math.floor(Math.random() * pool.length)];
+      const num1 = val1 + (rnd() * 1000) + (rnd() * 100) + (rnd() * 10) + rnd();
+      const num2 = (rnd() * 10000 || 30000) + val2 + (rnd() * 100) + (rnd() * 10) + rnd();
+
+      stem = `What is the difference between the values of the digit ${d} in the numbers ${num1} and ${num2}?`;
+      promptInstruction = `- Question stem: "${stem}"\\n- The finalAnswer must be strictly "${finalAnswer}".\\n- When writing solutionSteps, calculate the value of ${d} in ${num1} (${val1}), the value of ${d} in ${num2} (${val2}), and subtract: ${val1} - ${val2} = ${finalAnswer}.\\n- In the hint, calculate the values of the digit in both numbers and find their difference.`;
+
+      options = [finalAnswer, val1.toString(), (val1 + val2).toString(), (diff - 1000).toString()].sort(() => Math.random() - 0.5);
       defectMap = {
-        "9": "CONFUSED_DIGIT_AND_VALUE",
-        "8": "CONFUSED_DIGIT_AND_VALUE"
+        [(val1 + val2).toString()]: "CONFUSED_ADDITION_AND_SUBTRACTION",
+        [val1.toString()]: "OMITTED_SECOND_STEP"
       };
     }
   } else {
