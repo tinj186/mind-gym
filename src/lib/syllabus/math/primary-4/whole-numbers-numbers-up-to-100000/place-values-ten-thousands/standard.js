@@ -221,41 +221,149 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       };
     }
   } else {
-    // standard_mystery_number_values
-    const tth = Math.floor(Math.random() * 9) + 1;
-    const th = Math.floor(Math.random() * 10);
-    const h = Math.floor(Math.random() * 10);
-    const t = Math.floor(Math.random() * 10);
-    const o = Math.floor(Math.random() * 10);
+    // standard_mystery_number_values:
+    // Solve a 5-digit mystery number from rich arithmetic, relational, and place-value clues.
+    // Varieties:
+    // Style 0: Value clues + Arithmetic comparison (more than / less than)
+    // Style 1: Doubles & Halves + Place Values
+    // Style 2: Digit sum & difference clues
+    // Style 3: Number properties (Greatest/Smallest 1-digit, Even/Odd) + Value clues
+    // Style 4: Groups of units + Multiplication
+
+    const style = Math.floor(Math.random() * 5);
+    let tth = 0, th = 0, h = 0, t = 0, o = 0;
+    const clues = [];
+    const steps = [];
+
+    if (style === 0) {
+      // Style 0: Value clues + Arithmetic comparison
+      tth = Math.floor(Math.random() * 5) + 3; // 3 to 7
+      clues.push(`The value of my ten thousands digit is ${tth * 10000}.`);
+      steps.push(`The value ${tth * 10000} means the ten thousands digit is ${tth}`);
+
+      th = Math.floor(Math.random() * 4) + 1; // 1 to 4
+      clues.push(`My thousands digit stands for ${th * 1000}.`);
+      steps.push(`The thousands digit is ${th}`);
+
+      const addH = Math.floor(Math.random() * 3) + 2; // 2 to 4
+      h = Math.min(9, th + addH);
+      clues.push(`My hundreds digit is ${addH} more than my thousands digit.`);
+      steps.push(`The hundreds digit is ${th} + ${addH} = ${h}`);
+
+      t = Math.floor(Math.random() * 7) + 2; // 2 to 8
+      clues.push(`My tens digit has a value of ${t * 10}.`);
+      steps.push(`The tens digit is ${t}`);
+
+      const subO = Math.floor(Math.random() * (t - 1)) + 1;
+      o = t - subO;
+      clues.push(`My ones digit is ${subO} less than my tens digit.`);
+      steps.push(`The ones digit is ${t} - ${subO} = ${o}`);
+    } else if (style === 1) {
+      // Style 1: Doubles & Halves + Place Values
+      tth = (Math.floor(Math.random() * 4) + 1) * 2; // 2, 4, 6, 8
+      clues.push(`My ten thousands digit is ${tth}.`);
+      steps.push(`The ten thousands digit is ${tth}`);
+
+      th = tth / 2;
+      clues.push(`My thousands digit is half of my ten thousands digit.`);
+      steps.push(`The thousands digit is ${tth} ÷ 2 = ${th}`);
+
+      h = Math.floor(Math.random() * 8) + 1;
+      clues.push(`My hundreds digit stands for ${h * 100}.`);
+      steps.push(`The hundreds digit is ${h}`);
+
+      o = Math.floor(Math.random() * 4) + 1; // 1 to 4
+      clues.push(`My ones digit is ${o}.`);
+      steps.push(`The ones digit is ${o}`);
+
+      t = o * 2;
+      clues.push(`My tens digit is double my ones digit.`);
+      steps.push(`The tens digit is 2 × ${o} = ${t}`);
+    } else if (style === 2) {
+      // Style 2: Digit sum & difference clues
+      tth = Math.floor(Math.random() * 4) + 5; // 5 to 8
+      th = Math.floor(Math.random() * 4) + 1; // 1 to 4
+      clues.push(`My ten thousands digit is ${tth} and my thousands digit is ${th}.`);
+      steps.push(`The ten thousands digit is ${tth} and thousands digit is ${th}`);
+
+      const tVal = Math.floor(Math.random() * 3) + 1; // 1 to 3
+      const hVal = tVal * 2; // 2, 4, 6
+      h = hVal;
+      t = tVal;
+      clues.push(`The sum of my hundreds digit and tens digit is ${h + t}.`);
+      clues.push(`My hundreds digit is twice my tens digit.`);
+      steps.push(`Since hundreds is twice tens and their sum is ${h + t}, tens = ${t} and hundreds = ${h}`);
+
+      o = tth - th;
+      clues.push(`My ones digit is the difference between my ten thousands digit and my thousands digit.`);
+      steps.push(`The ones digit is ${tth} - ${th} = ${o}`);
+    } else if (style === 3) {
+      // Style 3: Number properties (Greatest/Smallest) + Values
+      tth = 9;
+      clues.push(`My ten thousands digit is the greatest 1-digit number.`);
+      steps.push(`The greatest 1-digit number is 9, so the ten thousands digit is 9`);
+
+      th = Math.floor(Math.random() * 6) + 2; // 2 to 7
+      clues.push(`The value of my thousands digit is ${th * 1000}.`);
+      steps.push(`The thousands digit is ${th}`);
+
+      h = 1;
+      clues.push(`My hundreds digit is the smallest 1-digit odd number.`);
+      steps.push(`The smallest 1-digit odd number is 1, so the hundreds digit is 1`);
+
+      const diffT = Math.floor(Math.random() * 4) + 2; // 2 to 5
+      t = h + diffT;
+      clues.push(`My tens digit is ${diffT} more than my hundreds digit.`);
+      steps.push(`The tens digit is 1 + ${diffT} = ${t}`);
+
+      o = Math.floor(Math.random() * 4) * 2; // 0, 2, 4, 6 (even)
+      clues.push(`I am an even number, and my ones digit is ${o}.`);
+      steps.push(`The ones digit is ${o}`);
+    } else {
+      // Style 4: Groups of units + Multiplication
+      tth = Math.floor(Math.random() * 5) + 3; // 3 to 7
+      th = Math.floor(Math.random() * 7) + 1; // 1 to 7
+      clues.push(`I have ${tth} ten thousands and ${th} thousands.`);
+      steps.push(`The ten thousands digit is ${tth} and thousands digit is ${th}`);
+
+      const mult1 = Math.floor(Math.random() * 2) + 2; // 2 or 3
+      const mult2 = Math.floor(Math.random() * 2) + 2; // 2 or 3
+      h = mult1 * mult2; // 4, 6, or 9
+      clues.push(`My hundreds digit is ${mult1} × ${mult2}.`);
+      steps.push(`The hundreds digit is ${mult1} × ${mult2} = ${h}`);
+
+      t = Math.floor(Math.random() * 5) + 2; // 2 to 6
+      clues.push(`My tens digit has a value of ${t * 10}.`);
+      steps.push(`The tens digit is ${t}`);
+
+      const addO = Math.floor(Math.random() * (9 - t)) + 1;
+      o = t + addO;
+      clues.push(`My ones digit is ${addO} more than my tens digit.`);
+      steps.push(`The ones digit is ${t} + ${addO} = ${o}`);
+    }
+
     const num = (tth * 10000) + (th * 1000) + (h * 100) + (t * 10) + o;
     finalAnswer = num.toString();
 
-    const clues = [
-      `my ten thousands digit is ${tth}`,
-      `my thousands digit is ${th}`,
-      `my hundreds digit is ${h}`,
-      `my tens digit is ${t}`,
-      `my ones digit is ${o}`
-    ];
-    // Shuffle clues
-    for (let i = clues.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [clues[i], clues[j]] = [clues[j], clues[i]];
-    }
+    const cluesText = clues.map((c, i) => `${i + 1}. ${c}`).join('\\n');
+    const stepsSummary = steps.join(', ');
 
-    promptInstruction = `- Question stem: "I am a 5-digit number. ${clues.join(', ')}. What number am I?"\\n- The finalAnswer must be strictly ${finalAnswer}.`;
+    promptInstruction = `- Question stem: "I am a 5-digit number. Use the clues below to find me:\\n${cluesText}\\nWhat number am I?"\\n- The finalAnswer must be strictly "${finalAnswer}".\\n- When writing solutionSteps, solve each clue sequentially (${stepsSummary}), then combine the digits to form ${finalAnswer}.\\n- In the hint, encourage deducing each digit step-by-step from the given clues.`;
 
     if (isMCQ) {
       const d1 = (th * 10000) + (tth * 1000) + (h * 100) + (t * 10) + o; // swapped ten-thousands and thousands
-      const d2 = num + 100;
-      const d3 = num - 10;
-      const set = new Set([finalAnswer, d1.toString(), d2.toString(), d3.toString()]);
-      while (set.size < 4) {
-        set.add((num + Math.floor(Math.random() * 5 + 1) * 1000).toString());
+      const d2 = num + 100; // careless hundreds
+      const d3 = (o > 0) ? num - 1 : num + 1; // careless ones
+      const optSet = new Set([finalAnswer, d1.toString(), d2.toString(), d3.toString()]);
+      let offset = 1000;
+      while (optSet.size < 4) {
+        optSet.add((num + offset).toString());
+        offset += 500;
       }
-      options = Array.from(set).sort(() => Math.random() - 0.5);
+      options = Array.from(optSet).sort(() => Math.random() - 0.5);
       defectMap = {
-        [d1.toString()]: "PLACE_VALUE_MISALIGNMENT"
+        [d1.toString()]: "PLACE_VALUE_MISALIGNMENT",
+        [d2.toString()]: "CARELESS_CALCULATION"
       };
     }
   }
