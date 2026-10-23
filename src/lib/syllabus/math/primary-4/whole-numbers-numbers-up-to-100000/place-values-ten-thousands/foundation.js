@@ -243,22 +243,120 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       };
     }
   } else {
-    // foundation_place_value_representation
-    const tth = Math.floor(Math.random() * 9) + 1;
-    const th = Math.floor(Math.random() * 10);
-    const h = Math.floor(Math.random() * 10);
-    const t = Math.floor(Math.random() * 10);
-    const o = Math.floor(Math.random() * 10);
+    // foundation_place_value_representation:
+    // Identify how many ten thousands (or thousands, hundreds, tens) a specific digit represents.
+    // Crucial: DO NOT state the place value of the digit in the question stem (that gives away the answer).
+    // The question asks the student to determine how many groups/units of that place value it represents,
+    // or which digit represents that place value, or the multiplier representation (digit × 10 000).
+
+    // Generate 5 distinct digits to eliminate any ambiguity with repeated digits
+    const first = Math.floor(Math.random() * 8) + 2;
+    const pool = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].filter(d => d !== first).sort(() => Math.random() - 0.5);
+    const digits = [first, pool[0], pool[1], pool[2], pool[3]];
+    const [tth, th, h, t, o] = digits;
     const num = (tth * 10000) + (th * 1000) + (h * 100) + (t * 10) + o;
-    finalAnswer = tth.toString();
 
-    promptInstruction = `- Question stem: "In the number ${num}, the digit ${tth} is in the ten thousands place. How many ten thousands does it represent?"\\n- The finalAnswer must be just the single digit numeral ${finalAnswer}.`;
+    const places = [
+      { name: 'ten thousands', dig: tth, mult: 10000 },
+      { name: 'thousands', dig: th, mult: 1000 },
+      { name: 'hundreds', dig: h, mult: 100 },
+      { name: 'tens', dig: t, mult: 10 }
+    ].filter(p => p.dig > 0);
 
-    if (isMCQ) {
-      options = [finalAnswer, (tth * 10).toString(), (tth * 1000).toString(), (tth * 10000).toString()].sort(() => Math.random() - 0.5);
-      defectMap = {
-        [(tth * 10000).toString()]: "CONFUSED_DIGIT_AND_VALUE"
-      };
+    const subtype = Math.floor(Math.random() * 4);
+
+    if (subtype === 0) {
+      // Subtype 0: "In the number {num}, the digit {tth} represents ______ ten thousands."
+      finalAnswer = tth.toString();
+      const stem = `In the number ${num}, the digit ${tth} represents ______ ten thousands.`;
+      promptInstruction = `- Question stem: "${stem}"\\n- The finalAnswer must be strictly "${finalAnswer}".\\n- When writing solutionSteps, explain that in ${num}, the digit ${tth} is in the ten thousands place, its value is ${tth * 10000}, which is ${tth} groups of 10 000 (${finalAnswer} ten thousands).\\n- In the hint, encourage identifying the place value column of the digit to see how many groups of 10 000 it represents.`;
+
+      if (isMCQ) {
+        const optSet = new Set([finalAnswer, (tth * 10000).toString(), '10000', (tth * 1000).toString()]);
+        const fallbacks = [(tth * 10).toString(), (tth * 100).toString(), '1000', '100'];
+        for (const f of fallbacks) {
+          if (optSet.size >= 4) break;
+          optSet.add(f);
+        }
+        options = Array.from(optSet).sort(() => Math.random() - 0.5);
+        defectMap = {};
+        if (options.includes((tth * 10000).toString()) && (tth * 10000).toString() !== finalAnswer) {
+          defectMap[(tth * 10000).toString()] = "CONFUSED_DIGIT_AND_VALUE";
+        }
+        if (options.includes('10000') && '10000' !== finalAnswer) {
+          defectMap['10000'] = "CONFUSED_COUNT_WITH_PLACE_MULTIPLIER";
+        }
+      }
+    } else if (subtype === 1) {
+      // Subtype 1: "In the number {num}, how many {placeName} does the digit {d} represent?"
+      const target = places[Math.floor(Math.random() * places.length)];
+      finalAnswer = target.dig.toString();
+      const stem = `In the number ${num}, how many ${target.name} does the digit ${target.dig} represent?`;
+      promptInstruction = `- Question stem: "${stem}"\\n- The finalAnswer must be strictly "${finalAnswer}".\\n- When writing solutionSteps, explain that in ${num}, the digit ${target.dig} is in the ${target.name} place, so its value is ${target.dig * target.mult}, which represents ${finalAnswer} ${target.name}.\\n- In the hint, suggest looking at the position of the digit to determine how many ${target.name} it stands for.`;
+
+      if (isMCQ) {
+        const optSet = new Set([finalAnswer, (target.dig * target.mult).toString(), target.mult.toString()]);
+        const candidates = [(target.dig * 10).toString(), (target.dig * 100).toString(), (target.dig * 1000).toString(), (target.dig * 10000).toString(), '10', '100', '1000', '10000'];
+        for (const c of candidates) {
+          if (optSet.size >= 4) break;
+          optSet.add(c);
+        }
+        options = Array.from(optSet).sort(() => Math.random() - 0.5);
+        defectMap = {};
+        if (options.includes((target.dig * target.mult).toString()) && (target.dig * target.mult).toString() !== finalAnswer) {
+          defectMap[(target.dig * target.mult).toString()] = "CONFUSED_DIGIT_AND_VALUE";
+        }
+        if (options.includes(target.mult.toString()) && target.mult.toString() !== finalAnswer) {
+          defectMap[target.mult.toString()] = "CONFUSED_COUNT_WITH_PLACE_MULTIPLIER";
+        }
+      }
+    } else if (subtype === 2) {
+      // Subtype 2: "In the number {num}, which digit represents {d} {placeName}?"
+      const target = places[Math.floor(Math.random() * Math.min(2, places.length))]; // ten thousands or thousands
+      finalAnswer = target.dig.toString();
+      const stem = `In the number ${num}, which digit represents ${target.dig} ${target.name}?`;
+      promptInstruction = `- Question stem: "${stem}"\\n- The finalAnswer must be strictly "${finalAnswer}".\\n- When writing solutionSteps, explain that ${target.dig} ${target.name} = ${target.dig * target.mult}, and in ${num}, the digit in the ${target.name} place is ${finalAnswer}.\\n- In the hint, suggest checking which digit occupies the ${target.name} place.`;
+
+      if (isMCQ) {
+        const otherDigits = digits.filter(d => d !== target.dig).slice(0, 3).map(String);
+        options = [finalAnswer, ...otherDigits].sort(() => Math.random() - 0.5);
+        defectMap = {
+          [otherDigits[0]]: "PLACE_VALUE_MISALIGNMENT",
+          [otherDigits[1]]: "CARELESS_READING"
+        };
+      }
+    } else {
+      // Subtype 3: Multiplier equation: "In the number {num}, the value of the digit {d} is {d} × ______. What is the missing number?"
+      const target = places[Math.floor(Math.random() * Math.min(2, places.length))]; // ten thousands or thousands
+      finalAnswer = target.mult.toString();
+      const stem = `In the number ${num}, the value of the digit ${target.dig} is ${target.dig} × ______. What is the missing number?`;
+      promptInstruction = `- Question stem: "${stem}"\\n- The finalAnswer must be strictly "${finalAnswer}".\\n- When writing solutionSteps, explain that the digit ${target.dig} is in the ${target.name} place with value ${target.dig * target.mult}, which equals ${target.dig} × ${finalAnswer}.\\n- In the hint, remind students what multiplier corresponds to the ${target.name} place.`;
+
+      if (isMCQ) {
+        const optSet = new Set([finalAnswer]);
+        const valStr = (target.dig * target.mult).toString();
+        optSet.add(valStr);
+        for (const m of ['10000', '1000', '100', '10', '1']) {
+          if (optSet.size >= 4) break;
+          optSet.add(m);
+        }
+        let multOffset = 20000;
+        while (optSet.size < 4) {
+          optSet.add((target.dig * multOffset).toString());
+          multOffset += 10000;
+        }
+        options = Array.from(optSet).sort(() => Math.random() - 0.5);
+        defectMap = {};
+        if (options.includes(valStr) && valStr !== finalAnswer) {
+          defectMap[valStr] = "CONFUSED_DIGIT_AND_VALUE";
+        }
+        for (const m of ['10000', '1000', '100', '10']) {
+          if (options.includes(m) && m !== finalAnswer) {
+            defectMap[m] = "OFF_BY_FACTOR_OF_10";
+            break;
+          }
+        }
+      }
     }
   }
 
