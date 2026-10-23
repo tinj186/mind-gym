@@ -95,30 +95,110 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       };
     }
   } else if (activeVariant === 'advanced_difference_between_values') {
-    let digits = [1, 2, 3, 4, 5, 6, 7, 8, 9].sort(() => Math.random() - 0.5).slice(0, 5);
-    const [tth, th, h, t, o] = digits;
-    const num = (tth * 10000) + (th * 1000) + (h * 100) + (t * 10) + o;
+    // Dynamic varieties for difference between digit values:
+    // Subtype 0: Two randomly selected distinct place value columns (e.g. ten thousands vs thousands, hundreds vs tens, etc.)
+    // Subtype 1: Repeated digits in the same number (e.g. difference between the values of the two '7's in 74 721)
+    const subtype = Math.floor(Math.random() * 2);
 
-    const valTth = tth * 10000;
-    const valH = h * 100;
-    const diffVal = valTth - valH;
-    finalAnswer = diffVal.toString();
+    if (subtype === 0) {
+      const allPlaces = [
+        { name: 'ten thousands', mult: 10000 },
+        { name: 'thousands', mult: 1000 },
+        { name: 'hundreds', mult: 100 },
+        { name: 'tens', mult: 10 },
+        { name: 'ones', mult: 1 }
+      ];
 
-    promptInstruction = `- Question stem: "In the number ${num}, what is the difference between the value of the digit ${tth} and the value of the digit ${h}?"\\n- The finalAnswer must be strictly the numeral ${finalAnswer}.`;
+      const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9].sort(() => Math.random() - 0.5).slice(0, 5);
+      const [tth, th, h, t, o] = digits;
+      const num = (tth * 10000) + (th * 1000) + (h * 100) + (t * 10) + o;
 
-    if (isMCQ) {
-      const d1 = (tth - h).toString(); // face value difference
-      const d2 = (valTth + valH).toString(); // sum instead of difference
-      const d3 = (diffVal - 100).toString();
-      const set = new Set([finalAnswer, d1, d2, d3]);
-      while (set.size < 4) {
-        set.add((diffVal + Math.floor(Math.random() * 5 + 1) * 100).toString());
+      const placesWithDigits = [
+        { ...allPlaces[0], dig: tth, val: tth * 10000 },
+        { ...allPlaces[1], dig: th, val: th * 1000 },
+        { ...allPlaces[2], dig: h, val: h * 100 },
+        { ...allPlaces[3], dig: t, val: t * 10 },
+        { ...allPlaces[4], dig: o, val: o }
+      ];
+
+      // Randomly pick two distinct place columns (higher place value first)
+      const idx1 = Math.floor(Math.random() * 4); // 0 to 3
+      const idx2 = Math.floor(Math.random() * (5 - idx1 - 1)) + idx1 + 1; // idx1 + 1 to 4
+      const p1 = placesWithDigits[idx1];
+      const p2 = placesWithDigits[idx2];
+
+      const diffVal = p1.val - p2.val;
+      finalAnswer = diffVal.toString();
+
+      promptInstruction = `- Question stem: "In the number ${num}, what is the difference between the value of the digit ${p1.dig} and the value of the digit ${p2.dig}?"\\n- The finalAnswer must be strictly the numeral ${finalAnswer}.\\n- When writing solutionSteps, explain that the value of digit ${p1.dig} in the ${p1.name} place is ${p1.val}, the value of digit ${p2.dig} in the ${p2.name} place is ${p2.val}, and their difference is ${p1.val} - ${p2.val} = ${finalAnswer}.\\n- In the hint, remind students to calculate each digit's full value before subtracting.`;
+
+      if (isMCQ) {
+        const d1 = Math.abs(p1.dig - p2.dig).toString(); // face value difference (guaranteed positive)
+        const d2 = (p1.val + p2.val).toString(); // sum instead of difference
+        const d3 = (diffVal - p2.mult > 0) ? (diffVal - p2.mult).toString() : (diffVal + p2.mult).toString();
+        const set = new Set([finalAnswer, d1, d2, d3]);
+        let offset = 100;
+        while (set.size < 4) {
+          set.add((diffVal + offset).toString());
+          offset += 100;
+        }
+        options = Array.from(set).sort(() => Math.random() - 0.5);
+        defectMap = {
+          [d1]: "CONFUSED_DIGIT_AND_VALUE",
+          [d2]: "WRONG_OPERATION"
+        };
       }
-      options = Array.from(set).sort(() => Math.random() - 0.5);
-      defectMap = {
-        [d1]: "CONFUSED_DIGIT_AND_VALUE",
-        [d2]: "WRONG_OPERATION"
-      };
+    } else {
+      // Subtype 1: Repeated digits in the same number
+      const repDigit = Math.floor(Math.random() * 8) + 2; // 2 to 9
+      const pairTypes = [
+        { p1Name: 'ten thousands', mult1: 10000, p2Name: 'thousands', mult2: 1000 },
+        { p1Name: 'ten thousands', mult1: 10000, p2Name: 'hundreds', mult2: 100 },
+        { p1Name: 'ten thousands', mult1: 10000, p2Name: 'tens', mult2: 10 },
+        { p1Name: 'thousands', mult1: 1000, p2Name: 'hundreds', mult2: 100 },
+        { p1Name: 'thousands', mult1: 1000, p2Name: 'tens', mult2: 10 },
+        { p1Name: 'thousands', mult1: 1000, p2Name: 'ones', mult2: 1 }
+      ];
+      const pair = pairTypes[Math.floor(Math.random() * pairTypes.length)];
+
+      const pool = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].filter(x => x !== repDigit);
+      const rnd = () => pool[Math.floor(Math.random() * pool.length)];
+
+      let d_tth = rnd(), d_th = rnd(), d_h = rnd(), d_t = rnd(), d_o = rnd();
+      if (d_tth === 0) d_tth = pool.find(x => x > 0) || 1;
+
+      if (pair.mult1 === 10000) d_tth = repDigit;
+      if (pair.mult1 === 1000) d_th = repDigit;
+
+      if (pair.mult2 === 1000) d_th = repDigit;
+      if (pair.mult2 === 100) d_h = repDigit;
+      if (pair.mult2 === 10) d_t = repDigit;
+      if (pair.mult2 === 1) d_o = repDigit;
+
+      const num = (d_tth * 10000) + (d_th * 1000) + (d_h * 100) + (d_t * 10) + d_o;
+      const val1 = repDigit * pair.mult1;
+      const val2 = repDigit * pair.mult2;
+      const diffVal = val1 - val2;
+      finalAnswer = diffVal.toString();
+
+      promptInstruction = `- Question stem: "In the number ${num}, what is the difference between the values of the two digits '${repDigit}'?"\\n- The finalAnswer must be strictly the numeral ${finalAnswer}.\\n- When writing solutionSteps, explain that in ${num}, one digit ${repDigit} is in the ${pair.p1Name} place with value ${val1}, the other is in the ${pair.p2Name} place with value ${val2}, and their difference is ${val1} - ${val2} = ${finalAnswer}.\\n- In the hint, find the values of both digits '${repDigit}' before subtracting.`;
+
+      if (isMCQ) {
+        const d1 = (val1 + val2).toString();
+        const d2 = val1.toString();
+        const d3 = (diffVal - pair.mult2 > 0) ? (diffVal - pair.mult2).toString() : (diffVal + pair.mult2).toString();
+        const set = new Set([finalAnswer, d1, d2, d3]);
+        let offset = 100;
+        while (set.size < 4) {
+          set.add((diffVal + offset).toString());
+          offset += 100;
+        }
+        options = Array.from(set).sort(() => Math.random() - 0.5);
+        defectMap = {
+          [d1]: "WRONG_OPERATION",
+          [d2]: "OMITTED_SECOND_STEP"
+        };
+      }
     }
   } else {
     // advanced_forming_numbers
