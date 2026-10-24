@@ -1,6 +1,6 @@
-import { foundationLogic } from './unlike-fraction-comparison/foundation';
-import { standardLogic } from './unlike-fraction-comparison/standard';
-import { advancedLogic } from './unlike-fraction-comparison/advanced';
+import { foundationLogic } from './unlike-fraction-comparison/foundation.js';
+import { standardLogic } from './unlike-fraction-comparison/standard.js';
+import { advancedLogic } from './unlike-fraction-comparison/advanced.js';
 
 export const p3UnlikeFractionComparisonBlueprint = {
   title: 'unlike fraction comparison',

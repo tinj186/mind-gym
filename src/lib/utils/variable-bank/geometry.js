@@ -1,3 +1,5 @@
+import { makeCompatibleArray } from './names-and-contexts.js';
+
 // ----------------------------------------------------------------------------
 export const SHAPES_POOL = ["circle", "triangle", "square", "rectangle", "half circle", "quarter circle"];
 export const COLORS_POOL = ["red", "blue", "yellow", "green", "purple", "orange"];

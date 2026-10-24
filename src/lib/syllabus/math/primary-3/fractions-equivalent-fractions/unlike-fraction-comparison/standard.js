@@ -1,4 +1,4 @@
-import { getRandomNames, getRandomDivisibleFoods, getRandomColors, getRandomDivisibleObjects } from '@/lib/utils/variable-bank';
+import { getRandomNames, getRandomDivisibleFoods, getRandomColors, getRandomDivisibleObjects } from '../../../../../utils/variable-bank.js';
 
 const getArticle = (word) => /^[aeiou]/i.test(word) ? 'an' : 'a';
 
@@ -42,14 +42,14 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
     
     if (isMCQ) {
       const askForSmallest = Math.random() > 0.5;
-      const threeFracSets = [
-        [{n: 3, d: 4}, {n: 5, d: 8}, {n: 7, d: 12}],
-        [{n: 1, d: 2}, {n: 3, d: 8}, {n: 5, d: 12}],
-        [{n: 2, d: 3}, {n: 5, d: 6}, {n: 7, d: 12}],
-        [{n: 1, d: 4}, {n: 5, d: 12}, {n: 1, d: 3}]
+      const fourFracSets = [
+        [{n: 3, d: 4}, {n: 5, d: 8}, {n: 7, d: 12}, {n: 1, d: 2}],
+        [{n: 1, d: 2}, {n: 3, d: 8}, {n: 5, d: 12}, {n: 3, d: 4}],
+        [{n: 2, d: 3}, {n: 5, d: 6}, {n: 7, d: 12}, {n: 1, d: 2}],
+        [{n: 1, d: 4}, {n: 5, d: 12}, {n: 1, d: 3}, {n: 1, d: 2}]
       ];
       
-      const fSet = threeFracSets[Math.floor(Math.random() * threeFracSets.length)];
+      const fSet = fourFracSets[Math.floor(Math.random() * fourFracSets.length)];
       const shuffledSet = [...fSet].sort(() => 0.5 - Math.random());
       
       const strList = shuffledSet.map(f => `${f.n}/${f.d}`).join(', ');
@@ -346,6 +346,7 @@ CRITICAL INSTRUCTIONS:
   ${JSON.stringify(solutionSteps)}
 - EXACTLY use the following hint:
   "${hint}"
+${isMCQ && mcqOptions.length > 0 ? `- EXACTLY use these options: ${JSON.stringify(mcqOptions)}` : ''}
 - visualEngine MUST EXACTLY be {"componentToRender": "NONE", "componentData": {"hideVisual": true}}. DO NOT generate a BAR_MODEL or any other visual engine.
 
 ${getFormatInstructions(visualEngineStr, inputRequirementStr)}

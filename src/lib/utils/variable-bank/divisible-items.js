@@ -1,3 +1,5 @@
+import { makeCompatibleArray } from './names-and-contexts.js';
+
 // ----------------------------------------------------------------------------
 export const DIVISIBLE_FOODS_POOL = [
   // Original 8

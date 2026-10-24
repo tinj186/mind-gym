@@ -1,4 +1,4 @@
-import { getRandomNames, getRandomDivisibleFoods, getRandomDivisibleObjects } from '@/lib/utils/variable-bank';
+import { getRandomNames, getRandomDivisibleFoods, getRandomDivisibleObjects } from '../../../../../utils/variable-bank.js';
 
 const getArticle = (word) => /^[aeiou]/i.test(word) ? 'an' : 'a';
 
@@ -55,38 +55,54 @@ export const foundationLogic = (activeVariant, difficulty, type, isMCQ, isShort,
     let shortText = `Which is ${askForGreater ? 'greater' : 'smaller'}: ${f1.n}/${f1.d} or ${f2.n}/${f2.d}?`;
 
     if (isMCQ) {
-      mcqOptions = [`${f1.n}/${f1.d}`, `${f2.n}/${f2.d}`];
-      shortText = `Which fraction is ${askForGreater ? 'greater' : 'smaller'}?`;
-      structText = shortText;
-    }
+      structText = `Look at the visual models. Which statement is true?`;
+      shortText = structText;
+      const isF1Greater = f1.d < f2.d;
+      const str1 = `${f1.n}/${f1.d}`;
+      const str2 = `${f2.n}/${f2.d}`;
+      const correctStmt = isF1Greater ? `${str1} is greater than ${str2}` : `${str1} is less than ${str2}`;
+      const wrongStmt1 = isF1Greater ? `${str1} is less than ${str2}` : `${str1} is greater than ${str2}`;
+      const wrongStmt2 = isF1Greater ? `${str2} is greater than ${str1}` : `${str2} is less than ${str1}`;
+      const wrongStmt3 = `${str1} is equal to ${str2}`;
+      
+      answer = correctStmt;
+      mcqOptions = [correctStmt, wrongStmt1, wrongStmt2, wrongStmt3];
+      
+      solutionSteps = [
+        `Look at the visual models. Both fractions have the same numerator (${p.n}).`,
+        `A smaller denominator means the whole is divided into fewer, larger pieces.`,
+        `Therefore, ${str1} is ${isF1Greater ? 'greater' : 'less'} than ${str2}.`,
+        `So, "${correctStmt}" is true.`
+      ];
+    } else {
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: `Denominator that gives ${askForGreater ? 'larger' : 'smaller'} pieces`, expectedAnswer: askForGreater ? String(Math.min(f1.d, f2.d)) : String(Math.max(f1.d, f2.d)) },
+            { label: `The ${askForGreater ? 'greater' : 'smaller'} fraction is`, expectedAnswer: answer }
+          ]
+        });
+      }
 
-    if (isStructure) {
-      inputRequirementStr = JSON.stringify({
-        inputType: "MULTI_STEP_INPUT",
-        steps: [
-          { label: `Denominator that gives ${askForGreater ? 'larger' : 'smaller'} pieces`, expectedAnswer: askForGreater ? String(Math.min(f1.d, f2.d)) : String(Math.max(f1.d, f2.d)) },
-          { label: `The ${askForGreater ? 'greater' : 'smaller'} fraction is`, expectedAnswer: answer }
-        ]
-      });
+      solutionSteps = [
+        `Both fractions have the same numerator (${p.n}).`,
+        `A smaller denominator means the whole is divided into fewer, larger pieces.`,
+        `Therefore, ${greaterFrac} is greater than ${smallerFrac}.`,
+        `The ${askForGreater ? 'greater' : 'smaller'} fraction is ${answer}.`
+      ];
     }
 
     askText = getQText(structText, shortText);
 
     hint = `Look at the bar models. When the numerators are the same, the fraction with the smaller denominator is greater!`;
-    
-    solutionSteps = [
-      `Both fractions have the same numerator (${p.n}).`,
-      `A smaller denominator means the whole is divided into fewer, larger pieces.`,
-      `Therefore, ${greaterFrac} is greater than ${smallerFrac}.`,
-      `The ${askForGreater ? 'greater' : 'smaller'} fraction is ${answer}.`
-    ];
 
     visualEngineStr = JSON.stringify({
       componentToRender: "BAR_MODEL",
       componentData: {
         models: [
-          createBarModel(f1.n, f1.d, `First ${item} (${f1.n}/${f1.d})`),
-          createBarModel(f2.n, f2.d, `Second ${item} (${f2.n}/${f2.d})`)
+          createBarModel(f1.n, f1.d, isMCQ ? `Fraction 1 (${f1.n}/${f1.d})` : `First ${item} (${f1.n}/${f1.d})`),
+          createBarModel(f2.n, f2.d, isMCQ ? `Fraction 2 (${f2.n}/${f2.d})` : `Second ${item} (${f2.n}/${f2.d})`)
         ]
       }
     });
@@ -108,6 +124,9 @@ export const foundationLogic = (activeVariant, difficulty, type, isMCQ, isShort,
     
     const val1 = first.n / first.d;
     const val2 = second.n / second.d;
+    const str1 = `${first.n}/${first.d}`;
+    const str2 = `${second.n}/${second.d}`;
+    const isFirstGreater = val1 > val2;
     
     let structText, shortText;
     
@@ -117,20 +136,21 @@ export const foundationLogic = (activeVariant, difficulty, type, isMCQ, isShort,
     if (isMCQ) {
       structText = `Look at the visual models. Which statement is true?`;
       shortText = structText;
-      const strF1 = `${p.f1.n}/${p.f1.d}`;
-      const strF2 = `${p.f2.n}/${p.f2.d}`;
-      const isF1Greater = val1 > val2; // p.f1 > p.f2
       
-      const correctStmt = isF1Greater ? `${strF1} is greater than ${strF2}` : `${strF1} is less than ${strF2}`;
-      const wrongStmt1 = isF1Greater ? `${strF1} is less than ${strF2}` : `${strF1} is greater than ${strF2}`;
-      const wrongStmt2 = `${strF1} is equal to ${strF2}`;
+      const correctStmt = isFirstGreater ? `${str1} is greater than ${str2}` : `${str1} is less than ${str2}`;
+      const wrongStmt1 = isFirstGreater ? `${str1} is less than ${str2}` : `${str1} is greater than ${str2}`;
+      const wrongStmt2 = isFirstGreater ? `${str2} is greater than ${str1}` : `${str2} is less than ${str1}`;
+      const wrongStmt3 = `${str1} is equal to ${str2}`;
       
       answer = correctStmt;
-      mcqOptions = [correctStmt, wrongStmt1, wrongStmt2];
+      mcqOptions = [correctStmt, wrongStmt1, wrongStmt2, wrongStmt3];
+      
+      const longerFrac = isFirstGreater ? str1 : str2;
+      const shorterFrac = isFirstGreater ? str2 : str1;
       
       solutionSteps = [
         `Look at the shaded regions in the bar models.`,
-        `The shaded region for ${isF1Greater ? strF1 : strF2} is longer than the shaded region for ${isF1Greater ? strF2 : strF1}.`,
+        `The shaded region for ${longerFrac} is longer than the shaded region for ${shorterFrac}.`,
         `So, ${correctStmt} is true.`
       ];
     } else {
@@ -187,22 +207,22 @@ export const foundationLogic = (activeVariant, difficulty, type, isMCQ, isShort,
       { 
         bench: { n: 1, d: 2 },
         pairs: [
-          { n: 2, d: 6 }, { n: 3, d: 8 }, { n: 5, d: 12 }, { n: 4, d: 10 }, // less
-          { n: 4, d: 6 }, { n: 5, d: 8 }, { n: 7, d: 12 }, { n: 6, d: 10 }  // more
+          { n: 1, d: 4 }, { n: 2, d: 6 }, { n: 3, d: 8 }, { n: 4, d: 10 }, { n: 5, d: 12 }, // less
+          { n: 3, d: 4 }, { n: 4, d: 6 }, { n: 5, d: 8 }, { n: 6, d: 10 }, { n: 7, d: 12 }  // more
         ]
       },
       {
         bench: { n: 1, d: 3 },
         pairs: [
-          { n: 1, d: 6 }, { n: 2, d: 9 }, { n: 3, d: 12 }, // less
-          { n: 3, d: 6 }, { n: 4, d: 9 }, { n: 5, d: 12 }  // more
+          { n: 1, d: 6 }, { n: 2, d: 9 }, { n: 1, d: 9 }, { n: 2, d: 12 }, { n: 3, d: 12 }, // less
+          { n: 3, d: 6 }, { n: 4, d: 9 }, { n: 5, d: 9 }, { n: 5, d: 12 }, { n: 7, d: 12 }  // more
         ]
       },
       {
         bench: { n: 1, d: 4 },
         pairs: [
-          { n: 1, d: 8 }, { n: 2, d: 12 }, // less
-          { n: 3, d: 8 }, { n: 4, d: 12 }, { n: 5, d: 12 } // more
+          { n: 1, d: 8 }, { n: 1, d: 12 }, { n: 2, d: 12 }, // less
+          { n: 3, d: 8 }, { n: 5, d: 8 }, { n: 4, d: 12 }, { n: 5, d: 12 }, { n: 7, d: 12 } // more
         ]
       }
     ];
@@ -225,8 +245,9 @@ export const foundationLogic = (activeVariant, difficulty, type, isMCQ, isShort,
       answer = fractionStr;
       
       const wrongPairs = selectedBenchGroup.pairs.filter(pair => (pair.n / pair.d > benchVal) !== isGreater);
-      const selectedWrong = wrongPairs.sort(() => 0.5 - Math.random()).slice(0, 3).map(pair => `${pair.n}/${pair.d}`);
-      mcqOptions = [answer, ...selectedWrong];
+      const uniqueWrong = Array.from(new Set(wrongPairs.map(pair => `${pair.n}/${pair.d}`))).filter(s => s !== answer);
+      const selectedWrong = uniqueWrong.sort(() => 0.5 - Math.random()).slice(0, 3);
+      mcqOptions = [answer, ...selectedWrong].sort(() => 0.5 - Math.random());
       
       solutionSteps = [
         `Use ${benchStr} as a benchmark.`,
@@ -311,12 +332,19 @@ export const foundationLogic = (activeVariant, difficulty, type, isMCQ, isShort,
       structText = `Which list shows the fractions in order from ${askSmallestToGreatest ? 'smallest to greatest' : 'greatest to smallest'}?\\nFractions: ${strList}`;
       shortText = structText;
       
-      const wrong1 = [...fractions].map(f => `${f.n}/${f.d}`).join(', '); // greatest to smallest
-      const wrong2 = [...fractions].reverse().map(f => `${f.n}/${f.d}`).join(', '); // smallest to greatest
-      const wrong3 = [shuffled[0], shuffled[2], shuffled[1]].map(f => `${f.n}/${f.d}`).join(', ');
-      const wrong4 = [shuffled[1], shuffled[0], shuffled[2]].map(f => `${f.n}/${f.d}`).join(', ');
+      const [f0, f1, f2] = fractions;
+      const allPerms = [
+        [f0, f1, f2],
+        [f2, f1, f0],
+        [f0, f2, f1],
+        [f1, f0, f2],
+        [f1, f2, f0],
+        [f2, f0, f1]
+      ].map(perm => perm.map(f => `${f.n}/${f.d}`).join(', '));
       
-      mcqOptions = Array.from(new Set([answer, wrong1, wrong2, wrong3, wrong4])).slice(0, 4);
+      const distractors = allPerms.filter(pStr => pStr !== answer);
+      const selectedDistractors = distractors.sort(() => 0.5 - Math.random()).slice(0, 3);
+      mcqOptions = [answer, ...selectedDistractors].sort(() => 0.5 - Math.random());
     } else {
       structText = `Three friends have identical ${item}s. ${names[0]} eats ${shuffled[0].n}/${shuffled[0].d}, ${names[1]} eats ${shuffled[1].n}/${shuffled[1].d}, and ${names[2]} eats ${shuffled[2].n}/${shuffled[2].d}. Arrange the fractions starting from the ${askSmallestToGreatest ? 'smallest' : 'greatest'} amount eaten. (e.g. 1/2, 1/3, 1/4)`;
       shortText = `Arrange these fractions from ${askSmallestToGreatest ? 'smallest to greatest' : 'greatest to smallest'}: ${strList}`;
@@ -378,10 +406,11 @@ export const foundationLogic = (activeVariant, difficulty, type, isMCQ, isShort,
       
       const correctStmt = p.realIsF1Greater ? `${strF1} is greater than ${strF2}` : `${strF1} is less than ${strF2}`;
       const wrongStmt1 = p.realIsF1Greater ? `${strF1} is less than ${strF2}` : `${strF1} is greater than ${strF2}`;
-      const wrongStmt2 = `${strF1} is equal to ${strF2}`;
+      const wrongStmt2 = p.realIsF1Greater ? `${strF2} is greater than ${strF1}` : `${strF2} is less than ${strF1}`;
+      const wrongStmt3 = `${strF1} is equal to ${strF2}`;
       
       answer = correctStmt;
-      mcqOptions = [correctStmt, wrongStmt1, wrongStmt2];
+      mcqOptions = [correctStmt, wrongStmt1, wrongStmt2, wrongStmt3];
     } else {
       structText = `${names[0]} says that ${strF1} of ${getArticle(item)} ${item} is ${statementSaysF1Greater ? 'greater' : 'less'} than ${strF2} of an identical ${item}. Look at the models. Is ${names[0]} correct? Write True or False.`;
       shortText = `Look at the models. True or False: ${strF1} is ${statementSaysF1Greater ? 'greater' : 'less'} than ${strF2}.`;

@@ -1,4 +1,4 @@
-import { getRandomNames, getRandomDivisibleFoods, getRandomColors, getRandomDivisibleObjects, getTimeActivities } from '@/lib/utils/variable-bank';
+import { getRandomNames, getRandomDivisibleFoods, getRandomColors, getRandomDivisibleObjects, getTimeActivities } from '../../../../../utils/variable-bank.js';
 
 const getArticle = (word) => /^[aeiou]/i.test(word) ? 'an' : 'a';
 
@@ -270,7 +270,7 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
     if (isMCQ) {
       answer = `${winnerFrac.n}/${winnerFrac.d}`;
       askText = `Which is ${askForGreater ? 'greater' : 'smaller'}: ${first.n}/${first.d} or ${second.n}/${second.d}?`;
-      mcqOptions = [`${first.n}/${first.d}`, `${second.n}/${second.d}`];
+      mcqOptions = [`${first.n}/${first.d}`, `${second.n}/${second.d}`, 'Both fractions are equal', 'Cannot be determined'];
       solutionSteps = [
         `Compare both fractions to the benchmark of 1/2.`,
         `${p.f1.n}/${p.f1.d} is less than 1/2.`,
@@ -477,6 +477,7 @@ CRITICAL INSTRUCTIONS:
   ${JSON.stringify(solutionSteps)}
 - EXACTLY use the following hint:
   "${hint}"
+${isMCQ && mcqOptions.length > 0 ? `- EXACTLY use these options: ${JSON.stringify(mcqOptions)}` : ''}
 ${visualEngineStr.includes('NONE') ? '- visualEngine MUST EXACTLY be {"componentToRender": "NONE", "componentData": {"hideVisual": true}}. DO NOT generate a BAR_MODEL or any other visual engine.' : ''}
 
 ${getFormatInstructions(visualEngineStr, inputRequirementStr)}

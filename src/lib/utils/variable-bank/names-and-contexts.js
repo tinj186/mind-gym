@@ -11,7 +11,7 @@
  * while using a Proxy to maintain backward compatibility with legacy variant code 
  * that expects a string primitive or single object.
  */
-const makeCompatibleArray = (singleItem) => {
+export const makeCompatibleArray = (singleItem) => {
   const arr = [singleItem];
   return new Proxy(arr, {
     get(target, prop) {

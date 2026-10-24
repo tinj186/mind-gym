@@ -1,3 +1,5 @@
+import { makeCompatibleArray } from './names-and-contexts.js';
+
 // ----------------------------------------------------------------------------
 export const LENGTH_ITEMS_POOL = [
   "cutter", "highlighter", "pen", "pencil", "usbdrive", "paperclip"
