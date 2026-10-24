@@ -236,7 +236,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       // Find difference z given x and y
       finalAnswer = diff.toString();
       visualEngineStr = JSON.stringify({
-        componentToRender: "BAR_MODEL_COMPARISON",
+        componentToRender: "BAR_MODEL",
         componentData: {
           modelType: "BAR_MODEL_COMPARISON",
           bars: [
@@ -280,7 +280,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       // Given smaller and difference, find larger
       finalAnswer = larger.toString();
       visualEngineStr = JSON.stringify({
-        componentToRender: "BAR_MODEL_COMPARISON",
+        componentToRender: "BAR_MODEL",
         componentData: {
           modelType: "BAR_MODEL_COMPARISON",
           bars: [
@@ -324,7 +324,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       // Given larger and difference, find smaller
       finalAnswer = smaller.toString();
       visualEngineStr = JSON.stringify({
-        componentToRender: "BAR_MODEL_COMPARISON",
+        componentToRender: "BAR_MODEL",
         componentData: {
           modelType: "BAR_MODEL_COMPARISON",
           bars: [
@@ -385,7 +385,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     finalAnswer = targetVal.toString();
 
     visualEngineStr = JSON.stringify({
-      componentToRender: "NUMBER_LINE_ADVANCED",
+      componentToRender: "NUMBER_LINE",
       componentData: {
         startValue: startVal,
         endValue: endVal,
@@ -564,7 +564,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     }
 
     visualEngineStr = JSON.stringify({
-      componentToRender: "DIGIT_CARD_SORTER",
+      componentToRender: "NUMBER_CARDS",
       componentData: {
         digits: shuffledDigits,
         condition: isGreatest ? "greatest" : "smallest"

@@ -109,7 +109,7 @@ export default function VisualRenderer({ type, ...props }) {
             );
           }
           case 'NUMBER_CARDS':
-          case 'DIGIT_CARD_SORTER': return <NumberCards {...props} />;
+          case 'DIGIT_CARD_SORTER': return <NumberCards {...props} data={props.visualEngine?.componentData || props.data} />;
           case 'NUMBER_PATTERN': return <NumberPattern {...props} />;
           case 'NUMBER_LINE':
           case 'NUMBER_LINE_ADVANCED': return <NumberLine data={props.visualEngine?.componentData || props.data} />;
