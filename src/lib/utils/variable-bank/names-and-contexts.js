@@ -134,7 +134,8 @@ export const NAMES_POOL = [
 ];
 
 export const getRandomNames = (count = 1) => {
-  const shuffled = [...NAMES_POOL].sort(() => 0.5 - Math.random());
+  const uniqueNames = Array.from(new Set(NAMES_POOL));
+  const shuffled = uniqueNames.sort(() => 0.5 - Math.random());
   return count === 1 ? makeCompatibleArray(shuffled[0]) : shuffled.slice(0, count);
 };
 

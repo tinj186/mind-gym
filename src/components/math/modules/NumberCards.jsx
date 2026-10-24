@@ -1,17 +1,28 @@
 import React from 'react';
 
 export default function NumberCards({ data }) {
-  // Support both new 'items' object array and legacy 'numbers' value array
-  const rawItems = data?.items || data?.numbers || [];
+  // Support DIGIT_CARD_SORTER 'digits' array, 'items' object array, and legacy 'numbers' array
+  const rawItems = (data?.digits && Array.isArray(data.digits))
+    ? data.digits.map(d => ({ value: d.toString() }))
+    : (data?.items || data?.numbers || []);
+
   const items = rawItems.map(item => {
     if (typeof item === 'object' && item !== null) return item;
     return { value: item };
   });
 
   const layout = data?.layout || 'horizontal';
+  const condition = data?.condition;
 
   return (
-    <div className={`flex ${layout === 'vertical' ? 'flex-col' : 'flex-row flex-wrap'} justify-center gap-6 p-6`}>
+    <div className="flex flex-col items-center gap-3">
+      {condition && (
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-50 border-2 border-indigo-200 rounded-full text-indigo-700 font-black text-xs uppercase tracking-wider">
+          <span>Target:</span>
+          <span className="font-extrabold text-indigo-900">{condition.toUpperCase()}</span>
+        </div>
+      )}
+      <div className={`flex ${layout === 'vertical' ? 'flex-col' : 'flex-row flex-wrap'} justify-center gap-6 p-6`}>
       {items.map((item, idx) => (
         <div 
           key={idx} 

@@ -5,27 +5,54 @@ import React from 'react';
 export default function NumberLine({ data }) {
   if (!data) return null;
 
-  const min = Number(data.min ?? 0);
-  const max = Number(data.max ?? 100);
-  const markedValue = data.markedValue !== undefined && data.markedValue !== null ? Number(data.markedValue) : null;
+  const min = Number(data.min ?? data.startValue ?? 0);
+  const max = Number(data.max ?? data.endValue ?? 100);
   const range = max - min;
   if (range <= 0) return null;
 
-  const minLabel = data.minLabel ?? min.toLocaleString();
-  const maxLabel = data.maxLabel ?? max.toLocaleString();
-  const midValue = data.midValue !== undefined ? Number(data.midValue) : min + (range / 2);
-  const midLabel = data.midLabel ?? midValue.toLocaleString();
-  const markedLabel = data.markedLabel ?? (markedValue !== null ? markedValue.toLocaleString() : '');
+  const tickCount = Number(data.numIntervals ?? 10);
+  const step = range / tickCount;
 
-  // Calculate percentage for marked value (clamped between 0 and 100)
+  // Determine target / marked value
+  let markedValue = null;
+  if (data.targetPoint !== undefined && data.targetPoint !== null) {
+    if (typeof data.targetPoint === 'number' && data.targetPoint <= tickCount) {
+      markedValue = min + data.targetPoint * step;
+    } else {
+      markedValue = Number(data.targetPoint);
+    }
+  } else if (data.markedValue !== undefined && data.markedValue !== null) {
+    markedValue = Number(data.markedValue);
+  }
+
+  const markedLabel = data.markedLabel ?? (data.targetPoint !== undefined ? "?" : (markedValue !== null ? markedValue.toLocaleString() : ''));
   const markedPct = markedValue !== null ? Math.min(100, Math.max(0, ((markedValue - min) / range) * 100)) : null;
-  const midPct = ((midValue - min) / range) * 100;
 
-  // Generate 10 subdivision tick marks
-  const tickCount = 10;
+  // Build ticks and labels
   const ticks = [];
   for (let i = 0; i <= tickCount; i++) {
-    ticks.push((i / tickCount) * 100);
+    const val = min + i * step;
+    const pct = (i / tickCount) * 100;
+    
+    let label = null;
+    if (data.labeledPoints && Array.isArray(data.labeledPoints)) {
+      const match = data.labeledPoints.find(lp => {
+        if (typeof lp === 'number') return lp === i || lp === val;
+        if (typeof lp === 'object' && lp !== null) {
+          return lp.index === i || lp.value === val;
+        }
+        return false;
+      });
+      if (match !== undefined) {
+        label = typeof match === 'object' && match?.label ? match.label : val.toLocaleString();
+      }
+    } else {
+      if (i === 0) label = data.minLabel ?? min.toLocaleString();
+      else if (i === tickCount) label = data.maxLabel ?? max.toLocaleString();
+      else if (tickCount % 2 === 0 && i === tickCount / 2 && data.midLabel) label = data.midLabel;
+    }
+
+    ticks.push({ index: i, pct, value: val, label });
   }
 
   return (
@@ -58,18 +85,18 @@ export default function NumberLine({ data }) {
           )}
 
           {/* Subdivision Ticks */}
-          {ticks.map((pct, idx) => {
-            const isEndpoint = idx === 0 || idx === tickCount;
-            const isMid = Math.abs(pct - midPct) < 0.1;
+          {ticks.map((t) => {
+            const isEndpoint = t.index === 0 || t.index === tickCount;
+            const isMid = tickCount % 2 === 0 && t.index === tickCount / 2;
             const height = isEndpoint ? 'h-6 sm:h-7' : isMid ? 'h-5 sm:h-6' : 'h-3';
             const width = isEndpoint ? 'w-1 sm:w-1.5' : isMid ? 'w-1' : 'w-0.5';
             const bg = isEndpoint ? 'bg-slate-900' : isMid ? 'bg-blue-600' : 'bg-slate-400';
 
             return (
               <div
-                key={idx}
+                key={t.index}
                 className={`absolute ${width} ${height} ${bg} rounded-full -translate-x-1/2`}
-                style={{ left: `${pct}%` }}
+                style={{ left: `${t.pct}%` }}
               />
             );
           })}
@@ -77,29 +104,30 @@ export default function NumberLine({ data }) {
 
         {/* Labels below the line */}
         <div className="relative w-full mt-4 h-6">
-          {/* Min Label */}
-          <div className="absolute left-0 -translate-x-1/2 text-center">
-            <span className="text-xs sm:text-sm font-black text-slate-800 whitespace-nowrap">
-              {minLabel}
-            </span>
-          </div>
+          {ticks.filter(t => t.label).map((t) => {
+            const isEndpoint = t.index === 0 || t.index === tickCount;
+            const isMid = tickCount % 2 === 0 && t.index === tickCount / 2;
 
-          {/* Midpoint Label */}
-          <div
-            className="absolute -translate-x-1/2 text-center"
-            style={{ left: `${midPct}%` }}
-          >
-            <span className="text-[11px] sm:text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 whitespace-nowrap">
-              {midLabel}
-            </span>
-          </div>
-
-          {/* Max Label */}
-          <div className="absolute right-0 translate-x-1/2 text-center">
-            <span className="text-xs sm:text-sm font-black text-slate-800 whitespace-nowrap">
-              {maxLabel}
-            </span>
-          </div>
+            return (
+              <div
+                key={t.index}
+                className={`absolute -translate-x-1/2 text-center ${
+                  t.index === 0 ? 'left-0' : t.index === tickCount ? 'right-0 translate-x-1/2' : ''
+                }`}
+                style={t.index > 0 && t.index < tickCount ? { left: `${t.pct}%` } : {}}
+              >
+                <span className={`${
+                  isEndpoint 
+                    ? 'text-xs sm:text-sm font-black text-slate-800' 
+                    : isMid 
+                    ? 'text-[11px] sm:text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200' 
+                    : 'text-[11px] sm:text-xs font-bold text-slate-700 bg-white/80 px-1.5 py-0.5 rounded shadow-sm'
+                } whitespace-nowrap`}>
+                  {t.label}
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

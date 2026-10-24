@@ -108,9 +108,11 @@ export default function VisualRenderer({ type, ...props }) {
               </div>
             );
           }
-          case 'NUMBER_CARDS': return <NumberCards {...props} />;
+          case 'NUMBER_CARDS':
+          case 'DIGIT_CARD_SORTER': return <NumberCards {...props} />;
           case 'NUMBER_PATTERN': return <NumberPattern {...props} />;
-          case 'NUMBER_LINE': return <NumberLine data={props.visualEngine?.componentData || props.data} />;
+          case 'NUMBER_LINE':
+          case 'NUMBER_LINE_ADVANCED': return <NumberLine data={props.visualEngine?.componentData || props.data} />;
           case 'EQUAL_GROUPS': return <EqualGroups {...props} />;
           case 'GROUPING_WORKSPACE': return <GroupingWorkspaceModule {...props} />;
           case 'ORDINAL_LINE': return <OrdinalLine {...props} />;
@@ -141,7 +143,8 @@ export default function VisualRenderer({ type, ...props }) {
           case 'VERTICAL_ALGORITHM': return <VerticalAlgorithm data={props.visualEngine?.componentData || props.data} />;
           case 'LONG_DIVISION': return <LongDivision data={props.visualEngine?.componentData || props.data} />;
           case 'DIAGRAM_RENDERER': return <DiagramRenderer data={props.visualEngine?.componentData || props.data} />;
-          case 'BAR_MODEL': return <BarModelRenderer data={props.visualEngine?.componentData || props.data} setIsToolOpen={props.setIsToolOpen} toolState={props.toolState} />;
+          case 'BAR_MODEL':
+          case 'BAR_MODEL_COMPARISON': return <BarModelRenderer data={props.visualEngine?.componentData || props.data} setIsToolOpen={props.setIsToolOpen} toolState={props.toolState} />;
           case 'FRACTION_EQUIVALENCE': return <FractionEquivalence data={props.visualEngine?.componentData || props.data} />;
           case 'FRACTION_DISPLAY': return <FractionDisplay data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
           case 'SQUARE_GRID_SHAPE': return <SquareGridShape data={props.visualEngine?.componentData || props.data} />;

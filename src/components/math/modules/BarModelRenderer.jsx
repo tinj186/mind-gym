@@ -150,21 +150,29 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
     );
   }
 
-      if (m.modelType === 'COMPARISON' || m.type === 'COMPARISON') {
+      if (m.modelType === 'COMPARISON' || m.type === 'COMPARISON' || m.modelType === 'BAR_MODEL_COMPARISON' || m.type === 'BAR_MODEL_COMPARISON') {
         const hasSegments = m.bar1?.segments || m.bar2?.segments || (m.bars && m.bars.some(b => b.segments));
     
         const getLayoutValue = (bar) => {
-            if (!bar) return 0;
-        if (bar.layoutSize) return parseFloat(bar.layoutSize);
-        if (hasSegments) {
+          if (!bar) return 0;
+          if (bar.layoutSize) return parseFloat(bar.layoutSize);
+          if (hasSegments) {
             return parseFloat(bar.segments) || 1;
-        } else {
+          } else {
             const val = parseFloat(bar.value);
             return isNaN(val) ? 1 : val;
-        }
-    };
+          }
+        };
 
-        const barsToRender = m.bars || [m.bar1, m.bar2].filter(Boolean);
+        const rawBars = m.bars || m.entities || [m.bar1, m.bar2].filter(Boolean);
+        const barsToRender = rawBars.map(b => {
+          const isHidden = m.hiddenValues && Array.isArray(m.hiddenValues) && (m.hiddenValues.includes(b.name) || m.hiddenValues.includes(b.id));
+          return {
+            ...b,
+            displayValue: isHidden ? '?' : (b.displayValue !== undefined ? b.displayValue : b.value),
+            layoutSize: b.layoutSize || (typeof b.value === 'number' ? b.value : parseFloat(b.value)) || 1
+          };
+        });
         const maxVal = Math.max(...barsToRender.map(getLayoutValue), 1);
 
         return (
@@ -203,21 +211,33 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
                       style={{ width: `${100 - ((getLayoutValue(bar) / maxVal) * 100)}%` }}
                       className="h-full flex flex-col items-center justify-end relative"
                     >
-                      {idx === 0 ? (
-                        <div className="absolute -top-5 flex flex-col items-center justify-end w-full h-8">
-                          <span className="text-sm font-black text-slate-500 bg-slate-50 px-2 absolute -top-3 z-10">
-                            {diffVal ? <span className="text-indigo-600">{diffVal}</span> : (bar.difference?.displayValue !== undefined ? bar.difference.displayValue : (m.difference?.displayValue !== undefined ? m.difference.displayValue : '?'))}
-                          </span>
-                          <div className="w-[calc(100%-16px)] h-2 border-x-2 border-t-2 border-slate-400 opacity-60 rounded-t-md"></div>
-                        </div>
-                      ) : (
-                        <div className="absolute -bottom-5 flex flex-col items-center justify-start w-full h-8">
-                          <span className="text-sm font-black text-slate-500 bg-slate-50 px-2 absolute -bottom-3 z-10">
-                            {diffVal ? <span className="text-indigo-600">{diffVal}</span> : (bar.difference?.displayValue !== undefined ? bar.difference.displayValue : (m.difference?.displayValue !== undefined ? m.difference.displayValue : '?'))}
-                          </span>
-                          <div className="w-[calc(100%-16px)] h-2 border-x-2 border-b-2 border-slate-400 opacity-60 rounded-b-md"></div>
-                        </div>
-                      )}
+                      {(() => {
+                        const diffObj = bar.difference || m.difference;
+                        const isDiffHidden = m.hiddenValues && Array.isArray(m.hiddenValues) && m.hiddenValues.includes('difference');
+                        const diffText = diffVal 
+                          ? <span className="text-indigo-600">{diffVal}</span> 
+                          : isDiffHidden 
+                          ? '?' 
+                          : (typeof diffObj === 'object' && diffObj !== null 
+                              ? (diffObj.displayValue !== undefined ? diffObj.displayValue : (diffObj.value !== undefined ? diffObj.value : '?'))
+                              : (diffObj !== undefined ? diffObj : '?'));
+
+                        return idx === 0 ? (
+                          <div className="absolute -top-5 flex flex-col items-center justify-end w-full h-8">
+                            <span className="text-sm font-black text-slate-500 bg-slate-50 px-2 absolute -top-3 z-10">
+                              {diffText}
+                            </span>
+                            <div className="w-[calc(100%-16px)] h-2 border-x-2 border-t-2 border-slate-400 opacity-60 rounded-t-md"></div>
+                          </div>
+                        ) : (
+                          <div className="absolute -bottom-5 flex flex-col items-center justify-start w-full h-8">
+                            <span className="text-sm font-black text-slate-500 bg-slate-50 px-2 absolute -bottom-3 z-10">
+                              {diffText}
+                            </span>
+                            <div className="w-[calc(100%-16px)] h-2 border-x-2 border-b-2 border-slate-400 opacity-60 rounded-b-md"></div>
+                          </div>
+                        );
+                      })()}
                       <div className="w-full h-full bg-slate-50/50 border-y border-r border-dashed border-slate-300 rounded-r-lg"></div>
                     </div>
                   )}

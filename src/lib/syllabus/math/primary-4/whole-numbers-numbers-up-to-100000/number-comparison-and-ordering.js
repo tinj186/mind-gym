@@ -28,6 +28,11 @@ export const p4NumberComparisonAndOrderingBlueprint = {
 
   variants: {
     foundation_compare_two_numbers: 'Compare two numbers up to 5 digits to determine which is greater or smaller (comparing ten thousands, thousands, hundreds, or tens).',
+    foundation_difference_deduction: 'Deduce the difference or missing 5-digit quantity using comparative bar models.',
+    foundation_number_line_reading: 'Determine the missing 5-digit number on a number line with fixed intervals.',
+    foundation_place_value_step_shifts: 'Determine a number that is thousands, hundreds, or tens more or less than a 5-digit base.',
+    foundation_extreme_sorting_digit_cards: 'Form the greatest or smallest 5-digit number using 5 given digit cards.',
+    foundation_three_entity_extrema: 'Compare three 5-digit quantities to find extrema and calculate differences.',
 
     standard_order_asc_diff_ten_thousands: 'Arrange 4 numbers (different ten thousands) in ascending order.',
     standard_order_desc_diff_ten_thousands: 'Arrange 4 numbers (different ten thousands) in descending order.',

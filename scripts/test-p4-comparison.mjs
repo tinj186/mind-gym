@@ -7,6 +7,11 @@ let errors = 0;
 const types = ['MCQ', 'Short Question', 'Structured'];
 const variantsToTest = [
   'foundation_compare_two_numbers',
+  'foundation_difference_deduction',
+  'foundation_number_line_reading',
+  'foundation_place_value_step_shifts',
+  'foundation_extreme_sorting_digit_cards',
+  'foundation_three_entity_extrema',
   // Test legacy aliases
   'foundation_compare_greater_ten_thousands',
   'foundation_compare_smaller_ten_thousands',
@@ -54,7 +59,7 @@ for (const variant of variantsToTest) {
             errors++;
           }
         } else if (type === 'Structured') {
-          if (!prompt.includes('"inputType": "MULTI_STEP_INPUT"')) {
+          if (!prompt.includes('"inputType": "MULTI_STEP_INPUT"') && !prompt.includes('"inputType":"MULTI_STEP_INPUT"')) {
             console.error(`[${variant}][${type}] Missing MULTI_STEP_INPUT!`);
             errors++;
           }
