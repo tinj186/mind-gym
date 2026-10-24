@@ -57,31 +57,31 @@ export default function NumberLine({ data }) {
 
   return (
     <div className="my-8 w-full max-w-2xl mx-auto p-6 sm:p-8 bg-slate-50 rounded-[2.5rem] border-2 border-slate-200 select-none shadow-sm">
-      <div className="relative pt-12 pb-8 px-6 sm:px-10">
-        {/* Floating Marker for Target Value */}
-        {markedPct !== null && (
-          <div
-            className="absolute top-0 flex flex-col items-center -translate-x-1/2 transition-all duration-300 z-30"
-            style={{ left: `${markedPct}%` }}
-          >
-            <div className="px-3 py-1 bg-amber-400 text-slate-900 border-2 border-slate-900 font-black text-sm sm:text-base rounded-full shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] whitespace-nowrap animate-bounce">
-              {markedLabel}
-            </div>
-            {/* Arrow pointing down */}
-            <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-slate-900 -mt-[1px]" />
-            {/* Pin dot on the line */}
-            <div className="w-3.5 h-3.5 bg-amber-400 border-2 border-slate-900 rounded-full mt-0.5" />
-          </div>
-        )}
-
+      <div className="relative pt-16 pb-8 px-6 sm:px-10">
         {/* The Number Line Track */}
         <div className="relative w-full h-3 bg-slate-300 rounded-full flex items-center">
-          {/* Active Highlight Fill to marked point (optional aesthetic) */}
+          {/* Active Highlight Fill to marked point */}
           {markedPct !== null && (
             <div
               className="absolute left-0 h-full bg-blue-200 rounded-full pointer-events-none"
               style={{ width: `${markedPct}%` }}
             />
+          )}
+
+          {/* Floating Marker for Target Value (positioned relative to the track) */}
+          {markedPct !== null && (
+            <div
+              className="absolute -translate-x-1/2 flex flex-col items-center pointer-events-none z-30 transition-all duration-300"
+              style={{ left: `${markedPct}%`, bottom: 'calc(50% - 7px)' }}
+            >
+              <div className="px-3 py-1 bg-amber-400 text-slate-900 border-2 border-slate-900 font-black text-sm sm:text-base rounded-full shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] whitespace-nowrap animate-bounce pointer-events-auto">
+                {markedLabel}
+              </div>
+              {/* Arrow pointing down */}
+              <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-slate-900 -mt-[1px]" />
+              {/* Pin dot centered directly on the line */}
+              <div className="w-3.5 h-3.5 bg-amber-400 border-2 border-slate-900 rounded-full mt-0.5" />
+            </div>
           )}
 
           {/* Subdivision Ticks */}
@@ -111,10 +111,8 @@ export default function NumberLine({ data }) {
             return (
               <div
                 key={t.index}
-                className={`absolute -translate-x-1/2 text-center ${
-                  t.index === 0 ? 'left-0' : t.index === tickCount ? 'right-0 translate-x-1/2' : ''
-                }`}
-                style={t.index > 0 && t.index < tickCount ? { left: `${t.pct}%` } : {}}
+                className="absolute -translate-x-1/2 text-center"
+                style={{ left: `${t.pct}%` }}
               >
                 <span className={`${
                   isEndpoint 
