@@ -152,35 +152,38 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         const wrongStmt3 = `${presentedNumbers[0]} is equal to ${presentedNumbers[1]}`;
 
         finalAnswer = correctStmt;
-        options = [correctStmt, wrongStmt1, wrongStmt2, wrongStmt3].sort(() => Math.random() - 0.5);
-        defectMap = {
-          [wrongStmt1]: "OPPOSITE_CONDITION_GREATER",
-          [wrongStmt2]: "OPPOSITE_CONDITION_SMALLER",
-          [wrongStmt3]: "CONSTANT_VIOLATION"
-        };
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: wrongStmt1, defect: "OPPOSITE_CONDITION_GREATER" },
+          { val: wrongStmt2, defect: "OPPOSITE_CONDITION_SMALLER" },
+          { val: wrongStmt3, defect: "CONSTANT_VIOLATION" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
         promptInstruction = `- Question stem: "Look at the two numbers: ${presentedNumbers[0]} and ${presentedNumbers[1]}. Which statement is correct?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
       } else if (mcqSubtype === 1) {
-        const symbolAnswer = presentedNumbers[0] > presentedNumbers[1] ? ">" : "<";
-        const wrongSymbol = presentedNumbers[0] > presentedNumbers[1] ? "<" : ">";
-        finalAnswer = symbolAnswer;
-        options = [">", "<", "=", "None of the above"];
-        defectMap = {
-          [wrongSymbol]: "REVERSED_INEQUALITY",
-          "=": "CONSTANT_VIOLATION",
-          "None of the above": "MISREAD_QUESTION"
-        };
-        promptInstruction = `- Question stem: "Which symbol correctly completes the number sentence?\\n${presentedNumbers[0]} [ ? ] ${presentedNumbers[1]}"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+        const isFirstGreater = presentedNumbers[0] > presentedNumbers[1];
+        finalAnswer = isFirstGreater ? "greater than" : "smaller than";
+        const oppositeAns = isFirstGreater ? "smaller than" : "greater than";
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: oppositeAns, defect: "REVERSED_COMPARISON" },
+          { val: "equal to", defect: "CONSTANT_VIOLATION" },
+          { val: "the same as", defect: "CONSTANT_VIOLATION" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+        promptInstruction = `- Question stem: "Complete the statement with the correct words:\\n${presentedNumbers[0]} is ____________ ${presentedNumbers[1]}."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
       } else {
         finalAnswer = targetNum.toString();
         const d1 = otherNum.toString();
         const d2 = "Both numbers are equal";
         const d3 = "Cannot be determined";
-        options = [finalAnswer, d1, d2, d3].sort(() => Math.random() - 0.5);
-        defectMap = {
-          [d1]: isGreater ? "OPPOSITE_CONDITION_SMALLER" : "OPPOSITE_CONDITION_GREATER",
-          [d2]: "CONSTANT_VIOLATION",
-          [d3]: "MISREAD_QUESTION"
-        };
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: isGreater ? "OPPOSITE_CONDITION_SMALLER" : "OPPOSITE_CONDITION_GREATER" },
+          { val: d2, defect: "CONSTANT_VIOLATION" },
+          { val: d3, defect: "MISREAD_QUESTION" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
         promptInstruction = `- Question stem: "Which number is ${askType}, ${presentedNumbers[0]} or ${presentedNumbers[1]}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
       }
     } else if (isStructure) {
@@ -205,12 +208,13 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         finalAnswer = targetNum.toString();
         promptInstruction = `- Question stem: "Which number is ${askType}, ${presentedNumbers[0]} or ${presentedNumbers[1]}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
       } else {
-        finalAnswer = presentedNumbers[0] > presentedNumbers[1] ? ">" : "<";
-        promptInstruction = `- Question stem: "Write > or < in the blank to make the statement true:\\n${presentedNumbers[0]} _____ ${presentedNumbers[1]}"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+        const isFirstGreater = presentedNumbers[0] > presentedNumbers[1];
+        finalAnswer = isFirstGreater ? "greater than" : "smaller than";
+        promptInstruction = `- Question stem: "Fill in the blank with 'greater than' or 'smaller than' to make the statement true:\\n${presentedNumbers[0]} is ____________________ ${presentedNumbers[1]}."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
       }
     }
 
-    solutionSteps = `Step 1: Compare ${presentedNumbers[0]} and ${presentedNumbers[1]} from left to right starting from the highest place value.\\nStep 2: ${stepExplanation}\\nStep 3: Conclude that ${greaterNum} > ${smallerNum}, so the ${askType} number is ${targetNum}.`;
+    solutionSteps = `Step 1: Compare ${presentedNumbers[0]} and ${presentedNumbers[1]} from left to right starting from the highest place value.\\nStep 2: ${stepExplanation}\\nStep 3: Conclude that ${greaterNum} is greater than ${smallerNum}, so the ${askType} number is ${targetNum}.`;
     hint = "Compare the digits starting from the highest place value (the leftmost digit). The first digit from the left that is different tells you which number is greater or smaller!";
 
   // --------------------------------------------------------------------------
@@ -705,7 +709,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       defectMap = mcqRes.defectMap;
     }
 
-    solutionSteps = `Step 1: Compare the three amounts to order them from greatest to smallest: ${maxE.name} (${maxE.val.toLocaleString()}) > ${midE.name} (${midE.val.toLocaleString()}) > ${minE.name} (${minE.val.toLocaleString()}).\\nStep 2: The ${labelA} amount is ${highVal.toLocaleString()} (${highName}) and the ${labelB} amount is ${lowVal.toLocaleString()} (${lowName}).\\nStep 3: Subtract to find the difference: ${highVal} - ${lowVal} = ${diff}.`;
+    solutionSteps = `Step 1: Arrange the three amounts from greatest to smallest: ${maxE.name} (${maxE.val.toLocaleString()}), followed by ${midE.name} (${midE.val.toLocaleString()}), and ${minE.name} (${minE.val.toLocaleString()}).\\nStep 2: The ${labelA} amount is ${highVal.toLocaleString()} (${highName}) and the ${labelB} amount is ${lowVal.toLocaleString()} (${lowName}).\\nStep 3: Subtract to find the difference: ${highVal} - ${lowVal} = ${diff}.`;
     hint = `First, compare the ten thousands and thousands digits to arrange all three numbers in order. Then subtract the ${labelB} value from the ${labelA} value!`;
   }
 
