@@ -27,11 +27,7 @@ export const p4NumberComparisonAndOrderingBlueprint = {
   },
 
   variants: {
-    foundation_compare_greater_ten_thousands: 'Compare two 5-digit numbers with different ten thousands digits (find greater).',
-    foundation_compare_smaller_ten_thousands: 'Compare two 5-digit numbers with different ten thousands digits (find smaller).',
-    foundation_compare_greater_thousands: 'Compare two 5-digit numbers with same ten thousands, different thousands (find greater).',
-    foundation_compare_smaller_thousands: 'Compare two 5-digit numbers with same ten thousands, different thousands (find smaller).',
-    foundation_compare_hundreds_tens: 'Compare two 5-digit numbers with matching lead digits (compare hundreds/tens).',
+    foundation_compare_two_numbers: 'Compare two numbers up to 5 digits to determine which is greater or smaller (comparing ten thousands, thousands, hundreds, or tens).',
 
     standard_order_asc_diff_ten_thousands: 'Arrange 4 numbers (different ten thousands) in ascending order.',
     standard_order_desc_diff_ten_thousands: 'Arrange 4 numbers (different ten thousands) in descending order.',
