@@ -47,6 +47,7 @@ export default function NumberCards({ data }) {
           )}
         </div>
       ))}
+      </div>
     </div>
   );
 }
