@@ -940,52 +940,329 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
 
     const greatEven = Math.max(...validEvenNumbers);
+    const smallEven = Math.min(...validEvenNumbers);
+    const greatOdd = Math.max(...validOddNumbers);
     const smallOdd = Math.min(...validOddNumbers);
-    const diff = greatEven - smallOdd;
 
-    finalAnswer = diff.toString();
+    const allValid = [...validEvenNumbers, ...validOddNumbers];
+    const unconstrainedMax = Math.max(...allValid);
+    const unconstrainedMin = Math.min(...allValid);
 
-    visualEngineStr = JSON.stringify({
-      componentToRender: "DIGIT_CARD_SORTER",
-      componentData: {
-        digits: digits,
-        condition: "Greatest Even & Smallest Odd"
-      }
-    }, null, 2);
+    // 7 Varieties:
+    // Subtype 0: Greatest Even & Smallest Odd -> Difference
+    // Subtype 1: Greatest Odd & Smallest Even -> Difference
+    // Subtype 2: Greatest Even & Smallest Even -> Difference
+    // Subtype 3: Greatest Odd & Smallest Odd -> Difference
+    // Subtype 4: Greatest Even & Smallest Odd -> Sum
+    // Subtype 5: Greatest Odd & Smallest Even -> Sum
+    // Subtype 6: Greatest Even & Smallest Odd -> Difference rounded to nearest thousand
+    const subType = Math.floor(Math.random() * 7);
 
-    promptInstruction = `- Question stem: "Use all 5 digit cards ${digits.join(', ')} once to form the greatest 5-digit even number and the smallest 5-digit odd number. What is the difference between these two numbers?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    if (subType === 0) {
+      // 0: Greatest Even & Smallest Odd -> Difference
+      const diff = greatEven - smallOdd;
+      finalAnswer = diff.toString();
 
-    if (isStructure) {
-      inputRequirementStr = JSON.stringify({
-        inputType: "MULTI_STEP_INPUT",
-        steps: [
-          { label: "Write the greatest 5-digit even number:", expectedAnswer: greatEven.toString() },
-          { label: "Write the smallest 5-digit odd number:", expectedAnswer: smallOdd.toString() },
-          { label: "Write the working equation to find their difference:", expectedAnswer: `${greatEven} - ${smallOdd} = ${diff}` },
-          { label: "Final Answer:", expectedAnswer: finalAnswer }
-        ]
+      visualEngineStr = JSON.stringify({
+        componentToRender: "DIGIT_CARD_SORTER",
+        componentData: {
+          digits: digits,
+          condition: "Greatest Even & Smallest Odd"
+        }
       }, null, 2);
+
+      promptInstruction = `- Question stem: "Use all 5 digit cards ${digits.join(', ')} once to form the greatest 5-digit even number and the smallest 5-digit odd number. What is the difference between these two numbers?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: "Write the greatest 5-digit even number:", expectedAnswer: greatEven.toString() },
+            { label: "Write the smallest 5-digit odd number:", expectedAnswer: smallOdd.toString() },
+            { label: "Write the working equation to find their difference:", expectedAnswer: `${greatEven} - ${smallOdd} = ${diff}` },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const d1 = (unconstrainedMax - unconstrainedMin).toString();
+        const d2 = (greatEven + smallOdd).toString();
+        const d3 = (diff - 1000 > 0 ? diff - 1000 : diff + 1000).toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "IGNORED_EVEN_ODD_CONDITION" },
+          { val: d2, defect: "WRONG_OPERATION_ADD" },
+          { val: d3, defect: "CARELESS_CALCULATION" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: To form the greatest 5-digit even number, the last digit must be an even digit (${evenPool.join(', ')}). Arrange the largest remaining digits from greatest to smallest in the front places: ${greatEven.toLocaleString()}.\\nStep 2: To form the smallest 5-digit odd number, the first digit must be the smallest non-zero digit, and the last digit must be odd (${oddPool.join(', ')}): ${smallOdd.toLocaleString()}.\\nStep 3: Calculate their difference: ${greatEven} - ${smallOdd} = ${diff.toLocaleString()}.`;
+      hint = `An even number must end in an even digit, and an odd number must end in an odd digit. A 5-digit number cannot begin with 0!`;
+
+    } else if (subType === 1) {
+      // 1: Greatest Odd & Smallest Even -> Difference
+      const diff = greatOdd - smallEven;
+      finalAnswer = diff.toString();
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "DIGIT_CARD_SORTER",
+        componentData: {
+          digits: digits,
+          condition: "Greatest Odd & Smallest Even"
+        }
+      }, null, 2);
+
+      promptInstruction = `- Question stem: "Use all 5 digit cards ${digits.join(', ')} once to form the greatest 5-digit odd number and the smallest 5-digit even number. What is the difference between these two numbers?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: "Write the greatest 5-digit odd number:", expectedAnswer: greatOdd.toString() },
+            { label: "Write the smallest 5-digit even number:", expectedAnswer: smallEven.toString() },
+            { label: "Write the working equation to find their difference:", expectedAnswer: `${greatOdd} - ${smallEven} = ${diff}` },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const d1 = (unconstrainedMax - unconstrainedMin).toString();
+        const d2 = (greatOdd + smallEven).toString();
+        const d3 = (diff - 1000 > 0 ? diff - 1000 : diff + 1000).toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "IGNORED_EVEN_ODD_CONDITION" },
+          { val: d2, defect: "WRONG_OPERATION_ADD" },
+          { val: d3, defect: "CARELESS_CALCULATION" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: To form the greatest 5-digit odd number, the last digit must be an odd digit (${oddPool.join(', ')}). Arrange the largest remaining digits from greatest to smallest: ${greatOdd.toLocaleString()}.\\nStep 2: To form the smallest 5-digit even number, the first digit must be the smallest non-zero digit, and the last digit must be even (${evenPool.join(', ')}): ${smallEven.toLocaleString()}.\\nStep 3: Calculate their difference: ${greatOdd} - ${smallEven} = ${diff.toLocaleString()}.`;
+      hint = `An odd number must end in an odd digit, and an even number must end in an even digit. Arrange the largest digits in front for the greatest number!`;
+
+    } else if (subType === 2) {
+      // 2: Greatest Even & Smallest Even -> Difference
+      const diff = greatEven - smallEven;
+      finalAnswer = diff.toString();
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "DIGIT_CARD_SORTER",
+        componentData: {
+          digits: digits,
+          condition: "Greatest Even & Smallest Even"
+        }
+      }, null, 2);
+
+      promptInstruction = `- Question stem: "Use all 5 digit cards ${digits.join(', ')} once to form the greatest 5-digit even number and the smallest 5-digit even number. What is the difference between these two numbers?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: "Write the greatest 5-digit even number:", expectedAnswer: greatEven.toString() },
+            { label: "Write the smallest 5-digit even number:", expectedAnswer: smallEven.toString() },
+            { label: "Write the working equation to find their difference:", expectedAnswer: `${greatEven} - ${smallEven} = ${diff}` },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const d1 = (unconstrainedMax - unconstrainedMin).toString();
+        const d2 = (greatEven + smallEven).toString();
+        const d3 = (diff - 1000 > 0 ? diff - 1000 : diff + 1000).toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "IGNORED_EVEN_ODD_CONDITION" },
+          { val: d2, defect: "WRONG_OPERATION_ADD" },
+          { val: d3, defect: "CARELESS_CALCULATION" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: To form the greatest 5-digit even number, choose an even digit for the ones place (${evenPool.join(', ')}), and arrange the remaining digits from greatest to smallest: ${greatEven.toLocaleString()}.\\nStep 2: To form the smallest 5-digit even number, choose the smallest non-zero digit for the ten thousands place, and an even digit for the ones place: ${smallEven.toLocaleString()}.\\nStep 3: Calculate their difference: ${greatEven} - ${smallEven} = ${diff.toLocaleString()}.`;
+      hint = `Both numbers must be even, so both must end with an even digit (${evenPool.join(', ')})!`;
+
+    } else if (subType === 3) {
+      // 3: Greatest Odd & Smallest Odd -> Difference
+      const diff = greatOdd - smallOdd;
+      finalAnswer = diff.toString();
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "DIGIT_CARD_SORTER",
+        componentData: {
+          digits: digits,
+          condition: "Greatest Odd & Smallest Odd"
+        }
+      }, null, 2);
+
+      promptInstruction = `- Question stem: "Use all 5 digit cards ${digits.join(', ')} once to form the greatest 5-digit odd number and the smallest 5-digit odd number. What is the difference between these two numbers?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: "Write the greatest 5-digit odd number:", expectedAnswer: greatOdd.toString() },
+            { label: "Write the smallest 5-digit odd number:", expectedAnswer: smallOdd.toString() },
+            { label: "Write the working equation to find their difference:", expectedAnswer: `${greatOdd} - ${smallOdd} = ${diff}` },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const d1 = (unconstrainedMax - unconstrainedMin).toString();
+        const d2 = (greatOdd + smallOdd).toString();
+        const d3 = (diff - 1000 > 0 ? diff - 1000 : diff + 1000).toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "IGNORED_EVEN_ODD_CONDITION" },
+          { val: d2, defect: "WRONG_OPERATION_ADD" },
+          { val: d3, defect: "CARELESS_CALCULATION" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: To form the greatest 5-digit odd number, choose an odd digit for the ones place (${oddPool.join(', ')}), and arrange the remaining digits in descending order: ${greatOdd.toLocaleString()}.\\nStep 2: To form the smallest 5-digit odd number, choose the smallest non-zero digit for the ten thousands place, and an odd digit for the ones place: ${smallOdd.toLocaleString()}.\\nStep 3: Calculate their difference: ${greatOdd} - ${smallOdd} = ${diff.toLocaleString()}.`;
+      hint = `Both numbers must be odd, so both must end with an odd digit (${oddPool.join(', ')})!`;
+
+    } else if (subType === 4) {
+      // 4: Greatest Even & Smallest Odd -> Sum
+      const sum = greatEven + smallOdd;
+      finalAnswer = sum.toString();
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "DIGIT_CARD_SORTER",
+        componentData: {
+          digits: digits,
+          condition: "Sum of Greatest Even & Smallest Odd"
+        }
+      }, null, 2);
+
+      promptInstruction = `- Question stem: "Use all 5 digit cards ${digits.join(', ')} once to form the greatest 5-digit even number and the smallest 5-digit odd number. What is the sum of these two numbers?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: "Write the greatest 5-digit even number:", expectedAnswer: greatEven.toString() },
+            { label: "Write the smallest 5-digit odd number:", expectedAnswer: smallOdd.toString() },
+            { label: "Write the working equation to find their sum:", expectedAnswer: `${greatEven} + ${smallOdd} = ${sum}` },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const diff = greatEven - smallOdd;
+        const d1 = diff.toString();
+        const d2 = (unconstrainedMax + unconstrainedMin).toString();
+        const d3 = (sum - 1000 > 0 ? sum - 1000 : sum + 1000).toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "WRONG_OPERATION_SUBTRACT" },
+          { val: d2, defect: "IGNORED_EVEN_ODD_CONDITION" },
+          { val: d3, defect: "CARELESS_CALCULATION" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: Form the greatest 5-digit even number: ${greatEven.toLocaleString()}.\\nStep 2: Form the smallest 5-digit odd number: ${smallOdd.toLocaleString()}.\\nStep 3: Add both numbers together to find their sum: ${greatEven} + ${smallOdd} = ${sum.toLocaleString()}.`;
+      hint = `Form the greatest even number and the smallest odd number first, then add them together!`;
+
+    } else if (subType === 5) {
+      // 5: Greatest Odd & Smallest Even -> Sum
+      const sum = greatOdd + smallEven;
+      finalAnswer = sum.toString();
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "DIGIT_CARD_SORTER",
+        componentData: {
+          digits: digits,
+          condition: "Sum of Greatest Odd & Smallest Even"
+        }
+      }, null, 2);
+
+      promptInstruction = `- Question stem: "Use all 5 digit cards ${digits.join(', ')} once to form the greatest 5-digit odd number and the smallest 5-digit even number. What is the sum of these two numbers?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: "Write the greatest 5-digit odd number:", expectedAnswer: greatOdd.toString() },
+            { label: "Write the smallest 5-digit even number:", expectedAnswer: smallEven.toString() },
+            { label: "Write the working equation to find their sum:", expectedAnswer: `${greatOdd} + ${smallEven} = ${sum}` },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const diff = greatOdd - smallEven;
+        const d1 = diff.toString();
+        const d2 = (unconstrainedMax + unconstrainedMin).toString();
+        const d3 = (sum - 1000 > 0 ? sum - 1000 : sum + 1000).toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "WRONG_OPERATION_SUBTRACT" },
+          { val: d2, defect: "IGNORED_EVEN_ODD_CONDITION" },
+          { val: d3, defect: "CARELESS_CALCULATION" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: Form the greatest 5-digit odd number: ${greatOdd.toLocaleString()}.\\nStep 2: Form the smallest 5-digit even number: ${smallEven.toLocaleString()}.\\nStep 3: Add both numbers together to find their sum: ${greatOdd} + ${smallEven} = ${sum.toLocaleString()}.`;
+      hint = `Form the greatest odd number and the smallest even number first, then add them together!`;
+
+    } else {
+      // 6: Greatest Even & Smallest Odd -> Difference rounded to nearest thousand
+      const diff = greatEven - smallOdd;
+      const rounded = Math.round(diff / 1000) * 1000;
+      finalAnswer = rounded.toString();
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "DIGIT_CARD_SORTER",
+        componentData: {
+          digits: digits,
+          condition: "Difference Rounded to Nearest Thousand"
+        }
+      }, null, 2);
+
+      promptInstruction = `- Question stem: "Use all 5 digit cards ${digits.join(', ')} once to form the greatest 5-digit even number and the smallest 5-digit odd number. Find the difference between these two numbers, then round your answer to the nearest thousand."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: "Write the greatest 5-digit even number:", expectedAnswer: greatEven.toString() },
+            { label: "Write the smallest 5-digit odd number:", expectedAnswer: smallOdd.toString() },
+            { label: "Write the working equation to find their difference:", expectedAnswer: `${greatEven} - ${smallOdd} = ${diff}` },
+            { label: "Round the difference to the nearest thousand:", expectedAnswer: finalAnswer },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const d1 = diff.toString();
+        const d2 = (Math.round(diff / 100) * 100).toString();
+        const d3 = (Math.round((unconstrainedMax - unconstrainedMin) / 1000) * 1000).toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "FORGOT_TO_ROUND" },
+          { val: d2, defect: "ROUNDED_TO_WRONG_PLACE_VALUE" },
+          { val: d3, defect: "IGNORED_EVEN_ODD_CONDITION" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: Form the greatest 5-digit even number: ${greatEven.toLocaleString()}.\\nStep 2: Form the smallest 5-digit odd number: ${smallOdd.toLocaleString()}.\\nStep 3: Calculate their difference: ${greatEven} - ${smallOdd} = ${diff.toLocaleString()}.\\nStep 4: Round ${diff.toLocaleString()} to the nearest thousand by checking the hundreds digit: ${rounded.toLocaleString()}.`;
+      hint = `Find the exact difference between the greatest even and smallest odd number first, then look at the hundreds digit to round to the nearest thousand!`;
     }
-
-    if (isMCQ) {
-      const allValid = [...validEvenNumbers, ...validOddNumbers];
-      const unconstrainedMax = Math.max(...allValid);
-      const unconstrainedMin = Math.min(...allValid);
-      const d1 = (unconstrainedMax - unconstrainedMin).toString();
-      const d2 = (greatEven + smallOdd).toString();
-      const d3 = (diff - 1000 > 0 ? diff - 1000 : diff + 1000).toString();
-
-      const mcqRes = ensureFourUniqueOptions(finalAnswer, [
-        { val: d1, defect: "IGNORED_EVEN_ODD_CONDITION" },
-        { val: d2, defect: "WRONG_OPERATION_ADD" },
-        { val: d3, defect: "CARELESS_CALCULATION" }
-      ]);
-      options = mcqRes.options;
-      defectMap = mcqRes.defectMap;
-    }
-
-    solutionSteps = `Step 1: To form the greatest 5-digit even number, the last digit must be an even digit (${evenPool.join(', ')}). Arrange the largest remaining digits from greatest to smallest in the front places: ${greatEven.toLocaleString()}.\\nStep 2: To form the smallest 5-digit odd number, the first digit must be the smallest non-zero digit, and the last digit must be odd (${oddPool.join(', ')}): ${smallOdd.toLocaleString()}.\\nStep 3: Calculate their difference: ${greatEven} - ${smallOdd} = ${diff.toLocaleString()}.`;
-    hint = `Remember that an even number must end with an even digit, and an odd number must end with an odd digit. A 5-digit number cannot start with 0!`;
   }
 
   // --------------------------------------------------------------------------
