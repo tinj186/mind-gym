@@ -28,8 +28,12 @@ function UnitSegments({ value, segments, children }) {
     );
   }
 
-  const num = segments !== undefined ? parseInt(segments) : parseInt(value);
-  if (isNaN(num) || num <= 0 || num > 20) return (
+  const rawSegments = segments !== undefined ? segments : (typeof value === 'number' && Number.isInteger(value) && value >= 2 && value <= 20 ? value : undefined);
+  if (rawSegments === undefined) return (
+    <>{children}</>
+  );
+  const num = parseInt(rawSegments);
+  if (isNaN(num) || num <= 1 || num > 20) return (
     <>{children}</>
   );
 
@@ -89,7 +93,27 @@ export default function BarModelWorkspace({ modelData, onClose, initialState }) 
             className="w-40 text-right text-sm font-black uppercase text-slate-500 bg-transparent border-b-2 border-slate-200 focus:outline-none focus:border-blue-400 placeholder:text-slate-300 transition-colors"
           />
           
-          <div className="flex-1 relative">
+          <div className="flex-1 relative mt-6">
+            {/* Segment Labels */}
+            <div className="absolute -top-7 left-0 w-full h-5 flex">
+              {modelData.parts.map((part, idx) => {
+                const partValue = part.value !== undefined ? part.value : part;
+                const partLayoutVal = parseFloat(part.layoutSize || partValue) || fallbackPartVal;
+                const width = (partLayoutVal / calculatedWhole) * 100;
+                const partName = part.name || part.label;
+
+                if (!partName) return <div key={`label-${idx}`} style={{ width: `${width}%` }} />;
+
+                return (
+                  <div key={`label-${idx}`} style={{ width: `${width}%` }} className="relative flex flex-col items-center justify-end h-full px-1">
+                    <span className="text-xs font-black text-slate-500 uppercase tracking-wider truncate max-w-full">
+                      {typeof partName === 'object' ? (partName.item || partName.text || JSON.stringify(partName)) : partName}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
             {/* The Bar */}
             <div className="flex h-20 w-full rounded-2xl overflow-hidden border-4 border-slate-200 shadow-lg bg-white relative z-10">
               {modelData.parts.map((part, idx) => {
@@ -97,14 +121,28 @@ export default function BarModelWorkspace({ modelData, onClose, initialState }) 
                 const partLayoutVal = parseFloat(part.layoutSize || partValue) || fallbackPartVal;
                 const width = (partLayoutVal / calculatedWhole) * 100;
                 const inputKey = `part_${idx}`;
+
+                const isShortfall = (typeof part === 'object' && part !== null) && (
+                  part.isShortfall || part.isMissing || part.dashed ||
+                  (typeof part.name === 'string' && /shortfall|needed|missing|remaining/i.test(part.name)) ||
+                  (typeof part.label === 'string' && /shortfall|needed|missing|remaining/i.test(part.label))
+                );
+
+                let bgClass = part.bgClass;
+                if (!bgClass) {
+                  if (isShortfall) {
+                    bgClass = 'bg-slate-200/90 text-slate-700 border-2 border-dashed border-slate-400';
+                  } else {
+                    const defaultPalette = ['bg-blue-500 text-white', 'bg-amber-500 text-white', 'bg-emerald-500 text-white', 'bg-purple-500 text-white'];
+                    bgClass = defaultPalette[idx % defaultPalette.length];
+                  }
+                }
                 
                 return (
                   <div
                     key={idx}
                     style={{ width: `${width}%` }}
-                    className={`relative flex items-center justify-center border-r-4 last:border-r-0 border-slate-200 ${
-                      part.bgClass || (idx % 2 === 0 ? 'bg-blue-500 text-white' : 'bg-blue-400 text-white')
-                    }`}
+                    className={`relative flex items-center justify-center border-r-4 last:border-r-0 border-slate-200 ${bgClass}`}
                   >
                     <UnitSegments value={typeof partValue === 'string' && partValue.startsWith('?:') ? `?:${inputs[inputKey] || ''}` : partValue} segments={part.segments}>
                       <input
@@ -123,7 +161,10 @@ export default function BarModelWorkspace({ modelData, onClose, initialState }) 
             {/* The Whole Bracket */}
             <div className="mt-4 flex flex-col items-center">
               <div className="w-full h-6 border-x-4 border-b-4 border-slate-300 rounded-b-2xl"></div>
-              <div className="bg-white px-4 py-2 rounded-full border-4 border-slate-200 shadow-sm -mt-6 z-20">
+              <div className="bg-white px-4 py-2 rounded-full border-4 border-slate-200 shadow-sm -mt-6 z-20 flex items-center gap-2">
+                <span className="text-xs font-black uppercase text-slate-400">
+                  {modelData.totalLabel || modelData.wholeLabel || "Total"}:
+                </span>
                 {/* Interactive Input for Whole */}
                 <input
                   type="text"

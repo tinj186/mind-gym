@@ -692,41 +692,48 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   else if (effectiveVariant === 'standard_target_shortfall_comparison') {
     const [nameA, nameB] = getRandomNames(2);
     const itemObj = getRandomCountableItems(1);
-    const item = itemObj?.item || "stickers";
+    const item = itemObj?.item || "keys";
 
-    const isType1 = Math.random() < 0.5;
+    // 4 Varieties:
+    // Subtype 0: Given A, B, Target -> Find Shortfall
+    // Subtype 1: Given A, Shortfall, Target -> Find B
+    // Subtype 2: Given B, Shortfall, Target -> Find A
+    // Subtype 3: Given A, B, Shortfall -> Find Target
+    const subType = Math.floor(Math.random() * 4);
 
-    const valA = (Math.floor(Math.random() * 18) + 15) * 1000 + Math.floor(Math.random() * 9) * 100;
-    const valB = (Math.floor(Math.random() * 18) + 15) * 1000 + Math.floor(Math.random() * 9) * 100;
+    const valA = (Math.floor(Math.random() * 18) + 15) * 1000 + Math.floor(Math.random() * 9) * 100; // 15k - 33k
+    const valB = (Math.floor(Math.random() * 18) + 15) * 1000 + Math.floor(Math.random() * 9) * 100; // 15k - 33k
     const currentTotal = valA + valB;
 
-    const shortfall = (Math.floor(Math.random() * 15) + 6) * 1000 + Math.floor(Math.random() * 9) * 100;
+    const shortfall = (Math.floor(Math.random() * 14) + 6) * 1000 + Math.floor(Math.random() * 9) * 100; // 6k - 20k
     const target = currentTotal + shortfall;
 
-    visualEngineStr = JSON.stringify({
-      componentToRender: "BAR_MODEL_COMPARISON",
-      componentData: {
-        modelType: "PART_WHOLE",
-        whole: target.toLocaleString(),
-        parts: [
-          { name: nameA, value: valA, layoutSize: valA, displayValue: valA.toLocaleString() },
-          { name: nameB, value: isType1 ? valB : "?", layoutSize: valB, displayValue: isType1 ? valB.toLocaleString() : "?" },
-          { name: "Shortfall", value: isType1 ? "?" : shortfall, layoutSize: shortfall, displayValue: isType1 ? "?" : shortfall.toLocaleString() }
-        ]
-      }
-    }, null, 2);
-
-    if (isType1) {
-      // Type 1: Given A, B, and Target. Find shortfall.
+    if (subType === 0) {
+      // Subtype 0: Given A, B, and Target -> Find Shortfall
       finalAnswer = shortfall.toString();
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL_COMPARISON",
+        componentData: {
+          modelType: "PART_WHOLE",
+          totalLabel: "TARGET",
+          whole: target.toLocaleString(),
+          parts: [
+            { name: nameA, value: valA, layoutSize: valA, displayValue: valA.toLocaleString(), bgClass: "bg-blue-500 text-white" },
+            { name: nameB, value: valB, layoutSize: valB, displayValue: valB.toLocaleString(), bgClass: "bg-amber-500 text-white" },
+            { name: "Shortfall", value: "?", layoutSize: shortfall, displayValue: "?", isShortfall: true, bgClass: "bg-slate-200 text-slate-700 border-2 border-dashed border-slate-400" }
+          ]
+        }
+      }, null, 2);
+
       promptInstruction = `- Question stem: "${nameA} collected ${valA.toLocaleString()} ${item} and ${nameB} collected ${valB.toLocaleString()} ${item}. Their target is to collect ${target.toLocaleString()} ${item} altogether. How many more ${item} do they need to reach their target?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
       if (isStructure) {
         inputRequirementStr = JSON.stringify({
           inputType: "MULTI_STEP_INPUT",
           steps: [
-            { label: "Write the working equation to find the current total:", expectedAnswer: `${valA} + ${valB} = ${currentTotal}` },
-            { label: "Write the working equation to find the remaining amount needed:", expectedAnswer: `${target} - ${currentTotal} = ${shortfall}` },
+            { label: `Write the working equation to find the total ${item} collected so far:`, expectedAnswer: `${valA} + ${valB} = ${currentTotal}` },
+            { label: "Write the working equation to find the remaining shortfall needed:", expectedAnswer: `${target} - ${currentTotal} = ${shortfall}` },
             { label: "Final Answer:", expectedAnswer: finalAnswer }
           ]
         }, null, 2);
@@ -735,29 +742,44 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       if (isMCQ) {
         const d1 = currentTotal.toString();
         const d2 = (target - valA).toString();
-        const d3 = (target + currentTotal).toString();
+        const d3 = (target - valB).toString();
         const mcqRes = ensureFourUniqueOptions(finalAnswer, [
           { val: d1, defect: "PARTIAL_WORKING_SUM_ONLY" },
           { val: d2, defect: "IGNORED_SECOND_ENTITY" },
-          { val: d3, defect: "WRONG_OPERATION_ADD" }
+          { val: d3, defect: "IGNORED_FIRST_ENTITY" }
         ]);
         options = mcqRes.options;
         defectMap = mcqRes.defectMap;
       }
 
-      solutionSteps = `Step 1: Find the combined total collected by ${nameA} and ${nameB}: ${valA.toLocaleString()} + ${valB.toLocaleString()} = ${currentTotal.toLocaleString()}.\\nStep 2: Subtract the current total from the target to find the shortfall: ${target.toLocaleString()} - ${currentTotal.toLocaleString()} = ${shortfall.toLocaleString()}.\\nStep 3: They need ${shortfall.toLocaleString()} more ${item} to reach their target.`;
-      hint = `Add the amounts collected by ${nameA} and ${nameB} together first, then subtract that sum from the target amount!`;
+      solutionSteps = `Step 1: Find the combined total collected by ${nameA} and ${nameB}: ${valA.toLocaleString()} + ${valB.toLocaleString()} = ${currentTotal.toLocaleString()}.\\nStep 2: Subtract the collected total from the target to find the shortfall: ${target.toLocaleString()} - ${currentTotal.toLocaleString()} = ${shortfall.toLocaleString()}.\\nStep 3: They need ${shortfall.toLocaleString()} more ${item} to reach their target.`;
+      hint = `First add ${nameA}'s and ${nameB}'s amounts together. Then subtract that sum from the target amount!`;
 
-    } else {
-      // Type 2: Given A, shortfall, and Target. Find B.
+    } else if (subType === 1) {
+      // Subtype 1: Given A, Shortfall, Target -> Find B
       finalAnswer = valB.toString();
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL_COMPARISON",
+        componentData: {
+          modelType: "PART_WHOLE",
+          totalLabel: "TARGET",
+          whole: target.toLocaleString(),
+          parts: [
+            { name: nameA, value: valA, layoutSize: valA, displayValue: valA.toLocaleString(), bgClass: "bg-blue-500 text-white" },
+            { name: nameB, value: "?", layoutSize: valB, displayValue: "?", bgClass: "bg-amber-500 text-white" },
+            { name: "Shortfall", value: shortfall, layoutSize: shortfall, displayValue: shortfall.toLocaleString(), isShortfall: true, bgClass: "bg-slate-200 text-slate-700 border-2 border-dashed border-slate-400" }
+          ]
+        }
+      }, null, 2);
+
       promptInstruction = `- Question stem: "${nameA} collected ${valA.toLocaleString()} ${item}. Together with ${nameB}, they need a total of ${target.toLocaleString()} ${item} to reach their target. If they still need ${shortfall.toLocaleString()} more ${item}, how many ${item} did ${nameB} collect?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
       if (isStructure) {
         inputRequirementStr = JSON.stringify({
           inputType: "MULTI_STEP_INPUT",
           steps: [
-            { label: "Write the working equation to find the combined amount collected so far:", expectedAnswer: `${target} - ${shortfall} = ${currentTotal}` },
+            { label: `Write the working equation to find the total ${item} collected so far:`, expectedAnswer: `${target} - ${shortfall} = ${currentTotal}` },
             { label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${currentTotal} - ${valA} = ${valB}` },
             { label: "Final Answer:", expectedAnswer: finalAnswer }
           ]
@@ -779,6 +801,100 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
       solutionSteps = `Step 1: Subtract the shortfall from the target to find the total collected so far: ${target.toLocaleString()} - ${shortfall.toLocaleString()} = ${currentTotal.toLocaleString()}.\\nStep 2: Subtract ${nameA}'s amount from the collected total to find ${nameB}'s amount: ${currentTotal.toLocaleString()} - ${valA.toLocaleString()} = ${valB.toLocaleString()}.`;
       hint = `First subtract the shortfall from the target to find how many they collected altogether. Then subtract ${nameA}'s amount!`;
+
+    } else if (subType === 2) {
+      // Subtype 2: Given B, Shortfall, Target -> Find A
+      finalAnswer = valA.toString();
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL_COMPARISON",
+        componentData: {
+          modelType: "PART_WHOLE",
+          totalLabel: "TARGET",
+          whole: target.toLocaleString(),
+          parts: [
+            { name: nameA, value: "?", layoutSize: valA, displayValue: "?", bgClass: "bg-blue-500 text-white" },
+            { name: nameB, value: valB, layoutSize: valB, displayValue: valB.toLocaleString(), bgClass: "bg-amber-500 text-white" },
+            { name: "Shortfall", value: shortfall, layoutSize: shortfall, displayValue: shortfall.toLocaleString(), isShortfall: true, bgClass: "bg-slate-200 text-slate-700 border-2 border-dashed border-slate-400" }
+          ]
+        }
+      }, null, 2);
+
+      promptInstruction = `- Question stem: "${nameB} collected ${valB.toLocaleString()} ${item}. Together with ${nameA}, they need a total of ${target.toLocaleString()} ${item} to reach their target. If they still need ${shortfall.toLocaleString()} more ${item}, how many ${item} did ${nameA} collect?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: `Write the working equation to find the total ${item} collected so far:`, expectedAnswer: `${target} - ${shortfall} = ${currentTotal}` },
+            { label: `Write the working equation to find ${nameA}'s amount:`, expectedAnswer: `${currentTotal} - ${valB} = ${valA}` },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const d1 = currentTotal.toString();
+        const d2 = (valB + shortfall).toString();
+        const d3 = (target - valB).toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "PARTIAL_WORKING_SUM_ONLY" },
+          { val: d2, defect: "WRONG_OPERATION_ADD" },
+          { val: d3, defect: "FORGOT_TO_SUBTRACT_SHORTFALL" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: Subtract the shortfall from the target to find the total collected so far: ${target.toLocaleString()} - ${shortfall.toLocaleString()} = ${currentTotal.toLocaleString()}.\\nStep 2: Subtract ${nameB}'s amount from the collected total to find ${nameA}'s amount: ${currentTotal.toLocaleString()} - ${valB.toLocaleString()} = ${valA.toLocaleString()}.`;
+      hint = `First subtract the shortfall from the target to find how many they collected altogether. Then subtract ${nameB}'s amount!`;
+
+    } else {
+      // Subtype 3: Given A, B, and Shortfall -> Find Target
+      finalAnswer = target.toString();
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL_COMPARISON",
+        componentData: {
+          modelType: "PART_WHOLE",
+          totalLabel: "TARGET",
+          whole: "?",
+          parts: [
+            { name: nameA, value: valA, layoutSize: valA, displayValue: valA.toLocaleString(), bgClass: "bg-blue-500 text-white" },
+            { name: nameB, value: valB, layoutSize: valB, displayValue: valB.toLocaleString(), bgClass: "bg-amber-500 text-white" },
+            { name: "Shortfall", value: shortfall, layoutSize: shortfall, displayValue: shortfall.toLocaleString(), isShortfall: true, bgClass: "bg-slate-200 text-slate-700 border-2 border-dashed border-slate-400" }
+          ]
+        }
+      }, null, 2);
+
+      promptInstruction = `- Question stem: "${nameA} collected ${valA.toLocaleString()} ${item} and ${nameB} collected ${valB.toLocaleString()} ${item}. They still need ${shortfall.toLocaleString()} more ${item} to reach their target. What is their target number of ${item}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: `Write the working equation to find the total ${item} collected by ${nameA} and ${nameB}:`, expectedAnswer: `${valA} + ${valB} = ${currentTotal}` },
+            { label: `Write the working equation to find the overall target amount:`, expectedAnswer: `${currentTotal} + ${shortfall} = ${target}` },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const d1 = currentTotal.toString();
+        const d2 = (valA + shortfall).toString();
+        const d3 = (valB + shortfall).toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "FORGOT_TO_ADD_SHORTFALL" },
+          { val: d2, defect: "IGNORED_SECOND_ENTITY" },
+          { val: d3, defect: "IGNORED_FIRST_ENTITY" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: Find the combined amount collected so far: ${valA.toLocaleString()} + ${valB.toLocaleString()} = ${currentTotal.toLocaleString()}.\\nStep 2: Add the remaining shortfall to find the target: ${currentTotal.toLocaleString()} + ${shortfall.toLocaleString()} = ${target.toLocaleString()}.\\nStep 3: Their target is ${target.toLocaleString()} ${item}.`;
+      hint = `Add ${nameA}'s and ${nameB}'s amounts together first, then add the shortfall to reach the total target!`;
     }
   }
 

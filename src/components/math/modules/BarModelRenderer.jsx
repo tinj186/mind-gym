@@ -25,8 +25,10 @@ function UnitSegments({ value, segments }) {
     );
   }
 
-  const num = segments !== undefined ? parseInt(segments) : parseInt(value);
-  if (isNaN(num) || num <= 0 || num > 20) return null;
+  const rawSegments = segments !== undefined ? segments : (typeof value === 'number' && Number.isInteger(value) && value >= 2 && value <= 20 ? value : undefined);
+  if (rawSegments === undefined) return null;
+  const num = parseInt(rawSegments);
+  if (isNaN(num) || num <= 1 || num > 20) return null;
 
   return (
     <div className="absolute inset-0 flex pointer-events-none z-20">
@@ -75,8 +77,8 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
             </span>
           )}
           <div className="flex-1 relative mt-8">
-            {/* Top Brackets */}
-            <div className="absolute -top-6 left-0 w-full h-4 flex">
+            {/* Top Brackets or Segment Labels */}
+            <div className="absolute -top-7 left-0 w-full h-5 flex">
               {m.topBrackets ? (
                 m.topBrackets.map((tb, idx) => {
                   const width = (tb.size / calculatedWhole) * 100;
@@ -105,6 +107,18 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
                       </div>
                     );
                   }
+
+                  const partName = (typeof part === 'object' && part !== null) ? (part.name || part.label) : null;
+                  if (partName) {
+                    return (
+                      <div key={`label-${idx}`} style={{ width: `${width}%` }} className="relative flex flex-col items-center justify-end h-full px-1">
+                        <span className="text-xs font-black text-slate-500 uppercase tracking-wider truncate max-w-full">
+                          {typeof partName === 'object' ? (partName.item || partName.text || JSON.stringify(partName)) : partName}
+                        </span>
+                      </div>
+                    );
+                  }
+
                   return <div key={`bracket-${idx}`} style={{ width: `${width}%` }} />;
                 })
               )}
@@ -119,18 +133,38 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
                 const inputKey = `part_${idx}`;
                 const userVal = toolState[inputKey];
                 const showTopBracket = part.segments && parseInt(part.segments) > 1 && partDisplayValue && partDisplayValue !== "?";
+
+                const isShortfall = (typeof part === 'object' && part !== null) && (
+                  part.isShortfall || part.isMissing || part.dashed ||
+                  (typeof part.name === 'string' && /shortfall|needed|missing|remaining/i.test(part.name)) ||
+                  (typeof part.label === 'string' && /shortfall|needed|missing|remaining/i.test(part.label))
+                );
+
+                let bgClass = part.bgClass;
+                if (!bgClass) {
+                  if (isShortfall) {
+                    bgClass = 'bg-slate-200/90 text-slate-700 border-2 border-dashed border-slate-400';
+                  } else {
+                    const defaultPalette = ['bg-blue-500 text-white', 'bg-amber-500 text-white', 'bg-emerald-500 text-white', 'bg-purple-500 text-white'];
+                    bgClass = defaultPalette[idx % defaultPalette.length];
+                  }
+                }
                 
                 return (
                   <div
                     key={idx}
                     style={{ width: `${width}%` }}
-                    className={`relative flex items-center justify-center border-r last:border-r-0 border-slate-200 text-sm font-black ${
-                      part.bgClass || (idx % 2 === 0 ? 'bg-blue-500 text-white' : 'bg-blue-400 text-white')
-                    }`}
+                    className={`relative flex items-center justify-center border-r last:border-r-0 border-slate-200 text-sm font-black ${bgClass}`}
                   >
                     <UnitSegments value={typeof partDisplayValue === 'string' && partDisplayValue.startsWith('?:') ? `?:${userVal || partDisplayValue.split(':')[1] || '?'}` : partDisplayValue} segments={part.segments} />
                     {!(typeof partDisplayValue === 'string' && partDisplayValue.startsWith('?:')) && !showTopBracket && (
-                      userVal ? <span className="text-yellow-200 px-2 drop-shadow-md text-lg">{userVal}</span> : (partDisplayValue === "?" ? "?" : <span className="text-white drop-shadow-sm">{partDisplayValue}</span>)
+                      userVal ? (
+                        <span className="text-yellow-200 px-2 drop-shadow-md text-lg">{userVal}</span>
+                      ) : partDisplayValue === "?" ? (
+                        <span className="text-lg font-black">{partDisplayValue}</span>
+                      ) : (
+                        <span className="drop-shadow-sm px-1 truncate">{partDisplayValue}</span>
+                      )
                     )}
                   </div>
                 );
@@ -140,7 +174,7 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
               <div className="mt-2 flex flex-col items-center">
                 <div className="w-full h-3 border-x-2 border-b-2 border-slate-300 rounded-b-xl"></div>
                 <span className="text-sm font-black text-slate-500 uppercase mt-2 tracking-widest bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm">
-                  Total: {toolState['whole'] ? <span className="text-indigo-600">{toolState['whole']}</span> : (m.whole === "?" ? "?" : <span className="text-indigo-600">{m.whole}</span>)}
+                  {m.totalLabel || m.wholeLabel || "Total"}: {toolState['whole'] ? <span className="text-indigo-600">{toolState['whole']}</span> : (m.whole === "?" ? "?" : <span className="text-indigo-600">{m.whole}</span>)}
                 </span>
               </div>
             )}
