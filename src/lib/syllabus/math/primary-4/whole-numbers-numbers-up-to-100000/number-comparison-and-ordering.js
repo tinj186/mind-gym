@@ -27,18 +27,14 @@ export const p4NumberComparisonAndOrderingBlueprint = {
   },
 
   variants: {
-    //    foundation_compare_two_numbers: 'Compare two numbers up to 5 digits to determine which is greater or smaller (comparing ten thousands, thousands, hundreds, or tens).',
-    //    foundation_difference_deduction: 'Deduce the difference or missing 5-digit quantity using comparative bar models.',
+    foundation_compare_two_numbers: 'Compare two numbers up to 5 digits to determine which is greater or smaller (comparing ten thousands, thousands, hundreds, or tens).',
+    foundation_difference_deduction: 'Deduce the difference or missing 5-digit quantity using comparative bar models.',
     foundation_number_line_reading: 'Determine the missing 5-digit number on a number line with fixed intervals.',
-    //    foundation_place_value_step_shifts: 'Determine a number that is thousands, hundreds, or tens more or less than a 5-digit base.',
-    //    foundation_extreme_sorting_digit_cards: 'Form the greatest or smallest 5-digit number using 5 given digit cards.',
-    //    foundation_three_entity_extrema: 'Compare three 5-digit quantities to find extrema and calculate differences.',
+    foundation_place_value_step_shifts: 'Determine a number that is thousands, hundreds, or tens more or less than a 5-digit base.',
+    foundation_extreme_sorting_digit_cards: 'Form the greatest or smallest 5-digit number using 5 given digit cards.',
+    foundation_three_entity_extrema: 'Compare three 5-digit quantities to find extrema and calculate differences.',
 
-    standard_order_asc_diff_ten_thousands: 'Arrange 4 numbers (different ten thousands) in ascending order.',
-    standard_order_desc_diff_ten_thousands: 'Arrange 4 numbers (different ten thousands) in descending order.',
-    standard_order_asc_same_ten_thousands: 'Arrange 4 numbers (same ten thousands) in ascending order.',
-    standard_order_desc_same_ten_thousands: 'Arrange 4 numbers (same ten thousands) in descending order.',
-    standard_order_mixed_digits: 'Arrange 4 numbers containing a mixture of 4-digit and 5-digit numbers.',
+    standard_order_numbers: 'Arrange 4 numbers up to 5 digits in ascending or descending order (varieties: different ten thousands, same ten thousands, or mixed 4-digit and 5-digit numbers).',
 
     advanced_form_greatest_5_digit: 'Form the greatest 5-digit number using 5 given cards.',
     advanced_form_smallest_5_digit: 'Form the smallest 5-digit number using 5 given cards.',
@@ -48,7 +44,17 @@ export const p4NumberComparisonAndOrderingBlueprint = {
     advanced_form_smallest_greater_than_x: 'Form the smallest 5-digit number greater than a specific boundary.'
   },
 
-  generate: function (difficulty, activeVariant, type) {
+  variantVarieties: {
+    standard_order_numbers: [
+      'asc_diff_ten_thousands',
+      'desc_diff_ten_thousands',
+      'asc_same_ten_thousands',
+      'desc_same_ten_thousands',
+      'mixed_digits'
+    ]
+  },
+
+  generate: function (difficulty, activeVariant, type, options = {}) {
     const level = 'Primary 4';
     const topic = 'Whole Numbers - Numbers up to 100 000';
     const subtopic = 'Number Comparison and Ordering';
@@ -60,7 +66,23 @@ export const p4NumberComparisonAndOrderingBlueprint = {
     const zodType = isMCQ ? 'MCQ' : isShort ? 'SHORT_QUESTION' : 'STRUCTURED';
     const zodDiff = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
 
-    const getFormatInstructions = (visualEngineStr = '{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }', inputRequirementStr = null) => `CRITICAL INSTRUCTION: You MUST use the EXACT "visualEngine" and "inputRequirement" JSON objects provided in the template below.
+    let resolvedVariant = activeVariant;
+    let explicitVariety = null;
+
+    if (typeof activeVariant === 'object' && activeVariant !== null) {
+      explicitVariety = activeVariant.variety || activeVariant.subType;
+      resolvedVariant = activeVariant.variant || activeVariant.activeVariant;
+    } else if (options && options.variety) {
+      explicitVariety = options.variety;
+    }
+
+    if (typeof resolvedVariant === 'string' && resolvedVariant.includes(':')) {
+      const parts = resolvedVariant.split(':');
+      resolvedVariant = parts[0];
+      explicitVariety = parts[1];
+    }
+
+    const getFormatInstructions = (visualEngineStr = '{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }', inputRequirementStr = null, variantOverride = null) => `CRITICAL INSTRUCTION: You MUST use the EXACT "visualEngine" and "inputRequirement" JSON objects provided in the template below.
 OUTPUT FORMAT (Return ONLY valid JSON matching this schema, with NO markdown formatting and NO trailing characters):
 {
   "meta": {
@@ -69,7 +91,7 @@ OUTPUT FORMAT (Return ONLY valid JSON matching this schema, with NO markdown for
     "subtopic": "${subtopic}",
     "difficulty": "${zodDiff}",
     "type": "${zodType}",
-    "variant": "${activeVariant || 'default'}"
+    "variant": "${variantOverride || resolvedVariant || 'default'}"
   },
   "visualEngine": ${visualEngineStr},
   "inputRequirement": ${inputRequirementStr || `{ "inputType": "${isMCQ ? 'MCQ_BUTTONS' : isShort ? 'STANDARD_TEXT' : 'MULTI_STEP_INPUT'}" }`},
@@ -85,11 +107,11 @@ OUTPUT FORMAT (Return ONLY valid JSON matching this schema, with NO markdown for
 
     const diff = String(difficulty || 'foundation').toLowerCase();
     if (diff === 'foundation') {
-      return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions);
+      return foundationLogic(resolvedVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions);
     } else if (diff === 'standard') {
-      return standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions);
+      return standardLogic(resolvedVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions, explicitVariety);
     } else if (diff === 'advanced') {
-      return advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions);
+      return advancedLogic(resolvedVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions);
     }
 
     throw new Error(`Unsupported difficulty '${difficulty}' for ${subtopic}`);
