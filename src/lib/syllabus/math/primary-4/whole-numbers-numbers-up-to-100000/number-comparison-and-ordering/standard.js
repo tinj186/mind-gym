@@ -284,24 +284,32 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const itemObj = getRandomCountableItems(1);
     const item = itemObj?.item || "stickers";
 
-    const subType = Math.floor(Math.random() * 3);
+    // 7 Varieties:
+    // Subtype 0: Given (Total, Diff) -> Find Smaller B
+    // Subtype 1: Given (Total, Diff) -> Find Larger A
+    // Subtype 2: Given (Total, Diff) -> Find Larger A and round to nearest hundred
+    // Subtype 3: Given (Smaller B, Diff) -> Find Total
+    // Subtype 4: Given (Larger A, Diff) -> Find Total
+    // Subtype 5: Given (Larger A, Total) -> Find Difference
+    // Subtype 6: Given (Smaller B, Total) -> Find Difference
+    const subType = Math.floor(Math.random() * 7);
 
-    const baseMult = Math.floor(Math.random() * 24) + 12; // 12k to 35k
+    const baseMult = Math.floor(Math.random() * 20) + 12; // 12k to 31k
     const smaller = baseMult * 1000 + Math.floor(Math.random() * 9) * 100;
-    const diffMult = (Math.floor(Math.random() * 7) + 2) * 2; // 4k, 6k, 8k, 10k, 12k, 14k, 16k
+    const diffMult = (Math.floor(Math.random() * 6) + 2) * 2; // 4k, 6k, 8k, 10k, 12k
     const diff = diffMult * 1000 + Math.floor(Math.random() * 9) * 100;
     const larger = smaller + diff;
     const total = larger + smaller;
 
     if (subType === 0) {
-      // Find smaller entity B
+      // 0: Given (Total, Diff) -> Find Smaller (B)
       finalAnswer = smaller.toString();
       visualEngineStr = JSON.stringify({
         componentToRender: "BAR_MODEL_COMPARISON",
         componentData: {
           modelType: "BAR_MODEL_COMPARISON",
           bars: [
-            { name: nameA, value: larger, layoutSize: larger, displayValue: larger.toLocaleString() },
+            { name: nameA, value: "", layoutSize: larger, displayValue: "" },
             { name: nameB, value: "?", layoutSize: smaller, displayValue: "?" }
           ],
           difference: { displayValue: diff.toLocaleString() },
@@ -339,7 +347,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       hint = `Subtract the difference from the total first to find the value of 2 equal units, then divide by 2!`;
 
     } else if (subType === 1) {
-      // Find larger entity A
+      // 1: Given (Total, Diff) -> Find Larger (A)
       finalAnswer = larger.toString();
       visualEngineStr = JSON.stringify({
         componentToRender: "BAR_MODEL_COMPARISON",
@@ -347,7 +355,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           modelType: "BAR_MODEL_COMPARISON",
           bars: [
             { name: nameA, value: "?", layoutSize: larger, displayValue: "?" },
-            { name: nameB, value: smaller, layoutSize: smaller, displayValue: smaller.toLocaleString() }
+            { name: nameB, value: "", layoutSize: smaller, displayValue: "" }
           ],
           difference: { displayValue: diff.toLocaleString() },
           whole: total.toLocaleString()
@@ -361,7 +369,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           inputType: "MULTI_STEP_INPUT",
           steps: [
             { label: "Write the working equation to remove the difference from the total:", expectedAnswer: `${total} - ${diff} = ${total - diff}` },
-            { label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${total - diff} / 2 = ${smaller}` },
+            { label: `Write the working equation to find 1 unit (${nameB}'s amount):`, expectedAnswer: `${total - diff} / 2 = ${smaller}` },
             { label: `Write the working equation to find ${nameA}'s amount:`, expectedAnswer: `${smaller} + ${diff} = ${larger}` },
             { label: "Final Answer:", expectedAnswer: finalAnswer }
           ]
@@ -384,25 +392,24 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       solutionSteps = `Step 1: Subtract the difference from the total to get 2 units: ${total} - ${diff} = ${total - diff}.\\nStep 2: Divide by 2 to find ${nameB}'s amount: ${total - diff} ÷ 2 = ${smaller.toLocaleString()}.\\nStep 3: Add the difference to find ${nameA}'s amount: ${smaller} + ${diff} = ${larger.toLocaleString()}.`;
       hint = `First find the smaller amount by removing the difference from the total and dividing by 2. Then add the difference back to find ${nameA}'s amount!`;
 
-    } else {
-      // Subtype 2: Find larger A, then round to nearest hundred
+    } else if (subType === 2) {
+      // 2: Given (Total, Diff) -> Multi-step with Rounding
       const roundedVal = Math.round(larger / 100) * 100;
       finalAnswer = roundedVal.toString();
-
       visualEngineStr = JSON.stringify({
         componentToRender: "BAR_MODEL_COMPARISON",
         componentData: {
           modelType: "BAR_MODEL_COMPARISON",
           bars: [
             { name: nameA, value: "?", layoutSize: larger, displayValue: "?" },
-            { name: nameB, value: smaller, layoutSize: smaller, displayValue: smaller.toLocaleString() }
+            { name: nameB, value: "", layoutSize: smaller, displayValue: "" }
           ],
           difference: { displayValue: diff.toLocaleString() },
           whole: total.toLocaleString()
         }
       }, null, 2);
 
-      promptInstruction = `- Question stem: "${nameA} and ${nameB} have a combined total of ${total.toLocaleString()} ${item}. ${nameA} has ${diff.toLocaleString()} more ${item} than ${nameB}. Find the value of ${nameA}'s ${item}, then round your answer to the nearest hundred."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+      promptInstruction = `- Question stem: "${nameA} and ${nameB} have a combined total of ${total.toLocaleString()} ${item}. ${nameA} has ${diff.toLocaleString()} more ${item} than ${nameB}. Find the number of ${item} ${nameA} has, then round your answer to the nearest hundred."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
       if (isStructure) {
         inputRequirementStr = JSON.stringify({
@@ -417,9 +424,9 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       }
 
       if (isMCQ) {
-        const d1 = larger.toString(); // unrounded
-        const d2 = (Math.round(smaller / 100) * 100).toString(); // rounded smaller
-        const d3 = (Math.floor(larger / 1000) * 1000).toString(); // rounded to thousand
+        const d1 = larger.toString();
+        const d2 = (Math.round(smaller / 100) * 100).toString();
+        const d3 = (Math.floor(larger / 1000) * 1000).toString();
         const mcqRes = ensureFourUniqueOptions(finalAnswer, [
           { val: d1, defect: "FORGOT_TO_ROUND" },
           { val: d2, defect: "OPPOSITE_ENTITY_FOUND" },
@@ -431,6 +438,186 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
       solutionSteps = `Step 1: Subtract the difference from the total to get 2 units: ${total} - ${diff} = ${total - diff}.\\nStep 2: Find ${nameB}'s amount: ${total - diff} ÷ 2 = ${smaller.toLocaleString()}.\\nStep 3: Find ${nameA}'s amount: ${smaller} + ${diff} = ${larger.toLocaleString()}.\\nStep 4: Round ${larger.toLocaleString()} to the nearest hundred: look at the tens digit. It rounds to ${roundedVal.toLocaleString()}.`;
       hint = `Calculate ${nameA}'s exact amount first, then look at the tens digit to round to the nearest hundred!`;
+
+    } else if (subType === 3) {
+      // 3: Given (Smaller B, Diff) -> Find Total
+      finalAnswer = total.toString();
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL_COMPARISON",
+        componentData: {
+          modelType: "BAR_MODEL_COMPARISON",
+          bars: [
+            { name: nameA, value: "", layoutSize: larger, displayValue: "" },
+            { name: nameB, value: smaller, layoutSize: smaller, displayValue: smaller.toLocaleString() }
+          ],
+          difference: { displayValue: diff.toLocaleString() },
+          whole: "?"
+        }
+      }, null, 2);
+
+      promptInstruction = `- Question stem: "${nameB} has ${smaller.toLocaleString()} ${item}. ${nameA} has ${diff.toLocaleString()} more ${item} than ${nameB}. How many ${item} do they have altogether?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: `Write the working equation to find ${nameA}'s amount:`, expectedAnswer: `${smaller} + ${diff} = ${larger}` },
+            { label: "Write the working equation to find the total amount:", expectedAnswer: `${larger} + ${smaller} = ${total}` },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const d1 = larger.toString();
+        const d2 = (smaller * 2).toString();
+        const d3 = (diff * 2).toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "PARTIAL_WORKING_STEP_ONE_ONLY" },
+          { val: d2, defect: "IGNORED_DIFFERENCE" },
+          { val: d3, defect: "WRONG_OPERATION" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: Find ${nameA}'s amount by adding the difference to ${nameB}'s amount: ${smaller.toLocaleString()} + ${diff.toLocaleString()} = ${larger.toLocaleString()}.\\nStep 2: Add both amounts together to find the total: ${larger.toLocaleString()} + ${smaller.toLocaleString()} = ${total.toLocaleString()}.`;
+      hint = `First add the difference to ${nameB}'s amount to find ${nameA}'s amount, then add both amounts together!`;
+
+    } else if (subType === 4) {
+      // 4: Given (Larger A, Diff) -> Find Total
+      finalAnswer = total.toString();
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL_COMPARISON",
+        componentData: {
+          modelType: "BAR_MODEL_COMPARISON",
+          bars: [
+            { name: nameA, value: larger, layoutSize: larger, displayValue: larger.toLocaleString() },
+            { name: nameB, value: "", layoutSize: smaller, displayValue: "" }
+          ],
+          difference: { displayValue: diff.toLocaleString() },
+          whole: "?"
+        }
+      }, null, 2);
+
+      promptInstruction = `- Question stem: "${nameA} has ${larger.toLocaleString()} ${item}. ${nameA} has ${diff.toLocaleString()} more ${item} than ${nameB}. How many ${item} do they have altogether?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${larger} - ${diff} = ${smaller}` },
+            { label: "Write the working equation to find the total amount:", expectedAnswer: `${larger} + ${smaller} = ${total}` },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const d1 = smaller.toString();
+        const d2 = (larger * 2).toString();
+        const d3 = (larger + diff).toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "PARTIAL_WORKING_STEP_ONE_ONLY" },
+          { val: d2, defect: "IGNORED_DIFFERENCE" },
+          { val: d3, defect: "WRONG_OPERATION_ADD" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: Find ${nameB}'s amount by subtracting the difference from ${nameA}'s amount: ${larger.toLocaleString()} - ${diff.toLocaleString()} = ${smaller.toLocaleString()}.\\nStep 2: Add both amounts together to find the total: ${larger.toLocaleString()} + ${smaller.toLocaleString()} = ${total.toLocaleString()}.`;
+      hint = `Subtract the difference from ${nameA}'s amount to find ${nameB}'s amount, then add them together!`;
+
+    } else if (subType === 5) {
+      // 5: Given (Larger A, Total) -> Find Difference
+      finalAnswer = diff.toString();
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL_COMPARISON",
+        componentData: {
+          modelType: "BAR_MODEL_COMPARISON",
+          bars: [
+            { name: nameA, value: larger, layoutSize: larger, displayValue: larger.toLocaleString() },
+            { name: nameB, value: "", layoutSize: smaller, displayValue: "" }
+          ],
+          difference: { displayValue: "?" },
+          whole: total.toLocaleString()
+        }
+      }, null, 2);
+
+      promptInstruction = `- Question stem: "${nameA} and ${nameB} have a combined total of ${total.toLocaleString()} ${item}. ${nameA} has ${larger.toLocaleString()} ${item}. How many more ${item} does ${nameA} have than ${nameB}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${total} - ${larger} = ${smaller}` },
+            { label: `Write the working equation to find the difference between ${nameA} and ${nameB}:`, expectedAnswer: `${larger} - ${smaller} = ${diff}` },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const d1 = smaller.toString();
+        const d2 = (total - larger).toString();
+        const d3 = (diff + 1000).toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "PARTIAL_WORKING_STEP_ONE_ONLY" },
+          { val: d2, defect: "PARTIAL_WORKING_STEP_ONE_ONLY" },
+          { val: d3, defect: "CARELESS_CALCULATION" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: Subtract ${nameA}'s amount from the total to find ${nameB}'s amount: ${total.toLocaleString()} - ${larger.toLocaleString()} = ${smaller.toLocaleString()}.\\nStep 2: Subtract ${nameB}'s amount from ${nameA}'s amount to find the difference: ${larger.toLocaleString()} - ${smaller.toLocaleString()} = ${diff.toLocaleString()}.`;
+      hint = `First find ${nameB}'s amount by subtracting ${nameA}'s amount from the total. Then find the difference between their amounts!`;
+
+    } else {
+      // 6: Given (Smaller B, Total) -> Find Difference
+      finalAnswer = diff.toString();
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL_COMPARISON",
+        componentData: {
+          modelType: "BAR_MODEL_COMPARISON",
+          bars: [
+            { name: nameA, value: "", layoutSize: larger, displayValue: "" },
+            { name: nameB, value: smaller, layoutSize: smaller, displayValue: smaller.toLocaleString() }
+          ],
+          difference: { displayValue: "?" },
+          whole: total.toLocaleString()
+        }
+      }, null, 2);
+
+      promptInstruction = `- Question stem: "${nameA} and ${nameB} have a combined total of ${total.toLocaleString()} ${item}. ${nameB} has ${smaller.toLocaleString()} ${item}. What is the difference between the number of ${item} ${nameA} and ${nameB} have?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: `Write the working equation to find ${nameA}'s amount:`, expectedAnswer: `${total} - ${smaller} = ${larger}` },
+            { label: "Write the working equation to find the difference:", expectedAnswer: `${larger} - ${smaller} = ${diff}` },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const d1 = larger.toString();
+        const d2 = (total - smaller).toString();
+        const d3 = (diff + 1000).toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "PARTIAL_WORKING_STEP_ONE_ONLY" },
+          { val: d2, defect: "PARTIAL_WORKING_STEP_ONE_ONLY" },
+          { val: d3, defect: "CARELESS_CALCULATION" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: Subtract ${nameB}'s amount from the total to find ${nameA}'s amount: ${total.toLocaleString()} - ${smaller.toLocaleString()} = ${larger.toLocaleString()}.\\nStep 2: Subtract ${nameB}'s amount from ${nameA}'s amount to find the difference: ${larger.toLocaleString()} - ${smaller.toLocaleString()} = ${diff.toLocaleString()}.`;
+      hint = `First find ${nameA}'s amount by subtracting ${nameB}'s amount from the total. Then find the difference!`;
     }
   }
 
