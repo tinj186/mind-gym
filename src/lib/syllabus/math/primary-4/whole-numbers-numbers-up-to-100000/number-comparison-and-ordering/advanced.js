@@ -694,144 +694,596 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   }
 
   // ==========================================================================
-  // VARIANT 3: advanced_three_entity_grand_total (Three-Entity Base Finder)
+  // VARIANT 3: advanced_three_entity_grand_total (Three-Entity Base Finder & Multi-Unit Grand Totals)
+  // Varieties:
+  // - find_smallest_base: Divide by 3 (equal units + chain differences), asks for smallest entity (A)
+  // - find_middle_entity: Divide by 3, asks for middle entity (B)
+  // - find_largest_entity: Divide by 3, asks for largest entity (C)
+  // - find_combined_entities: Divide by 3, asks for combined sum of two entities (A + B)
+  // - find_difference_entities: Divide by 3, asks for difference between two entities (C - A)
+  // - multiples_divide_four: Divide by 4 (multiples ratio: 1 unit, 2 units, 1 unit + extra)
+  // - multiples_divide_five: Divide by 5 (multiples ratio: 1 unit, 2 units, 2 units + extra)
+  // - equal_units_divide_two: Divide by 2 (two equal units + fixed third entity)
   // ==========================================================================
   else if (effectiveVariant === 'advanced_three_entity_grand_total') {
     const [nameA, nameB, nameC] = getRandomNames(3);
     const itemObj = getRandomCountableItems(1);
     const item = itemObj?.item || "admission tickets";
 
-    const baseUnit = (Math.floor(Math.random() * 12) + 12) * 1000 + Math.floor(Math.random() * 9) * 100; // 12k - 24k
-    const x = (Math.floor(Math.random() * 6) + 3) * 1000 + Math.floor(Math.random() * 9) * 100; // 3k - 8k
-    const y = (Math.floor(Math.random() * 6) + 2) * 1000 + Math.floor(Math.random() * 9) * 100; // 2k - 7k
-
-    const amountA = baseUnit;
-    const amountB = baseUnit + x;
-    const amountC = amountB + y;
-    const extraTotal = x + (x + y);
-    const grandTotal = amountA + amountB + amountC;
-
-    // Determine target entity: A, B, or C
-    let targetEntity = 'A';
-    if (explicitVariety === 'find_middle_entity') targetEntity = 'B';
-    else if (explicitVariety === 'find_largest_entity') targetEntity = 'C';
-    else if (explicitVariety === 'find_smallest_base') targetEntity = 'A';
-    else {
-      const targets = ['A', 'B', 'C'];
-      targetEntity = targets[Math.floor(Math.random() * targets.length)];
+    const varietiesList = [
+      'find_smallest_base',
+      'find_middle_entity',
+      'find_largest_entity',
+      'find_combined_entities',
+      'find_difference_entities',
+      'multiples_divide_four',
+      'multiples_divide_five',
+      'equal_units_divide_two'
+    ];
+    let selectedVariety = explicitVariety;
+    if (!varietiesList.includes(selectedVariety)) {
+      selectedVariety = varietiesList[Math.floor(Math.random() * varietiesList.length)];
     }
 
-    const targetName = targetEntity === 'A' ? nameA : (targetEntity === 'B' ? nameB : nameC);
-    finalAnswer = (targetEntity === 'A' ? amountA : (targetEntity === 'B' ? amountB : amountC)).toString();
+    // ------------------------------------------------------------------------
+    // CASE 1: Divide by 3 (Equal Units + Differences)
+    // ------------------------------------------------------------------------
+    if ([
+      'find_smallest_base',
+      'find_middle_entity',
+      'find_largest_entity',
+      'find_combined_entities',
+      'find_difference_entities'
+    ].includes(selectedVariety)) {
+      const baseUnit = (Math.floor(Math.random() * 12) + 12) * 1000 + Math.floor(Math.random() * 9) * 100; // 12k - 24k
+      const x = (Math.floor(Math.random() * 6) + 3) * 1000 + Math.floor(Math.random() * 9) * 100; // 3k - 8k
+      const y = (Math.floor(Math.random() * 6) + 2) * 1000 + Math.floor(Math.random() * 9) * 100; // 2k - 7k
 
-    visualEngineStr = JSON.stringify({
-      componentToRender: "BAR_MODEL_COMPARISON",
-      componentData: {
-        modelType: "BAR_MODEL_COMPARISON",
-        bars: [
-          {
-            name: nameA,
-            value: targetEntity === 'A' ? '?' : '',
-            layoutSize: amountA,
-            parts: [
-              {
-                label: targetEntity === 'A' ? '?' : '1 unit',
-                size: amountA,
-                bgClass: targetEntity === 'A' ? 'bg-indigo-600 text-white font-black' : 'bg-blue-500 text-white'
-              }
-            ]
-          },
-          {
-            name: nameB,
-            value: targetEntity === 'B' ? '?' : '',
-            layoutSize: amountB,
-            parts: [
-              {
-                label: '1 unit',
-                size: amountA,
-                bgClass: 'bg-blue-500 text-white'
-              },
-              {
-                label: '',
-                bracket: `${x.toLocaleString()}`,
-                size: x,
-                isExtra: true,
-                bgClass: 'bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400'
-              }
-            ]
-          },
-          {
-            name: nameC,
-            value: targetEntity === 'C' ? '?' : '',
-            layoutSize: amountC,
-            parts: [
-              {
-                label: '1 unit',
-                size: amountA,
-                bgClass: 'bg-blue-500 text-white'
-              },
-              {
-                label: '',
-                size: x,
-                isExtra: true,
-                bgClass: 'bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400'
-              },
-              {
-                label: '',
-                bracket: `${y.toLocaleString()}`,
-                size: y,
-                isExtra: true,
-                bgClass: 'bg-emerald-100 text-emerald-900 border-l-2 border-dashed border-emerald-400'
-              }
-            ]
-          }
-        ],
-        whole: grandTotal.toLocaleString()
-      }
-    }, null, 2);
+      const amountA = baseUnit;
+      const amountB = baseUnit + x;
+      const amountC = amountB + y;
+      const extraTotal = x + (x + y);
+      const grandTotal = amountA + amountB + amountC;
 
-    promptInstruction = `- Question stem: "${nameA}, ${nameB}, and ${nameC} collected a grand total of ${grandTotal.toLocaleString()} ${item}. ${nameB} collected ${x.toLocaleString()} more ${item} than ${nameA}. ${nameC} collected ${y.toLocaleString()} more ${item} than ${nameB}. How many ${item} did ${targetName} collect?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+      let questionTarget = 'A';
+      if (selectedVariety === 'find_middle_entity') questionTarget = 'B';
+      else if (selectedVariety === 'find_largest_entity') questionTarget = 'C';
+      else if (selectedVariety === 'find_combined_entities') questionTarget = 'A_plus_B';
+      else if (selectedVariety === 'find_difference_entities') questionTarget = 'C_minus_A';
+      else questionTarget = 'A';
 
-    if (isStructure) {
-      const steps = [
-        { label: `Write the working equation to find the total extra amount above the 3 equal base units:`, expectedAnswer: `${x} + ${x} + ${y} = ${extraTotal}` },
-        { label: `Write the working equation to remove the extra amounts from the grand total (to find 3 units):`, expectedAnswer: `${grandTotal} - ${extraTotal} = ${3 * baseUnit}` },
-        { label: `Write the working equation to find 1 unit (${nameA}):`, expectedAnswer: `${3 * baseUnit} / 3 = ${baseUnit}` }
-      ];
-
-      if (targetEntity === 'B') {
-        steps.push({ label: `Write the working equation to find ${nameB}'s amount (1 unit + ${x.toLocaleString()}):`, expectedAnswer: `${baseUnit} + ${x} = ${amountB}` });
-      } else if (targetEntity === 'C') {
-        steps.push({ label: `Write the working equation to find ${nameC}'s amount (1 unit + ${(x + y).toLocaleString()}):`, expectedAnswer: `${baseUnit} + ${x + y} = ${amountC}` });
+      let targetQuestionText = "";
+      if (questionTarget === 'A') {
+        targetQuestionText = `How many ${item} did ${nameA} collect?`;
+        finalAnswer = amountA.toString();
+      } else if (questionTarget === 'B') {
+        targetQuestionText = `How many ${item} did ${nameB} collect?`;
+        finalAnswer = amountB.toString();
+      } else if (questionTarget === 'C') {
+        targetQuestionText = `How many ${item} did ${nameC} collect?`;
+        finalAnswer = amountC.toString();
+      } else if (questionTarget === 'A_plus_B') {
+        targetQuestionText = `How many ${item} did ${nameA} and ${nameB} collect altogether?`;
+        finalAnswer = (amountA + amountB).toString();
+      } else if (questionTarget === 'C_minus_A') {
+        targetQuestionText = `How many more ${item} did ${nameC} collect than ${nameA}?`;
+        finalAnswer = (amountC - amountA).toString();
       }
 
-      steps.push({ label: "Final Answer:", expectedAnswer: finalAnswer });
-
-      inputRequirementStr = JSON.stringify({
-        inputType: "MULTI_STEP_INPUT",
-        steps: steps
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL_COMPARISON",
+        componentData: {
+          modelType: "BAR_MODEL_COMPARISON",
+          bars: [
+            {
+              name: nameA,
+              value: questionTarget === 'A' ? '?' : '',
+              layoutSize: amountA,
+              parts: [
+                {
+                  label: questionTarget === 'A' ? '?' : '1 unit',
+                  size: amountA,
+                  bgClass: questionTarget === 'A' ? 'bg-indigo-600 text-white font-black' : 'bg-blue-500 text-white'
+                }
+              ]
+            },
+            {
+              name: nameB,
+              value: questionTarget === 'B' ? '?' : '',
+              layoutSize: amountB,
+              parts: [
+                {
+                  label: '1 unit',
+                  size: amountA,
+                  bgClass: 'bg-blue-500 text-white'
+                },
+                {
+                  label: '',
+                  bracket: `${x.toLocaleString()}`,
+                  size: x,
+                  isExtra: true,
+                  bgClass: 'bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400'
+                }
+              ]
+            },
+            {
+              name: nameC,
+              value: questionTarget === 'C' ? '?' : '',
+              layoutSize: amountC,
+              parts: [
+                {
+                  label: '1 unit',
+                  size: amountA,
+                  bgClass: 'bg-blue-500 text-white'
+                },
+                {
+                  label: '',
+                  size: x,
+                  isExtra: true,
+                  bgClass: 'bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400'
+                },
+                {
+                  label: '',
+                  bracket: `${y.toLocaleString()}`,
+                  size: y,
+                  isExtra: true,
+                  bgClass: 'bg-emerald-100 text-emerald-900 border-l-2 border-dashed border-emerald-400'
+                }
+              ]
+            }
+          ],
+          whole: grandTotal.toLocaleString()
+        }
       }, null, 2);
+
+      promptInstruction = `- Question stem: "${nameA}, ${nameB}, and ${nameC} collected a grand total of ${grandTotal.toLocaleString()} ${item}. ${nameB} collected ${x.toLocaleString()} more ${item} than ${nameA}. ${nameC} collected ${y.toLocaleString()} more ${item} than ${nameB}. ${targetQuestionText}"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        const steps = [
+          { label: `Write the working equation to find the total extra amount above the 3 equal base units:`, expectedAnswer: `${x} + ${x} + ${y} = ${extraTotal}` },
+          { label: `Write the working equation to remove the extra amounts from the grand total (to find 3 units):`, expectedAnswer: `${grandTotal} - ${extraTotal} = ${3 * baseUnit}` },
+          { label: `Write the working equation to find 1 unit (${nameA}):`, expectedAnswer: `${3 * baseUnit} / 3 = ${baseUnit}` }
+        ];
+
+        if (questionTarget === 'B') {
+          steps.push({ label: `Write the working equation to find ${nameB}'s amount (1 unit + ${x.toLocaleString()}):`, expectedAnswer: `${baseUnit} + ${x} = ${amountB}` });
+        } else if (questionTarget === 'C') {
+          steps.push({ label: `Write the working equation to find ${nameC}'s amount (1 unit + ${(x + y).toLocaleString()}):`, expectedAnswer: `${baseUnit} + ${x + y} = ${amountC}` });
+        } else if (questionTarget === 'A_plus_B') {
+          steps.push({ label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${baseUnit} + ${x} = ${amountB}` });
+          steps.push({ label: `Write the working equation to find the total of ${nameA} and ${nameB}:`, expectedAnswer: `${amountA} + ${amountB} = ${amountA + amountB}` });
+        } else if (questionTarget === 'C_minus_A') {
+          steps.push({ label: `Write the working equation to find how many more ${item} ${nameC} collected than ${nameA}:`, expectedAnswer: `${x} + ${y} = ${amountC - amountA}` });
+        }
+
+        steps.push({ label: "Final Answer:", expectedAnswer: finalAnswer });
+
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: steps
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const otherAnswers = [amountA, amountB, amountC, amountA + amountB, amountC - amountA]
+          .map(n => n.toString())
+          .filter(n => n !== finalAnswer);
+        const rawDistractors = [
+          { val: otherAnswers[0] || (parseInt(finalAnswer) + 1000).toString(), defect: "CONFUSED_ENTITY_OR_STEP" },
+          { val: otherAnswers[1] || (parseInt(finalAnswer) - 1000).toString(), defect: "CONFUSED_ENTITY_OR_STEP" },
+          { val: Math.floor(grandTotal / 3).toString(), defect: "IGNORED_EXTRA_UNITS" }
+        ];
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, rawDistractors);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: In the bar model, represent the base amount (${nameA}'s collection) as 1 unit.\\n- ${nameA} = 1 unit\\n- ${nameB} = 1 unit + ${x.toLocaleString()}\\n- ${nameC} = 1 unit + ${x.toLocaleString()} + ${y.toLocaleString()} = 1 unit + ${(x + y).toLocaleString()}\\nTotal extra amount above 3 units: ${x.toLocaleString()} + ${(x + y).toLocaleString()} = ${extraTotal.toLocaleString()}.\\nStep 2: Subtract the extra amounts from the grand total to find the value of 3 equal units:\\n3 units = ${grandTotal.toLocaleString()} - ${extraTotal.toLocaleString()} = ${(3 * baseUnit).toLocaleString()}.\\nStep 3: Divide by 3 to find 1 unit (${nameA}'s amount):\\n1 unit = ${(3 * baseUnit).toLocaleString()} ÷ 3 = ${amountA.toLocaleString()}.`;
+      if (questionTarget === 'B') {
+        solutionSteps += `\\nStep 4: Find ${nameB}'s amount (1 unit + ${x.toLocaleString()}): ${amountA.toLocaleString()} + ${x.toLocaleString()} = ${amountB.toLocaleString()}.`;
+      } else if (questionTarget === 'C') {
+        solutionSteps += `\\nStep 4: Find ${nameC}'s amount (1 unit + ${(x + y).toLocaleString()}): ${amountA.toLocaleString()} + ${(x + y).toLocaleString()} = ${amountC.toLocaleString()}.`;
+      } else if (questionTarget === 'A_plus_B') {
+        solutionSteps += `\\nStep 4: Find ${nameB}'s amount: ${amountA.toLocaleString()} + ${x.toLocaleString()} = ${amountB.toLocaleString()}.\\nStep 5: Find the combined total of ${nameA} and ${nameB}: ${amountA.toLocaleString()} + ${amountB.toLocaleString()} = ${(amountA + amountB).toLocaleString()}.`;
+      } else if (questionTarget === 'C_minus_A') {
+        solutionSteps += `\\nStep 4: From the model, the difference between ${nameC} and ${nameA} is ${x.toLocaleString()} + ${y.toLocaleString()} = ${(amountC - amountA).toLocaleString()}.`;
+      }
+
+      hint = `In the bar model, let ${nameA}'s amount be 1 unit. Find the total extra amount above 3 units, subtract it from the grand total to find 3 units, then divide by 3!`;
     }
 
-    if (isMCQ) {
-      const otherAnswers = [amountA, amountB, amountC].filter(n => n.toString() !== finalAnswer).map(n => n.toString());
-      const rawDistractors = [
-        { val: otherAnswers[0], defect: "OPPOSITE_ENTITY_FOUND" },
-        { val: otherAnswers[1], defect: "OPPOSITE_ENTITY_FOUND" },
-        { val: Math.floor(grandTotal / 3).toString(), defect: "IGNORED_EXTRA_UNITS" }
-      ];
-      const mcqRes = ensureFourUniqueOptions(finalAnswer, rawDistractors);
-      options = mcqRes.options;
-      defectMap = mcqRes.defectMap;
+    // ------------------------------------------------------------------------
+    // CASE 2: Divide by 4 (Multiples Ratio: 1 unit, 2 units, 1 unit + extra)
+    // ------------------------------------------------------------------------
+    else if (selectedVariety === 'multiples_divide_four') {
+      const baseUnit = (Math.floor(Math.random() * 10) + 8) * 1000 + Math.floor(Math.random() * 9) * 100; // 8k - 17k
+      const x = (Math.floor(Math.random() * 6) + 2) * 1000 + Math.floor(Math.random() * 9) * 100; // 2k - 7k
+
+      const amountA = baseUnit;
+      const amountB = 2 * baseUnit;
+      const amountC = baseUnit + x;
+      const grandTotal = amountA + amountB + amountC; // 4 units + x
+
+      const targets = ['A', 'B', 'C', 'A_plus_B'];
+      const questionTarget = targets[Math.floor(Math.random() * targets.length)];
+
+      let targetQuestionText = "";
+      if (questionTarget === 'A') {
+        targetQuestionText = `How many ${item} did ${nameA} collect?`;
+        finalAnswer = amountA.toString();
+      } else if (questionTarget === 'B') {
+        targetQuestionText = `How many ${item} did ${nameB} collect?`;
+        finalAnswer = amountB.toString();
+      } else if (questionTarget === 'C') {
+        targetQuestionText = `How many ${item} did ${nameC} collect?`;
+        finalAnswer = amountC.toString();
+      } else {
+        targetQuestionText = `How many ${item} did ${nameA} and ${nameB} collect altogether?`;
+        finalAnswer = (amountA + amountB).toString();
+      }
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL_COMPARISON",
+        componentData: {
+          modelType: "BAR_MODEL_COMPARISON",
+          bars: [
+            {
+              name: nameA,
+              value: questionTarget === 'A' ? '?' : '',
+              layoutSize: amountA,
+              parts: [
+                {
+                  label: questionTarget === 'A' ? '?' : '1 unit',
+                  size: amountA,
+                  bgClass: questionTarget === 'A' ? 'bg-indigo-600 text-white font-black' : 'bg-blue-500 text-white'
+                }
+              ]
+            },
+            {
+              name: nameB,
+              value: questionTarget === 'B' ? '?' : '',
+              layoutSize: amountB,
+              parts: [
+                {
+                  label: '1 unit',
+                  size: amountA,
+                  bgClass: 'bg-blue-500 text-white'
+                },
+                {
+                  label: '1 unit',
+                  size: amountA,
+                  bgClass: 'bg-blue-500 text-white'
+                }
+              ]
+            },
+            {
+              name: nameC,
+              value: questionTarget === 'C' ? '?' : '',
+              layoutSize: amountC,
+              parts: [
+                {
+                  label: '1 unit',
+                  size: amountA,
+                  bgClass: 'bg-blue-500 text-white'
+                },
+                {
+                  label: '',
+                  bracket: `${x.toLocaleString()}`,
+                  size: x,
+                  isExtra: true,
+                  bgClass: 'bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400'
+                }
+              ]
+            }
+          ],
+          whole: grandTotal.toLocaleString()
+        }
+      }, null, 2);
+
+      promptInstruction = `- Question stem: "${nameA}, ${nameB}, and ${nameC} collected a grand total of ${grandTotal.toLocaleString()} ${item}. ${nameB} collected twice as many ${item} as ${nameA}. ${nameC} collected ${x.toLocaleString()} more ${item} than ${nameA}. ${targetQuestionText}"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        const steps = [
+          { label: `Write the working equation to remove the extra amount above the 4 equal units:`, expectedAnswer: `${grandTotal} - ${x} = ${4 * baseUnit}` },
+          { label: `Write the working equation to find 1 unit (${nameA}):`, expectedAnswer: `${4 * baseUnit} / 4 = ${baseUnit}` }
+        ];
+
+        if (questionTarget === 'B') {
+          steps.push({ label: `Write the working equation to find ${nameB}'s amount (2 units):`, expectedAnswer: `${baseUnit} * 2 = ${amountB}` });
+        } else if (questionTarget === 'C') {
+          steps.push({ label: `Write the working equation to find ${nameC}'s amount (1 unit + ${x.toLocaleString()}):`, expectedAnswer: `${baseUnit} + ${x} = ${amountC}` });
+        } else if (questionTarget === 'A_plus_B') {
+          steps.push({ label: `Write the working equation to find the total of ${nameA} and ${nameB} (3 units):`, expectedAnswer: `${baseUnit} * 3 = ${amountA + amountB}` });
+        }
+
+        steps.push({ label: "Final Answer:", expectedAnswer: finalAnswer });
+
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: steps
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const otherAnswers = [amountA, amountB, amountC, amountA + amountB]
+          .map(n => n.toString())
+          .filter(n => n !== finalAnswer);
+        const rawDistractors = [
+          { val: otherAnswers[0] || (parseInt(finalAnswer) + 2000).toString(), defect: "CONFUSED_ENTITY_OR_STEP" },
+          { val: otherAnswers[1] || (parseInt(finalAnswer) - 2000).toString(), defect: "CONFUSED_ENTITY_OR_STEP" },
+          { val: Math.floor(grandTotal / 4).toString(), defect: "IGNORED_EXTRA_UNITS" }
+        ];
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, rawDistractors);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: In the bar model, represent ${nameA}'s collection as 1 unit.\\n- ${nameA} = 1 unit\\n- ${nameB} = 2 units\\n- ${nameC} = 1 unit + ${x.toLocaleString()}\\nTotal units = 1 + 2 + 1 = 4 units.\\nStep 2: Subtract the extra amount from the grand total to find 4 units:\\n4 units = ${grandTotal.toLocaleString()} - ${x.toLocaleString()} = ${(4 * baseUnit).toLocaleString()}.\\nStep 3: Divide by 4 to find 1 unit (${nameA}'s amount):\\n1 unit = ${(4 * baseUnit).toLocaleString()} ÷ 4 = ${amountA.toLocaleString()}.`;
+      if (questionTarget === 'B') {
+        solutionSteps += `\\nStep 4: Find ${nameB}'s amount (2 units): 2 × ${amountA.toLocaleString()} = ${amountB.toLocaleString()}.`;
+      } else if (questionTarget === 'C') {
+        solutionSteps += `\\nStep 4: Find ${nameC}'s amount (1 unit + ${x.toLocaleString()}): ${amountA.toLocaleString()} + ${x.toLocaleString()} = ${amountC.toLocaleString()}.`;
+      } else if (questionTarget === 'A_plus_B') {
+        solutionSteps += `\\nStep 4: Find the total of ${nameA} and ${nameB} (3 units): 3 × ${amountA.toLocaleString()} = ${(amountA + amountB).toLocaleString()}.`;
+      }
+
+      hint = `In the bar model, let ${nameA} be 1 unit and ${nameB} be 2 units. Total units = 1 + 2 + 1 = 4 units. Subtract ${x.toLocaleString()} from ${grandTotal.toLocaleString()} and divide by 4!`;
     }
 
-    solutionSteps = `Step 1: In the bar model, represent the base amount (${nameA}'s collection) as 1 unit.\\n- ${nameA} = 1 unit\\n- ${nameB} = 1 unit + ${x.toLocaleString()}\\n- ${nameC} = 1 unit + ${x.toLocaleString()} + ${y.toLocaleString()} = 1 unit + ${(x + y).toLocaleString()}\\nTotal extra amount above 3 units: ${x.toLocaleString()} + ${(x + y).toLocaleString()} = ${extraTotal.toLocaleString()}.\\nStep 2: Subtract the extra amounts from the grand total to find the value of 3 equal units:\\n3 units = ${grandTotal.toLocaleString()} - ${extraTotal.toLocaleString()} = ${(3 * baseUnit).toLocaleString()}.\\nStep 3: Divide by 3 to find 1 unit (${nameA}'s amount):\\n1 unit = ${(3 * baseUnit).toLocaleString()} ÷ 3 = ${amountA.toLocaleString()}.`;
-    if (targetEntity === 'B') {
-      solutionSteps += `\\nStep 4: Find ${nameB}'s amount (1 unit + ${x.toLocaleString()}): ${amountA.toLocaleString()} + ${x.toLocaleString()} = ${amountB.toLocaleString()}.`;
-    } else if (targetEntity === 'C') {
-      solutionSteps += `\\nStep 4: Find ${nameC}'s amount (1 unit + ${(x + y).toLocaleString()}): ${amountA.toLocaleString()} + ${(x + y).toLocaleString()} = ${amountC.toLocaleString()}.`;
+    // ------------------------------------------------------------------------
+    // CASE 3: Divide by 5 (Multiples Ratio: 1 unit, 2 units, 2 units + extra)
+    // ------------------------------------------------------------------------
+    else if (selectedVariety === 'multiples_divide_five') {
+      const baseUnit = (Math.floor(Math.random() * 8) + 6) * 1000 + Math.floor(Math.random() * 9) * 100; // 6k - 13k
+      const x = (Math.floor(Math.random() * 5) + 2) * 1000 + Math.floor(Math.random() * 9) * 100; // 2k - 6k
+
+      const amountA = baseUnit;
+      const amountB = 2 * baseUnit;
+      const amountC = 2 * baseUnit + x;
+      const grandTotal = amountA + amountB + amountC; // 5 units + x
+
+      const targets = ['A', 'B', 'C', 'A_plus_B'];
+      const questionTarget = targets[Math.floor(Math.random() * targets.length)];
+
+      let targetQuestionText = "";
+      if (questionTarget === 'A') {
+        targetQuestionText = `How many ${item} did ${nameA} collect?`;
+        finalAnswer = amountA.toString();
+      } else if (questionTarget === 'B') {
+        targetQuestionText = `How many ${item} did ${nameB} collect?`;
+        finalAnswer = amountB.toString();
+      } else if (questionTarget === 'C') {
+        targetQuestionText = `How many ${item} did ${nameC} collect?`;
+        finalAnswer = amountC.toString();
+      } else {
+        targetQuestionText = `How many ${item} did ${nameA} and ${nameB} collect altogether?`;
+        finalAnswer = (amountA + amountB).toString();
+      }
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL_COMPARISON",
+        componentData: {
+          modelType: "BAR_MODEL_COMPARISON",
+          bars: [
+            {
+              name: nameA,
+              value: questionTarget === 'A' ? '?' : '',
+              layoutSize: amountA,
+              parts: [
+                {
+                  label: questionTarget === 'A' ? '?' : '1 unit',
+                  size: amountA,
+                  bgClass: questionTarget === 'A' ? 'bg-indigo-600 text-white font-black' : 'bg-blue-500 text-white'
+                }
+              ]
+            },
+            {
+              name: nameB,
+              value: questionTarget === 'B' ? '?' : '',
+              layoutSize: amountB,
+              parts: [
+                {
+                  label: '1 unit',
+                  size: amountA,
+                  bgClass: 'bg-blue-500 text-white'
+                },
+                {
+                  label: '1 unit',
+                  size: amountA,
+                  bgClass: 'bg-blue-500 text-white'
+                }
+              ]
+            },
+            {
+              name: nameC,
+              value: questionTarget === 'C' ? '?' : '',
+              layoutSize: amountC,
+              parts: [
+                {
+                  label: '1 unit',
+                  size: amountA,
+                  bgClass: 'bg-blue-500 text-white'
+                },
+                {
+                  label: '1 unit',
+                  size: amountA,
+                  bgClass: 'bg-blue-500 text-white'
+                },
+                {
+                  label: '',
+                  bracket: `${x.toLocaleString()}`,
+                  size: x,
+                  isExtra: true,
+                  bgClass: 'bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400'
+                }
+              ]
+            }
+          ],
+          whole: grandTotal.toLocaleString()
+        }
+      }, null, 2);
+
+      promptInstruction = `- Question stem: "${nameA}, ${nameB}, and ${nameC} collected a grand total of ${grandTotal.toLocaleString()} ${item}. ${nameB} collected twice as many ${item} as ${nameA}. ${nameC} collected ${x.toLocaleString()} more ${item} than ${nameB}. ${targetQuestionText}"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        const steps = [
+          { label: `Write the working equation to remove the extra amount above the 5 equal units:`, expectedAnswer: `${grandTotal} - ${x} = ${5 * baseUnit}` },
+          { label: `Write the working equation to find 1 unit (${nameA}):`, expectedAnswer: `${5 * baseUnit} / 5 = ${baseUnit}` }
+        ];
+
+        if (questionTarget === 'B') {
+          steps.push({ label: `Write the working equation to find ${nameB}'s amount (2 units):`, expectedAnswer: `${baseUnit} * 2 = ${amountB}` });
+        } else if (questionTarget === 'C') {
+          steps.push({ label: `Write the working equation to find ${nameC}'s amount (2 units + ${x.toLocaleString()}):`, expectedAnswer: `${amountB} + ${x} = ${amountC}` });
+        } else if (questionTarget === 'A_plus_B') {
+          steps.push({ label: `Write the working equation to find the total of ${nameA} and ${nameB} (3 units):`, expectedAnswer: `${baseUnit} * 3 = ${amountA + amountB}` });
+        }
+
+        steps.push({ label: "Final Answer:", expectedAnswer: finalAnswer });
+
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: steps
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const otherAnswers = [amountA, amountB, amountC, amountA + amountB]
+          .map(n => n.toString())
+          .filter(n => n !== finalAnswer);
+        const rawDistractors = [
+          { val: otherAnswers[0] || (parseInt(finalAnswer) + 2000).toString(), defect: "CONFUSED_ENTITY_OR_STEP" },
+          { val: otherAnswers[1] || (parseInt(finalAnswer) - 2000).toString(), defect: "CONFUSED_ENTITY_OR_STEP" },
+          { val: Math.floor(grandTotal / 5).toString(), defect: "IGNORED_EXTRA_UNITS" }
+        ];
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, rawDistractors);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: In the bar model, represent ${nameA}'s collection as 1 unit.\\n- ${nameA} = 1 unit\\n- ${nameB} = 2 units\\n- ${nameC} = 2 units + ${x.toLocaleString()}\\nTotal units = 1 + 2 + 2 = 5 units.\\nStep 2: Subtract the extra amount from the grand total to find 5 units:\\n5 units = ${grandTotal.toLocaleString()} - ${x.toLocaleString()} = ${(5 * baseUnit).toLocaleString()}.\\nStep 3: Divide by 5 to find 1 unit (${nameA}'s amount):\\n1 unit = ${(5 * baseUnit).toLocaleString()} ÷ 5 = ${amountA.toLocaleString()}.`;
+      if (questionTarget === 'B') {
+        solutionSteps += `\\nStep 4: Find ${nameB}'s amount (2 units): 2 × ${amountA.toLocaleString()} = ${amountB.toLocaleString()}.`;
+      } else if (questionTarget === 'C') {
+        solutionSteps += `\\nStep 4: Find ${nameC}'s amount (2 units + ${x.toLocaleString()}): ${amountB.toLocaleString()} + ${x.toLocaleString()} = ${amountC.toLocaleString()}.`;
+      } else if (questionTarget === 'A_plus_B') {
+        solutionSteps += `\\nStep 4: Find the total of ${nameA} and ${nameB} (3 units): 3 × ${amountA.toLocaleString()} = ${(amountA + amountB).toLocaleString()}.`;
+      }
+
+      hint = `In the bar model, let ${nameA} be 1 unit, ${nameB} be 2 units, and ${nameC} be 2 units + ${x.toLocaleString()}. Total units = 5. Subtract ${x.toLocaleString()} from ${grandTotal.toLocaleString()} and divide by 5!`;
     }
-    hint = `In the bar model, let ${nameA}'s amount be 1 unit. Find the total extra amount above 3 units, subtract it from the grand total to find 3 units, then divide by 3!`;
+
+    // ------------------------------------------------------------------------
+    // CASE 4: Divide by 2 (Two Equal Units + Fixed Third Entity)
+    // ------------------------------------------------------------------------
+    else if (selectedVariety === 'equal_units_divide_two') {
+      const baseUnit = (Math.floor(Math.random() * 14) + 12) * 1000 + Math.floor(Math.random() * 9) * 100; // 12k - 25k
+      const cVal = (Math.floor(Math.random() * 12) + 8) * 1000 + Math.floor(Math.random() * 9) * 100; // 8k - 20k
+
+      const amountA = baseUnit;
+      const amountB = baseUnit;
+      const amountC = cVal;
+      const grandTotal = amountA + amountB + amountC; // 2 units + cVal
+
+      const targets = ['A', 'A_plus_C'];
+      const questionTarget = targets[Math.floor(Math.random() * targets.length)];
+
+      let targetQuestionText = "";
+      if (questionTarget === 'A') {
+        targetQuestionText = `How many ${item} did ${nameA} collect?`;
+        finalAnswer = amountA.toString();
+      } else {
+        targetQuestionText = `How many ${item} did ${nameA} and ${nameC} collect altogether?`;
+        finalAnswer = (amountA + amountC).toString();
+      }
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL_COMPARISON",
+        componentData: {
+          modelType: "BAR_MODEL_COMPARISON",
+          bars: [
+            {
+              name: nameA,
+              value: questionTarget === 'A' ? '?' : '',
+              layoutSize: amountA,
+              parts: [
+                {
+                  label: questionTarget === 'A' ? '?' : '1 unit',
+                  size: amountA,
+                  bgClass: questionTarget === 'A' ? 'bg-indigo-600 text-white font-black' : 'bg-blue-500 text-white'
+                }
+              ]
+            },
+            {
+              name: nameB,
+              value: '',
+              layoutSize: amountB,
+              parts: [
+                {
+                  label: '1 unit',
+                  size: amountA,
+                  bgClass: 'bg-blue-500 text-white'
+                }
+              ]
+            },
+            {
+              name: nameC,
+              value: cVal.toLocaleString(),
+              layoutSize: amountC,
+              parts: [
+                {
+                  label: cVal.toLocaleString(),
+                  size: amountC,
+                  bgClass: 'bg-purple-600 text-white'
+                }
+              ]
+            }
+          ],
+          whole: grandTotal.toLocaleString()
+        }
+      }, null, 2);
+
+      promptInstruction = `- Question stem: "${nameA} and ${nameB} collected an equal number of ${item}. ${nameC} collected ${cVal.toLocaleString()} ${item}. Together, all three of them collected a grand total of ${grandTotal.toLocaleString()} ${item}. ${targetQuestionText}"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        const steps = [
+          { label: `Write the working equation to remove ${nameC}'s collection from the grand total (to find 2 equal units):`, expectedAnswer: `${grandTotal} - ${cVal} = ${2 * baseUnit}` },
+          { label: `Write the working equation to find 1 unit (${nameA}):`, expectedAnswer: `${2 * baseUnit} / 2 = ${baseUnit}` }
+        ];
+
+        if (questionTarget === 'A_plus_C') {
+          steps.push({ label: `Write the working equation to find the total of ${nameA} and ${nameC}:`, expectedAnswer: `${baseUnit} + ${cVal} = ${amountA + amountC}` });
+        }
+
+        steps.push({ label: "Final Answer:", expectedAnswer: finalAnswer });
+
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: steps
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const otherAnswers = [amountA, cVal, amountA + amountC]
+          .map(n => n.toString())
+          .filter(n => n !== finalAnswer);
+        const rawDistractors = [
+          { val: otherAnswers[0] || (parseInt(finalAnswer) + 2000).toString(), defect: "CONFUSED_ENTITY_OR_STEP" },
+          { val: otherAnswers[1] || (parseInt(finalAnswer) - 2000).toString(), defect: "CONFUSED_ENTITY_OR_STEP" },
+          { val: Math.floor(grandTotal / 2).toString(), defect: "IGNORED_EXTRA_UNITS" }
+        ];
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, rawDistractors);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: Subtract ${nameC}'s collection from the grand total to find the sum of ${nameA} and ${nameB}:\\n2 units = ${grandTotal.toLocaleString()} - ${cVal.toLocaleString()} = ${(2 * baseUnit).toLocaleString()}.\\nStep 2: Since ${nameA} and ${nameB} collected an equal amount, divide by 2 to find 1 unit (${nameA}'s amount):\\n1 unit = ${(2 * baseUnit).toLocaleString()} ÷ 2 = ${amountA.toLocaleString()}.`;
+      if (questionTarget === 'A_plus_C') {
+        solutionSteps += `\\nStep 3: Find the combined total of ${nameA} and ${nameC}: ${amountA.toLocaleString()} + ${cVal.toLocaleString()} = ${(amountA + amountC).toLocaleString()}.`;
+      }
+
+      hint = `Subtract ${nameC}'s collection from the grand total to find 2 equal units for ${nameA} and ${nameB}, then divide by 2!`;
+    }
   }
 
   // ==========================================================================
