@@ -1554,15 +1554,35 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         componentData: {
           modelType: "BAR_MODEL_COMPARISON",
           bars: [
-            { name: nameA, value: "", layoutSize: baselineLayout + x, displayValue: "" },
-            { name: nameB, value: "", layoutSize: baselineLayout, displayValue: "Baseline", difference: { displayValue: x.toLocaleString() } },
-            { name: nameC, value: "", layoutSize: baselineLayout + y, displayValue: `+${y.toLocaleString()}` }
-          ],
-          difference: { displayValue: "?" }
+            {
+              name: nameA,
+              layoutSize: baselineLayout + x,
+              parts: [
+                { label: "1 unit", size: baselineLayout, bgClass: "bg-blue-500 text-white" },
+                { label: "", bracket: x.toLocaleString(), size: x, isExtra: true, bgClass: "bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400" }
+              ]
+            },
+            {
+              name: nameB,
+              layoutSize: baselineLayout,
+              parts: [
+                { label: "1 unit", size: baselineLayout, bgClass: "bg-blue-500 text-white" }
+              ]
+            },
+            {
+              name: nameC,
+              layoutSize: baselineLayout + x,
+              parts: [
+                { label: "1 unit", size: baselineLayout, bgClass: "bg-blue-500 text-white" },
+                { label: "", bracket: y.toLocaleString(), size: y, isExtra: true, bgClass: "bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400" },
+                { label: "", bracket: "?", size: x - y, isExtra: true, bgClass: "bg-slate-100 text-slate-600 border-2 border-dashed border-slate-300" }
+              ]
+            }
+          ]
         }
       }, null, 2);
 
-      promptInstruction = `- Question stem: "${nameA} has ${x.toLocaleString()} more ${item} than ${nameB}. ${nameC} has ${y.toLocaleString()} more ${item} than ${nameB}. How many more ${item} does ${nameA} have than ${nameC}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+      promptInstruction = `- Question stem: "${nameA} has ${x.toLocaleString()} more ${item} than ${nameB}. ${nameC} has ${y.toLocaleString()} more ${item} than ${nameB}. How many more ${item} does ${nameA} have than ${nameC}?"\\n- The finalAnswer must be strictly "${finalAnswer}".\\n- CRITICAL: Return visualEngine and componentData EXACTLY as provided.`;
 
       if (isStructure) {
         inputRequirementStr = JSON.stringify({
@@ -1600,15 +1620,34 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         componentData: {
           modelType: "BAR_MODEL_COMPARISON",
           bars: [
-            { name: nameA, value: "", layoutSize: baselineLayout + x, displayValue: "" },
-            { name: nameB, value: "", layoutSize: baselineLayout, displayValue: "Baseline", difference: { displayValue: x.toLocaleString() } },
-            { name: nameC, value: "", layoutSize: baselineLayout - y, displayValue: `-${y.toLocaleString()}` }
-          ],
-          difference: { displayValue: "?" }
+            {
+              name: nameA,
+              layoutSize: baselineLayout + x,
+              parts: [
+                { label: "1 unit", size: baselineLayout, bgClass: "bg-blue-500 text-white" },
+                { label: "", bracket: x.toLocaleString(), size: x, isExtra: true, bgClass: "bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400" }
+              ]
+            },
+            {
+              name: nameB,
+              layoutSize: baselineLayout,
+              parts: [
+                { label: "1 unit", size: baselineLayout, bgClass: "bg-blue-500 text-white" }
+              ]
+            },
+            {
+              name: nameC,
+              layoutSize: baselineLayout,
+              parts: [
+                { label: "", size: baselineLayout - y, bgClass: "bg-blue-500 text-white" },
+                { label: "", bracket: y.toLocaleString(), size: y, isExtra: true, bgClass: "bg-slate-100 text-slate-600 border-2 border-dashed border-slate-300" }
+              ]
+            }
+          ]
         }
       }, null, 2);
 
-      promptInstruction = `- Question stem: "${nameA} has ${x.toLocaleString()} more ${item} than ${nameB}. ${nameC} has ${y.toLocaleString()} fewer ${item} than ${nameB}. How many more ${item} does ${nameA} have than ${nameC}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+      promptInstruction = `- Question stem: "${nameA} has ${x.toLocaleString()} more ${item} than ${nameB}. ${nameC} has ${y.toLocaleString()} fewer ${item} than ${nameB}. How many more ${item} does ${nameA} have than ${nameC}?"\\n- The finalAnswer must be strictly "${finalAnswer}".\\n- CRITICAL: Return visualEngine and componentData EXACTLY as provided.`;
 
       if (isStructure) {
         inputRequirementStr = JSON.stringify({
@@ -1646,15 +1685,34 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         componentData: {
           modelType: "BAR_MODEL_COMPARISON",
           bars: [
-            { name: nameA, value: "", layoutSize: baselineLayout + x, displayValue: `+${x.toLocaleString()}`, difference: { displayValue: "" } },
-            { name: nameB, value: "", layoutSize: baselineLayout, displayValue: "Baseline", difference: { displayValue: "" } },
-            { name: nameC, value: "", layoutSize: baselineLayout + y, displayValue: `+${y.toLocaleString()}`, difference: { displayValue: "" } }
-          ],
-          difference: { displayValue: "?" }
+            {
+              name: nameA,
+              layoutSize: baselineLayout + x,
+              parts: [
+                { label: "1 unit", size: baselineLayout, bgClass: "bg-blue-500 text-white" },
+                { label: "", bracket: x.toLocaleString(), size: x, isExtra: true, bgClass: "bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400" }
+              ]
+            },
+            {
+              name: nameB,
+              layoutSize: baselineLayout,
+              parts: [
+                { label: "1 unit", size: baselineLayout, bgClass: "bg-blue-500 text-white" }
+              ]
+            },
+            {
+              name: nameC,
+              layoutSize: baselineLayout + y,
+              parts: [
+                { label: "1 unit", size: baselineLayout, bgClass: "bg-blue-500 text-white" },
+                { label: "", bracket: y.toLocaleString(), size: y, isExtra: true, bgClass: "bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400" }
+              ]
+            }
+          ]
         }
       }, null, 2);
 
-      promptInstruction = `- Question stem: "${nameA} has ${x.toLocaleString()} more ${item} than ${nameB}. ${nameC} has ${y.toLocaleString()} more ${item} than ${nameB}. If ${nameA} and ${nameC} combine their ${item}, how many more ${item} will their combined total be compared to twice of ${nameB}'s amount?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+      promptInstruction = `- Question stem: "${nameA} has ${x.toLocaleString()} more ${item} than ${nameB}. ${nameC} has ${y.toLocaleString()} more ${item} than ${nameB}. If ${nameA} and ${nameC} combine their ${item}, how many more ${item} will their combined total be compared to twice of ${nameB}'s amount?"\\n- The finalAnswer must be strictly "${finalAnswer}".\\n- CRITICAL: Return visualEngine and componentData EXACTLY as provided.`;
 
       if (isStructure) {
         inputRequirementStr = JSON.stringify({

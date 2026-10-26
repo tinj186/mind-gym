@@ -217,7 +217,7 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
               </div>
             )}
             <div className="flex w-full items-stretch">
-          <div className="flex-1 space-y-6 min-w-[200px] mt-5">
+          <div className="flex-1 space-y-8 min-w-[200px] mt-5">
               {barsToRender.map((bar, idx) => {
             if (!bar) return null;
           const inputKey = `bar_${idx}`;
