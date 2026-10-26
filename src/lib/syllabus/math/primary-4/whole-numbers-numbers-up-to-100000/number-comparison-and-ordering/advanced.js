@@ -1559,7 +1559,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
               layoutSize: baselineLayout + x,
               parts: [
                 { label: "1 unit", size: baselineLayout, bgClass: "bg-blue-500 text-white" },
-                { label: "", bracket: x.toLocaleString(), size: x, isExtra: true, bgClass: "bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400" }
+                { label: x.toLocaleString(), size: x, isExtra: true, bgClass: "bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400" }
               ]
             },
             {
@@ -1574,8 +1574,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
               layoutSize: baselineLayout + x,
               parts: [
                 { label: "1 unit", size: baselineLayout, bgClass: "bg-blue-500 text-white" },
-                { label: "", bracket: y.toLocaleString(), size: y, isExtra: true, bgClass: "bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400" },
-                { label: "", bracket: "?", size: x - y, isExtra: true, bgClass: "bg-slate-100 text-slate-600 border-2 border-dashed border-slate-300" }
+                { label: y.toLocaleString(), size: y, isExtra: true, bgClass: "bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400" },
+                { label: "", bracket: "?", size: x - y, isExtra: true, bgClass: "bg-slate-50 text-slate-600 border-2 border-dashed border-slate-300" }
               ]
             }
           ]
@@ -1625,7 +1625,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
               layoutSize: baselineLayout + x,
               parts: [
                 { label: "1 unit", size: baselineLayout, bgClass: "bg-blue-500 text-white" },
-                { label: "", bracket: x.toLocaleString(), size: x, isExtra: true, bgClass: "bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400" }
+                { label: x.toLocaleString(), size: x, isExtra: true, bgClass: "bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400" }
               ]
             },
             {
@@ -1637,10 +1637,11 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
             },
             {
               name: nameC,
-              layoutSize: baselineLayout,
+              layoutSize: baselineLayout + x,
               parts: [
                 { label: "", size: baselineLayout - y, bgClass: "bg-blue-500 text-white" },
-                { label: "", bracket: y.toLocaleString(), size: y, isExtra: true, bgClass: "bg-slate-100 text-slate-600 border-2 border-dashed border-slate-300" }
+                { label: y.toLocaleString(), size: y, isExtra: true, bgClass: "bg-amber-50 text-amber-900 border-2 border-dashed border-amber-300" },
+                { label: "", bracket: "?", size: x, isExtra: true, bgClass: "bg-slate-50 text-slate-600 border-2 border-dashed border-slate-300" }
               ]
             }
           ]
@@ -1690,7 +1691,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
               layoutSize: baselineLayout + x,
               parts: [
                 { label: "1 unit", size: baselineLayout, bgClass: "bg-blue-500 text-white" },
-                { label: "", bracket: x.toLocaleString(), size: x, isExtra: true, bgClass: "bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400" }
+                { label: x.toLocaleString(), size: x, isExtra: true, bgClass: "bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400" }
               ]
             },
             {
@@ -1705,7 +1706,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
               layoutSize: baselineLayout + y,
               parts: [
                 { label: "1 unit", size: baselineLayout, bgClass: "bg-blue-500 text-white" },
-                { label: "", bracket: y.toLocaleString(), size: y, isExtra: true, bgClass: "bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400" }
+                { label: y.toLocaleString(), size: y, isExtra: true, bgClass: "bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400" }
               ]
             }
           ]
