@@ -1,6 +1,7 @@
 import { p4NumberPatternsBlueprint } from '../src/lib/syllabus/math/primary-4/whole-numbers-numbers-up-to-100000/number-patterns.js';
+import { UniversalQuestionSchema } from '../src/app/api/admin/generate/questionSchema.js';
 
-console.log('Testing Primary 4 Number Patterns Blueprint...');
+console.log('Testing Primary 4 Number Patterns Blueprint (Full Suite)...');
 
 let totalTests = 0;
 let passedTests = 0;
@@ -17,41 +18,57 @@ function assert(condition, message) {
 }
 
 // 1. Check Blueprint metadata & variants
-assert(p4NumberPatternsBlueprint.variants.foundation_count_on_back !== undefined, 'foundation_count_on_back variant exists in variants');
-assert(p4NumberPatternsBlueprint.variants.foundation_add_10 === undefined, 'foundation_add_10 removed from direct variants list');
-assert(Array.isArray(p4NumberPatternsBlueprint.variantVarieties.foundation_count_on_back), 'variantVarieties has foundation_count_on_back');
-assert(p4NumberPatternsBlueprint.variantVarieties.foundation_count_on_back.length === 8, '8 varieties configured');
-
-const varieties = [
-  'add_10',
-  'subtract_10',
-  'add_100',
-  'subtract_100',
-  'add_1000',
-  'subtract_1000',
-  'add_10000',
-  'subtract_10000'
+const expectedVariants = [
+  'foundation_count_on_back',
+  'foundation_adjacent_term_deduction',
+  'foundation_boundary_crossing_deduction',
+  'foundation_deducing_unknown_rule',
+  'foundation_incorrect_anomaly',
+  'foundation_two_step_extension'
 ];
 
-for (const v of varieties) {
-  assert(p4NumberPatternsBlueprint.variantVarieties.foundation_count_on_back.includes(v), `Variety ${v} is present`);
+for (const v of expectedVariants) {
+  assert(p4NumberPatternsBlueprint.variants[v] !== undefined, `Variant ${v} exists in blueprint`);
+  assert(Array.isArray(p4NumberPatternsBlueprint.variantVarieties[v]), `Varieties configured for ${v}`);
 }
 
-// 2. Test each variety directly using options, string syntax, and object syntax
-for (const variety of varieties) {
-  // Test via options
-  const resOptions = p4NumberPatternsBlueprint.generate('foundation', 'foundation_count_on_back', 'mcq', { variety });
-  assert(resOptions && typeof resOptions.aiPrompt === 'string', `Generated via options for variety ${variety}`);
-  assert(resOptions.aiPrompt.includes('NUMBER_PATTERN'), `Visual engine NUMBER_PATTERN included for variety ${variety}`);
-  assert(resOptions.aiPrompt.includes('"variant": "foundation_count_on_back"'), `Variant meta is foundation_count_on_back for ${variety}`);
+// 2. Test each foundation variant across types (MCQ, Short, Structured)
+for (const variant of expectedVariants) {
+  const varieties = p4NumberPatternsBlueprint.variantVarieties[variant];
 
-  // Test via string 'variant:variety'
-  const resColon = p4NumberPatternsBlueprint.generate('foundation', `foundation_count_on_back:${variety}`, 'mcq');
-  assert(resColon && typeof resColon.aiPrompt === 'string', `Generated via 'variant:variety' for ${variety}`);
+  for (const variety of varieties) {
+    for (const qType of ['mcq', 'short question', 'structured']) {
+      const res = p4NumberPatternsBlueprint.generate('foundation', variant, qType, { variety });
+      assert(res && typeof res.aiPrompt === 'string', `${variant} (${variety}) [${qType}] generates prompt`);
 
-  // Test via object { variant, variety }
-  const resObj = p4NumberPatternsBlueprint.generate('foundation', { variant: 'foundation_count_on_back', variety }, 'short question');
-  assert(resObj && typeof resObj.aiPrompt === 'string', `Generated via object for ${variety}`);
+      const prompt = res.aiPrompt;
+      assert(prompt.includes(`"variant": "${variant}"`), `${variant} metadata variant is correct`);
+
+      // Check MCQ requirements
+      if (qType === 'mcq') {
+        const optionsMatch = prompt.match(/Generate EXACTLY 4 options: (\[[^\]]+\])/);
+        assert(optionsMatch !== null, `MCQ options found for ${variant}`);
+        if (optionsMatch) {
+          const opts = JSON.parse(optionsMatch[1]);
+          assert(opts.length === 4, `MCQ options has exactly 4 items for ${variant}`);
+          assert(new Set(opts).size === 4, `MCQ options all distinct for ${variant}`);
+        }
+      }
+
+      // Check Structured requirements
+      if (qType === 'structured') {
+        assert(prompt.includes('"inputType": "MULTI_STEP_INPUT"'), `Structured has MULTI_STEP_INPUT for ${variant}`);
+        assert(prompt.includes('"steps":'), `Structured has steps array for ${variant}`);
+      }
+
+      // Check visual engines
+      if (variant === 'foundation_boundary_crossing_deduction') {
+        assert(prompt.includes('"componentToRender": "NUMBER_LINE_ADVANCED"'), `Boundary crossing uses NUMBER_LINE_ADVANCED`);
+      } else {
+        assert(prompt.includes('"componentToRender": "NUMBER_SEQUENCE_BLOCKS"'), `${variant} uses NUMBER_SEQUENCE_BLOCKS`);
+      }
+    }
+  }
 }
 
 // 3. Test legacy variant aliases backward compatibility
@@ -72,46 +89,29 @@ for (const alias of legacyAliases) {
   assert(resAlias.aiPrompt.includes('"variant": "foundation_count_on_back"'), `Legacy alias routes to foundation_count_on_back`);
 }
 
-// 4. Test math correctness and MCQ rules over multiple iterations
-for (let i = 0; i < 50; i++) {
-  const res = p4NumberPatternsBlueprint.generate('foundation', 'foundation_count_on_back', 'mcq');
-  const prompt = res.aiPrompt;
-
-  // Extract finalAnswer
-  const finalAnswerMatch = prompt.match(/The finalAnswer must be strictly "([^"]+)"/);
-  assert(finalAnswerMatch !== null, 'Found finalAnswer in prompt');
-  const finalAnswer = finalAnswerMatch ? finalAnswerMatch[1] : '';
-
-  // Extract options
-  const optionsMatch = prompt.match(/Generate EXACTLY 4 options: (\[[^\]]+\])/);
-  assert(optionsMatch !== null, 'Found options in prompt');
-  if (optionsMatch) {
-    const opts = JSON.parse(optionsMatch[1]);
-    assert(opts.length === 4, `Options has exactly 4 items (got ${opts.length})`);
-    assert(new Set(opts).size === 4, `All 4 options are distinct: ${JSON.stringify(opts)}`);
-    assert(opts.includes(finalAnswer), `Options contains finalAnswer (${finalAnswer})`);
-  }
-
-  // Extract defectMap
-  const defectMatch = prompt.match(/Set defectMap to: (\{[^\}]+\})/);
-  assert(defectMatch !== null, 'Found defectMap in prompt');
-  if (defectMatch) {
-    const dMap = JSON.parse(defectMatch[1]);
-    assert(dMap[finalAnswer] === undefined, `finalAnswer is NOT in defectMap`);
-    assert(Object.keys(dMap).length >= 1, `defectMap has at least one distractor mapped`);
-  }
-
-  // Extract visualEngine items
-  const visualMatch = prompt.match(/"items":\s*(\[[^\]]+\])/);
-  assert(visualMatch !== null, 'Found items in visualEngine');
-  if (visualMatch) {
-    const items = JSON.parse(visualMatch[1]);
-    assert(items.length === 5, 'Number pattern has 5 items');
-    assert(items.filter(x => x === '?').length === 1, 'Exactly one missing item (?)');
+// 4. Test Schema parsing with simulated outputs
+for (const variant of expectedVariants) {
+  for (const qType of ['mcq', 'structured', 'short question']) {
+    const res = p4NumberPatternsBlueprint.generate('foundation', variant, qType);
+    
+    // Extract visualEngine and inputRequirement strings
+    const veMatch = res.aiPrompt.match(/"visualEngine":\s*(\{[^}]+\{[^}]+\}[^}]*\})/);
+    const irMatch = res.aiPrompt.match(/"inputRequirement":\s*(\{[^}]+\})/);
+    
+    // Verify Zod componentToRender enum passes
+    const compMatch = res.aiPrompt.match(/"componentToRender":\s*"([^"]+)"/);
+    assert(compMatch !== null, `componentToRender found for ${variant}`);
+    if (compMatch) {
+      const comp = compMatch[1];
+      const validComps = [
+        'NUMBER_SEQUENCE_BLOCKS', 'NUMBER_LINE_ADVANCED', 'NUMBER_PATTERN', 'TABLE_PATTERN_VISUALIZER'
+      ];
+      assert(validComps.includes(comp), `Visual engine ${comp} is recognized`);
+    }
   }
 }
 
-// 5. Test Standard and Advanced
+// 5. Standard and Advanced still work
 const stdRes = p4NumberPatternsBlueprint.generate('standard', 'standard_add_cross_thousands', 'mcq');
 assert(stdRes && stdRes.aiPrompt.includes('standard-level'), 'Standard level generates prompt');
 

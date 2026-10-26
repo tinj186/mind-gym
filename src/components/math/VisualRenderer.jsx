@@ -12,7 +12,7 @@ export const ESSENTIAL_VISUALS = [
   "GRID_DISPLAY", "GRID_DRAWING_CANVAS", "FRACTION_DISPLAY",
   "MASS_SCALE", "VOLUME_BEAKER", "STATIC_IMAGE", "HTML_CONTENT", "BAR_MODEL", "FACT_TRIANGLE",
   "SQUARE_GRID_SHAPE", "GEOMETRY_POLYGON", "AREA_PERIMETER_EXPLORER", "ANGLE_VISUALIZER", "LINE_AND_POLYGON",
-  "BAR_GRAPH", "BAR_GRAPH_VISUALIZER", "NUMBER_LINE"
+  "BAR_GRAPH", "BAR_GRAPH_VISUALIZER", "NUMBER_LINE", "NUMBER_SEQUENCE_BLOCKS", "TABLE_PATTERN_VISUALIZER"
   // "PICTURE_GRAPH_DISPLAY" // Not essential, lazy-loaded
 ];
 
@@ -59,6 +59,8 @@ const AreaPerimeterExplorer = lazy(() => import('./modules/AreaPerimeterExplorer
 const AngleVisualizer = lazy(() => import('./modules/AngleVisualizer'));
 const LineAndPolygonVisualizer = lazy(() => import('./modules/LineAndPolygonVisualizer'));
 const NumberLine = lazy(() => import('./modules/NumberLine'));
+const NumberSequenceBlocks = lazy(() => import('./modules/NumberSequenceBlocks'));
+const TablePatternVisualizer = lazy(() => import('./modules/TablePatternVisualizer'));
 
 export default function VisualRenderer({ type, ...props }) {
   const activeType = (
@@ -111,6 +113,8 @@ export default function VisualRenderer({ type, ...props }) {
           case 'NUMBER_CARDS':
           case 'DIGIT_CARD_SORTER': return <NumberCards {...props} data={props.visualEngine?.componentData || props.data} />;
           case 'NUMBER_PATTERN': return <NumberPattern {...props} />;
+          case 'NUMBER_SEQUENCE_BLOCKS': return <NumberSequenceBlocks data={props.visualEngine?.componentData || props.data} />;
+          case 'TABLE_PATTERN_VISUALIZER': return <TablePatternVisualizer data={props.visualEngine?.componentData || props.data} />;
           case 'NUMBER_LINE':
           case 'NUMBER_LINE_ADVANCED': return <NumberLine data={props.visualEngine?.componentData || props.data} />;
           case 'EQUAL_GROUPS': return <EqualGroups {...props} />;

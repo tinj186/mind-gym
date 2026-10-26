@@ -66,6 +66,8 @@ export const UniversalQuestionSchema = z.object({
       'PLACE_VALUE_CHART',
       'NUMBER_LINE',
       'NUMBER_LINE_ADVANCED',
+      'NUMBER_SEQUENCE_BLOCKS',
+      'TABLE_PATTERN_VISUALIZER',
       'BAR_MODEL_COMPARISON',
       'DIGIT_CARD_SORTER',
       'NONE',

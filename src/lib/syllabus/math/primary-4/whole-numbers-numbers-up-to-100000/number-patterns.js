@@ -28,6 +28,11 @@ export const p4NumberPatternsBlueprint = {
 
   variants: {
     foundation_count_on_back: 'Count on or count back by 10, 100, 1000, or 10 000 within 100 000.',
+    foundation_adjacent_term_deduction: 'Find a missing term at the start, middle, or end of a linear sequence with constant intervals.',
+    foundation_boundary_crossing_deduction: 'Deduce the missing number in a sequence crossing place-value boundaries on a number line.',
+    foundation_deducing_unknown_rule: 'Determine the unknown addition or subtraction rule from a given complete sequence.',
+    foundation_incorrect_anomaly: 'Identify the incorrect number in a sequence where one term breaks the pattern rule.',
+    foundation_two_step_extension: 'Find the term that is two positions away from the last given number in a sequence.',
 
     standard_add_cross_thousands: 'Count on crossing thousands boundary.',
     standard_subtract_cross_thousands: 'Count back crossing thousands boundary.',
@@ -52,6 +57,30 @@ export const p4NumberPatternsBlueprint = {
       'subtract_1000',
       'add_10000',
       'subtract_10000'
+    ],
+    foundation_adjacent_term_deduction: [
+      'missing_middle',
+      'missing_start',
+      'missing_end',
+      'ascending',
+      'descending'
+    ],
+    foundation_boundary_crossing_deduction: [
+      'cross_ten_thousands',
+      'cross_thousands',
+      'cross_hundreds'
+    ],
+    foundation_deducing_unknown_rule: [
+      'rule_addition',
+      'rule_subtraction'
+    ],
+    foundation_incorrect_anomaly: [
+      'anomaly_middle',
+      'anomaly_end'
+    ],
+    foundation_two_step_extension: [
+      'extend_ascending',
+      'extend_descending'
     ]
   },
 
