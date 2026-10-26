@@ -41,12 +41,7 @@ export const p4NumberComparisonAndOrderingBlueprint = {
     standard_condition_digit_difference: 'Form two 5-digit numbers under specific conditions (even/odd) using 5 digit cards and calculate their difference.',
     standard_chain_comparison_three_entities: 'Determine an unknown quantity or total across three entities using comparative relations.',
 
-    advanced_form_greatest_5_digit: 'Form the greatest 5-digit number using 5 given cards.',
-    advanced_form_smallest_5_digit: 'Form the smallest 5-digit number using 5 given cards.',
-    advanced_form_greatest_even: 'Form the greatest 5-digit even number using 5 given cards.',
-    advanced_form_smallest_odd: 'Form the smallest 5-digit odd number using 5 given cards.',
-    advanced_form_greatest_less_than_x: 'Form the greatest 5-digit number less than a specific boundary.',
-    advanced_form_smallest_greater_than_x: 'Form the smallest 5-digit number greater than a specific boundary.'
+    advanced_form_numbers: 'Form 5-digit numbers using 5 given digit cards under specific conditions (greatest/smallest, even/odd, or boundary constraints).'
   },
 
   variantVarieties: {
@@ -56,10 +51,18 @@ export const p4NumberComparisonAndOrderingBlueprint = {
       'asc_same_ten_thousands',
       'desc_same_ten_thousands',
       'mixed_digits'
+    ],
+    advanced_form_numbers: [
+      'greatest_5_digit',
+      'smallest_5_digit',
+      'greatest_even',
+      'smallest_odd',
+      'greatest_less_than_x',
+      'smallest_greater_than_x'
     ]
   },
 
-  generate: function (difficulty, activeVariant, type, options = {}) {
+  generate: function (difficulty, activeVariant, type, options = { }) {
     const level = 'Primary 4';
     const topic = 'Whole Numbers - Numbers up to 100 000';
     const subtopic = 'Number Comparison and Ordering';
@@ -116,7 +119,7 @@ OUTPUT FORMAT (Return ONLY valid JSON matching this schema, with NO markdown for
     } else if (diff === 'standard') {
       return standardLogic(resolvedVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions, explicitVariety);
     } else if (diff === 'advanced') {
-      return advancedLogic(resolvedVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions);
+      return advancedLogic(resolvedVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions, explicitVariety);
     }
 
     throw new Error(`Unsupported difficulty '${difficulty}' for ${subtopic}`);

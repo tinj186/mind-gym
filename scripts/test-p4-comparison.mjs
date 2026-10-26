@@ -139,7 +139,45 @@ for (const variant of standardVariants) {
   }
 }
 
-// 3. Test legacy aliases and variety invocations
+// 3. Advanced Variant & Varieties
+const advancedVarieties = [
+  'greatest_5_digit',
+  'smallest_5_digit',
+  'greatest_even',
+  'smallest_odd',
+  'greatest_less_than_x',
+  'smallest_greater_than_x'
+];
+
+for (const variety of advancedVarieties) {
+  for (const type of types) {
+    try {
+      const res = p4NumberComparisonAndOrderingBlueprint.generate('advanced', {
+        variant: 'advanced_form_numbers',
+        variety: variety
+      }, type);
+      const prompt = res.aiPrompt;
+
+      if (!prompt.includes('advanced_form_numbers')) {
+        console.error(`[Advanced][${variety}][${type}] Failed to route to advanced_form_numbers!`);
+        errors++;
+      }
+      if (type === 'MCQ' && !prompt.includes('- Generate EXACTLY 4 options:')) {
+        console.error(`[Advanced][${variety}][${type}] Missing 4 options instruction!`);
+        errors++;
+      }
+      if (type === 'Structured' && !prompt.includes('"inputType": "MULTI_STEP_INPUT"')) {
+        console.error(`[Advanced][${variety}][${type}] Missing MULTI_STEP_INPUT in prompt!`);
+        errors++;
+      }
+    } catch (err) {
+      console.error(`[Advanced][${variety}][${type}] Error thrown:`, err);
+      errors++;
+    }
+  }
+}
+
+// 4. Test legacy aliases and variety invocations
 const legacyInvocations = [
   'standard_order_asc_diff_ten_thousands',
   'standard_order_desc_diff_ten_thousands',
@@ -148,15 +186,24 @@ const legacyInvocations = [
   'standard_order_mixed_digits',
   'standard_order_numbers:asc_diff_ten_thousands',
   'asc_diff_ten_thousands',
-  'variety_3'
+  'variety_3',
+  'advanced_form_greatest_5_digit',
+  'advanced_form_smallest_5_digit',
+  'advanced_form_greatest_even',
+  'advanced_form_smallest_odd',
+  'advanced_form_greatest_less_than_x',
+  'advanced_form_smallest_greater_than_x',
+  'advanced_form_numbers:greatest_even'
 ];
 
 for (const alias of legacyInvocations) {
   for (const type of types) {
     try {
-      const res = p4NumberComparisonAndOrderingBlueprint.generate('standard', alias, type);
-      if (!res.aiPrompt.includes('standard_order_numbers')) {
-        console.error(`[Alias][${alias}] Failed to route to standard_order_numbers!`);
+      const isAdv = alias.startsWith('advanced');
+      const res = p4NumberComparisonAndOrderingBlueprint.generate(isAdv ? 'advanced' : 'standard', alias, type);
+      const expected = isAdv ? 'advanced_form_numbers' : 'standard_order_numbers';
+      if (!res.aiPrompt.includes(expected)) {
+        console.error(`[Alias][${alias}] Failed to route to ${expected}!`);
         errors++;
       }
     } catch (err) {
@@ -168,7 +215,7 @@ for (const alias of legacyInvocations) {
 
 console.log(`\nTests completed with ${errors} errors.`);
 if (errors === 0) {
-  console.log('SUCCESS: All P4 Number Comparison Foundation & Standard tests passed!');
+  console.log('SUCCESS: All P4 Number Comparison Foundation, Standard & Advanced tests passed!');
 } else {
   process.exit(1);
 }
