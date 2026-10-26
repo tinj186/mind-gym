@@ -252,7 +252,7 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
                                 <div className="w-[calc(100%-4px)] h-2 border-x-2 border-t-2 border-slate-400 opacity-60 rounded-t-md"></div>
                               </div>
                             )}
-                            <span className="truncate">{partVal}</span>
+                            {!part.bracket && <span className="truncate">{partVal}</span>}
                           </div>
                         );
                       })}

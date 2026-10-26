@@ -752,7 +752,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
                 bgClass: 'bg-blue-500 text-white'
               },
               {
-                label: `+${x.toLocaleString()}`,
+                label: '',
                 bracket: `${x.toLocaleString()}`,
                 size: x,
                 isExtra: true,
@@ -777,7 +777,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
                 bgClass: 'bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400'
               },
               {
-                label: `+${y.toLocaleString()}`,
+                label: '',
                 bracket: `${y.toLocaleString()}`,
                 size: y,
                 isExtra: true,
