@@ -729,11 +729,63 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       componentData: {
         modelType: "BAR_MODEL_COMPARISON",
         bars: [
-          { name: nameA, value: targetEntity === 'A' ? '?' : '', layoutSize: amountA, displayValue: targetEntity === 'A' ? '?' : '1 unit', difference: { displayValue: "" } },
-          { name: nameB, value: targetEntity === 'B' ? '?' : '', layoutSize: amountB, displayValue: targetEntity === 'B' ? '?' : `+${x.toLocaleString()}`, difference: { displayValue: "" } },
-          { name: nameC, value: targetEntity === 'C' ? '?' : '', layoutSize: amountC, displayValue: targetEntity === 'C' ? '?' : `+${y.toLocaleString()} more`, difference: { displayValue: "" } }
+          {
+            name: nameA,
+            value: targetEntity === 'A' ? '?' : '',
+            layoutSize: amountA,
+            parts: [
+              {
+                label: targetEntity === 'A' ? '?' : '1 unit',
+                size: amountA,
+                bgClass: targetEntity === 'A' ? 'bg-indigo-600 text-white font-black' : 'bg-blue-500 text-white'
+              }
+            ]
+          },
+          {
+            name: nameB,
+            value: targetEntity === 'B' ? '?' : '',
+            layoutSize: amountB,
+            parts: [
+              {
+                label: '1 unit',
+                size: amountA,
+                bgClass: 'bg-blue-500 text-white'
+              },
+              {
+                label: `+${x.toLocaleString()}`,
+                bracket: `${x.toLocaleString()}`,
+                size: x,
+                isExtra: true,
+                bgClass: 'bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400'
+              }
+            ]
+          },
+          {
+            name: nameC,
+            value: targetEntity === 'C' ? '?' : '',
+            layoutSize: amountC,
+            parts: [
+              {
+                label: '1 unit',
+                size: amountA,
+                bgClass: 'bg-blue-500 text-white'
+              },
+              {
+                label: `+${x.toLocaleString()}`,
+                size: x,
+                isExtra: true,
+                bgClass: 'bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400'
+              },
+              {
+                label: `+${y.toLocaleString()}`,
+                bracket: `${y.toLocaleString()}`,
+                size: y,
+                isExtra: true,
+                bgClass: 'bg-emerald-100 text-emerald-900 border-l-2 border-dashed border-emerald-400'
+              }
+            ]
+          }
         ],
-        difference: { displayValue: "" },
         whole: grandTotal.toLocaleString()
       }
     }, null, 2);
@@ -742,15 +794,15 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     if (isStructure) {
       const steps = [
-        { label: "Write the working equation to find the total extra amount above the 3 equal base units:", expectedAnswer: `${x} + ${x} + ${y} = ${extraTotal}` },
-        { label: "Write the working equation to remove the extra amounts from the grand total:", expectedAnswer: `${grandTotal} - ${extraTotal} = ${3 * baseUnit}` },
-        { label: `Write the working equation to find 1 base unit (${nameA}):`, expectedAnswer: `${3 * baseUnit} / 3 = ${baseUnit}` }
+        { label: `Write the working equation to find the total extra amount above the 3 equal base units:`, expectedAnswer: `${x} + ${x} + ${y} = ${extraTotal}` },
+        { label: `Write the working equation to remove the extra amounts from the grand total (to find 3 units):`, expectedAnswer: `${grandTotal} - ${extraTotal} = ${3 * baseUnit}` },
+        { label: `Write the working equation to find 1 unit (${nameA}):`, expectedAnswer: `${3 * baseUnit} / 3 = ${baseUnit}` }
       ];
 
       if (targetEntity === 'B') {
-        steps.push({ label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${baseUnit} + ${x} = ${amountB}` });
+        steps.push({ label: `Write the working equation to find ${nameB}'s amount (1 unit + ${x.toLocaleString()}):`, expectedAnswer: `${baseUnit} + ${x} = ${amountB}` });
       } else if (targetEntity === 'C') {
-        steps.push({ label: `Write the working equation to find ${nameC}'s amount:`, expectedAnswer: `${baseUnit} + ${x + y} = ${amountC}` });
+        steps.push({ label: `Write the working equation to find ${nameC}'s amount (1 unit + ${(x + y).toLocaleString()}):`, expectedAnswer: `${baseUnit} + ${x + y} = ${amountC}` });
       }
 
       steps.push({ label: "Final Answer:", expectedAnswer: finalAnswer });
@@ -773,13 +825,13 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       defectMap = mcqRes.defectMap;
     }
 
-    solutionSteps = `Step 1: Calculate the extra amounts compared to ${nameA}: ${nameB} has ${x.toLocaleString()} extra, and ${nameC} has ${x.toLocaleString()} + ${y.toLocaleString()} = ${(x + y).toLocaleString()} extra. Total extra = ${extraTotal.toLocaleString()}.\\nStep 2: Subtract the extra amounts from the grand total to find 3 equal base units: ${grandTotal.toLocaleString()} - ${extraTotal.toLocaleString()} = ${(3 * baseUnit).toLocaleString()}.\\nStep 3: Divide by 3 to find 1 unit (${nameA}): ${(3 * baseUnit).toLocaleString()} ÷ 3 = ${amountA.toLocaleString()}.`;
+    solutionSteps = `Step 1: In the bar model, represent the base amount (${nameA}'s collection) as 1 unit.\\n- ${nameA} = 1 unit\\n- ${nameB} = 1 unit + ${x.toLocaleString()}\\n- ${nameC} = 1 unit + ${x.toLocaleString()} + ${y.toLocaleString()} = 1 unit + ${(x + y).toLocaleString()}\\nTotal extra amount above 3 units: ${x.toLocaleString()} + ${(x + y).toLocaleString()} = ${extraTotal.toLocaleString()}.\\nStep 2: Subtract the extra amounts from the grand total to find the value of 3 equal units:\\n3 units = ${grandTotal.toLocaleString()} - ${extraTotal.toLocaleString()} = ${(3 * baseUnit).toLocaleString()}.\\nStep 3: Divide by 3 to find 1 unit (${nameA}'s amount):\\n1 unit = ${(3 * baseUnit).toLocaleString()} ÷ 3 = ${amountA.toLocaleString()}.`;
     if (targetEntity === 'B') {
-      solutionSteps += `\\nStep 4: Find ${nameB}'s amount: ${amountA.toLocaleString()} + ${x.toLocaleString()} = ${amountB.toLocaleString()}.`;
+      solutionSteps += `\\nStep 4: Find ${nameB}'s amount (1 unit + ${x.toLocaleString()}): ${amountA.toLocaleString()} + ${x.toLocaleString()} = ${amountB.toLocaleString()}.`;
     } else if (targetEntity === 'C') {
-      solutionSteps += `\\nStep 4: Find ${nameC}'s amount: ${amountA.toLocaleString()} + ${(x + y).toLocaleString()} = ${amountC.toLocaleString()}.`;
+      solutionSteps += `\\nStep 4: Find ${nameC}'s amount (1 unit + ${(x + y).toLocaleString()}): ${amountA.toLocaleString()} + ${(x + y).toLocaleString()} = ${amountC.toLocaleString()}.`;
     }
-    hint = `Subtract the extra amounts from the grand total to find the value of 3 equal base units, then divide by 3 to find ${nameA}'s amount!`;
+    hint = `In the bar model, let ${nameA}'s amount be 1 unit. Find the total extra amount above 3 units, subtract it from the grand total to find 3 units, then divide by 3!`;
   }
 
   // ==========================================================================

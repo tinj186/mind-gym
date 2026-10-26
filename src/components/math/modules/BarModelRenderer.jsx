@@ -211,8 +211,8 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
 
         return (
           <div key={index} className="relative my-6 p-6 bg-slate-50 rounded-3xl border border-slate-100 shadow-sm">
-        <div className="flex w-full items-start">
-          <div className="flex-1 space-y-4 min-w-[200px]">
+        <div className="flex w-full items-stretch">
+          <div className="flex-1 space-y-6 min-w-[200px] mt-2">
               {barsToRender.map((bar, idx) => {
             if (!bar) return null;
           const inputKey = `bar_${idx}`;
@@ -227,20 +227,52 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
                   {typeof bar.name === 'object' && bar.name !== null ? (bar.name.item || bar.name.text || bar.name.label || JSON.stringify(bar.name)) : bar.name}
                 </span>
                 <div className="flex-1 h-10 rounded-lg flex relative z-10">
-                  <div
-                    style={{ width: `${(getLayoutValue(bar) / maxVal) * 100}%` }}
-                    className={`relative h-full flex items-center justify-end px-4 text-sm font-black text-white rounded-lg border border-slate-200 shadow-inner overflow-hidden ${
-                      idx === 0 ? 'bg-blue-500' : (idx === 1 ? 'bg-amber-500' : (idx === 2 ? 'bg-emerald-500' : 'bg-purple-500'))
-                    }`}
-                  >
-                    <UnitSegments value={bar.segments || bar.value} />
-                    {(!bar.segments || parseInt(bar.segments) <= 1) && (
-                      userVal ? <span className="text-yellow-200 px-2 drop-shadow-md text-lg z-10">{userVal}</span> : (bar.value === "?" ? "?" : <span className="text-white drop-shadow-sm z-10">{bar.displayValue !== undefined ? bar.displayValue : bar.value}</span>)
-                    )}
-                  </div>
+                  {bar.parts && Array.isArray(bar.parts) ? (
+                    <div
+                      style={{ width: `${(getLayoutValue(bar) / maxVal) * 100}%` }}
+                      className="relative h-full flex rounded-lg overflow-visible border border-slate-200/80 shadow-inner"
+                    >
+                      {bar.parts.map((part, pIdx) => {
+                        const partSize = parseFloat(part.size || part.layoutSize) || 1;
+                        const partWidth = (partSize / getLayoutValue(bar)) * 100;
+                        const partVal = part.displayValue !== undefined ? part.displayValue : (part.label || part.value || "");
+                        const bgClass = part.bgClass || (pIdx === 0 ? "bg-blue-500 text-white" : "bg-amber-100 text-amber-900 border-l border-dashed border-amber-300");
+
+                        return (
+                          <div
+                            key={pIdx}
+                            style={{ width: `${partWidth}%` }}
+                            className={`relative h-full flex items-center justify-center px-1 text-sm font-black border-r last:border-r-0 border-white/20 first:rounded-l-lg last:rounded-r-lg ${bgClass}`}
+                          >
+                            {part.bracket && (
+                              <div className="absolute -top-7 left-0 w-full h-5 flex flex-col items-center justify-end pointer-events-none">
+                                <span className="text-xs font-black text-slate-600 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200 shadow-xs absolute -top-3.5 z-10 whitespace-nowrap">
+                                  {part.bracket}
+                                </span>
+                                <div className="w-[calc(100%-4px)] h-2 border-x-2 border-t-2 border-slate-400 opacity-60 rounded-t-md"></div>
+                              </div>
+                            )}
+                            <span className="truncate">{partVal}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div
+                      style={{ width: `${(getLayoutValue(bar) / maxVal) * 100}%` }}
+                      className={`relative h-full flex items-center justify-end px-4 text-sm font-black text-white rounded-lg border border-slate-200 shadow-inner overflow-hidden ${
+                        idx === 0 ? 'bg-blue-500' : (idx === 1 ? 'bg-amber-500' : (idx === 2 ? 'bg-emerald-500' : 'bg-purple-500'))
+                      }`}
+                    >
+                      <UnitSegments value={bar.segments || bar.value} />
+                      {(!bar.segments || parseInt(bar.segments) <= 1) && (
+                        userVal ? <span className="text-yellow-200 px-2 drop-shadow-md text-lg z-10">{userVal}</span> : (bar.value === "?" ? "?" : <span className="text-white drop-shadow-sm z-10">{bar.displayValue !== undefined ? bar.displayValue : bar.value}</span>)
+                      )}
+                    </div>
+                  )}
                   
-                  {/* Difference Box (if this is the shorter bar) */}
-                  {getLayoutValue(bar) < maxVal && (
+                  {/* Difference Box (if this is the shorter bar and not using custom parts) */}
+                  {!bar.parts && !bar.hideDifference && getLayoutValue(bar) < maxVal && (
                     <div 
                       style={{ width: `${100 - ((getLayoutValue(bar) / maxVal) * 100)}%` }}
                       className="h-full flex flex-col items-center justify-end relative"
@@ -297,7 +329,7 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
           
           {/* Total Bracket for Comparison */}
           {m.whole !== undefined && (
-            <div className="w-[180px] flex-shrink-0 flex items-center ml-4 h-[6rem]">
+            <div className="w-[180px] flex-shrink-0 flex items-center ml-4 self-stretch my-1">
               <div className="w-10 h-full py-1 pointer-events-none">
                 <CurlyBracket />
               </div>
