@@ -27,14 +27,7 @@ export const p4NumberPatternsBlueprint = {
   },
 
   variants: {
-    foundation_add_10: 'Count on by 10 within 100 000.',
-    foundation_subtract_10: 'Count back by 10 within 100 000.',
-    foundation_add_100: 'Count on by 100 within 100 000.',
-    foundation_subtract_100: 'Count back by 100 within 100 000.',
-    foundation_add_1000: 'Count on by 1000 within 100 000.',
-    foundation_subtract_1000: 'Count back by 1000 within 100 000.',
-    foundation_add_10000: 'Count on by 10 000 within 100 000.',
-    foundation_subtract_10000: 'Count back by 10 000 within 100 000.',
+    foundation_count_on_back: 'Count on or count back by 10, 100, 1000, or 10 000 within 100 000.',
 
     standard_add_cross_thousands: 'Count on crossing thousands boundary.',
     standard_subtract_cross_thousands: 'Count back crossing thousands boundary.',
@@ -49,7 +42,20 @@ export const p4NumberPatternsBlueprint = {
     advanced_two_missing_terms: 'Find sum of two missing terms (A + B) in a sequence.'
   },
 
-  generate: function (difficulty, activeVariant, type) {
+  variantVarieties: {
+    foundation_count_on_back: [
+      'add_10',
+      'subtract_10',
+      'add_100',
+      'subtract_100',
+      'add_1000',
+      'subtract_1000',
+      'add_10000',
+      'subtract_10000'
+    ]
+  },
+
+  generate: function (difficulty, activeVariant, type, options = {}) {
     const level = 'Primary 4';
     const topic = 'Whole Numbers - Numbers up to 100 000';
     const subtopic = 'Number Patterns';
@@ -61,7 +67,40 @@ export const p4NumberPatternsBlueprint = {
     const zodType = isMCQ ? 'MCQ' : isShort ? 'SHORT_QUESTION' : 'STRUCTURED';
     const zodDiff = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
 
-    const getFormatInstructions = (visualEngineStr = '{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }', inputRequirementStr = null) => `CRITICAL INSTRUCTION: You MUST use the EXACT "visualEngine" and "inputRequirement" JSON objects provided in the template below.
+    let resolvedVariant = activeVariant;
+    let explicitVariety = null;
+
+    if (typeof activeVariant === 'object' && activeVariant !== null) {
+      explicitVariety = activeVariant.variety || activeVariant.subType;
+      resolvedVariant = activeVariant.variant || activeVariant.activeVariant;
+    } else if (options && options.variety) {
+      explicitVariety = options.variety;
+    }
+
+    if (typeof resolvedVariant === 'string' && resolvedVariant.includes(':')) {
+      const parts = resolvedVariant.split(':');
+      resolvedVariant = parts[0];
+      explicitVariety = parts[1];
+    }
+
+    // Support legacy foundation variant aliases for backward compatibility
+    const legacyFoundationMap = {
+      foundation_add_10: 'add_10',
+      foundation_subtract_10: 'subtract_10',
+      foundation_add_100: 'add_100',
+      foundation_subtract_100: 'subtract_100',
+      foundation_add_1000: 'add_1000',
+      foundation_subtract_1000: 'subtract_1000',
+      foundation_add_10000: 'add_10000',
+      foundation_subtract_10000: 'subtract_10000'
+    };
+
+    if (legacyFoundationMap[resolvedVariant]) {
+      explicitVariety = explicitVariety || legacyFoundationMap[resolvedVariant];
+      resolvedVariant = 'foundation_count_on_back';
+    }
+
+    const getFormatInstructions = (visualEngineStr = '{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }', inputRequirementStr = null, variantOverride = null) => `CRITICAL INSTRUCTION: You MUST use the EXACT "visualEngine" and "inputRequirement" JSON objects provided in the template below.
 OUTPUT FORMAT (Return ONLY valid JSON matching this schema, with NO markdown formatting and NO trailing characters):
 {
   "meta": {
@@ -70,7 +109,7 @@ OUTPUT FORMAT (Return ONLY valid JSON matching this schema, with NO markdown for
     "subtopic": "${subtopic}",
     "difficulty": "${zodDiff}",
     "type": "${zodType}",
-    "variant": "${activeVariant || 'default'}"
+    "variant": "${variantOverride || resolvedVariant || 'default'}"
   },
   "visualEngine": ${visualEngineStr},
   "inputRequirement": ${inputRequirementStr || `{ "inputType": "${isMCQ ? 'MCQ_BUTTONS' : isShort ? 'STANDARD_TEXT' : 'MULTI_STEP_INPUT'}" }`},
@@ -86,11 +125,11 @@ OUTPUT FORMAT (Return ONLY valid JSON matching this schema, with NO markdown for
 
     const diff = String(difficulty || 'foundation').toLowerCase();
     if (diff === 'foundation') {
-      return foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions);
+      return foundationLogic(resolvedVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions, explicitVariety);
     } else if (diff === 'standard') {
-      return standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions);
+      return standardLogic(resolvedVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions, explicitVariety);
     } else if (diff === 'advanced') {
-      return advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions);
+      return advancedLogic(resolvedVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, getFormatInstructions, explicitVariety);
     }
 
     throw new Error(`Unsupported difficulty '${difficulty}' for ${subtopic}`);

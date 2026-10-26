@@ -1,27 +1,49 @@
-export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, levelName, topic, getFormatInstructions) {
-  let step = 0;
-  let missingIndex = Math.floor(Math.random() * 5); // 0 to 4
-  let start = 0;
+export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, levelName, topic, getFormatInstructions, explicitVariety = null) {
   let promptInstruction = "";
   let finalAnswer = "";
   let options = [];
   let defectMap = {};
 
-  if (!activeVariant || activeVariant === 'foundation_default' || activeVariant === 'default') {
-    const defaultVariants = [
-      'foundation_add_10',
-      'foundation_subtract_10',
-      'foundation_add_100',
-      'foundation_subtract_100',
-      'foundation_add_1000',
-      'foundation_subtract_1000',
-      'foundation_add_10000',
-      'foundation_subtract_10000'
-    ];
-    activeVariant = defaultVariants[Math.floor(Math.random() * defaultVariants.length)];
+  const VARIETIES = [
+    'add_10',
+    'subtract_10',
+    'add_100',
+    'subtract_100',
+    'add_1000',
+    'subtract_1000',
+    'add_10000',
+    'subtract_10000'
+  ];
+
+  const legacyMap = {
+    foundation_add_10: 'add_10',
+    foundation_subtract_10: 'subtract_10',
+    foundation_add_100: 'add_100',
+    foundation_subtract_100: 'subtract_100',
+    foundation_add_1000: 'add_1000',
+    foundation_subtract_1000: 'subtract_1000',
+    foundation_add_10000: 'add_10000',
+    foundation_subtract_10000: 'subtract_10000'
+  };
+
+  let chosenVariety = explicitVariety;
+  if (!chosenVariety && activeVariant) {
+    if (legacyMap[activeVariant]) {
+      chosenVariety = legacyMap[activeVariant];
+    } else if (VARIETIES.includes(activeVariant)) {
+      chosenVariety = activeVariant;
+    }
   }
 
-  if (activeVariant === 'foundation_add_10') {
+  if (!chosenVariety || !VARIETIES.includes(chosenVariety)) {
+    chosenVariety = VARIETIES[Math.floor(Math.random() * VARIETIES.length)];
+  }
+
+  let step = 0;
+  let start = 0;
+  let ruleDesc = "";
+
+  if (chosenVariety === 'add_10') {
     step = 10;
     const tth = Math.floor(Math.random() * 8) + 1; // 1 to 8
     const th = Math.floor(Math.random() * 10);
@@ -29,7 +51,8 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const t = Math.floor(Math.random() * 5); // 0 to 4 (so +40 won't cross hundreds)
     const o = Math.floor(Math.random() * 10);
     start = (tth * 10000) + (th * 1000) + (h * 100) + (t * 10) + o;
-  } else if (activeVariant === 'foundation_subtract_10') {
+    ruleDesc = "adding 10 to each number (+10)";
+  } else if (chosenVariety === 'subtract_10') {
     step = -10;
     const tth = Math.floor(Math.random() * 8) + 1;
     const th = Math.floor(Math.random() * 10);
@@ -37,7 +60,8 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const t = Math.floor(Math.random() * 5) + 4; // 4 to 8 (so -40 won't cross hundreds)
     const o = Math.floor(Math.random() * 10);
     start = (tth * 10000) + (th * 1000) + (h * 100) + (t * 10) + o;
-  } else if (activeVariant === 'foundation_add_100') {
+    ruleDesc = "subtracting 10 from each number (-10)";
+  } else if (chosenVariety === 'add_100') {
     step = 100;
     const tth = Math.floor(Math.random() * 8) + 1;
     const th = Math.floor(Math.random() * 10);
@@ -45,7 +69,8 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const t = Math.floor(Math.random() * 10);
     const o = Math.floor(Math.random() * 10);
     start = (tth * 10000) + (th * 1000) + (h * 100) + (t * 10) + o;
-  } else if (activeVariant === 'foundation_subtract_100') {
+    ruleDesc = "adding 100 to each number (+100)";
+  } else if (chosenVariety === 'subtract_100') {
     step = -100;
     const tth = Math.floor(Math.random() * 8) + 1;
     const th = Math.floor(Math.random() * 10);
@@ -53,7 +78,8 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const t = Math.floor(Math.random() * 10);
     const o = Math.floor(Math.random() * 10);
     start = (tth * 10000) + (th * 1000) + (h * 100) + (t * 10) + o;
-  } else if (activeVariant === 'foundation_add_1000') {
+    ruleDesc = "subtracting 100 from each number (-100)";
+  } else if (chosenVariety === 'add_1000') {
     step = 1000;
     const tth = Math.floor(Math.random() * 8) + 1;
     const th = Math.floor(Math.random() * 5); // 0 to 4
@@ -61,7 +87,8 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const t = Math.floor(Math.random() * 10);
     const o = Math.floor(Math.random() * 10);
     start = (tth * 10000) + (th * 1000) + (h * 100) + (t * 10) + o;
-  } else if (activeVariant === 'foundation_subtract_1000') {
+    ruleDesc = "adding 1000 to each number (+1000)";
+  } else if (chosenVariety === 'subtract_1000') {
     step = -1000;
     const tth = Math.floor(Math.random() * 8) + 1;
     const th = Math.floor(Math.random() * 5) + 4; // 4 to 8
@@ -69,7 +96,8 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const t = Math.floor(Math.random() * 10);
     const o = Math.floor(Math.random() * 10);
     start = (tth * 10000) + (th * 1000) + (h * 100) + (t * 10) + o;
-  } else if (activeVariant === 'foundation_add_10000') {
+    ruleDesc = "subtracting 1000 from each number (-1000)";
+  } else if (chosenVariety === 'add_10000') {
     step = 10000;
     const tth = Math.floor(Math.random() * 5) + 1; // 1 to 5
     const th = Math.floor(Math.random() * 10);
@@ -77,8 +105,9 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const t = Math.floor(Math.random() * 10);
     const o = Math.floor(Math.random() * 10);
     start = (tth * 10000) + (th * 1000) + (h * 100) + (t * 10) + o;
+    ruleDesc = "adding 10 000 to each number (+10 000)";
   } else {
-    // foundation_subtract_10000
+    // subtract_10000
     step = -10000;
     const tth = Math.floor(Math.random() * 4) + 6; // 6 to 9
     const th = Math.floor(Math.random() * 10);
@@ -86,8 +115,10 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const t = Math.floor(Math.random() * 10);
     const o = Math.floor(Math.random() * 10);
     start = (tth * 10000) + (th * 1000) + (h * 100) + (t * 10) + o;
+    ruleDesc = "subtracting 10 000 from each number (-10 000)";
   }
 
+  const missingIndex = Math.floor(Math.random() * 5); // 0 to 4
   const pattern = [];
   for (let i = 0; i < 5; i++) {
     pattern.push(start + (i * step));
@@ -104,18 +135,40 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
   promptInstruction = `- Question stem: "Find the missing number in the number pattern: ${displayPattern.join(', ')}."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
   if (isMCQ) {
-    const d1 = (correctNum + step).toString();
-    const d2 = (correctNum - step).toString();
-    const d3 = (correctNum + (Math.abs(step) >= 1000 ? 100 : 10)).toString();
-    const set = new Set([finalAnswer, d1, d2, d3]);
-    while (set.size < 4) {
-      set.add((correctNum + Math.floor(Math.random() * 5 + 1) * 100).toString());
+    const distractors = [
+      { val: correctNum + step, code: 'OFF_BY_ONE_STEP' },
+      { val: correctNum - step, code: 'OFF_BY_ONE_STEP' },
+      { val: correctNum + (2 * step), code: 'WRONG_INTERVAL_COUNT' },
+      { val: correctNum - (2 * step), code: 'WRONG_INTERVAL_COUNT' },
+      { val: correctNum + (Math.abs(step) === 10 ? 100 : Math.abs(step) === 100 ? 1000 : 100), code: 'WRONG_PLACE_VALUE' },
+      { val: correctNum - (Math.abs(step) === 10 ? 100 : Math.abs(step) === 100 ? 1000 : 100), code: 'WRONG_PLACE_VALUE' }
+    ];
+
+    const distractorSet = new Set();
+    defectMap = {};
+
+    for (const d of distractors) {
+      if (d.val > 0 && d.val !== correctNum && !distractorSet.has(d.val.toString())) {
+        const valStr = d.val.toString();
+        distractorSet.add(valStr);
+        defectMap[valStr] = d.code;
+        if (distractorSet.size === 3) break;
+      }
     }
-    options = Array.from(set).sort(() => Math.random() - 0.5);
-    defectMap = {
-      [d1]: "OFF_BY_ONE_STEP",
-      [d2]: "OFF_BY_ONE_STEP"
-    };
+
+    let delta = 1;
+    while (distractorSet.size < 3) {
+      const fallbackVal = correctNum + (delta * (Math.abs(step) || 10));
+      const valStr = fallbackVal.toString();
+      if (fallbackVal > 0 && fallbackVal !== correctNum && !distractorSet.has(valStr)) {
+        distractorSet.add(valStr);
+        defectMap[valStr] = 'CARELESS_CALCULATION';
+      }
+      delta = delta > 0 ? -delta : -delta + 1;
+    }
+
+    const allOptions = [finalAnswer, ...Array.from(distractorSet)];
+    options = allOptions.sort(() => Math.random() - 0.5);
   }
 
   const inputRequirementStr = isStructure ? `{\n    "inputType": "MULTI_STEP_INPUT"\n  }` : null;
@@ -132,7 +185,7 @@ CRITICAL INSTRUCTIONS:
 1. ${promptInstruction}
 2. The finalAnswer must be strictly "${finalAnswer}".
 ${mcqInstruction}
-3. Provide step-by-step solution steps separated by \\n and an encouraging conceptual hint.
+3. Provide step-by-step solution steps separated by \\n and an encouraging conceptual hint explaining the pattern rule of ${ruleDesc}.
 4. Forbid using "STORY:" or any instructional prefix in the output.
 
 ${getFormatInstructions(visualEngineStr, inputRequirementStr)}`;

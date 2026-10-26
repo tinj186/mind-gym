@@ -1,4 +1,4 @@
-export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, levelName, topic, getFormatInstructions) {
+export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, levelName, topic, getFormatInstructions, explicitVariety = null) {
   let step = 0;
   let missingIndex = Math.floor(Math.random() * 5); // 0 to 4
   let start = 0;
