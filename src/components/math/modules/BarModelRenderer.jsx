@@ -211,7 +211,12 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
 
         return (
           <div key={index} className="relative my-6 p-6 bg-slate-50 rounded-3xl border border-slate-100 shadow-sm">
-        <div className="flex w-full items-stretch">
+            {(m.title || m.barLabel) && (
+              <div className="text-xs font-black uppercase tracking-wider text-slate-500 mb-4 px-1">
+                {m.title || m.barLabel}
+              </div>
+            )}
+            <div className="flex w-full items-stretch">
           <div className="flex-1 space-y-6 min-w-[200px] mt-2">
               {barsToRender.map((bar, idx) => {
             if (!bar) return null;

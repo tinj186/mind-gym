@@ -1290,7 +1290,14 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   // VARIANT 4: advanced_shifting_difference_transfer (The Shifting Difference)
   // ==========================================================================
   else if (effectiveVariant === 'advanced_shifting_difference_transfer') {
-    const [nameA, nameB] = getRandomNames(2);
+    let [nameA, nameB] = getRandomNames(2);
+    while (
+      !nameB ||
+      nameA.toLowerCase().slice(0, 4) === nameB.toLowerCase().slice(0, 4) ||
+      nameA.toLowerCase().replace(/h$/i, '') === nameB.toLowerCase().replace(/h$/i, '')
+    ) {
+      [nameA, nameB] = getRandomNames(2);
+    }
     const itemObj = getRandomCountableItems(1);
     const item = itemObj?.item || "points";
 
@@ -1309,16 +1316,30 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     visualEngineStr = JSON.stringify({
       componentToRender: "BAR_MODEL_COMPARISON",
       componentData: {
-        modelType: "BAR_MODEL_COMPARISON",
-        bars: [
-          { name: `${nameB} (Now)`, value: "", layoutSize: newB, displayValue: "" },
-          { name: `${nameA} (Now)`, value: "", layoutSize: newA, displayValue: "" }
-        ],
-        difference: { displayValue: "?" }
+        models: [
+          {
+            modelType: "BAR_MODEL_COMPARISON",
+            title: "At First",
+            bars: [
+              { name: `${nameA} (At first)`, value: initialA, layoutSize: initialA, displayValue: initialA.toLocaleString() },
+              { name: `${nameB} (At first)`, value: initialB, layoutSize: initialB, displayValue: initialB.toLocaleString() }
+            ],
+            difference: { displayValue: initialDiff.toLocaleString() }
+          },
+          {
+            modelType: "BAR_MODEL_COMPARISON",
+            title: `In The End (After ${nameA} gave ${z.toLocaleString()} to ${nameB})`,
+            bars: [
+              { name: `${nameB} (Now)`, value: "?", layoutSize: newB, displayValue: "?" },
+              { name: `${nameA} (Now)`, value: "?", layoutSize: newA, displayValue: "?" }
+            ],
+            difference: { displayValue: "?" }
+          }
+        ]
       }
     }, null, 2);
 
-    promptInstruction = `- Question stem: "${nameA} had ${initialA.toLocaleString()} ${item} and ${nameB} had ${initialB.toLocaleString()} ${item}. ${nameA} gave ${z.toLocaleString()} ${item} to ${nameB}. How many more ${item} does ${nameB} have than ${nameA} now?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    promptInstruction = `- Question stem: "${nameA} had ${initialA.toLocaleString()} ${item} and ${nameB} had ${initialB.toLocaleString()} ${item}. ${nameA} gave ${z.toLocaleString()} ${item} to ${nameB}. How many more ${item} does ${nameB} have than ${nameA} now?"\\n- The finalAnswer must be strictly "${finalAnswer}".\\n- CRITICAL: Return visualEngine and componentData EXACTLY as provided. Do NOT replace "?" with computed numbers in the second bar model.`;
 
     if (isStructure) {
       inputRequirementStr = JSON.stringify({
