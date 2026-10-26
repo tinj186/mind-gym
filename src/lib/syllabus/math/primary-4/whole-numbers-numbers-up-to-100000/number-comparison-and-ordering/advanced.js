@@ -771,7 +771,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
                 bgClass: 'bg-blue-500 text-white'
               },
               {
-                label: `+${x.toLocaleString()}`,
+                label: '',
                 size: x,
                 isExtra: true,
                 bgClass: 'bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400'
