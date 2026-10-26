@@ -1,3 +1,5 @@
+import { getRandomNames, getRandomCountableItems } from '../../../../../utils/variable-bank.js';
+
 export const ADVANCED_FORMING_VARIETIES = {
   greatest_5_digit: 'Form the greatest 5-digit number using 5 given cards.',
   smallest_5_digit: 'Form the smallest 5-digit number using 5 given cards.',
@@ -92,260 +94,868 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   let solutionSteps = "";
   let hint = "";
   let inputRequirementStr = null;
+  let visualEngineStr = `{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }`;
 
-  const variety = resolveAdvancedVariety(activeVariant, explicitVariety);
+  const allAdvancedVariants = [
+    'advanced_form_numbers',
+    'advanced_equalizing_transfer',
+    'advanced_three_entity_grand_total',
+    'advanced_shifting_difference_transfer',
+    'advanced_overlapping_target_deduction',
+    'advanced_two_tiered_difference'
+  ];
 
-  function getPerms(arr) {
-    if (arr.length <= 1) return [arr];
-    let result = [];
-    for (let i = 0; i < arr.length; i++) {
-      let current = arr[i];
-      let remaining = arr.slice(0, i).concat(arr.slice(i + 1));
-      let remainingPerms = getPerms(remaining);
-      for (let j = 0; j < remainingPerms.length; j++) {
-        result.push([current].concat(remainingPerms[j]));
-      }
-    }
-    return result;
+  let effectiveVariant = activeVariant;
+  if (!effectiveVariant || effectiveVariant === 'advanced_default' || effectiveVariant === 'default') {
+    effectiveVariant = allAdvancedVariants[Math.floor(Math.random() * allAdvancedVariants.length)];
+  } else if (legacyFormingMap[effectiveVariant] || Object.keys(ADVANCED_FORMING_VARIETIES).includes(effectiveVariant) || String(effectiveVariant).startsWith('advanced_form_numbers')) {
+    effectiveVariant = 'advanced_form_numbers';
+  } else if (!allAdvancedVariants.includes(effectiveVariant)) {
+    effectiveVariant = allAdvancedVariants[Math.floor(Math.random() * allAdvancedVariants.length)];
   }
 
-  // Ensure digit pool has 0, at least two evens, at least two odds for robust permutations
-  const evens = [0, 2, 4, 6, 8].sort(() => Math.random() - 0.5).slice(0, 3);
-  const odds = [1, 3, 5, 7, 9].sort(() => Math.random() - 0.5).slice(0, 2);
-  const digits = [...evens, ...odds].sort(() => Math.random() - 0.5);
+  // ==========================================================================
+  // VARIANT 1: advanced_form_numbers (Forming Numbers with 6 Varieties)
+  // ==========================================================================
+  if (effectiveVariant === 'advanced_form_numbers') {
+    const variety = resolveAdvancedVariety(activeVariant, explicitVariety);
 
-  const allPerms = getPerms(digits);
-  const validNumbers = [];
-  for (const p of allPerms) {
-    if (p[0] !== 0) {
-      const val = p[0] * 10000 + p[1] * 1000 + p[2] * 100 + p[3] * 10 + p[4];
-      if (!validNumbers.includes(val)) {
-        validNumbers.push(val);
+    function getPerms(arr) {
+      if (arr.length <= 1) return [arr];
+      let result = [];
+      for (let i = 0; i < arr.length; i++) {
+        let current = arr[i];
+        let remaining = arr.slice(0, i).concat(arr.slice(i + 1));
+        let remainingPerms = getPerms(remaining);
+        for (let j = 0; j < remainingPerms.length; j++) {
+          result.push([current].concat(remainingPerms[j]));
+        }
+      }
+      return result;
+    }
+
+    const evens = [0, 2, 4, 6, 8].sort(() => Math.random() - 0.5).slice(0, 3);
+    const odds = [1, 3, 5, 7, 9].sort(() => Math.random() - 0.5).slice(0, 2);
+    const digits = [...evens, ...odds].sort(() => Math.random() - 0.5);
+
+    const allPerms = getPerms(digits);
+    const validNumbers = [];
+    for (const p of allPerms) {
+      if (p[0] !== 0) {
+        const val = p[0] * 10000 + p[1] * 1000 + p[2] * 100 + p[3] * 10 + p[4];
+        if (!validNumbers.includes(val)) {
+          validNumbers.push(val);
+        }
       }
     }
-  }
-  validNumbers.sort((a, b) => a - b);
+    validNumbers.sort((a, b) => a - b);
 
-  let conditionLabel = "";
+    let conditionLabel = "";
 
-  if (variety === "greatest_5_digit") {
-    conditionLabel = "Greatest 5-digit Number";
-    const maxVal = validNumbers[validNumbers.length - 1];
-    finalAnswer = maxVal.toString();
-    promptInstruction = `- Question stem: "Use all the digit cards ${digits.join(', ')} once to form the greatest 5-digit number."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    if (variety === "greatest_5_digit") {
+      conditionLabel = "Greatest 5-digit Number";
+      const maxVal = validNumbers[validNumbers.length - 1];
+      finalAnswer = maxVal.toString();
+      promptInstruction = `- Question stem: "Use all the digit cards ${digits.join(', ')} once to form the greatest 5-digit number."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
-    if (isStructure) {
-      inputRequirementStr = JSON.stringify({
-        inputType: "MULTI_STEP_INPUT",
-        steps: [
-          { label: "Arrange the 5 digit cards from greatest to smallest:", expectedAnswer: finalAnswer },
-          { label: "Final Answer:", expectedAnswer: finalAnswer }
-        ]
-      }, null, 2);
-    }
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: "Arrange the 5 digit cards from greatest to smallest:", expectedAnswer: finalAnswer },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
 
-    if (isMCQ) {
-      const d1 = validNumbers[0].toString(); // smallest
-      const d2 = validNumbers[validNumbers.length - 2].toString(); // second greatest
-      const d3 = validNumbers[validNumbers.length - 3].toString();
-      const mcqRes = ensureFourUniqueOptions(finalAnswer, [
-        { val: d1, defect: "OPPOSITE_CONDITION_SMALLEST" },
-        { val: d2, defect: "SECOND_GREATEST_CHOICE" },
-        { val: d3, defect: "PARTIAL_SORT_ERROR" }
-      ]);
-      options = mcqRes.options;
-      defectMap = mcqRes.defectMap;
-    }
+      if (isMCQ) {
+        const d1 = validNumbers[0].toString();
+        const d2 = validNumbers[validNumbers.length - 2].toString();
+        const d3 = validNumbers[validNumbers.length - 3].toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "OPPOSITE_CONDITION_SMALLEST" },
+          { val: d2, defect: "SECOND_GREATEST_CHOICE" },
+          { val: d3, defect: "PARTIAL_SORT_ERROR" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
 
-    solutionSteps = `Step 1: To form the greatest 5-digit number, arrange the digit cards from greatest to smallest from left to right.\\nStep 2: The digits from greatest to smallest are: ${[...digits].sort((a, b) => b - a).join(', ')}.\\nStep 3: The greatest 5-digit number formed is ${maxVal.toLocaleString()}.`;
-    hint = `Place the largest digit in the place with the greatest value (ten thousands place), followed by the next largest digits!`;
+      solutionSteps = `Step 1: To form the greatest 5-digit number, arrange the digit cards from greatest to smallest from left to right.\\nStep 2: The digits from greatest to smallest are: ${[...digits].sort((a, b) => b - a).join(', ')}.\\nStep 3: The greatest 5-digit number formed is ${maxVal.toLocaleString()}.`;
+      hint = `Place the largest digit in the place with the greatest value (ten thousands place), followed by the next largest digits!`;
 
-  } else if (variety === "smallest_5_digit") {
-    conditionLabel = "Smallest 5-digit Number";
-    const minVal = validNumbers[0];
-    finalAnswer = minVal.toString();
-    promptInstruction = `- Question stem: "Use all the digit cards ${digits.join(', ')} once to form the smallest 5-digit number."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    } else if (variety === "smallest_5_digit") {
+      conditionLabel = "Smallest 5-digit Number";
+      const minVal = validNumbers[0];
+      finalAnswer = minVal.toString();
+      promptInstruction = `- Question stem: "Use all the digit cards ${digits.join(', ')} once to form the smallest 5-digit number."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
-    if (isStructure) {
-      inputRequirementStr = JSON.stringify({
-        inputType: "MULTI_STEP_INPUT",
-        steps: [
-          { label: "Which is the smallest non-zero digit to place in the ten thousands place?", expectedAnswer: minVal.toString()[0] },
-          { label: "Arrange the remaining digits in ascending order to complete the number:", expectedAnswer: finalAnswer },
-          { label: "Final Answer:", expectedAnswer: finalAnswer }
-        ]
-      }, null, 2);
-    }
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: "Which is the smallest non-zero digit to place in the ten thousands place?", expectedAnswer: minVal.toString()[0] },
+            { label: "Arrange the remaining digits in ascending order to complete the number:", expectedAnswer: finalAnswer },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
 
-    if (isMCQ) {
-      const d1 = validNumbers[validNumbers.length - 1].toString(); // greatest
-      const d2 = validNumbers[1].toString(); // second smallest
-      const d3 = validNumbers[2].toString();
-      const mcqRes = ensureFourUniqueOptions(finalAnswer, [
-        { val: d1, defect: "OPPOSITE_CONDITION_GREATEST" },
-        { val: d2, defect: "SECOND_SMALLEST_CHOICE" },
-        { val: d3, defect: "PARTIAL_SORT_ERROR" }
-      ]);
-      options = mcqRes.options;
-      defectMap = mcqRes.defectMap;
-    }
+      if (isMCQ) {
+        const d1 = validNumbers[validNumbers.length - 1].toString();
+        const d2 = validNumbers[1].toString();
+        const d3 = validNumbers[2].toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "OPPOSITE_CONDITION_GREATEST" },
+          { val: d2, defect: "SECOND_SMALLEST_CHOICE" },
+          { val: d3, defect: "PARTIAL_SORT_ERROR" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
 
-    solutionSteps = `Step 1: A 5-digit number cannot begin with 0. Place the smallest non-zero digit (${minVal.toString()[0]}) in the ten thousands place.\\nStep 2: Arrange the remaining digits in ascending order from thousands to ones place.\\nStep 3: The smallest 5-digit number formed is ${minVal.toLocaleString()}.`;
-    hint = `A 5-digit number cannot start with 0! Choose the smallest non-zero digit first, then place 0 in the thousands place.`;
+      solutionSteps = `Step 1: A 5-digit number cannot begin with 0. Place the smallest non-zero digit (${minVal.toString()[0]}) in the ten thousands place.\\nStep 2: Arrange the remaining digits in ascending order from thousands to ones place.\\nStep 3: The smallest 5-digit number formed is ${minVal.toLocaleString()}.`;
+      hint = `A 5-digit number cannot start with 0! Choose the smallest non-zero digit first, then place 0 in the thousands place.`;
 
-  } else if (variety === "greatest_even") {
-    conditionLabel = "Greatest 5-digit Even Number";
-    const evensList = validNumbers.filter(n => n % 2 === 0);
-    const maxEven = evensList[evensList.length - 1];
-    finalAnswer = maxEven.toString();
-    promptInstruction = `- Question stem: "Use all the digit cards ${digits.join(', ')} once to form the greatest 5-digit even number."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
-
-    if (isStructure) {
-      inputRequirementStr = JSON.stringify({
-        inputType: "MULTI_STEP_INPUT",
-        steps: [
-          { label: "Which even digit should be placed in the ones place?", expectedAnswer: maxEven.toString()[4] },
-          { label: "Write the greatest 5-digit even number:", expectedAnswer: finalAnswer },
-          { label: "Final Answer:", expectedAnswer: finalAnswer }
-        ]
-      }, null, 2);
-    }
-
-    if (isMCQ) {
-      const oddsList = validNumbers.filter(n => n % 2 !== 0);
-      const d1 = oddsList[oddsList.length - 1].toString(); // greatest odd
-      const d2 = evensList[evensList.length - 2] ? evensList[evensList.length - 2].toString() : (maxEven - 2).toString();
-      const d3 = evensList[0].toString(); // smallest even
-      const mcqRes = ensureFourUniqueOptions(finalAnswer, [
-        { val: d1, defect: "FORMED_ODD_NUMBER" },
-        { val: d2, defect: "SECOND_GREATEST_CHOICE" },
-        { val: d3, defect: "OPPOSITE_CONDITION_SMALLEST" }
-      ]);
-      options = mcqRes.options;
-      defectMap = mcqRes.defectMap;
-    }
-
-    solutionSteps = `Step 1: An even number must end with an even digit (${evens.sort((a,b)=>a-b).join(', ')}).\\nStep 2: To make the number as large as possible, arrange the largest remaining digits in descending order from the ten thousands place, leaving ${maxEven.toString()[4]} in the ones place.\\nStep 3: The greatest 5-digit even number formed is ${maxEven.toLocaleString()}.`;
-    hint = `An even number must end in 0, 2, 4, 6, or 8. Reserve the smallest suitable even digit for the ones place so the larger digits can be used in higher place values!`;
-
-  } else if (variety === "smallest_odd") {
-    conditionLabel = "Smallest 5-digit Odd Number";
-    const oddsList = validNumbers.filter(n => n % 2 !== 0);
-    const minOdd = oddsList[0];
-    finalAnswer = minOdd.toString();
-    promptInstruction = `- Question stem: "Use all the digit cards ${digits.join(', ')} once to form the smallest 5-digit odd number."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
-
-    if (isStructure) {
-      inputRequirementStr = JSON.stringify({
-        inputType: "MULTI_STEP_INPUT",
-        steps: [
-          { label: "Which odd digit should be placed in the ones place?", expectedAnswer: minOdd.toString()[4] },
-          { label: "Write the smallest 5-digit odd number:", expectedAnswer: finalAnswer },
-          { label: "Final Answer:", expectedAnswer: finalAnswer }
-        ]
-      }, null, 2);
-    }
-
-    if (isMCQ) {
+    } else if (variety === "greatest_even") {
+      conditionLabel = "Greatest 5-digit Even Number";
       const evensList = validNumbers.filter(n => n % 2 === 0);
-      const d1 = evensList[0].toString(); // smallest even
-      const d2 = oddsList[1] ? oddsList[1].toString() : (minOdd + 2).toString();
-      const d3 = oddsList[oddsList.length - 1].toString(); // greatest odd
-      const mcqRes = ensureFourUniqueOptions(finalAnswer, [
-        { val: d1, defect: "FORMED_EVEN_NUMBER" },
-        { val: d2, defect: "SECOND_SMALLEST_CHOICE" },
-        { val: d3, defect: "OPPOSITE_CONDITION_GREATEST" }
-      ]);
-      options = mcqRes.options;
-      defectMap = mcqRes.defectMap;
+      const maxEven = evensList[evensList.length - 1];
+      finalAnswer = maxEven.toString();
+      promptInstruction = `- Question stem: "Use all the digit cards ${digits.join(', ')} once to form the greatest 5-digit even number."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: "Which even digit should be placed in the ones place?", expectedAnswer: maxEven.toString()[4] },
+            { label: "Write the greatest 5-digit even number:", expectedAnswer: finalAnswer },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const oddsList = validNumbers.filter(n => n % 2 !== 0);
+        const d1 = oddsList[oddsList.length - 1].toString();
+        const d2 = evensList[evensList.length - 2] ? evensList[evensList.length - 2].toString() : (maxEven - 2).toString();
+        const d3 = evensList[0].toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "FORMED_ODD_NUMBER" },
+          { val: d2, defect: "SECOND_GREATEST_CHOICE" },
+          { val: d3, defect: "OPPOSITE_CONDITION_SMALLEST" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: An even number must end with an even digit (${evens.sort((a,b)=>a-b).join(', ')}).\\nStep 2: To make the number as large as possible, arrange the largest remaining digits in descending order from the ten thousands place, leaving ${maxEven.toString()[4]} in the ones place.\\nStep 3: The greatest 5-digit even number formed is ${maxEven.toLocaleString()}.`;
+      hint = `An even number must end in 0, 2, 4, 6, or 8. Reserve the smallest suitable even digit for the ones place so the larger digits can be used in higher place values!`;
+
+    } else if (variety === "smallest_odd") {
+      conditionLabel = "Smallest 5-digit Odd Number";
+      const oddsList = validNumbers.filter(n => n % 2 !== 0);
+      const minOdd = oddsList[0];
+      finalAnswer = minOdd.toString();
+      promptInstruction = `- Question stem: "Use all the digit cards ${digits.join(', ')} once to form the smallest 5-digit odd number."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: "Which odd digit should be placed in the ones place?", expectedAnswer: minOdd.toString()[4] },
+            { label: "Write the smallest 5-digit odd number:", expectedAnswer: finalAnswer },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const evensList = validNumbers.filter(n => n % 2 === 0);
+        const d1 = evensList[0].toString();
+        const d2 = oddsList[1] ? oddsList[1].toString() : (minOdd + 2).toString();
+        const d3 = oddsList[oddsList.length - 1].toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "FORMED_EVEN_NUMBER" },
+          { val: d2, defect: "SECOND_SMALLEST_CHOICE" },
+          { val: d3, defect: "OPPOSITE_CONDITION_GREATEST" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: An odd number must end with an odd digit (${odds.sort((a,b)=>a-b).join(', ')}).\\nStep 2: Choose the smallest non-zero digit for the ten thousands place, keeping the smallest available digits in the front and ${minOdd.toString()[4]} in the ones place.\\nStep 3: The smallest 5-digit odd number formed is ${minOdd.toLocaleString()}.`;
+      hint = `The number must end in an odd digit (1, 3, 5, 7, 9). Make sure the ten thousands digit is the smallest available non-zero digit!`;
+
+    } else if (variety === "greatest_less_than_x") {
+      const medianIdx = Math.floor(validNumbers.length * 0.6);
+      const bound = Math.floor(validNumbers[medianIdx] / 1000) * 1000;
+      const filtered = validNumbers.filter(n => n < bound);
+      const maxFiltered = filtered[filtered.length - 1];
+      finalAnswer = maxFiltered.toString();
+      conditionLabel = `Greatest Number Smaller Than ${bound.toLocaleString()}`;
+
+      promptInstruction = `- Question stem: "Use all the digit cards ${digits.join(', ')} once to form the greatest 5-digit number that is smaller than ${bound.toLocaleString()}."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: `What is the largest ten thousands digit you can use that keeps the number smaller than ${bound.toLocaleString()}?`, expectedAnswer: maxFiltered.toString()[0] },
+            { label: `Write the greatest 5-digit number smaller than ${bound.toLocaleString()}:`, expectedAnswer: finalAnswer },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const overBound = validNumbers.filter(n => n > bound)[0]?.toString() || (bound + 100).toString();
+        const secondMax = filtered[filtered.length - 2]?.toString() || (maxFiltered - 10).toString();
+        const smallest = filtered[0].toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: overBound, defect: "EXCEEDED_BOUNDARY_CONDITION" },
+          { val: secondMax, defect: "SECOND_GREATEST_CHOICE" },
+          { val: smallest, defect: "OPPOSITE_CONDITION_SMALLEST" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: The number must be strictly smaller than ${bound.toLocaleString()}. The largest possible ten thousands digit is ${maxFiltered.toString()[0]}.\\nStep 2: Arrange the remaining digits to make the number as large as possible without exceeding the boundary.\\nStep 3: The greatest 5-digit number smaller than ${bound.toLocaleString()} is ${maxFiltered.toLocaleString()}.`;
+      hint = `Check the highest place value that keeps the number below ${bound.toLocaleString()}, then arrange the remaining digits in descending order!`;
+
+    } else {
+      // smallest_greater_than_x
+      const medianIdx = Math.floor(validNumbers.length * 0.4);
+      const bound = Math.floor(validNumbers[medianIdx] / 1000) * 1000;
+      const filtered = validNumbers.filter(n => n > bound);
+      const minFiltered = filtered[0];
+      finalAnswer = minFiltered.toString();
+      conditionLabel = `Smallest Number Greater Than ${bound.toLocaleString()}`;
+
+      promptInstruction = `- Question stem: "Use all the digit cards ${digits.join(', ')} once to form the smallest 5-digit number that is greater than ${bound.toLocaleString()}."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: `What is the smallest ten thousands digit you can use that keeps the number greater than ${bound.toLocaleString()}?`, expectedAnswer: minFiltered.toString()[0] },
+            { label: `Write the smallest 5-digit number greater than ${bound.toLocaleString()}:`, expectedAnswer: finalAnswer },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const underBound = validNumbers.filter(n => n < bound).pop()?.toString() || (bound - 100).toString();
+        const secondMin = filtered[1]?.toString() || (minFiltered + 10).toString();
+        const greatest = filtered[filtered.length - 1].toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: underBound, defect: "UNDER_BOUNDARY_CONDITION" },
+          { val: secondMin, defect: "SECOND_SMALLEST_CHOICE" },
+          { val: greatest, defect: "OPPOSITE_CONDITION_GREATEST" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: The number must be strictly greater than ${bound.toLocaleString()}. The smallest possible ten thousands digit is ${minFiltered.toString()[0]}.\\nStep 2: Arrange the remaining digits in ascending order to make the number as small as possible while staying above ${bound.toLocaleString()}.\\nStep 3: The smallest 5-digit number greater than ${bound.toLocaleString()} is ${minFiltered.toLocaleString()}.`;
+      hint = `Choose the smallest digit that keeps the number above ${bound.toLocaleString()}, then arrange the remaining digits from smallest to greatest!`;
     }
 
-    solutionSteps = `Step 1: An odd number must end with an odd digit (${odds.sort((a,b)=>a-b).join(', ')}).\\nStep 2: Choose the smallest non-zero digit for the ten thousands place, keeping the smallest available digits in the front and ${minOdd.toString()[4]} in the ones place.\\nStep 3: The smallest 5-digit odd number formed is ${minOdd.toLocaleString()}.`;
-    hint = `The number must end in an odd digit (1, 3, 5, 7, 9). Make sure the ten thousands digit is the smallest available non-zero digit!`;
-
-  } else if (variety === "greatest_less_than_x") {
-    const medianIdx = Math.floor(validNumbers.length * 0.6);
-    const bound = Math.floor(validNumbers[medianIdx] / 1000) * 1000;
-    const filtered = validNumbers.filter(n => n < bound);
-    const maxFiltered = filtered[filtered.length - 1];
-    finalAnswer = maxFiltered.toString();
-    conditionLabel = `Greatest Number Smaller Than ${bound.toLocaleString()}`;
-
-    promptInstruction = `- Question stem: "Use all the digit cards ${digits.join(', ')} once to form the greatest 5-digit number that is smaller than ${bound.toLocaleString()}."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
-
-    if (isStructure) {
-      inputRequirementStr = JSON.stringify({
-        inputType: "MULTI_STEP_INPUT",
-        steps: [
-          { label: `What is the largest ten thousands digit you can use that keeps the number smaller than ${bound.toLocaleString()}?`, expectedAnswer: maxFiltered.toString()[0] },
-          { label: `Write the greatest 5-digit number smaller than ${bound.toLocaleString()}:`, expectedAnswer: finalAnswer },
-          { label: "Final Answer:", expectedAnswer: finalAnswer }
-        ]
-      }, null, 2);
-    }
-
-    if (isMCQ) {
-      const overBound = validNumbers.filter(n => n > bound)[0]?.toString() || (bound + 100).toString();
-      const secondMax = filtered[filtered.length - 2]?.toString() || (maxFiltered - 10).toString();
-      const smallest = filtered[0].toString();
-      const mcqRes = ensureFourUniqueOptions(finalAnswer, [
-        { val: overBound, defect: "EXCEEDED_BOUNDARY_CONDITION" },
-        { val: secondMax, defect: "SECOND_GREATEST_CHOICE" },
-        { val: smallest, defect: "OPPOSITE_CONDITION_SMALLEST" }
-      ]);
-      options = mcqRes.options;
-      defectMap = mcqRes.defectMap;
-    }
-
-    solutionSteps = `Step 1: The number must be strictly smaller than ${bound.toLocaleString()}. The largest possible ten thousands digit is ${maxFiltered.toString()[0]}.\\nStep 2: Arrange the remaining digits to make the number as large as possible without exceeding the boundary.\\nStep 3: The greatest 5-digit number smaller than ${bound.toLocaleString()} is ${maxFiltered.toLocaleString()}.`;
-    hint = `Check the highest place value that keeps the number below ${bound.toLocaleString()}, then arrange the remaining digits in descending order!`;
-
-  } else {
-    // smallest_greater_than_x
-    const medianIdx = Math.floor(validNumbers.length * 0.4);
-    const bound = Math.floor(validNumbers[medianIdx] / 1000) * 1000;
-    const filtered = validNumbers.filter(n => n > bound);
-    const minFiltered = filtered[0];
-    finalAnswer = minFiltered.toString();
-    conditionLabel = `Smallest Number Greater Than ${bound.toLocaleString()}`;
-
-    promptInstruction = `- Question stem: "Use all the digit cards ${digits.join(', ')} once to form the smallest 5-digit number that is greater than ${bound.toLocaleString()}."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
-
-    if (isStructure) {
-      inputRequirementStr = JSON.stringify({
-        inputType: "MULTI_STEP_INPUT",
-        steps: [
-          { label: `What is the smallest ten thousands digit you can use that keeps the number greater than ${bound.toLocaleString()}?`, expectedAnswer: minFiltered.toString()[0] },
-          { label: `Write the smallest 5-digit number greater than ${bound.toLocaleString()}:`, expectedAnswer: finalAnswer },
-          { label: "Final Answer:", expectedAnswer: finalAnswer }
-        ]
-      }, null, 2);
-    }
-
-    if (isMCQ) {
-      const underBound = validNumbers.filter(n => n < bound).pop()?.toString() || (bound - 100).toString();
-      const secondMin = filtered[1]?.toString() || (minFiltered + 10).toString();
-      const greatest = filtered[filtered.length - 1].toString();
-      const mcqRes = ensureFourUniqueOptions(finalAnswer, [
-        { val: underBound, defect: "UNDER_BOUNDARY_CONDITION" },
-        { val: secondMin, defect: "SECOND_SMALLEST_CHOICE" },
-        { val: greatest, defect: "OPPOSITE_CONDITION_GREATEST" }
-      ]);
-      options = mcqRes.options;
-      defectMap = mcqRes.defectMap;
-    }
-
-    solutionSteps = `Step 1: The number must be strictly greater than ${bound.toLocaleString()}. The smallest possible ten thousands digit is ${minFiltered.toString()[0]}.\\nStep 2: Arrange the remaining digits in ascending order to make the number as small as possible while staying above ${bound.toLocaleString()}.\\nStep 3: The smallest 5-digit number greater than ${bound.toLocaleString()} is ${minFiltered.toLocaleString()}.`;
-    hint = `Choose the smallest digit that keeps the number above ${bound.toLocaleString()}, then arrange the remaining digits from smallest to greatest!`;
+    visualEngineStr = JSON.stringify({
+      componentToRender: "DIGIT_CARD_SORTER",
+      componentData: {
+        digits: digits,
+        condition: conditionLabel
+      }
+    }, null, 2);
   }
 
-  const visualEngineStr = JSON.stringify({
-    componentToRender: "DIGIT_CARD_SORTER",
-    componentData: {
-      digits: digits,
-      condition: conditionLabel
+  // ==========================================================================
+  // VARIANT 2: advanced_equalizing_transfer (The Equalizing Transfer)
+  // ==========================================================================
+  else if (effectiveVariant === 'advanced_equalizing_transfer') {
+    const [nameA, nameB] = getRandomNames(2);
+    const itemObj = getRandomCountableItems(1);
+    const item = itemObj?.item || "stickers";
+
+    const isType1 = explicitVariety === 'find_transfer_from_initial' ? true : (explicitVariety === 'find_initial_from_equalized' ? false : Math.random() < 0.5);
+
+    const baseAmount = (Math.floor(Math.random() * 15) + 20) * 1000 + Math.floor(Math.random() * 9) * 100;
+    const diff = (Math.floor(Math.random() * 6) + 3) * 2000; // Even difference between 6k and 16k
+    const transfer = diff / 2;
+    const larger = baseAmount + diff;
+    const smaller = baseAmount;
+    const equalized = smaller + transfer;
+
+    if (isType1) {
+      // Type 1: Given x and y, find transfer amount t
+      finalAnswer = transfer.toString();
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL_COMPARISON",
+        componentData: {
+          modelType: "BAR_MODEL_COMPARISON",
+          bars: [
+            { name: nameA, value: larger, layoutSize: larger, displayValue: larger.toLocaleString() },
+            { name: nameB, value: smaller, layoutSize: smaller, displayValue: smaller.toLocaleString() }
+          ],
+          difference: { displayValue: diff.toLocaleString() }
+        }
+      }, null, 2);
+
+      promptInstruction = `- Question stem: "${nameA} has ${larger.toLocaleString()} ${item} and ${nameB} has ${smaller.toLocaleString()} ${item}. How many ${item} must ${nameA} give to ${nameB} so that both of them have an equal number of ${item}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: "Write the working equation to find the difference between them:", expectedAnswer: `${larger} - ${smaller} = ${diff}` },
+            { label: "Write the working equation to find the amount to transfer (half of the difference):", expectedAnswer: `${diff} / 2 = ${transfer}` },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const d1 = diff.toString();
+        const d2 = equalized.toString();
+        const d3 = (larger - transfer * 2).toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "FORGOT_TO_DIVIDE_BY_2" },
+          { val: d2, defect: "FOUND_EQUALIZED_AMOUNT" },
+          { val: d3, defect: "WRONG_OPERATION_SUBTRACT" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: Find the difference between ${nameA}'s and ${nameB}'s amounts: ${larger.toLocaleString()} - ${smaller.toLocaleString()} = ${diff.toLocaleString()}.\\nStep 2: To make their amounts equal, ${nameA} needs to give half of this difference to ${nameB}: ${diff.toLocaleString()} ÷ 2 = ${transfer.toLocaleString()}.\\nStep 3: ${nameA} must give ${transfer.toLocaleString()} ${item} to ${nameB}.`;
+      hint = `Find the difference between them first. Giving half of this extra amount to the other person makes both amounts equal!`;
+
+    } else {
+      // Type 2: Given transfer t and equalized amount E, find original amount of A or B
+      const askForA = Math.random() < 0.5;
+      finalAnswer = (askForA ? larger : smaller).toString();
+      const targetName = askForA ? nameA : nameB;
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL_COMPARISON",
+        componentData: {
+          modelType: "BAR_MODEL_COMPARISON",
+          bars: [
+            { name: nameA, value: askForA ? "?" : "", layoutSize: larger, displayValue: askForA ? "?" : "" },
+            { name: nameB, value: !askForA ? "?" : "", layoutSize: smaller, displayValue: !askForA ? "?" : "" }
+          ],
+          difference: { displayValue: diff.toLocaleString() },
+          whole: (equalized * 2).toLocaleString()
+        }
+      }, null, 2);
+
+      promptInstruction = `- Question stem: "After ${nameA} gave ${transfer.toLocaleString()} ${item} to ${nameB}, both of them had ${equalized.toLocaleString()} ${item} each. How many ${item} did ${targetName} have at first?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            {
+              label: `Write the working equation to find ${targetName}'s amount at first:`,
+              expectedAnswer: askForA ? `${equalized} + ${transfer} = ${larger}` : `${equalized} - ${transfer} = ${smaller}`
+            },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const otherEntity = (askForA ? smaller : larger).toString();
+        const d1 = otherEntity;
+        const d2 = equalized.toString();
+        const d3 = (askForA ? equalized + diff : equalized - diff).toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "OPPOSITE_ENTITY_FOUND" },
+          { val: d2, defect: "USED_EQUALIZED_AMOUNT" },
+          { val: d3, defect: "APPLIED_FULL_DIFFERENCE" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      if (askForA) {
+        solutionSteps = `Step 1: ${nameA} gave away ${transfer.toLocaleString()} ${item} to end up with ${equalized.toLocaleString()} ${item}.\\nStep 2: Add the transferred amount back to find ${nameA}'s original amount: ${equalized.toLocaleString()} + ${transfer.toLocaleString()} = ${larger.toLocaleString()}.\\nStep 3: ${nameA} had ${larger.toLocaleString()} ${item} at first.`;
+        hint = `Since ${nameA} gave away ${transfer.toLocaleString()} ${item} to have ${equalized.toLocaleString()} left, add the given amount back!`;
+      } else {
+        solutionSteps = `Step 1: ${nameB} received ${transfer.toLocaleString()} ${item} to end up with ${equalized.toLocaleString()} ${item}.\\nStep 2: Subtract the transferred amount to find ${nameB}'s original amount: ${equalized.toLocaleString()} - ${transfer.toLocaleString()} = ${smaller.toLocaleString()}.\\nStep 3: ${nameB} had ${smaller.toLocaleString()} ${item} at first.`;
+        hint = `Since ${nameB} received ${transfer.toLocaleString()} ${item} to reach ${equalized.toLocaleString()}, subtract the received amount to find what ${nameB} had at first!`;
+      }
     }
-  }, null, 2);
+  }
+
+  // ==========================================================================
+  // VARIANT 3: advanced_three_entity_grand_total (Three-Entity Base Finder)
+  // ==========================================================================
+  else if (effectiveVariant === 'advanced_three_entity_grand_total') {
+    const [nameA, nameB, nameC] = getRandomNames(3);
+    const itemObj = getRandomCountableItems(1);
+    const item = itemObj?.item || "admission tickets";
+
+    const baseUnit = (Math.floor(Math.random() * 12) + 12) * 1000 + Math.floor(Math.random() * 9) * 100; // 12k - 24k
+    const x = (Math.floor(Math.random() * 6) + 3) * 1000 + Math.floor(Math.random() * 9) * 100; // 3k - 8k
+    const y = (Math.floor(Math.random() * 6) + 2) * 1000 + Math.floor(Math.random() * 9) * 100; // 2k - 7k
+
+    const amountA = baseUnit;
+    const amountB = baseUnit + x;
+    const amountC = amountB + y;
+    const extraTotal = x + (x + y);
+    const grandTotal = amountA + amountB + amountC;
+
+    // Determine target entity: A, B, or C
+    let targetEntity = 'A';
+    if (explicitVariety === 'find_middle_entity') targetEntity = 'B';
+    else if (explicitVariety === 'find_largest_entity') targetEntity = 'C';
+    else if (explicitVariety === 'find_smallest_base') targetEntity = 'A';
+    else {
+      const targets = ['A', 'B', 'C'];
+      targetEntity = targets[Math.floor(Math.random() * targets.length)];
+    }
+
+    const targetName = targetEntity === 'A' ? nameA : (targetEntity === 'B' ? nameB : nameC);
+    finalAnswer = (targetEntity === 'A' ? amountA : (targetEntity === 'B' ? amountB : amountC)).toString();
+
+    visualEngineStr = JSON.stringify({
+      componentToRender: "BAR_MODEL_COMPARISON",
+      componentData: {
+        modelType: "BAR_MODEL_COMPARISON",
+        bars: [
+          { name: nameA, value: targetEntity === 'A' ? '?' : '', layoutSize: amountA, displayValue: targetEntity === 'A' ? '?' : '1 unit' },
+          { name: nameB, value: targetEntity === 'B' ? '?' : '', layoutSize: amountB, displayValue: targetEntity === 'B' ? '?' : `+${x.toLocaleString()}` },
+          { name: nameC, value: targetEntity === 'C' ? '?' : '', layoutSize: amountC, displayValue: targetEntity === 'C' ? '?' : `+${(x + y).toLocaleString()}` }
+        ],
+        whole: grandTotal.toLocaleString()
+      }
+    }, null, 2);
+
+    promptInstruction = `- Question stem: "${nameA}, ${nameB}, and ${nameC} collected a grand total of ${grandTotal.toLocaleString()} ${item}. ${nameB} collected ${x.toLocaleString()} more ${item} than ${nameA}. ${nameC} collected ${y.toLocaleString()} more ${item} than ${nameB}. How many ${item} did ${targetName} collect?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+    if (isStructure) {
+      const steps = [
+        { label: "Write the working equation to find the total extra amount above the 3 equal base units:", expectedAnswer: `${x} + ${x} + ${y} = ${extraTotal}` },
+        { label: "Write the working equation to remove the extra amounts from the grand total:", expectedAnswer: `${grandTotal} - ${extraTotal} = ${3 * baseUnit}` },
+        { label: `Write the working equation to find 1 base unit (${nameA}):`, expectedAnswer: `${3 * baseUnit} / 3 = ${baseUnit}` }
+      ];
+
+      if (targetEntity === 'B') {
+        steps.push({ label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${baseUnit} + ${x} = ${amountB}` });
+      } else if (targetEntity === 'C') {
+        steps.push({ label: `Write the working equation to find ${nameC}'s amount:`, expectedAnswer: `${baseUnit} + ${x + y} = ${amountC}` });
+      }
+
+      steps.push({ label: "Final Answer:", expectedAnswer: finalAnswer });
+
+      inputRequirementStr = JSON.stringify({
+        inputType: "MULTI_STEP_INPUT",
+        steps: steps
+      }, null, 2);
+    }
+
+    if (isMCQ) {
+      const otherAnswers = [amountA, amountB, amountC].filter(n => n.toString() !== finalAnswer).map(n => n.toString());
+      const rawDistractors = [
+        { val: otherAnswers[0], defect: "OPPOSITE_ENTITY_FOUND" },
+        { val: otherAnswers[1], defect: "OPPOSITE_ENTITY_FOUND" },
+        { val: Math.floor(grandTotal / 3).toString(), defect: "IGNORED_EXTRA_UNITS" }
+      ];
+      const mcqRes = ensureFourUniqueOptions(finalAnswer, rawDistractors);
+      options = mcqRes.options;
+      defectMap = mcqRes.defectMap;
+    }
+
+    solutionSteps = `Step 1: Calculate the extra amounts compared to ${nameA}: ${nameB} has ${x.toLocaleString()} extra, and ${nameC} has ${x.toLocaleString()} + ${y.toLocaleString()} = ${(x + y).toLocaleString()} extra. Total extra = ${extraTotal.toLocaleString()}.\\nStep 2: Subtract the extra amounts from the grand total to find 3 equal base units: ${grandTotal.toLocaleString()} - ${extraTotal.toLocaleString()} = ${(3 * baseUnit).toLocaleString()}.\\nStep 3: Divide by 3 to find 1 unit (${nameA}): ${(3 * baseUnit).toLocaleString()} ÷ 3 = ${amountA.toLocaleString()}.`;
+    if (targetEntity === 'B') {
+      solutionSteps += `\\nStep 4: Find ${nameB}'s amount: ${amountA.toLocaleString()} + ${x.toLocaleString()} = ${amountB.toLocaleString()}.`;
+    } else if (targetEntity === 'C') {
+      solutionSteps += `\\nStep 4: Find ${nameC}'s amount: ${amountA.toLocaleString()} + ${(x + y).toLocaleString()} = ${amountC.toLocaleString()}.`;
+    }
+    hint = `Subtract the extra amounts from the grand total to find the value of 3 equal base units, then divide by 3 to find ${nameA}'s amount!`;
+  }
+
+  // ==========================================================================
+  // VARIANT 4: advanced_shifting_difference_transfer (The Shifting Difference)
+  // ==========================================================================
+  else if (effectiveVariant === 'advanced_shifting_difference_transfer') {
+    const [nameA, nameB] = getRandomNames(2);
+    const itemObj = getRandomCountableItems(1);
+    const item = itemObj?.item || "points";
+
+    const initialA = (Math.floor(Math.random() * 15) + 38) * 1000 + Math.floor(Math.random() * 9) * 100; // 38k - 52k
+    const initialB = (Math.floor(Math.random() * 10) + 20) * 1000 + Math.floor(Math.random() * 9) * 100; // 20k - 29k
+    const initialDiff = initialA - initialB;
+
+    // Transfer amount z must flip the inequality (z > initialDiff / 2)
+    const z = Math.ceil(initialDiff / 2 / 1000) * 1000 + (Math.floor(Math.random() * 6) + 4) * 1000;
+    const newA = initialA - z;
+    const newB = initialB + z;
+    const newDiff = newB - newA;
+
+    finalAnswer = newDiff.toString();
+
+    visualEngineStr = JSON.stringify({
+      componentToRender: "BAR_MODEL_COMPARISON",
+      componentData: {
+        modelType: "BAR_MODEL_COMPARISON",
+        bars: [
+          { name: nameB, value: newB, layoutSize: newB, displayValue: newB.toLocaleString() },
+          { name: nameA, value: newA, layoutSize: newA, displayValue: newA.toLocaleString() }
+        ],
+        difference: { displayValue: "?" }
+      }
+    }, null, 2);
+
+    promptInstruction = `- Question stem: "${nameA} had ${initialA.toLocaleString()} ${item} and ${nameB} had ${initialB.toLocaleString()} ${item}. ${nameA} gave ${z.toLocaleString()} ${item} to ${nameB}. How many more ${item} does ${nameB} have than ${nameA} now?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+    if (isStructure) {
+      inputRequirementStr = JSON.stringify({
+        inputType: "MULTI_STEP_INPUT",
+        steps: [
+          { label: `Write the working equation to find ${nameA}'s new amount:`, expectedAnswer: `${initialA} - ${z} = ${newA}` },
+          { label: `Write the working equation to find ${nameB}'s new amount:`, expectedAnswer: `${initialB} + ${z} = ${newB}` },
+          { label: "Write the working equation to find the new difference:", expectedAnswer: `${newB} - ${newA} = ${newDiff}` },
+          { label: "Final Answer:", expectedAnswer: finalAnswer }
+        ]
+      }, null, 2);
+    }
+
+    if (isMCQ) {
+      const d1 = Math.abs(z - initialDiff).toString();
+      const d2 = initialDiff.toString();
+      const d3 = (initialDiff + z).toString();
+      const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+        { val: d1, defect: "CONFUSED_TRANSFER_WITH_DIFFERENCE" },
+        { val: d2, defect: "USED_INITIAL_DIFFERENCE" },
+        { val: d3, defect: "WRONG_OPERATION_ADD" }
+      ]);
+      options = mcqRes.options;
+      defectMap = mcqRes.defectMap;
+    }
+
+    solutionSteps = `Step 1: Calculate ${nameA}'s new amount after giving ${z.toLocaleString()}: ${initialA.toLocaleString()} - ${z.toLocaleString()} = ${newA.toLocaleString()}.\\nStep 2: Calculate ${nameB}'s new amount after receiving ${z.toLocaleString()}: ${initialB.toLocaleString()} + ${z.toLocaleString()} = ${newB.toLocaleString()}.\\nStep 3: Subtract ${nameA}'s new amount from ${nameB}'s new amount to find the new difference: ${newB.toLocaleString()} - ${newA.toLocaleString()} = ${newDiff.toLocaleString()}.`;
+    hint = `Calculate both new amounts after the transfer first, then subtract to find who has more and by how much!`;
+  }
+
+  // ==========================================================================
+  // VARIANT 5: advanced_overlapping_target_deduction (The "Both" Deduction)
+  // ==========================================================================
+  else if (effectiveVariant === 'advanced_overlapping_target_deduction') {
+    const totalParticipants = (Math.floor(Math.random() * 20) + 65) * 1000; // 65k - 84k
+    const groupA = (Math.floor(Math.random() * 15) + 36) * 1000 + Math.floor(Math.random() * 9) * 100;
+    const groupB = (Math.floor(Math.random() * 15) + 36) * 1000 + Math.floor(Math.random() * 9) * 100;
+
+    let overlap = (groupA + groupB) - totalParticipants;
+    let total = totalParticipants;
+    if (overlap <= 3000 || overlap >= Math.min(groupA, groupB)) {
+      overlap = (Math.floor(Math.random() * 10) + 8) * 1000;
+      total = groupA + groupB - overlap;
+    }
+
+    const aOnly = groupA - overlap;
+    const bOnly = groupB - overlap;
+
+    const subType = explicitVariety === 'find_group_a_only' ? 1 : (explicitVariety === 'find_group_b_only' ? 2 : (explicitVariety === 'find_both_overlap' ? 0 : Math.floor(Math.random() * 3)));
+
+    const contexts = [
+      {
+        totalDesc: `a gaming contest with a total possible score of ${total.toLocaleString()} points`,
+        itemUnit: "points",
+        groupAName: "Stage 1",
+        groupBName: "Stage 2",
+        bothDesc: "BOTH stages"
+      },
+      {
+        totalDesc: `a youth festival with a total of ${total.toLocaleString()} participants`,
+        itemUnit: "participants",
+        groupAName: "Art Workshop",
+        groupBName: "Robotics Workshop",
+        bothDesc: "BOTH workshops"
+      },
+      {
+        totalDesc: `a school with a total of ${total.toLocaleString()} students`,
+        itemUnit: "students",
+        groupAName: "Music Club",
+        groupBName: "Sports Club",
+        bothDesc: "BOTH clubs"
+      }
+    ];
+    const ctx = contexts[Math.floor(Math.random() * contexts.length)];
+
+    if (subType === 0) {
+      // Find BOTH overlap
+      finalAnswer = overlap.toString();
+      promptInstruction = `- Question stem: "In ${ctx.totalDesc}, ${groupA.toLocaleString()} ${ctx.itemUnit} were recorded in ${ctx.groupAName} and ${groupB.toLocaleString()} ${ctx.itemUnit} were recorded in ${ctx.groupBName}. Every ${ctx.itemUnit === 'points' ? 'point' : 'person'} was in at least one group. How many ${ctx.itemUnit} belonged to ${ctx.bothDesc}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: "Write the working equation to find the sum of the two groups:", expectedAnswer: `${groupA} + ${groupB} = ${groupA + groupB}` },
+            { label: "Write the working equation to find the overlap amount:", expectedAnswer: `${groupA + groupB} - ${total} = ${overlap}` },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const d1 = Math.abs(groupA - groupB).toString();
+        const d2 = aOnly.toString();
+        const d3 = (total - groupA).toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "CONFUSED_DIFFERENCE_WITH_OVERLAP" },
+          { val: d2, defect: "FOUND_SINGLE_GROUP_ONLY" },
+          { val: d3, defect: "FOUND_OPPOSITE_GROUP_ONLY" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: Add the quantities in both groups: ${groupA.toLocaleString()} + ${groupB.toLocaleString()} = ${(groupA + groupB).toLocaleString()}.\\nStep 2: Subtract the total from this sum to find the overlap: ${(groupA + groupB).toLocaleString()} - ${total.toLocaleString()} = ${overlap.toLocaleString()}.\\nStep 3: ${overlap.toLocaleString()} ${ctx.itemUnit} belonged to ${ctx.bothDesc}.`;
+      hint = `Add the two group quantities together. The amount by which this sum exceeds the grand total represents those counted twice (in both groups)!`;
+
+    } else if (subType === 1) {
+      // Find Group A ONLY
+      finalAnswer = aOnly.toString();
+      promptInstruction = `- Question stem: "In ${ctx.totalDesc}, ${groupA.toLocaleString()} ${ctx.itemUnit} were in ${ctx.groupAName} and ${groupB.toLocaleString()} ${ctx.itemUnit} were in ${ctx.groupBName}. Every item/person was in at least one group. How many ${ctx.itemUnit} belonged ONLY to ${ctx.groupAName}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: "Write the working equation to find the sum of the two groups:", expectedAnswer: `${groupA} + ${groupB} = ${groupA + groupB}` },
+            { label: "Write the working equation to find the overlap amount:", expectedAnswer: `${groupA + groupB} - ${total} = ${overlap}` },
+            { label: `Write the working equation to find the amount in ${ctx.groupAName} only:`, expectedAnswer: `${groupA} - ${overlap} = ${aOnly}` },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const d1 = overlap.toString();
+        const d2 = bOnly.toString();
+        const d3 = groupA.toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "FOUND_OVERLAP_INSTEAD_OF_SINGLE_GROUP" },
+          { val: d2, defect: "FOUND_OPPOSITE_GROUP_ONLY" },
+          { val: d3, defect: "USED_UNFILTERED_GROUP_TOTAL" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: Find the sum of both groups: ${groupA.toLocaleString()} + ${groupB.toLocaleString()} = ${(groupA + groupB).toLocaleString()}.\\nStep 2: Subtract the total to find the overlap: ${(groupA + groupB).toLocaleString()} - ${total.toLocaleString()} = ${overlap.toLocaleString()}.\\nStep 3: Subtract the overlap from the ${ctx.groupAName} total to find those in ${ctx.groupAName} only: ${groupA.toLocaleString()} - ${overlap.toLocaleString()} = ${aOnly.toLocaleString()}.`;
+      hint = `Find the overlap first by adding both groups and subtracting the grand total, then subtract the overlap from ${ctx.groupAName}!`;
+
+    } else {
+      // Find Group B ONLY
+      finalAnswer = bOnly.toString();
+      promptInstruction = `- Question stem: "In ${ctx.totalDesc}, ${groupA.toLocaleString()} ${ctx.itemUnit} were in ${ctx.groupAName} and ${groupB.toLocaleString()} ${ctx.itemUnit} were in ${ctx.groupBName}. Every item/person was in at least one group. How many ${ctx.itemUnit} belonged ONLY to ${ctx.groupBName}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: "Write the working equation to find the sum of the two groups:", expectedAnswer: `${groupA} + ${groupB} = ${groupA + groupB}` },
+            { label: "Write the working equation to find the overlap amount:", expectedAnswer: `${groupA + groupB} - ${total} = ${overlap}` },
+            { label: `Write the working equation to find the amount in ${ctx.groupBName} only:`, expectedAnswer: `${groupB} - ${overlap} = ${bOnly}` },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const d1 = overlap.toString();
+        const d2 = aOnly.toString();
+        const d3 = groupB.toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "FOUND_OVERLAP_INSTEAD_OF_SINGLE_GROUP" },
+          { val: d2, defect: "FOUND_OPPOSITE_GROUP_ONLY" },
+          { val: d3, defect: "USED_UNFILTERED_GROUP_TOTAL" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: Find the sum of both groups: ${groupA.toLocaleString()} + ${groupB.toLocaleString()} = ${(groupA + groupB).toLocaleString()}.\\nStep 2: Subtract the total to find the overlap: ${(groupA + groupB).toLocaleString()} - ${total.toLocaleString()} = ${overlap.toLocaleString()}.\\nStep 3: Subtract the overlap from the ${ctx.groupBName} total to find those in ${ctx.groupBName} only: ${groupB.toLocaleString()} - ${overlap.toLocaleString()} = ${bOnly.toLocaleString()}.`;
+      hint = `Find the overlap first by adding both groups and subtracting the grand total, then subtract the overlap from ${ctx.groupBName}!`;
+    }
+
+    visualEngineStr = JSON.stringify({
+      componentToRender: "BAR_MODEL_COMPARISON",
+      componentData: {
+        modelType: "PART_WHOLE",
+        totalLabel: "TOTAL",
+        whole: total.toLocaleString(),
+        parts: [
+          { name: `${ctx.groupAName} Only`, layoutSize: aOnly, displayValue: subType === 1 ? "?" : aOnly.toLocaleString(), bgClass: "bg-blue-500 text-white" },
+          { name: "Both", layoutSize: overlap, displayValue: subType === 0 ? "?" : overlap.toLocaleString(), bgClass: "bg-purple-500 text-white" },
+          { name: `${ctx.groupBName} Only`, layoutSize: bOnly, displayValue: subType === 2 ? "?" : bOnly.toLocaleString(), bgClass: "bg-amber-500 text-white" }
+        ]
+      }
+    }, null, 2);
+  }
+
+  // ==========================================================================
+  // VARIANT 6: advanced_two_tiered_difference (Difference of Differences)
+  // ==========================================================================
+  else if (effectiveVariant === 'advanced_two_tiered_difference') {
+    const [nameA, nameB, nameC] = getRandomNames(3);
+    const itemObj = getRandomCountableItems(1);
+    const item = itemObj?.item || "books";
+
+    const x = (Math.floor(Math.random() * 10) + 14) * 1000 + Math.floor(Math.random() * 9) * 100; // 14k - 23k
+    const y = (Math.floor(Math.random() * 8) + 4) * 1000 + Math.floor(Math.random() * 9) * 100; // 4k - 11k
+
+    const subType = explicitVariety === 'compare_a_and_c_more_and_less' ? 1 : (explicitVariety === 'combined_excess_over_twice_base' ? 2 : (explicitVariety === 'compare_a_and_c_both_more' ? 0 : Math.floor(Math.random() * 3)));
+
+    const baselineLayout = 25000;
+
+    if (subType === 0) {
+      // Subtype 0: Both more -> Diff between A and C is x - y
+      const diffAC = x - y;
+      finalAnswer = diffAC.toString();
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL_COMPARISON",
+        componentData: {
+          modelType: "BAR_MODEL_COMPARISON",
+          bars: [
+            { name: nameA, value: "", layoutSize: baselineLayout + x, displayValue: "" },
+            { name: nameB, value: "", layoutSize: baselineLayout, displayValue: "Baseline" },
+            { name: nameC, value: "", layoutSize: baselineLayout + y, displayValue: "" }
+          ],
+          difference: { displayValue: diffAC.toLocaleString() }
+        }
+      }, null, 2);
+
+      promptInstruction = `- Question stem: "${nameA} has ${x.toLocaleString()} more ${item} than ${nameB}. ${nameC} has ${y.toLocaleString()} more ${item} than ${nameB}. How many more ${item} does ${nameA} have than ${nameC}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: `Write the working equation to find the difference between ${nameA} and ${nameC}:`, expectedAnswer: `${x} - ${y} = ${diffAC}` },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const d1 = (x + y).toString();
+        const d2 = x.toString();
+        const d3 = (diffAC + 1000).toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "WRONG_OPERATION_ADD" },
+          { val: d2, defect: "PARTIAL_WORKING_STEP_ONE_ONLY" },
+          { val: d3, defect: "CARELESS_CALCULATION" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: Both ${nameA} and ${nameC} are being compared to the same base amount (${nameB}).\\nStep 2: To find how many more ${item} ${nameA} has than ${nameC}, subtract the two extra amounts: ${x.toLocaleString()} - ${y.toLocaleString()} = ${diffAC.toLocaleString()}.\\nStep 3: ${nameA} has ${diffAC.toLocaleString()} more ${item} than ${nameC}.`;
+      hint = `Since both people are compared to the same baseline (${nameB}), the difference between them is simply the difference between their extra amounts!`;
+
+    } else if (subType === 1) {
+      // Subtype 1: A more, C less -> Diff between A and C is x + y
+      const diffAC = x + y;
+      finalAnswer = diffAC.toString();
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL_COMPARISON",
+        componentData: {
+          modelType: "BAR_MODEL_COMPARISON",
+          bars: [
+            { name: nameA, value: "", layoutSize: baselineLayout + x, displayValue: "" },
+            { name: nameB, value: "", layoutSize: baselineLayout, displayValue: "Baseline" },
+            { name: nameC, value: "", layoutSize: baselineLayout - y, displayValue: "" }
+          ],
+          difference: { displayValue: diffAC.toLocaleString() }
+        }
+      }, null, 2);
+
+      promptInstruction = `- Question stem: "${nameA} has ${x.toLocaleString()} more ${item} than ${nameB}. ${nameC} has ${y.toLocaleString()} fewer ${item} than ${nameB}. How many more ${item} does ${nameA} have than ${nameC}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: `Write the working equation to find the total difference between ${nameA} and ${nameC}:`, expectedAnswer: `${x} + ${y} = ${diffAC}` },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const d1 = (x - y).toString();
+        const d2 = x.toString();
+        const d3 = y.toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "WRONG_OPERATION_SUBTRACT" },
+          { val: d2, defect: "PARTIAL_WORKING_STEP_ONE_ONLY" },
+          { val: d3, defect: "PARTIAL_WORKING_STEP_ONE_ONLY" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: ${nameA} is ${x.toLocaleString()} above ${nameB}, while ${nameC} is ${y.toLocaleString()} below ${nameB}.\\nStep 2: Add both distances from the baseline to find the total difference between ${nameA} and ${nameC}: ${x.toLocaleString()} + ${y.toLocaleString()} = ${diffAC.toLocaleString()}.\\nStep 3: ${nameA} has ${diffAC.toLocaleString()} more ${item} than ${nameC}.`;
+      hint = `One person is above the baseline and the other is below the baseline. Add their differences to find the total distance between them!`;
+
+    } else {
+      // Subtype 2: Combined excess over twice of B is x + y
+      const excess = x + y;
+      finalAnswer = excess.toString();
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL_COMPARISON",
+        componentData: {
+          modelType: "BAR_MODEL_COMPARISON",
+          bars: [
+            { name: nameA, value: "", layoutSize: baselineLayout + x, displayValue: `+${x.toLocaleString()}` },
+            { name: nameB, value: "", layoutSize: baselineLayout, displayValue: "Baseline" },
+            { name: nameC, value: "", layoutSize: baselineLayout + y, displayValue: `+${y.toLocaleString()}` }
+          ],
+          difference: { displayValue: excess.toLocaleString() }
+        }
+      }, null, 2);
+
+      promptInstruction = `- Question stem: "${nameA} has ${x.toLocaleString()} more ${item} than ${nameB}. ${nameC} has ${y.toLocaleString()} more ${item} than ${nameB}. If ${nameA} and ${nameC} combine their ${item}, how many more ${item} will their combined total be compared to twice of ${nameB}'s amount?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: `Write the working equation to find the total excess above twice of ${nameB}'s amount:`, expectedAnswer: `${x} + ${y} = ${excess}` },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const d1 = (x - y).toString();
+        const d2 = x.toString();
+        const d3 = (excess + 1000).toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "WRONG_OPERATION_SUBTRACT" },
+          { val: d2, defect: "PARTIAL_WORKING_STEP_ONE_ONLY" },
+          { val: d3, defect: "CARELESS_CALCULATION" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: ${nameA}'s amount is (${nameB} + ${x.toLocaleString()}) and ${nameC}'s amount is (${nameB} + ${y.toLocaleString()}).\\nStep 2: Combined, their total is twice of ${nameB}'s amount plus the two extra quantities: ${x.toLocaleString()} + ${y.toLocaleString()} = ${excess.toLocaleString()}.\\nStep 3: Their combined total is ${excess.toLocaleString()} more than twice of ${nameB}'s amount.`;
+      hint = `Each person has ${nameB}'s base amount plus an extra portion. When you combine them, the excess above twice of ${nameB} is simply the sum of the two extra portions!`;
+    }
+  }
 
   const mcqInstruction = isMCQ ? `- Generate EXACTLY 4 options: ${JSON.stringify(options)}.\\n- Set defectMap to: ${JSON.stringify(defectMap)}.` : "";
 
@@ -355,7 +965,7 @@ Topic: Whole Numbers - Numbers up to 100 000
 Subtopic: Number Comparison and Ordering
 Difficulty: ${zodDiff}
 Type: ${zodType}
-Variant: advanced_form_numbers
+Variant: ${effectiveVariant}
 
 CRITICAL INSTRUCTIONS:
 1. ${promptInstruction}
@@ -367,7 +977,7 @@ ${solutionSteps}
 "${hint}"
 5. Forbid using "STORY:" or any instructional prefix in the output.
 
-${getFormatInstructions(visualEngineStr, inputRequirementStr, 'advanced_form_numbers')}`;
+${getFormatInstructions(visualEngineStr, inputRequirementStr, effectiveVariant)}`;
 
   return { aiPrompt };
 }

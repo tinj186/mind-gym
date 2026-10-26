@@ -139,45 +139,140 @@ for (const variant of standardVariants) {
   }
 }
 
-// 3. Advanced Variant & Varieties
-const advancedVarieties = [
-  'greatest_5_digit',
-  'smallest_5_digit',
-  'greatest_even',
-  'smallest_odd',
-  'greatest_less_than_x',
-  'smallest_greater_than_x'
+// 3. All 6 Advanced Variants & Varieties
+const allAdvancedVariants = [
+  'advanced_form_numbers',
+  'advanced_equalizing_transfer',
+  'advanced_three_entity_grand_total',
+  'advanced_shifting_difference_transfer',
+  'advanced_overlapping_target_deduction',
+  'advanced_two_tiered_difference'
 ];
 
-for (const variety of advancedVarieties) {
+for (const variant of allAdvancedVariants) {
+  for (const type of types) {
+    for (let i = 0; i < 5; i++) {
+      try {
+        const res = p4NumberComparisonAndOrderingBlueprint.generate('advanced', variant, type);
+        const prompt = res.aiPrompt;
+
+        const finalAnswerMatch = prompt.match(/The finalAnswer must be strictly "([^"]+)"/);
+        if (!finalAnswerMatch) {
+          console.error(`[Advanced][${variant}][${type}] Failed to find finalAnswer!`);
+          errors++;
+          continue;
+        }
+        const finalAnswer = finalAnswerMatch[1];
+
+        if (type === 'MCQ') {
+          const optionsMatch = prompt.match(/- Generate EXACTLY 4 options: (\[[^\]]+\])/);
+          if (!optionsMatch) {
+            console.error(`[Advanced][${variant}][${type}] Missing options in prompt!`);
+            errors++;
+            continue;
+          }
+          const options = JSON.parse(optionsMatch[1]);
+          if (options.length !== 4) {
+            console.error(`[Advanced][${variant}][${type}] Options length != 4:`, options);
+            errors++;
+          }
+          if (new Set(options).size !== 4) {
+            console.error(`[Advanced][${variant}][${type}] Duplicate options:`, options);
+            errors++;
+          }
+          if (!options.includes(finalAnswer)) {
+            console.error(`[Advanced][${variant}][${type}] finalAnswer "${finalAnswer}" not in options:`, options);
+            errors++;
+          }
+
+          // Check defectMap
+          const defectMapMatch = prompt.match(/- Set defectMap to: (\{[^\}]+\})/);
+          if (!defectMapMatch) {
+            console.error(`[Advanced][${variant}][${type}] Missing defectMap in prompt!`);
+            errors++;
+          } else {
+            const defectMap = JSON.parse(defectMapMatch[1]);
+            for (const opt of options) {
+              if (opt !== finalAnswer && !defectMap[opt]) {
+                console.error(`[Advanced][${variant}][${type}] Distractor "${opt}" not in defectMap:`, defectMap);
+                errors++;
+              }
+            }
+          }
+        } else if (type === 'Structured') {
+          if (!prompt.includes('"inputType": "MULTI_STEP_INPUT"')) {
+            console.error(`[Advanced][${variant}][${type}] Missing MULTI_STEP_INPUT in prompt!`);
+            errors++;
+          }
+          if (!prompt.includes('"steps"')) {
+            console.error(`[Advanced][${variant}][${type}] Missing structured steps in prompt!`);
+            errors++;
+          }
+        }
+
+        // Check visual engine is valid
+        if (!prompt.includes('"visualEngine"')) {
+          console.error(`[Advanced][${variant}][${type}] Missing visualEngine!`);
+          errors++;
+        }
+      } catch (err) {
+        console.error(`[Advanced][${variant}][${type}] Error thrown:`, err);
+        errors++;
+      }
+    }
+  }
+}
+
+// 4. Test explicit varieties across Advanced variants
+const varietyTests = [
+  { variant: 'advanced_form_numbers', variety: 'greatest_5_digit' },
+  { variant: 'advanced_form_numbers', variety: 'smallest_5_digit' },
+  { variant: 'advanced_form_numbers', variety: 'greatest_even' },
+  { variant: 'advanced_form_numbers', variety: 'smallest_odd' },
+  { variant: 'advanced_form_numbers', variety: 'greatest_less_than_x' },
+  { variant: 'advanced_form_numbers', variety: 'smallest_greater_than_x' },
+  { variant: 'advanced_equalizing_transfer', variety: 'find_transfer_from_initial' },
+  { variant: 'advanced_equalizing_transfer', variety: 'find_initial_from_equalized' },
+  { variant: 'advanced_three_entity_grand_total', variety: 'find_smallest_base' },
+  { variant: 'advanced_three_entity_grand_total', variety: 'find_middle_entity' },
+  { variant: 'advanced_three_entity_grand_total', variety: 'find_largest_entity' },
+  { variant: 'advanced_overlapping_target_deduction', variety: 'find_both_overlap' },
+  { variant: 'advanced_overlapping_target_deduction', variety: 'find_group_a_only' },
+  { variant: 'advanced_overlapping_target_deduction', variety: 'find_group_b_only' },
+  { variant: 'advanced_two_tiered_difference', variety: 'compare_a_and_c_both_more' },
+  { variant: 'advanced_two_tiered_difference', variety: 'compare_a_and_c_more_and_less' },
+  { variant: 'advanced_two_tiered_difference', variety: 'combined_excess_over_twice_base' }
+];
+
+for (const { variant, variety } of varietyTests) {
   for (const type of types) {
     try {
       const res = p4NumberComparisonAndOrderingBlueprint.generate('advanced', {
-        variant: 'advanced_form_numbers',
+        variant: variant,
         variety: variety
       }, type);
       const prompt = res.aiPrompt;
 
-      if (!prompt.includes('advanced_form_numbers')) {
-        console.error(`[Advanced][${variety}][${type}] Failed to route to advanced_form_numbers!`);
+      if (!prompt.includes(variant)) {
+        console.error(`[Advanced][${variant}:${variety}][${type}] Failed to route to ${variant}!`);
         errors++;
       }
       if (type === 'MCQ' && !prompt.includes('- Generate EXACTLY 4 options:')) {
-        console.error(`[Advanced][${variety}][${type}] Missing 4 options instruction!`);
+        console.error(`[Advanced][${variant}:${variety}][${type}] Missing 4 options instruction!`);
         errors++;
       }
       if (type === 'Structured' && !prompt.includes('"inputType": "MULTI_STEP_INPUT"')) {
-        console.error(`[Advanced][${variety}][${type}] Missing MULTI_STEP_INPUT in prompt!`);
+        console.error(`[Advanced][${variant}:${variety}][${type}] Missing MULTI_STEP_INPUT in prompt!`);
         errors++;
       }
     } catch (err) {
-      console.error(`[Advanced][${variety}][${type}] Error thrown:`, err);
+      console.error(`[Advanced][${variant}:${variety}][${type}] Error thrown:`, err);
       errors++;
     }
   }
 }
 
-// 4. Test legacy aliases and variety invocations
+// 5. Test legacy aliases and variety invocations
 const legacyInvocations = [
   'standard_order_asc_diff_ten_thousands',
   'standard_order_desc_diff_ten_thousands',
@@ -193,7 +288,9 @@ const legacyInvocations = [
   'advanced_form_smallest_odd',
   'advanced_form_greatest_less_than_x',
   'advanced_form_smallest_greater_than_x',
-  'advanced_form_numbers:greatest_even'
+  'advanced_form_numbers:greatest_even',
+  'advanced_equalizing_transfer:find_transfer_from_initial',
+  'advanced_three_entity_grand_total:find_smallest_base'
 ];
 
 for (const alias of legacyInvocations) {
@@ -201,7 +298,9 @@ for (const alias of legacyInvocations) {
     try {
       const isAdv = alias.startsWith('advanced');
       const res = p4NumberComparisonAndOrderingBlueprint.generate(isAdv ? 'advanced' : 'standard', alias, type);
-      const expected = isAdv ? 'advanced_form_numbers' : 'standard_order_numbers';
+      const expected = isAdv
+        ? (alias.includes('equalizing') ? 'advanced_equalizing_transfer' : (alias.includes('three_entity') ? 'advanced_three_entity_grand_total' : 'advanced_form_numbers'))
+        : 'standard_order_numbers';
       if (!res.aiPrompt.includes(expected)) {
         console.error(`[Alias][${alias}] Failed to route to ${expected}!`);
         errors++;
@@ -219,3 +318,4 @@ if (errors === 0) {
 } else {
   process.exit(1);
 }
+
