@@ -440,18 +440,31 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       finalAnswer = (askForA ? larger : smaller).toString();
       const targetName = askForA ? nameA : nameB;
 
-      visualEngineStr = JSON.stringify({
-        componentToRender: "BAR_MODEL_COMPARISON",
-        componentData: {
-          modelType: "BAR_MODEL_COMPARISON",
-          bars: [
-            { name: nameA, value: askForA ? "?" : "", layoutSize: larger, displayValue: askForA ? "?" : "" },
-            { name: nameB, value: !askForA ? "?" : "", layoutSize: smaller, displayValue: !askForA ? "?" : "" }
-          ],
-          difference: { displayValue: diff.toLocaleString() },
-          whole: (equalized * 2).toLocaleString()
-        }
-      }, null, 2);
+      if (askForA) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL_COMPARISON",
+          componentData: {
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: `${nameA} (At first)`, value: "?", layoutSize: larger, displayValue: "?" },
+              { name: "Each (In the end)", value: equalized, layoutSize: equalized, displayValue: equalized.toLocaleString() }
+            ],
+            difference: { displayValue: transfer.toLocaleString() }
+          }
+        }, null, 2);
+      } else {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL_COMPARISON",
+          componentData: {
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: "Each (In the end)", value: equalized, layoutSize: equalized, displayValue: equalized.toLocaleString() },
+              { name: `${nameB} (At first)`, value: "?", layoutSize: smaller, displayValue: "?" }
+            ],
+            difference: { displayValue: transfer.toLocaleString() }
+          }
+        }, null, 2);
+      }
 
       promptInstruction = `- Question stem: "After ${nameA} gave ${transfer.toLocaleString()} ${item} to ${nameB}, both of them had ${equalized.toLocaleString()} ${item} each. How many ${item} did ${targetName} have at first?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
