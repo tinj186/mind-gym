@@ -31,7 +31,7 @@ export const p4NumberPatternsBlueprint = {
     foundation_boundary_crossing_deduction: 'Deduce the missing number in a sequence crossing place-value boundaries on a number line.',
     foundation_deducing_unknown_rule: 'Determine the unknown addition or subtraction rule from a given complete sequence.',
     foundation_incorrect_anomaly: 'Identify the incorrect number in a sequence where one term breaks the pattern rule.',
-    foundation_two_step_extension: 'Find the term that is two positions away from the last given number in a sequence.',
+    foundation_two_step_extension: 'Find the term that is two positions away from the given numbers in a sequence (e.g. 5th number or 1st number).',
 
     standard_add_cross_thousands: 'Count on crossing thousands boundary.',
     standard_subtract_cross_thousands: 'Count back crossing thousands boundary.',
@@ -73,8 +73,10 @@ export const p4NumberPatternsBlueprint = {
       'anomaly_end'
     ],
     foundation_two_step_extension: [
-      'extend_ascending',
-      'extend_descending'
+      'extend_end_ascending',
+      'extend_end_descending',
+      'extend_start_ascending',
+      'extend_start_descending'
     ]
   },
 

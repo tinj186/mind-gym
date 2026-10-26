@@ -437,9 +437,20 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
   } else {
     const intervals = [50, 100, 200, 500, 1000, 2000, 3000];
     const d = intervals[Math.floor(Math.random() * intervals.length)];
+
+    const varietyStr = typeof chosenVariety === 'string' ? chosenVariety : '';
+    let isEnd = true;
+    if (varietyStr.includes('start')) {
+      isEnd = false;
+    } else if (varietyStr.includes('end')) {
+      isEnd = true;
+    } else {
+      isEnd = Math.random() < 0.5;
+    }
+
     let isAscending = Math.random() < 0.5;
-    if (chosenVariety === 'extend_ascending') isAscending = true;
-    if (chosenVariety === 'extend_descending') isAscending = false;
+    if (varietyStr.includes('ascending')) isAscending = true;
+    if (varietyStr.includes('descending')) isAscending = false;
 
     const step = isAscending ? d : -d;
     let start = 0;
@@ -454,59 +465,120 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       pattern.push(start + (i * step));
     }
 
-    // Terms 0, 1, 2 are given. Terms 3 and 4 are missing: [n0, n1, n2, "?", "?"]
-    finalAnswer = pattern[4].toString(); // The 5th term!
+    if (isEnd) {
+      // Terms 0, 1, 2 are given. Terms 3 and 4 are missing: [n0, n1, n2, "?", "?"]
+      finalAnswer = pattern[4].toString(); // The 5th term
 
-    const displayNodes = [pattern[0].toString(), pattern[1].toString(), pattern[2].toString(), "?", "?"];
+      const displayNodes = [pattern[0].toString(), pattern[1].toString(), pattern[2].toString(), "?", "?"];
 
-    visualEngineStr = JSON.stringify({
-      componentToRender: "NUMBER_SEQUENCE_BLOCKS",
-      componentData: {
-        nodes: displayNodes,
-        orientation: "horizontal"
-      }
-    }, null, 2);
-
-    promptInstruction = `- Question stem: "Find the 5th number in the number pattern: ${pattern[0]}, ${pattern[1]}, ${pattern[2]}, ?, ?."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
-
-    const highVal = Math.max(pattern[0], pattern[1]);
-    const lowVal = Math.min(pattern[0], pattern[1]);
-    const sign = isAscending ? '+' : '-';
-    const step2Equation = `${pattern[2]} ${sign} ${d} ${sign} ${d} = ${pattern[4]}`;
-
-    if (isMCQ) {
-      const mcqRes = buildMcqOptions(finalAnswer, [
-        { val: pattern[3].toString(), defect: 'FOUND_4TH_TERM_INSTEAD_OF_5TH' },
-        { val: (pattern[4] + step).toString(), defect: 'FOUND_6TH_TERM' },
-        { val: pattern[2].toString(), defect: 'RETURNED_LAST_GIVEN_TERM' }
-      ]);
-      options = mcqRes.options;
-      defectMap = mcqRes.defectMap;
-    } else if (isStructure) {
-      inputRequirementStr = JSON.stringify({
-        inputType: "MULTI_STEP_INPUT",
-        steps: [
-          {
-            label: "Write the working equation to find the pattern rule:",
-            expectedAnswer: `${highVal} - ${lowVal} = ${d}`,
-            acceptedAnswers: [`${highVal} - ${lowVal} = ${d}`, `${highVal}-${lowVal}=${d}`]
-          },
-          {
-            label: "Write the working equation to find the final missing number:",
-            expectedAnswer: step2Equation,
-            acceptedAnswers: [
-              step2Equation,
-              step2Equation.replace(/\s+/g, ''),
-              `${pattern[2]} ${sign} ${2 * d} = ${pattern[4]}`,
-              `${pattern[3]} ${sign} ${d} = ${pattern[4]}`
-            ]
-          }
-        ]
+      visualEngineStr = JSON.stringify({
+        componentToRender: "NUMBER_SEQUENCE_BLOCKS",
+        componentData: {
+          nodes: displayNodes,
+          orientation: "horizontal"
+        }
       }, null, 2);
-    }
 
-    ruleDesc = `${isAscending ? 'adding' : 'subtracting'} ${d}`;
-    hint = `Find the rule between the first 3 numbers (${highVal} - ${lowVal} = ${d}). Remember that the 5th term is TWO steps away from the 3rd term (${pattern[2]}).`;
+      promptInstruction = `- Question stem: "Find the 5th number in the number pattern: ${pattern[0]}, ${pattern[1]}, ${pattern[2]}, ?, ?."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      const highVal = Math.max(pattern[0], pattern[1]);
+      const lowVal = Math.min(pattern[0], pattern[1]);
+      const sign = isAscending ? '+' : '-';
+      const step2Equation = `${pattern[2]} ${sign} ${d} ${sign} ${d} = ${pattern[4]}`;
+
+      if (isMCQ) {
+        const mcqRes = buildMcqOptions(finalAnswer, [
+          { val: pattern[3].toString(), defect: 'FOUND_4TH_TERM_INSTEAD_OF_5TH' },
+          { val: (pattern[4] + step).toString(), defect: 'FOUND_6TH_TERM' },
+          { val: pattern[2].toString(), defect: 'RETURNED_LAST_GIVEN_TERM' }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      } else if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            {
+              label: "Write the working equation to find the pattern rule:",
+              expectedAnswer: `${highVal} - ${lowVal} = ${d}`,
+              acceptedAnswers: [`${highVal} - ${lowVal} = ${d}`, `${highVal}-${lowVal}=${d}`]
+            },
+            {
+              label: "Write the working equation to find the 5th number:",
+              expectedAnswer: step2Equation,
+              acceptedAnswers: [
+                step2Equation,
+                step2Equation.replace(/\s+/g, ''),
+                `${pattern[2]} ${sign} ${2 * d} = ${pattern[4]}`,
+                `${pattern[2]}${sign}${2 * d}=${pattern[4]}`,
+                `${pattern[3]} ${sign} ${d} = ${pattern[4]}`,
+                `${pattern[3]}${sign}${d}=${pattern[4]}`
+              ]
+            }
+          ]
+        }, null, 2);
+      }
+
+      ruleDesc = `${isAscending ? 'adding' : 'subtracting'} ${d}`;
+      hint = `Find the rule between the first 3 numbers (${highVal} - ${lowVal} = ${d}). Remember that the 5th term is TWO steps away from the 3rd term (${pattern[2]}).`;
+    } else {
+      // Terms 0 and 1 are missing. Terms 2, 3, 4 are given: ["?", "?", n2, n3, n4]
+      finalAnswer = pattern[0].toString(); // The 1st term
+
+      const displayNodes = ["?", "?", pattern[2].toString(), pattern[3].toString(), pattern[4].toString()];
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "NUMBER_SEQUENCE_BLOCKS",
+        componentData: {
+          nodes: displayNodes,
+          orientation: "horizontal"
+        }
+      }, null, 2);
+
+      promptInstruction = `- Question stem: "Find the 1st number in the number pattern: ?, ?, ${pattern[2]}, ${pattern[3]}, ${pattern[4]}."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      const highVal = Math.max(pattern[2], pattern[3]);
+      const lowVal = Math.min(pattern[2], pattern[3]);
+      const reverseSign = isAscending ? '-' : '+';
+      const step2Equation = `${pattern[2]} ${reverseSign} ${d} ${reverseSign} ${d} = ${pattern[0]}`;
+
+      if (isMCQ) {
+        const overstepVal = isAscending ? pattern[0] - d : pattern[0] + d;
+        const mcqRes = buildMcqOptions(finalAnswer, [
+          { val: pattern[1].toString(), defect: 'FOUND_2ND_TERM_INSTEAD_OF_1ST' },
+          { val: overstepVal.toString(), defect: 'WORKED_BACK_THREE_STEPS' },
+          { val: pattern[2].toString(), defect: 'RETURNED_FIRST_GIVEN_TERM' }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      } else if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            {
+              label: "Write the working equation to find the pattern rule:",
+              expectedAnswer: `${highVal} - ${lowVal} = ${d}`,
+              acceptedAnswers: [`${highVal} - ${lowVal} = ${d}`, `${highVal}-${lowVal}=${d}`]
+            },
+            {
+              label: "Write the working equation to find the 1st number:",
+              expectedAnswer: step2Equation,
+              acceptedAnswers: [
+                step2Equation,
+                step2Equation.replace(/\s+/g, ''),
+                `${pattern[2]} ${reverseSign} ${2 * d} = ${pattern[0]}`,
+                `${pattern[2]}${reverseSign}${2 * d}=${pattern[0]}`,
+                `${pattern[1]} ${reverseSign} ${d} = ${pattern[0]}`,
+                `${pattern[1]}${reverseSign}${d}=${pattern[0]}`
+              ]
+            }
+          ]
+        }, null, 2);
+      }
+
+      ruleDesc = `${isAscending ? 'adding' : 'subtracting'} ${d}`;
+      hint = `Find the rule between the given numbers (${highVal} - ${lowVal} = ${d}). Remember that the 1st term is TWO steps backwards from the 3rd term (${pattern[2]}).`;
+    }
   }
 
   const mcqInstruction = isMCQ ? `- Generate EXACTLY 4 options: ${JSON.stringify(options)}.\\n- Set defectMap to: ${JSON.stringify(defectMap)}.` : "";
