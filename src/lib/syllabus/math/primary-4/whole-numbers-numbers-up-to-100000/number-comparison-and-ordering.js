@@ -41,12 +41,12 @@ export const p4NumberComparisonAndOrderingBlueprint = {
     standard_condition_digit_difference: 'Form two 5-digit numbers under specific conditions (even/odd) using 5 digit cards and calculate their difference.',
     standard_chain_comparison_three_entities: 'Determine an unknown quantity or total across three entities using comparative relations.',
 
-    //    advanced_form_numbers: 'Form 5-digit numbers using 5 given digit cards under specific conditions (greatest/smallest, even/odd, or boundary constraints).',
-    //    advanced_equalizing_transfer: 'Calculate the transfer amount needed to equalize two quantities, or find original amounts from equalized states.',
+    advanced_form_numbers: 'Form 5-digit numbers using 5 given digit cards under specific conditions (greatest/smallest, even/odd, or boundary constraints).',
+    advanced_equalizing_transfer: 'Calculate the transfer amount needed to equalize two quantities, or find original amounts from equalized states.',
     advanced_three_entity_grand_total: 'Determine unknown base quantities among three entities using comparative relations and a grand total.',
-    //    advanced_shifting_difference_transfer: 'Calculate the new difference and determine who has more after an inequality-flipping transfer.',
-    //    advanced_overlapping_target_deduction: 'Deduce the overlapping intersection when the sum of two categories exceeds the overall total.',
-    //    advanced_two_tiered_difference: 'Compare two entities directly using their differences relative to a common baseline without knowing the baseline value.'
+    advanced_shifting_difference_transfer: 'Calculate the new difference and determine who has more after an inequality-flipping transfer.',
+    advanced_overlapping_target_deduction: 'Deduce the overlapping intersection when the sum of two categories exceeds the overall total.',
+    advanced_two_tiered_difference: 'Compare two entities directly using their differences relative to a common baseline without knowing the baseline value.'
   },
 
   variantVarieties: {
@@ -97,7 +97,7 @@ export const p4NumberComparisonAndOrderingBlueprint = {
     ]
   },
 
-  generate: function (difficulty, activeVariant, type, options = { }) {
+  generate: function (difficulty, activeVariant, type, options = {}) {
     const level = 'Primary 4';
     const topic = 'Whole Numbers - Numbers up to 100 000';
     const subtopic = 'Number Comparison and Ordering';

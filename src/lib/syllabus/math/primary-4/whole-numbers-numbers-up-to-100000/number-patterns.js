@@ -78,7 +78,7 @@ export const p4NumberPatternsBlueprint = {
     ]
   },
 
-  generate: function (difficulty, activeVariant, type, options = {}) {
+  generate: function (difficulty, activeVariant, type, options = { }) {
     const level = 'Primary 4';
     const topic = 'Whole Numbers - Numbers up to 100 000';
     const subtopic = 'Number Patterns';

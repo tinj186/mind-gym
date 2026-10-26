@@ -33,11 +33,11 @@ export const p4PlaceValuesTenThousandsBlueprint = {
     foundation_expanded_form_addition: 'Calculate the total of an expanded form addition up to 100 000.',
     foundation_place_value_representation: 'Identify how many ten thousands a specific digit represents.',
 
-    //    standard_digit_value: 'Identify the value of a specific digit in a 5-digit number.',
-    //    standard_digit_with_value: 'Identify which digit has a given value in a 5-digit number.',
-    //    standard_expanded_form_missing: 'Find the missing number in a 5-digit expanded form equation.',
+    standard_digit_value: 'Identify the value of a specific digit in a 5-digit number.',
+    standard_digit_with_value: 'Identify which digit has a given value in a 5-digit number.',
+    standard_expanded_form_missing: 'Find the missing number in a 5-digit expanded form equation.',
     standard_greatest_value_digit: 'Compare the values of digits across different place values and numbers.',
-    //    standard_mystery_number_values: 'Solve a 5-digit mystery number from jumbled place value clues.',
+    standard_mystery_number_values: 'Solve a 5-digit mystery number from jumbled place value clues.',
 
     advanced_decomposition: 'Decompose or reconstruct numbers from non-standard place value groupings.',
     advanced_regrouping: 'Regroup tens, hundreds, and thousands into a 5-digit number.',

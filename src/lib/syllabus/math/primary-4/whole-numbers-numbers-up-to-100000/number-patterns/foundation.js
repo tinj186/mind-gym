@@ -117,7 +117,6 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       componentToRender: "NUMBER_SEQUENCE_BLOCKS",
       componentData: {
         nodes: displayNodes,
-        arrowLabels: ["", "", "", ""],
         orientation: "horizontal"
       }
     }, null, 2);
@@ -392,7 +391,6 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       componentToRender: "NUMBER_SEQUENCE_BLOCKS",
       componentData: {
         nodes: displaySequence.map(x => x.toString()),
-        arrowLabels: ["", "", "", ""],
         orientation: "horizontal"
       }
     }, null, 2);
@@ -465,9 +463,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       componentToRender: "NUMBER_SEQUENCE_BLOCKS",
       componentData: {
         nodes: displayNodes,
-        arrowLabels: ["", "", "", ""],
-        orientation: "horizontal",
-        showIndices: true
+        orientation: "horizontal"
       }
     }, null, 2);
 
@@ -528,6 +524,7 @@ CRITICAL INSTRUCTIONS:
 ${mcqInstruction}
 3. Provide step-by-step solution steps separated by \\n and an encouraging conceptual hint explaining the pattern rule of ${ruleDesc}.
 4. Forbid using "STORY:" or any instructional prefix in the output.
+5. In visualEngine, do NOT provide or output interval numbers on the arrows (do NOT provide overlapping details that spoil the step size). Keep arrows plain.
 
 ${getFormatInstructions(visualEngineStr, inputRequirementStr, resolvedVariant)}`;
 
