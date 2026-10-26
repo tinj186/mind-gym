@@ -380,17 +380,31 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const itemObj = getRandomCountableItems(1);
     const item = itemObj?.item || "stickers";
 
-    const isType1 = explicitVariety === 'find_transfer_from_initial' ? true : (explicitVariety === 'find_initial_from_equalized' ? false : Math.random() < 0.5);
-
     const baseAmount = (Math.floor(Math.random() * 15) + 20) * 1000 + Math.floor(Math.random() * 9) * 100;
     const diff = (Math.floor(Math.random() * 6) + 3) * 2000; // Even difference between 6k and 16k
     const transfer = diff / 2;
     const larger = baseAmount + diff;
     const smaller = baseAmount;
     const equalized = smaller + transfer;
+    const grandTotal = larger + smaller;
 
-    if (isType1) {
-      // Type 1: Given x and y, find transfer amount t
+    // Variety Selection
+    const varietiesList = [
+      'find_transfer_from_initial',
+      'find_initial_from_equalized',
+      'find_initial_from_total_and_transfer',
+      'find_difference_from_transfer',
+      'find_other_initial_from_one_initial'
+    ];
+    let selectedVariety = explicitVariety;
+    if (!varietiesList.includes(selectedVariety)) {
+      selectedVariety = varietiesList[Math.floor(Math.random() * varietiesList.length)];
+    }
+
+    // ========================================================================
+    // Variety 1: find_transfer_from_initial (Given x and y, find transfer t)
+    // ========================================================================
+    if (selectedVariety === 'find_transfer_from_initial') {
       finalAnswer = transfer.toString();
 
       visualEngineStr = JSON.stringify({
@@ -434,8 +448,10 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       solutionSteps = `Step 1: Find the difference between ${nameA}'s and ${nameB}'s amounts: ${larger.toLocaleString()} - ${smaller.toLocaleString()} = ${diff.toLocaleString()}.\\nStep 2: To make their amounts equal, ${nameA} needs to give half of this difference to ${nameB}: ${diff.toLocaleString()} ÷ 2 = ${transfer.toLocaleString()}.\\nStep 3: ${nameA} must give ${transfer.toLocaleString()} ${item} to ${nameB}.`;
       hint = `Find the difference between them first. Giving half of this extra amount to the other person makes both amounts equal!`;
 
-    } else {
-      // Type 2: Given transfer t and equalized amount E, find original amount of A or B
+    // ========================================================================
+    // Variety 2: find_initial_from_equalized (Given transfer t and equalized E, find starting A or B)
+    // ========================================================================
+    } else if (selectedVariety === 'find_initial_from_equalized') {
       const askForA = Math.random() < 0.5;
       finalAnswer = (askForA ? larger : smaller).toString();
       const targetName = askForA ? nameA : nameB;
@@ -501,6 +517,192 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       } else {
         solutionSteps = `Step 1: ${nameB} received ${transfer.toLocaleString()} ${item} to end up with ${equalized.toLocaleString()} ${item}.\\nStep 2: Subtract the transferred amount to find ${nameB}'s original amount: ${equalized.toLocaleString()} - ${transfer.toLocaleString()} = ${smaller.toLocaleString()}.\\nStep 3: ${nameB} had ${smaller.toLocaleString()} ${item} at first.`;
         hint = `Since ${nameB} received ${transfer.toLocaleString()} ${item} to reach ${equalized.toLocaleString()}, subtract the received amount to find what ${nameB} had at first!`;
+      }
+
+    // ========================================================================
+    // Variety 3: find_initial_from_total_and_transfer (Given Grand Total T and transfer t, find starting amounts)
+    // ========================================================================
+    } else if (selectedVariety === 'find_initial_from_total_and_transfer') {
+      const askForA = Math.random() < 0.5;
+      finalAnswer = (askForA ? larger : smaller).toString();
+      const targetName = askForA ? nameA : nameB;
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL_COMPARISON",
+        componentData: {
+          modelType: "BAR_MODEL_COMPARISON",
+          bars: [
+            { name: `${nameA} (At first)`, value: askForA ? "?" : larger, layoutSize: larger, displayValue: askForA ? "?" : larger.toLocaleString() },
+            { name: `${nameB} (At first)`, value: !askForA ? "?" : smaller, layoutSize: smaller, displayValue: !askForA ? "?" : smaller.toLocaleString() }
+          ],
+          difference: { displayValue: `${transfer.toLocaleString()} transferred` },
+          whole: grandTotal.toLocaleString()
+        }
+      }, null, 2);
+
+      promptInstruction = `- Question stem: "${nameA} and ${nameB} had a combined total of ${grandTotal.toLocaleString()} ${item}. After ${nameA} gave ${transfer.toLocaleString()} ${item} to ${nameB}, both of them had an equal number of ${item}. How many ${item} did ${targetName} have at first?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: `Write the working equation to find how many ${item} each person had in the end:`, expectedAnswer: `${grandTotal} / 2 = ${equalized}` },
+            {
+              label: `Write the working equation to find ${targetName}'s amount at first:`,
+              expectedAnswer: askForA ? `${equalized} + ${transfer} = ${larger}` : `${equalized} - ${transfer} = ${smaller}`
+            },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const otherEntity = (askForA ? smaller : larger).toString();
+        const d1 = otherEntity;
+        const d2 = equalized.toString();
+        const d3 = (askForA ? grandTotal - transfer : grandTotal + transfer).toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "OPPOSITE_ENTITY_FOUND" },
+          { val: d2, defect: "FOUND_EQUALIZED_AMOUNT_ONLY" },
+          { val: d3, defect: "CONFUSED_TOTAL_WITH_EQUALIZED" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: Since the transfer is between the two people, their combined total does not change: Total = ${grandTotal.toLocaleString()}.\\nStep 2: When both have an equal number of ${item}, each person has: ${grandTotal.toLocaleString()} ÷ 2 = ${equalized.toLocaleString()}.\\nStep 3: `;
+      if (askForA) {
+        solutionSteps += `Add the transferred amount to find ${nameA}'s original amount: ${equalized.toLocaleString()} + ${transfer.toLocaleString()} = ${larger.toLocaleString()}.`;
+        hint = `Since transferring items between them does not change the grand total, divide the total by 2 to find each person's equalized amount, then add back the given amount!`;
+      } else {
+        solutionSteps += `Subtract the transferred amount to find ${nameB}'s original amount: ${equalized.toLocaleString()} - ${transfer.toLocaleString()} = ${smaller.toLocaleString()}.`;
+        hint = `Since transferring items between them does not change the grand total, divide the total by 2 to find each person's equalized amount, then subtract the received amount!`;
+      }
+
+    // ========================================================================
+    // Variety 4: find_difference_from_transfer (Given transfer t, find initial difference d)
+    // ========================================================================
+    } else if (selectedVariety === 'find_difference_from_transfer') {
+      finalAnswer = diff.toString();
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL_COMPARISON",
+        componentData: {
+          modelType: "BAR_MODEL_COMPARISON",
+          bars: [
+            { name: nameA, value: "", layoutSize: larger, displayValue: "" },
+            { name: nameB, value: "", layoutSize: smaller, displayValue: "" }
+          ],
+          difference: { displayValue: "?" }
+        }
+      }, null, 2);
+
+      promptInstruction = `- Question stem: "After ${nameA} gave ${transfer.toLocaleString()} ${item} to ${nameB}, both of them had an equal number of ${item}. How many more ${item} did ${nameA} have than ${nameB} at first?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      if (isStructure) {
+        inputRequirementStr = JSON.stringify({
+          inputType: "MULTI_STEP_INPUT",
+          steps: [
+            { label: `Write the working equation to find how many more ${item} ${nameA} had than ${nameB} at first (twice the transferred amount):`, expectedAnswer: `${transfer} * 2 = ${diff}` },
+            { label: "Final Answer:", expectedAnswer: finalAnswer }
+          ]
+        }, null, 2);
+      }
+
+      if (isMCQ) {
+        const d1 = transfer.toString();
+        const d2 = (transfer * 3).toString();
+        const d3 = (diff + 1000).toString();
+        const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+          { val: d1, defect: "USED_TRANSFER_AS_DIFFERENCE" },
+          { val: d2, defect: "MULTIPLIED_BY_THREE" },
+          { val: d3, defect: "CARELESS_CALCULATION" }
+        ]);
+        options = mcqRes.options;
+        defectMap = mcqRes.defectMap;
+      }
+
+      solutionSteps = `Step 1: When ${nameA} gives away an amount to equalize, ${nameA} gives away half of the difference between them.\\nStep 2: Multiply the transferred amount by 2 to find the original difference: ${transfer.toLocaleString()} × 2 = ${diff.toLocaleString()}.\\nStep 3: ${nameA} had ${diff.toLocaleString()} more ${item} than ${nameB} at first.`;
+      hint = `To make two amounts equal, the person with more gives away half of their difference. Therefore, the original difference is twice the transferred amount!`;
+
+    // ========================================================================
+    // Variety 5: find_other_initial_from_one_initial (Given one starting amount and transfer, find the other)
+    // ========================================================================
+    } else {
+      const givenA = Math.random() < 0.5;
+      finalAnswer = (givenA ? smaller : larger).toString();
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL_COMPARISON",
+        componentData: {
+          modelType: "BAR_MODEL_COMPARISON",
+          bars: [
+            { name: `${nameA} (At first)`, value: givenA ? larger : "?", layoutSize: larger, displayValue: givenA ? larger.toLocaleString() : "?" },
+            { name: `${nameB} (At first)`, value: givenA ? "?" : smaller, layoutSize: smaller, displayValue: givenA ? "?" : smaller.toLocaleString() }
+          ],
+          difference: { displayValue: diff.toLocaleString() }
+        }
+      }, null, 2);
+
+      if (givenA) {
+        promptInstruction = `- Question stem: "${nameA} had ${larger.toLocaleString()} ${item} at first. After ${nameA} gave ${transfer.toLocaleString()} ${item} to ${nameB}, both of them had an equal number of ${item}. How many ${item} did ${nameB} have at first?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+        if (isStructure) {
+          inputRequirementStr = JSON.stringify({
+            inputType: "MULTI_STEP_INPUT",
+            steps: [
+              { label: `Write the working equation to find the equalized amount ${nameA} had in the end:`, expectedAnswer: `${larger} - ${transfer} = ${equalized}` },
+              { label: `Write the working equation to find ${nameB}'s amount at first:`, expectedAnswer: `${equalized} - ${transfer} = ${smaller}` },
+              { label: "Final Answer:", expectedAnswer: finalAnswer }
+            ]
+          }, null, 2);
+        }
+
+        if (isMCQ) {
+          const d1 = equalized.toString();
+          const d2 = (larger - transfer).toString();
+          const d3 = (smaller + 1000).toString();
+          const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+            { val: d1, defect: "STOPPED_AT_EQUALIZED_AMOUNT" },
+            { val: d2, defect: "SUBTRACTED_TRANSFER_ONCE_ONLY" },
+            { val: d3, defect: "CARELESS_CALCULATION" }
+          ]);
+          options = mcqRes.options;
+          defectMap = mcqRes.defectMap;
+        }
+
+        solutionSteps = `Step 1: Find how many ${item} ${nameA} had in the end: ${larger.toLocaleString()} - ${transfer.toLocaleString()} = ${equalized.toLocaleString()}.\\nStep 2: Since both ended up with ${equalized.toLocaleString()} and ${nameB} had received ${transfer.toLocaleString()}, subtract to find ${nameB}'s starting amount: ${equalized.toLocaleString()} - ${transfer.toLocaleString()} = ${smaller.toLocaleString()}.\\nStep 3: ${nameB} had ${smaller.toLocaleString()} ${item} at first.`;
+        hint = `Find the equal amount each person had in the end first, then subtract the transferred amount from that to find ${nameB}'s starting amount!`;
+
+      } else {
+        promptInstruction = `- Question stem: "${nameB} had ${smaller.toLocaleString()} ${item} at first. After ${nameA} gave ${transfer.toLocaleString()} ${item} to ${nameB}, both of them had an equal number of ${item}. How many ${item} did ${nameA} have at first?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+        if (isStructure) {
+          inputRequirementStr = JSON.stringify({
+            inputType: "MULTI_STEP_INPUT",
+            steps: [
+              { label: `Write the working equation to find the equalized amount ${nameB} had in the end:`, expectedAnswer: `${smaller} + ${transfer} = ${equalized}` },
+              { label: `Write the working equation to find ${nameA}'s amount at first:`, expectedAnswer: `${equalized} + ${transfer} = ${larger}` },
+              { label: "Final Answer:", expectedAnswer: finalAnswer }
+            ]
+          }, null, 2);
+        }
+
+        if (isMCQ) {
+          const d1 = equalized.toString();
+          const d2 = (smaller + transfer).toString();
+          const d3 = (larger - 1000).toString();
+          const mcqRes = ensureFourUniqueOptions(finalAnswer, [
+            { val: d1, defect: "STOPPED_AT_EQUALIZED_AMOUNT" },
+            { val: d2, defect: "ADDED_TRANSFER_ONCE_ONLY" },
+            { val: d3, defect: "CARELESS_CALCULATION" }
+          ]);
+          options = mcqRes.options;
+          defectMap = mcqRes.defectMap;
+        }
+
+        solutionSteps = `Step 1: Find how many ${item} ${nameB} had in the end after receiving: ${smaller.toLocaleString()} + ${transfer.toLocaleString()} = ${equalized.toLocaleString()}.\\nStep 2: Since ${nameA} gave away ${transfer.toLocaleString()} to reach ${equalized.toLocaleString()}, add the transfer back: ${equalized.toLocaleString()} + ${transfer.toLocaleString()} = ${larger.toLocaleString()}.\\nStep 3: ${nameA} had ${larger.toLocaleString()} ${item} at first.`;
+        hint = `Find the equal amount each person had in the end by adding the transfer to ${nameB}, then add the transfer to that to find ${nameA}'s original amount!`;
       }
     }
   }
