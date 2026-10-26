@@ -228,7 +228,7 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
           return (
             <div key={idx} className="flex flex-col">
               <div className="flex items-center gap-4">
-                <span className="w-32 flex-shrink-0 text-xs font-black text-slate-400 uppercase truncate text-right">
+                <span className="w-36 sm:w-44 flex-shrink-0 text-xs font-black text-slate-400 uppercase truncate text-right" title={typeof bar.name === 'string' ? bar.name : ''}>
                   {typeof bar.name === 'object' && bar.name !== null ? (bar.name.item || bar.name.text || bar.name.label || JSON.stringify(bar.name)) : bar.name}
                 </span>
                 <div className="flex-1 h-10 rounded-lg flex relative z-10">
@@ -277,7 +277,7 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
                   )}
                   
                   {/* Difference Box (if this is the shorter bar and not using custom parts) */}
-                  {!bar.parts && !bar.hideDifference && getLayoutValue(bar) < maxVal && (
+                  {!bar.parts && !bar.hideDifference && !m.hideDifference && (bar.difference !== undefined || m.difference !== undefined) && bar.difference !== false && m.difference !== false && getLayoutValue(bar) < maxVal && (
                     <div 
                       style={{ width: `${100 - ((getLayoutValue(bar) / maxVal) * 100)}%` }}
                       className="h-full flex flex-col items-center justify-end relative"

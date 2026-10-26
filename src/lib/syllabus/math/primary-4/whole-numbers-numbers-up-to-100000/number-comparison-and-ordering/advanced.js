@@ -1320,11 +1320,11 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           {
             modelType: "BAR_MODEL_COMPARISON",
             title: "At First",
+            hideDifference: true,
             bars: [
-              { name: `${nameA} (At first)`, value: initialA, layoutSize: initialA, displayValue: initialA.toLocaleString() },
-              { name: `${nameB} (At first)`, value: initialB, layoutSize: initialB, displayValue: initialB.toLocaleString() }
-            ],
-            difference: { displayValue: initialDiff.toLocaleString() }
+              { name: `${nameA} (At first)`, value: initialA, layoutSize: initialA, displayValue: initialA.toLocaleString(), hideDifference: true },
+              { name: `${nameB} (At first)`, value: initialB, layoutSize: initialB, displayValue: initialB.toLocaleString(), hideDifference: true }
+            ]
           },
           {
             modelType: "BAR_MODEL_COMPARISON",
@@ -1339,7 +1339,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       }
     }, null, 2);
 
-    promptInstruction = `- Question stem: "${nameA} had ${initialA.toLocaleString()} ${item} and ${nameB} had ${initialB.toLocaleString()} ${item}. ${nameA} gave ${z.toLocaleString()} ${item} to ${nameB}. How many more ${item} does ${nameB} have than ${nameA} now?"\\n- The finalAnswer must be strictly "${finalAnswer}".\\n- CRITICAL: Return visualEngine and componentData EXACTLY as provided. Do NOT replace "?" with computed numbers in the second bar model.`;
+    promptInstruction = `- Question stem: "${nameA} had ${initialA.toLocaleString()} ${item} and ${nameB} had ${initialB.toLocaleString()} ${item}. ${nameA} gave ${z.toLocaleString()} ${item} to ${nameB}. How many more ${item} does ${nameB} have than ${nameA} now?"\\n- The finalAnswer must be strictly "${finalAnswer}".\\n- CRITICAL: Return visualEngine and componentData EXACTLY as provided. Do NOT add any difference to the first bar model, and do NOT replace "?" with computed numbers in the second bar model.`;
 
     if (isStructure) {
       inputRequirementStr = JSON.stringify({
