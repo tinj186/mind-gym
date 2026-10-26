@@ -217,7 +217,7 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
               </div>
             )}
             <div className="flex w-full items-stretch">
-          <div className="flex-1 space-y-6 min-w-[200px] mt-2">
+          <div className="flex-1 space-y-6 min-w-[200px] mt-5">
               {barsToRender.map((bar, idx) => {
             if (!bar) return null;
           const inputKey = `bar_${idx}`;
@@ -266,7 +266,7 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
                     <div
                       style={{ width: `${(getLayoutValue(bar) / maxVal) * 100}%` }}
                       className={`relative h-full flex items-center justify-end px-4 text-sm font-black text-white rounded-lg border border-slate-200 shadow-inner overflow-hidden ${
-                        idx === 0 ? 'bg-blue-500' : (idx === 1 ? 'bg-amber-500' : (idx === 2 ? 'bg-emerald-500' : 'bg-purple-500'))
+                        bar.bgClass || (idx === 0 ? 'bg-blue-500' : (idx === 1 ? 'bg-amber-500' : (idx === 2 ? 'bg-emerald-500' : 'bg-purple-500')))
                       }`}
                     >
                       <UnitSegments value={bar.segments || bar.value} />

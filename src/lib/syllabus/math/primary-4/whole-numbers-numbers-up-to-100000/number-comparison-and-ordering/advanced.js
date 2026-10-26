@@ -1322,16 +1322,16 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
             title: "At First",
             hideDifference: true,
             bars: [
-              { name: `${nameA} (At first)`, value: initialA, layoutSize: initialA, displayValue: initialA.toLocaleString(), hideDifference: true },
-              { name: `${nameB} (At first)`, value: initialB, layoutSize: initialB, displayValue: initialB.toLocaleString(), hideDifference: true }
+              { name: `${nameA} (At first)`, value: initialA, layoutSize: initialA, displayValue: initialA.toLocaleString(), bgClass: "bg-blue-500", hideDifference: true },
+              { name: `${nameB} (At first)`, value: initialB, layoutSize: initialB, displayValue: initialB.toLocaleString(), bgClass: "bg-amber-500", hideDifference: true }
             ]
           },
           {
             modelType: "BAR_MODEL_COMPARISON",
             title: `In The End (After ${nameA} gave ${z.toLocaleString()} to ${nameB})`,
             bars: [
-              { name: `${nameB} (Now)`, value: "?", layoutSize: newB, displayValue: "?" },
-              { name: `${nameA} (Now)`, value: "?", layoutSize: newA, displayValue: "?" }
+              { name: `${nameA} (Now)`, value: "?", layoutSize: newA, displayValue: "?", bgClass: "bg-blue-500" },
+              { name: `${nameB} (Now)`, value: "?", layoutSize: newB, displayValue: "?", bgClass: "bg-amber-500" }
             ],
             difference: { displayValue: "?" }
           }
@@ -1339,7 +1339,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       }
     }, null, 2);
 
-    promptInstruction = `- Question stem: "${nameA} had ${initialA.toLocaleString()} ${item} and ${nameB} had ${initialB.toLocaleString()} ${item}. ${nameA} gave ${z.toLocaleString()} ${item} to ${nameB}. How many more ${item} does ${nameB} have than ${nameA} now?"\\n- The finalAnswer must be strictly "${finalAnswer}".\\n- CRITICAL: Return visualEngine and componentData EXACTLY as provided. Do NOT add any difference to the first bar model, and do NOT replace "?" with computed numbers in the second bar model.`;
+    promptInstruction = `- Question stem: "${nameA} had ${initialA.toLocaleString()} ${item} and ${nameB} had ${initialB.toLocaleString()} ${item}. ${nameA} gave ${z.toLocaleString()} ${item} to ${nameB}. How many more ${item} does ${nameB} have than ${nameA} now?"\\n- The finalAnswer must be strictly "${finalAnswer}".\\n- CRITICAL: Return visualEngine and componentData EXACTLY as provided. Keep ${nameA} as the first bar and ${nameB} as the second bar in both models. Do NOT add any difference to the first bar model, and do NOT replace "?" with computed numbers.`;
 
     if (isStructure) {
       inputRequirementStr = JSON.stringify({
