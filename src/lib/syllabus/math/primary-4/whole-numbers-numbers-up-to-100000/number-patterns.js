@@ -27,7 +27,6 @@ export const p4NumberPatternsBlueprint = {
   },
 
   variants: {
-    foundation_count_on_back: 'Count on or count back by 10, 100, 1000, or 10 000 within 100 000.',
     foundation_adjacent_term_deduction: 'Find a missing term at the start, middle, or end of a linear sequence with constant intervals.',
     foundation_boundary_crossing_deduction: 'Deduce the missing number in a sequence crossing place-value boundaries on a number line.',
     foundation_deducing_unknown_rule: 'Determine the unknown addition or subtraction rule from a given complete sequence.',
@@ -48,20 +47,15 @@ export const p4NumberPatternsBlueprint = {
   },
 
   variantVarieties: {
-    foundation_count_on_back: [
-      'add_10',
-      'subtract_10',
-      'add_100',
-      'subtract_100',
-      'add_1000',
-      'subtract_1000',
-      'add_10000',
-      'subtract_10000'
-    ],
     foundation_adjacent_term_deduction: [
       'missing_middle',
       'missing_start',
       'missing_end',
+      'step_10',
+      'step_100',
+      'step_1000',
+      'step_10000',
+      'step_500_2000',
       'ascending',
       'descending'
     ],
@@ -114,6 +108,7 @@ export const p4NumberPatternsBlueprint = {
 
     // Support legacy foundation variant aliases for backward compatibility
     const legacyFoundationMap = {
+      foundation_count_on_back: null,
       foundation_add_10: 'add_10',
       foundation_subtract_10: 'subtract_10',
       foundation_add_100: 'add_100',
@@ -124,9 +119,9 @@ export const p4NumberPatternsBlueprint = {
       foundation_subtract_10000: 'subtract_10000'
     };
 
-    if (legacyFoundationMap[resolvedVariant]) {
+    if (resolvedVariant in legacyFoundationMap) {
       explicitVariety = explicitVariety || legacyFoundationMap[resolvedVariant];
-      resolvedVariant = 'foundation_count_on_back';
+      resolvedVariant = 'foundation_adjacent_term_deduction';
     }
 
     const getFormatInstructions = (visualEngineStr = '{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }', inputRequirementStr = null, variantOverride = null) => `CRITICAL INSTRUCTION: You MUST use the EXACT "visualEngine" and "inputRequirement" JSON objects provided in the template below.

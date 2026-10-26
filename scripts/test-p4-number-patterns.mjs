@@ -1,7 +1,6 @@
 import { p4NumberPatternsBlueprint } from '../src/lib/syllabus/math/primary-4/whole-numbers-numbers-up-to-100000/number-patterns.js';
-import { UniversalQuestionSchema } from '../src/app/api/admin/generate/questionSchema.js';
 
-console.log('Testing Primary 4 Number Patterns Blueprint (Full Suite)...');
+console.log('Testing Primary 4 Number Patterns Blueprint (5 Foundation Variants Suite)...');
 
 let totalTests = 0;
 let passedTests = 0;
@@ -19,13 +18,14 @@ function assert(condition, message) {
 
 // 1. Check Blueprint metadata & variants
 const expectedVariants = [
-  'foundation_count_on_back',
   'foundation_adjacent_term_deduction',
   'foundation_boundary_crossing_deduction',
   'foundation_deducing_unknown_rule',
   'foundation_incorrect_anomaly',
   'foundation_two_step_extension'
 ];
+
+assert(p4NumberPatternsBlueprint.variants.foundation_count_on_back === undefined, 'foundation_count_on_back is retired and removed from variants');
 
 for (const v of expectedVariants) {
   assert(p4NumberPatternsBlueprint.variants[v] !== undefined, `Variant ${v} exists in blueprint`);
@@ -73,6 +73,7 @@ for (const variant of expectedVariants) {
 
 // 3. Test legacy variant aliases backward compatibility
 const legacyAliases = [
+  'foundation_count_on_back',
   'foundation_add_10',
   'foundation_subtract_10',
   'foundation_add_100',
@@ -86,17 +87,13 @@ const legacyAliases = [
 for (const alias of legacyAliases) {
   const resAlias = p4NumberPatternsBlueprint.generate('foundation', alias, 'mcq');
   assert(resAlias && typeof resAlias.aiPrompt === 'string', `Legacy alias ${alias} generates successfully`);
-  assert(resAlias.aiPrompt.includes('"variant": "foundation_count_on_back"'), `Legacy alias routes to foundation_count_on_back`);
+  assert(resAlias.aiPrompt.includes('"variant": "foundation_adjacent_term_deduction"'), `Legacy alias ${alias} routes to foundation_adjacent_term_deduction`);
 }
 
 // 4. Test Schema parsing with simulated outputs
 for (const variant of expectedVariants) {
   for (const qType of ['mcq', 'structured', 'short question']) {
     const res = p4NumberPatternsBlueprint.generate('foundation', variant, qType);
-    
-    // Extract visualEngine and inputRequirement strings
-    const veMatch = res.aiPrompt.match(/"visualEngine":\s*(\{[^}]+\{[^}]+\}[^}]*\})/);
-    const irMatch = res.aiPrompt.match(/"inputRequirement":\s*(\{[^}]+\})/);
     
     // Verify Zod componentToRender enum passes
     const compMatch = res.aiPrompt.match(/"componentToRender":\s*"([^"]+)"/);
