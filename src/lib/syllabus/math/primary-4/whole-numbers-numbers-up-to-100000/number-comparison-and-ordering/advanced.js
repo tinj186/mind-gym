@@ -402,6 +402,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
 
     // ========================================================================
+    // ========================================================================
     // Variety 1: find_transfer_from_initial (Given x and y, find transfer t)
     // ========================================================================
     if (selectedVariety === 'find_transfer_from_initial') {
@@ -415,7 +416,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
             { name: nameA, value: larger, layoutSize: larger, displayValue: larger.toLocaleString() },
             { name: nameB, value: smaller, layoutSize: smaller, displayValue: smaller.toLocaleString() }
           ],
-          difference: { displayValue: diff.toLocaleString() }
+          difference: { displayValue: "?" }
         }
       }, null, 2);
 
@@ -456,31 +457,16 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       finalAnswer = (askForA ? larger : smaller).toString();
       const targetName = askForA ? nameA : nameB;
 
-      if (askForA) {
-        visualEngineStr = JSON.stringify({
-          componentToRender: "BAR_MODEL_COMPARISON",
-          componentData: {
-            modelType: "BAR_MODEL_COMPARISON",
-            bars: [
-              { name: `${nameA} (At first)`, value: "?", layoutSize: larger, displayValue: "?" },
-              { name: "Each (In the end)", value: equalized, layoutSize: equalized, displayValue: equalized.toLocaleString() }
-            ],
-            difference: { displayValue: transfer.toLocaleString() }
-          }
-        }, null, 2);
-      } else {
-        visualEngineStr = JSON.stringify({
-          componentToRender: "BAR_MODEL_COMPARISON",
-          componentData: {
-            modelType: "BAR_MODEL_COMPARISON",
-            bars: [
-              { name: "Each (In the end)", value: equalized, layoutSize: equalized, displayValue: equalized.toLocaleString() },
-              { name: `${nameB} (At first)`, value: "?", layoutSize: smaller, displayValue: "?" }
-            ],
-            difference: { displayValue: transfer.toLocaleString() }
-          }
-        }, null, 2);
-      }
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL_COMPARISON",
+        componentData: {
+          modelType: "BAR_MODEL_COMPARISON",
+          bars: [
+            { name: `${nameA} (In the end)`, value: equalized, layoutSize: equalized, displayValue: equalized.toLocaleString() },
+            { name: `${nameB} (In the end)`, value: equalized, layoutSize: equalized, displayValue: equalized.toLocaleString() }
+          ]
+        }
+      }, null, 2);
 
       promptInstruction = `- Question stem: "After ${nameA} gave ${transfer.toLocaleString()} ${item} to ${nameB}, both of them had ${equalized.toLocaleString()} ${item} each. How many ${item} did ${targetName} have at first?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
@@ -532,10 +518,10 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         componentData: {
           modelType: "BAR_MODEL_COMPARISON",
           bars: [
-            { name: `${nameA} (At first)`, value: askForA ? "?" : larger, layoutSize: larger, displayValue: askForA ? "?" : larger.toLocaleString() },
-            { name: `${nameB} (At first)`, value: !askForA ? "?" : smaller, layoutSize: smaller, displayValue: !askForA ? "?" : smaller.toLocaleString() }
+            { name: `${nameA} (At first)`, value: askForA ? "?" : "", layoutSize: larger, displayValue: askForA ? "?" : "" },
+            { name: `${nameB} (At first)`, value: !askForA ? "?" : "", layoutSize: smaller, displayValue: !askForA ? "?" : "" }
           ],
-          difference: { displayValue: `${transfer.toLocaleString()} transferred` },
+          difference: { displayValue: "" },
           whole: grandTotal.toLocaleString()
         }
       }, null, 2);
@@ -640,7 +626,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
             { name: `${nameA} (At first)`, value: givenA ? larger : "?", layoutSize: larger, displayValue: givenA ? larger.toLocaleString() : "?" },
             { name: `${nameB} (At first)`, value: givenA ? "?" : smaller, layoutSize: smaller, displayValue: givenA ? "?" : smaller.toLocaleString() }
           ],
-          difference: { displayValue: diff.toLocaleString() }
+          difference: { displayValue: "" }
         }
       }, null, 2);
 
@@ -743,10 +729,11 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       componentData: {
         modelType: "BAR_MODEL_COMPARISON",
         bars: [
-          { name: nameA, value: targetEntity === 'A' ? '?' : '', layoutSize: amountA, displayValue: targetEntity === 'A' ? '?' : '1 unit' },
-          { name: nameB, value: targetEntity === 'B' ? '?' : '', layoutSize: amountB, displayValue: targetEntity === 'B' ? '?' : `+${x.toLocaleString()}` },
-          { name: nameC, value: targetEntity === 'C' ? '?' : '', layoutSize: amountC, displayValue: targetEntity === 'C' ? '?' : `+${(x + y).toLocaleString()}` }
+          { name: nameA, value: targetEntity === 'A' ? '?' : '', layoutSize: amountA, displayValue: targetEntity === 'A' ? '?' : '1 unit', difference: { displayValue: "" } },
+          { name: nameB, value: targetEntity === 'B' ? '?' : '', layoutSize: amountB, displayValue: targetEntity === 'B' ? '?' : `+${x.toLocaleString()}`, difference: { displayValue: "" } },
+          { name: nameC, value: targetEntity === 'C' ? '?' : '', layoutSize: amountC, displayValue: targetEntity === 'C' ? '?' : `+${y.toLocaleString()} more`, difference: { displayValue: "" } }
         ],
+        difference: { displayValue: "" },
         whole: grandTotal.toLocaleString()
       }
     }, null, 2);
@@ -820,8 +807,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       componentData: {
         modelType: "BAR_MODEL_COMPARISON",
         bars: [
-          { name: nameB, value: newB, layoutSize: newB, displayValue: newB.toLocaleString() },
-          { name: nameA, value: newA, layoutSize: newA, displayValue: newA.toLocaleString() }
+          { name: `${nameB} (Now)`, value: "", layoutSize: newB, displayValue: "" },
+          { name: `${nameA} (Now)`, value: "", layoutSize: newA, displayValue: "" }
         ],
         difference: { displayValue: "?" }
       }
@@ -1009,9 +996,9 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         totalLabel: "TOTAL",
         whole: total.toLocaleString(),
         parts: [
-          { name: `${ctx.groupAName} Only`, layoutSize: aOnly, displayValue: subType === 1 ? "?" : aOnly.toLocaleString(), bgClass: "bg-blue-500 text-white" },
-          { name: "Both", layoutSize: overlap, displayValue: subType === 0 ? "?" : overlap.toLocaleString(), bgClass: "bg-purple-500 text-white" },
-          { name: `${ctx.groupBName} Only`, layoutSize: bOnly, displayValue: subType === 2 ? "?" : bOnly.toLocaleString(), bgClass: "bg-amber-500 text-white" }
+          { name: `${ctx.groupAName} Only`, layoutSize: aOnly, displayValue: subType === 1 ? "?" : "", bgClass: "bg-blue-500 text-white" },
+          { name: "Both", layoutSize: overlap, displayValue: subType === 0 ? "?" : "", bgClass: "bg-purple-500 text-white" },
+          { name: `${ctx.groupBName} Only`, layoutSize: bOnly, displayValue: subType === 2 ? "?" : "", bgClass: "bg-amber-500 text-white" }
         ]
       }
     }, null, 2);
@@ -1043,10 +1030,10 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           modelType: "BAR_MODEL_COMPARISON",
           bars: [
             { name: nameA, value: "", layoutSize: baselineLayout + x, displayValue: "" },
-            { name: nameB, value: "", layoutSize: baselineLayout, displayValue: "Baseline" },
-            { name: nameC, value: "", layoutSize: baselineLayout + y, displayValue: "" }
+            { name: nameB, value: "", layoutSize: baselineLayout, displayValue: "Baseline", difference: { displayValue: x.toLocaleString() } },
+            { name: nameC, value: "", layoutSize: baselineLayout + y, displayValue: `+${y.toLocaleString()}` }
           ],
-          difference: { displayValue: diffAC.toLocaleString() }
+          difference: { displayValue: "?" }
         }
       }, null, 2);
 
@@ -1089,10 +1076,10 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           modelType: "BAR_MODEL_COMPARISON",
           bars: [
             { name: nameA, value: "", layoutSize: baselineLayout + x, displayValue: "" },
-            { name: nameB, value: "", layoutSize: baselineLayout, displayValue: "Baseline" },
-            { name: nameC, value: "", layoutSize: baselineLayout - y, displayValue: "" }
+            { name: nameB, value: "", layoutSize: baselineLayout, displayValue: "Baseline", difference: { displayValue: x.toLocaleString() } },
+            { name: nameC, value: "", layoutSize: baselineLayout - y, displayValue: `-${y.toLocaleString()}` }
           ],
-          difference: { displayValue: diffAC.toLocaleString() }
+          difference: { displayValue: "?" }
         }
       }, null, 2);
 
@@ -1134,11 +1121,11 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         componentData: {
           modelType: "BAR_MODEL_COMPARISON",
           bars: [
-            { name: nameA, value: "", layoutSize: baselineLayout + x, displayValue: `+${x.toLocaleString()}` },
-            { name: nameB, value: "", layoutSize: baselineLayout, displayValue: "Baseline" },
-            { name: nameC, value: "", layoutSize: baselineLayout + y, displayValue: `+${y.toLocaleString()}` }
+            { name: nameA, value: "", layoutSize: baselineLayout + x, displayValue: `+${x.toLocaleString()}`, difference: { displayValue: "" } },
+            { name: nameB, value: "", layoutSize: baselineLayout, displayValue: "Baseline", difference: { displayValue: "" } },
+            { name: nameC, value: "", layoutSize: baselineLayout + y, displayValue: `+${y.toLocaleString()}`, difference: { displayValue: "" } }
           ],
-          difference: { displayValue: excess.toLocaleString() }
+          difference: { displayValue: "?" }
         }
       }, null, 2);
 

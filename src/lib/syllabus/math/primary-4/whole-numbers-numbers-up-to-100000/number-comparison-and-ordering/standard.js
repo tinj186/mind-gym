@@ -1299,10 +1299,11 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       componentData: {
         modelType: "BAR_MODEL_COMPARISON",
         bars: [
-          { name: nameA, value: valA, layoutSize: valA, displayValue: valA.toLocaleString() },
-          { name: nameB, value: valB, layoutSize: valB, displayValue: valB.toLocaleString() },
-          { name: nameC, value: isFindingTotal ? valC : "?", layoutSize: valC, displayValue: isFindingTotal ? valC.toLocaleString() : "?" }
+          { name: nameA, value: valA, layoutSize: valA, displayValue: valA.toLocaleString(), difference: { displayValue: `+${y.toLocaleString()}` } },
+          { name: nameB, value: "", layoutSize: valB, displayValue: "" },
+          { name: nameC, value: isFindingTotal ? "" : "?", layoutSize: valC, displayValue: isFindingTotal ? "" : "?", difference: { displayValue: `-${z.toLocaleString()}` } }
         ],
+        difference: { displayValue: "" },
         whole: isFindingTotal ? "?" : undefined
       }
     }, null, 2);
