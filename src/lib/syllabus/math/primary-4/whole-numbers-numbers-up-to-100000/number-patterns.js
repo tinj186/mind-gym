@@ -35,8 +35,8 @@ export const p4NumberPatternsBlueprint = {
 
     //    standard_pattern_crossing: 'Complete number sequences crossing place-value boundaries (thousands, ten-thousands, or approaching 100 000).',
     //    standard_non_adjacent_gap_deduction: 'Deduce the interval and find missing terms across non-adjacent gaps on a number line.',
-    standard_alternating_rule: 'Identify and apply alternating two-step operations (+A, -B) in a number pattern.',
-    //    standard_table_input_output: 'Determine the constant rule and calculate missing input or output values in a function table.',
+    //    standard_alternating_rule: 'Identify and apply alternating two-step operations (+A, -B) in a number pattern.',
+    standard_table_input_output: 'Determine the constant rule and calculate missing input or output values in a function table.',
     //    standard_growing_shrinking_interval: 'Analyze sequences with increasing or decreasing interval step sizes (difference of differences).',
     //    standard_equation_sequence_hybrid: 'Solve for the sum or difference of two missing terms (A and B) in a number pattern.',
 
@@ -103,7 +103,9 @@ export const p4NumberPatternsBlueprint = {
     ],
     standard_table_input_output: [
       'find_output',
-      'find_input'
+      'find_input',
+      'rule_addition',
+      'rule_subtraction'
     ],
     standard_growing_shrinking_interval: [
       'growing_intervals',

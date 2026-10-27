@@ -362,31 +362,77 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   // ==========================================================================
   } else if (resolvedVariant === 'standard_table_input_output') {
     let chosenVariety = varietyStr;
-    if (!['find_input', 'find_output'].includes(chosenVariety)) {
-      chosenVariety = Math.random() < 0.5 ? 'find_input' : 'find_output';
+    let targetType = 'find_output';
+    if (chosenVariety.includes('find_input') || chosenVariety.includes('input')) {
+      targetType = 'find_input';
+    } else if (chosenVariety.includes('find_output') || chosenVariety.includes('output')) {
+      targetType = 'find_output';
+    } else {
+      targetType = Math.random() < 0.5 ? 'find_input' : 'find_output';
     }
 
-    const offsets = [1500, 2400, 5000, 12000, 15000, 24000, 35000, 44000];
-    const offset = offsets[Math.floor(Math.random() * offsets.length)];
-    const isAdd = Math.random() < 0.7; // Output = Input + offset or Input - offset
+    let isAdd = Math.random() < 0.5;
+    if (chosenVariety.includes('addition') || chosenVariety.includes('add')) {
+      isAdd = true;
+    } else if (chosenVariety.includes('subtraction') || chosenVariety.includes('subtract') || chosenVariety.includes('sub')) {
+      isAdd = false;
+    }
 
-    const baseInputs = [
-      (Math.floor(Math.random() * 10) + 10) * 1000, // e.g. 24000
-      (Math.floor(Math.random() * 10) + 25) * 1000, // e.g. 35000
-      (Math.floor(Math.random() * 10) + 40) * 1000, // e.g. 45000 (Target)
-      (Math.floor(Math.random() * 10) + 55) * 1000  // e.g. 60000
-    ];
+    const offsets = [1500, 2400, 3500, 5000, 6000, 8000, 12000, 15000, 20000, 25000, 30000];
+    const offset = offsets[Math.floor(Math.random() * offsets.length)];
+
+    let baseInputs = [];
+    if (isAdd) {
+      // Output = Input + offset
+      // Constraints: Input >= 2000, Output <= 100000 => Input <= 100000 - offset
+      const maxAllowed = 100000 - offset;
+      const startMin = 3000;
+      const startMax = Math.max(startMin, maxAllowed - 30000);
+      const start = Math.floor(Math.random() * ((startMax - startMin) / 1000)) * 1000 + startMin;
+      const gap1 = (Math.floor(Math.random() * 4) + 4) * 1000; // 4000 - 7000
+      const gap2 = (Math.floor(Math.random() * 4) + 4) * 1000;
+      const gap3 = (Math.floor(Math.random() * 4) + 4) * 1000;
+      baseInputs = [
+        start,
+        start + gap1,
+        start + gap1 + gap2,
+        start + gap1 + gap2 + gap3
+      ];
+      if (baseInputs[3] > maxAllowed) {
+        const excess = baseInputs[3] - maxAllowed;
+        baseInputs = baseInputs.map(val => val - excess);
+      }
+    } else {
+      // Output = Input - offset
+      // Constraints: Output >= 2000 => Input >= offset + 2000; Input <= 100000
+      const minAllowed = offset + 2000;
+      const start = minAllowed + (Math.floor(Math.random() * 5) + 1) * 1000; // offset + 3000 to 7000
+      const gap1 = (Math.floor(Math.random() * 4) + 5) * 1000; // 5000 - 8000
+      const gap2 = (Math.floor(Math.random() * 4) + 5) * 1000;
+      const gap3 = (Math.floor(Math.random() * 4) + 5) * 1000;
+      baseInputs = [
+        start,
+        start + gap1,
+        start + gap1 + gap2,
+        start + gap1 + gap2 + gap3
+      ];
+      if (baseInputs[3] > 100000) {
+        const excess = baseInputs[3] - 100000;
+        baseInputs = baseInputs.map(val => val - excess);
+      }
+    }
 
     const rows = baseInputs.map(inp => {
       const out = isAdd ? inp + offset : inp - offset;
       return [inp.toString(), out.toString()];
     });
 
-    const targetRowIdx = 2;
+    // Dynamically choose target row across rows (1, 2, or 3) so row 0 is always a complete sample
+    const targetRowIdx = Math.floor(Math.random() * 3) + 1;
     const targetInput = rows[targetRowIdx][0];
     const targetOutput = rows[targetRowIdx][1];
 
-    if (chosenVariety === 'find_input') {
+    if (targetType === 'find_input') {
       rows[targetRowIdx][0] = "?";
       finalAnswer = targetInput;
     } else {
@@ -403,14 +449,17 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       }
     }, null, 2);
 
-    const targetLabel = chosenVariety === 'find_input' ? 'Input' : 'Output';
+    const targetLabel = targetType === 'find_input' ? 'Input' : 'Output';
     promptInstruction = `- Question stem: "The table below shows the inputs and outputs of a number machine. Find the missing ${targetLabel} value marked with a question mark (?)."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
-    const row0High = Math.max(Number(rows[0][0]), Number(rows[0][1]));
-    const row0Low = Math.min(Number(rows[0][0]), Number(rows[0][1]));
+    // Row 0 is guaranteed complete
+    const sampleInp = Number(rows[0][0]);
+    const sampleOut = Number(rows[0][1]);
+    const sampleHigh = Math.max(sampleInp, sampleOut);
+    const sampleLow = Math.min(sampleInp, sampleOut);
 
     let step2Equation = "";
-    if (chosenVariety === 'find_input') {
+    if (targetType === 'find_input') {
       step2Equation = isAdd
         ? `${targetOutput} - ${offset} = ${targetInput}`
         : `${targetOutput} + ${offset} = ${targetInput}`;
@@ -421,14 +470,23 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
 
     if (isMCQ) {
-      const oppositeAns = chosenVariety === 'find_input'
-        ? (isAdd ? Number(targetOutput) + offset : Number(targetOutput) - offset).toString()
-        : (isAdd ? Number(targetInput) - offset : Number(targetInput) + offset).toString();
+      const oppositeAns = targetType === 'find_input'
+        ? (isAdd ? Number(targetOutput) + offset : Number(targetOutput) - offset)
+        : (isAdd ? Number(targetInput) - offset : Number(targetInput) + offset);
+
+      let safeOpposite = oppositeAns;
+      if (safeOpposite <= 0 || safeOpposite > 100000) {
+        safeOpposite = isAdd ? Number(finalAnswer) - 2000 : Number(finalAnswer) + 2000;
+      }
+
+      const carelessAns = Number(finalAnswer) + 1000 <= 100000
+        ? Number(finalAnswer) + 1000
+        : Number(finalAnswer) - 1000;
 
       const mcqRes = buildMcqOptions(finalAnswer, [
         { val: offset.toString(), defect: 'CONFUSED_RULE_WITH_ANSWER' },
-        { val: oppositeAns, defect: 'INVERTED_MACHINE_OPERATION' },
-        { val: (Number(finalAnswer) + 1000).toString(), defect: 'CARELESS_CALCULATION' }
+        { val: safeOpposite.toString(), defect: 'INVERTED_MACHINE_OPERATION' },
+        { val: carelessAns.toString(), defect: 'CARELESS_CALCULATION' }
       ]);
       options = mcqRes.options;
       defectMap = mcqRes.defectMap;
@@ -438,8 +496,8 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         steps: [
           {
             label: "Write the working equation to find the machine's rule using a completed row:",
-            expectedAnswer: `${row0High} - ${row0Low} = ${offset}`,
-            acceptedAnswers: [`${row0High} - ${row0Low} = ${offset}`, `${row0High}-${row0Low}=${offset}`]
+            expectedAnswer: `${sampleHigh} - ${sampleLow} = ${offset}`,
+            acceptedAnswers: [`${sampleHigh} - ${sampleLow} = ${offset}`, `${sampleHigh}-${sampleLow}=${offset}`]
           },
           {
             label: `Write the working equation to find the missing ${targetLabel}:`,
@@ -451,7 +509,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
 
     ruleDesc = isAdd ? `adding ${offset} to the Input` : `subtracting ${offset} from the Input`;
-    hint = `Compare the completed Input and Output pairs in the table (${row0High} - ${row0Low} = ${offset}). Apply this constant relationship (${ruleDesc}) to find the missing ${targetLabel}.`;
+    hint = `Compare the completed Input and Output pairs in the table (${sampleHigh} - ${sampleLow} = ${offset}). Apply this constant relationship (${ruleDesc}) to find the missing ${targetLabel}.`;
 
   // ==========================================================================
   // VARIANT 4: standard_growing_shrinking_interval (Difference of Differences)
