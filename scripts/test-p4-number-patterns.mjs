@@ -108,39 +108,56 @@ for (const variant of expectedVariants) {
   }
 }
 
-// 5. Standard Pattern Crossing tests across all varieties and question types
-assert(p4NumberPatternsBlueprint.variants.standard_pattern_crossing !== undefined, 'standard_pattern_crossing exists in blueprint');
-assert(Array.isArray(p4NumberPatternsBlueprint.variantVarieties.standard_pattern_crossing), 'Varieties configured for standard_pattern_crossing');
+// 5. Standard variants tests across all varieties and question types
+const expectedStandardVariants = [
+  'standard_pattern_crossing',
+  'standard_non_adjacent_gap_deduction',
+  'standard_alternating_rule',
+  'standard_table_input_output',
+  'standard_growing_shrinking_interval',
+  'standard_equation_sequence_hybrid'
+];
 
-const stdVarieties = p4NumberPatternsBlueprint.variantVarieties.standard_pattern_crossing;
-for (const variety of stdVarieties) {
-  for (const qType of ['mcq', 'short question', 'structured']) {
-    const res = p4NumberPatternsBlueprint.generate('standard', 'standard_pattern_crossing', qType, { variety });
-    assert(res && typeof res.aiPrompt === 'string', `standard_pattern_crossing (${variety}) [${qType}] generates prompt`);
+for (const stdVariant of expectedStandardVariants) {
+  assert(p4NumberPatternsBlueprint.variants[stdVariant] !== undefined, `${stdVariant} exists in blueprint`);
+  assert(Array.isArray(p4NumberPatternsBlueprint.variantVarieties[stdVariant]), `Varieties configured for ${stdVariant}`);
 
-    const prompt = res.aiPrompt;
-    assert(prompt.includes('"variant": "standard_pattern_crossing"'), 'standard_pattern_crossing metadata variant is correct');
-    assert(prompt.includes('standard-level'), 'standard-level prompt is present');
+  const stdVarieties = p4NumberPatternsBlueprint.variantVarieties[stdVariant];
+  for (const variety of stdVarieties) {
+    for (const qType of ['mcq', 'short question', 'structured']) {
+      const res = p4NumberPatternsBlueprint.generate('standard', stdVariant, qType, { variety });
+      assert(res && typeof res.aiPrompt === 'string', `${stdVariant} (${variety}) [${qType}] generates prompt`);
 
-    // Check MCQ requirements
-    if (qType === 'mcq') {
-      const optionsMatch = prompt.match(/Generate EXACTLY 4 options: (\[[^\]]+\])/);
-      assert(optionsMatch !== null, `MCQ options found for standard (${variety})`);
-      if (optionsMatch) {
-        const opts = JSON.parse(optionsMatch[1]);
-        assert(opts.length === 4, `MCQ options has exactly 4 items for standard (${variety})`);
-        assert(new Set(opts).size === 4, `MCQ options all distinct for standard (${variety})`);
+      const prompt = res.aiPrompt;
+      assert(prompt.includes(`"variant": "${stdVariant}"`), `${stdVariant} metadata variant is correct`);
+      assert(prompt.includes('standard-level'), 'standard-level prompt is present');
+
+      // Check MCQ requirements
+      if (qType === 'mcq') {
+        const optionsMatch = prompt.match(/Generate EXACTLY 4 options: (\[[^\]]+\])/);
+        assert(optionsMatch !== null, `MCQ options found for ${stdVariant} (${variety})`);
+        if (optionsMatch) {
+          const opts = JSON.parse(optionsMatch[1]);
+          assert(opts.length === 4, `MCQ options has exactly 4 items for ${stdVariant} (${variety})`);
+          assert(new Set(opts).size === 4, `MCQ options all distinct for ${stdVariant} (${variety})`);
+        }
+      }
+
+      // Check Structured requirements
+      if (qType === 'structured') {
+        assert(prompt.includes('"inputType": "MULTI_STEP_INPUT"'), `Structured has MULTI_STEP_INPUT for ${stdVariant} (${variety})`);
+        assert(prompt.includes('"steps":'), `Structured has steps array for ${stdVariant} (${variety})`);
+      }
+
+      // Check visual engines
+      if (stdVariant === 'standard_non_adjacent_gap_deduction') {
+        assert(prompt.includes('"componentToRender": "NUMBER_LINE_ADVANCED"'), `${stdVariant} uses NUMBER_LINE_ADVANCED`);
+      } else if (stdVariant === 'standard_table_input_output') {
+        assert(prompt.includes('"componentToRender": "TABLE_PATTERN_VISUALIZER"'), `${stdVariant} uses TABLE_PATTERN_VISUALIZER`);
+      } else {
+        assert(prompt.includes('"componentToRender": "NUMBER_SEQUENCE_BLOCKS"'), `${stdVariant} uses NUMBER_SEQUENCE_BLOCKS`);
       }
     }
-
-    // Check Structured requirements
-    if (qType === 'structured') {
-      assert(prompt.includes('"inputType": "MULTI_STEP_INPUT"'), `Structured has MULTI_STEP_INPUT for standard (${variety})`);
-      assert(prompt.includes('"steps":'), `Structured has steps array for standard (${variety})`);
-    }
-
-    // Check visual engine uses NUMBER_SEQUENCE_BLOCKS
-    assert(prompt.includes('"componentToRender": "NUMBER_SEQUENCE_BLOCKS"'), `Standard uses NUMBER_SEQUENCE_BLOCKS`);
   }
 }
 

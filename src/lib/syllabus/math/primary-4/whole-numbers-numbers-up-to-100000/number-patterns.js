@@ -34,6 +34,11 @@ export const p4NumberPatternsBlueprint = {
     foundation_two_step_extension: 'Find the term that is two positions away from the given numbers in a sequence (e.g. 5th number or 1st number).',
 
     standard_pattern_crossing: 'Complete number sequences crossing place-value boundaries (thousands, ten-thousands, or approaching 100 000).',
+    standard_non_adjacent_gap_deduction: 'Deduce the interval and find missing terms across non-adjacent gaps on a number line.',
+    standard_alternating_rule: 'Identify and apply alternating two-step operations (+A, -B) in a number pattern.',
+    standard_table_input_output: 'Determine the constant rule and calculate missing input or output values in a function table.',
+    standard_growing_shrinking_interval: 'Analyze sequences with increasing or decreasing interval step sizes (difference of differences).',
+    standard_equation_sequence_hybrid: 'Solve for the sum or difference of two missing terms (A and B) in a number pattern.',
 
     advanced_alternating_add_sub: 'Two-step alternating rule with addition and subtraction.',
     advanced_alternating_add_add: 'Two-step alternating rule with two different additions.',
@@ -80,6 +85,28 @@ export const p4NumberPatternsBlueprint = {
       'add_cross_ten_thousands',
       'subtract_cross_ten_thousands',
       'reach_100000'
+    ],
+    standard_non_adjacent_gap_deduction: [
+      'two_gap_find_inside',
+      'two_gap_find_outside',
+      'three_gap_find_inside'
+    ],
+    standard_alternating_rule: [
+      'alternating_add_sub',
+      'alternating_sub_add',
+      'alternating_add_add'
+    ],
+    standard_table_input_output: [
+      'find_output',
+      'find_input'
+    ],
+    standard_growing_shrinking_interval: [
+      'growing_intervals',
+      'shrinking_intervals'
+    ],
+    standard_equation_sequence_hybrid: [
+      'find_difference',
+      'find_sum'
     ]
   },
 
@@ -131,17 +158,26 @@ export const p4NumberPatternsBlueprint = {
 
     // Support legacy standard variant aliases for backward compatibility
     const legacyStandardMap = {
-      standard_add_cross_thousands: 'add_cross_thousands',
-      standard_subtract_cross_thousands: 'subtract_cross_thousands',
-      standard_add_cross_ten_thousands: 'add_cross_ten_thousands',
-      standard_subtract_cross_ten_thousands: 'subtract_cross_ten_thousands',
-      standard_reach_100000: 'reach_100000',
-      standard_boundary_crossing: null
+      standard_add_cross_thousands: { variant: 'standard_pattern_crossing', variety: 'add_cross_thousands' },
+      standard_subtract_cross_thousands: { variant: 'standard_pattern_crossing', variety: 'subtract_cross_thousands' },
+      standard_add_cross_ten_thousands: { variant: 'standard_pattern_crossing', variety: 'add_cross_ten_thousands' },
+      standard_subtract_cross_ten_thousands: { variant: 'standard_pattern_crossing', variety: 'subtract_cross_ten_thousands' },
+      standard_reach_100000: { variant: 'standard_pattern_crossing', variety: 'reach_100000' },
+      standard_boundary_crossing: { variant: 'standard_pattern_crossing', variety: null },
+      standard_non_adjacent_gap: { variant: 'standard_non_adjacent_gap_deduction', variety: null },
+      standard_missing_middle: { variant: 'standard_non_adjacent_gap_deduction', variety: null },
+      standard_alternating_sequence_rule: { variant: 'standard_alternating_rule', variety: null },
+      standard_input_output_offset: { variant: 'standard_table_input_output', variety: null },
+      standard_table_pattern: { variant: 'standard_table_input_output', variety: null },
+      standard_growing_interval: { variant: 'standard_growing_shrinking_interval', variety: null },
+      standard_difference_of_differences: { variant: 'standard_growing_shrinking_interval', variety: null },
+      standard_equation_hybrid: { variant: 'standard_equation_sequence_hybrid', variety: null }
     };
 
     if (resolvedVariant in legacyStandardMap) {
-      explicitVariety = explicitVariety || legacyStandardMap[resolvedVariant];
-      resolvedVariant = 'standard_pattern_crossing';
+      const mapping = legacyStandardMap[resolvedVariant];
+      explicitVariety = explicitVariety || mapping.variety;
+      resolvedVariant = mapping.variant;
     }
 
     const getFormatInstructions = (visualEngineStr = '{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }', inputRequirementStr = null, variantOverride = null) => `CRITICAL INSTRUCTION: You MUST use the EXACT "visualEngine" and "inputRequirement" JSON objects provided in the template below.

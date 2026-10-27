@@ -35,6 +35,7 @@ export default function NumberSequenceBlocks({ data }) {
       >
         {rawNodes.map((nodeVal, idx) => {
           const isMissing = nodeVal === '?' || nodeVal === '' || nodeVal === null || nodeVal === undefined;
+          const isVariable = nodeVal === 'A' || nodeVal === 'B' || nodeVal === 'X' || nodeVal === 'Y';
           const displayVal = isMissing ? '?' : (typeof nodeVal === 'number' ? nodeVal.toLocaleString() : String(nodeVal));
           const hasArrow = idx < rawNodes.length - 1;
           const arrowLabel = arrowLabels[idx] ?? '';
@@ -47,6 +48,8 @@ export default function NumberSequenceBlocks({ data }) {
                 className={`relative min-w-16 sm:min-w-20 md:min-w-24 h-14 sm:h-16 md:h-18 px-2 sm:px-4 flex items-center justify-center border-4 transition-all duration-200 shrink-0 ${roundedClass} ${
                   isMissing
                     ? 'bg-amber-50 border-amber-500 shadow-[3px_3px_0px_0px_rgba(245,158,11,1)] animate-pulse'
+                    : isVariable
+                    ? 'bg-indigo-50 border-indigo-600 shadow-[3px_3px_0px_0px_rgba(79,70,229,1)] hover:-translate-y-0.5'
                     : 'bg-white border-slate-900 shadow-[3px_3px_0px_0px_rgba(15,23,42,1)] hover:-translate-y-0.5'
                 }`}
               >
@@ -54,6 +57,8 @@ export default function NumberSequenceBlocks({ data }) {
                   className={`font-black tracking-tight ${
                     isMissing
                       ? 'text-amber-600 text-xl sm:text-2xl md:text-3xl'
+                      : isVariable
+                      ? 'text-indigo-700 text-xl sm:text-2xl md:text-3xl'
                       : displayVal.length > 6
                       ? 'text-xs sm:text-sm md:text-base text-slate-900'
                       : displayVal.length > 4
