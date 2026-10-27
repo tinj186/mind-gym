@@ -33,12 +33,12 @@ export const p4NumberPatternsBlueprint = {
     foundation_incorrect_anomaly: 'Identify the incorrect number in a sequence where one term breaks the pattern rule.',
     foundation_two_step_extension: 'Find the term that is two positions away from the given numbers in a sequence (e.g. 5th number or 1st number).',
 
-    standard_pattern_crossing: 'Complete number sequences crossing place-value boundaries (thousands, ten-thousands, or approaching 100 000).',
-    standard_non_adjacent_gap_deduction: 'Deduce the interval and find missing terms across non-adjacent gaps on a number line.',
+    //    standard_pattern_crossing: 'Complete number sequences crossing place-value boundaries (thousands, ten-thousands, or approaching 100 000).',
+    //    standard_non_adjacent_gap_deduction: 'Deduce the interval and find missing terms across non-adjacent gaps on a number line.',
     standard_alternating_rule: 'Identify and apply alternating two-step operations (+A, -B) in a number pattern.',
-    standard_table_input_output: 'Determine the constant rule and calculate missing input or output values in a function table.',
-    standard_growing_shrinking_interval: 'Analyze sequences with increasing or decreasing interval step sizes (difference of differences).',
-    standard_equation_sequence_hybrid: 'Solve for the sum or difference of two missing terms (A and B) in a number pattern.',
+    //    standard_table_input_output: 'Determine the constant rule and calculate missing input or output values in a function table.',
+    //    standard_growing_shrinking_interval: 'Analyze sequences with increasing or decreasing interval step sizes (difference of differences).',
+    //    standard_equation_sequence_hybrid: 'Solve for the sum or difference of two missing terms (A and B) in a number pattern.',
 
     advanced_alternating_add_sub: 'Two-step alternating rule with addition and subtraction.',
     advanced_alternating_add_add: 'Two-step alternating rule with two different additions.',
