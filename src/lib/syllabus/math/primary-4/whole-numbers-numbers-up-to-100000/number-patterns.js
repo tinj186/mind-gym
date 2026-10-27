@@ -94,7 +94,12 @@ export const p4NumberPatternsBlueprint = {
     standard_alternating_rule: [
       'alternating_add_sub',
       'alternating_sub_add',
-      'alternating_add_add'
+      'alternating_add_add',
+      'alternating_sub_sub',
+      'missing_rule_a',
+      'missing_rule_b',
+      'missing_end_term',
+      'missing_middle_term'
     ],
     standard_table_input_output: [
       'find_output',

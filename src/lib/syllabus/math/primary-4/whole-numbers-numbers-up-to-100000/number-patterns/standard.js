@@ -199,9 +199,22 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   // ==========================================================================
   } else if (resolvedVariant === 'standard_alternating_rule') {
     let chosenVariety = varietyStr;
-    if (!['alternating_add_sub', 'alternating_sub_add', 'alternating_add_add'].includes(chosenVariety)) {
-      chosenVariety = ['alternating_add_sub', 'alternating_sub_add', 'alternating_add_add'][Math.floor(Math.random() * 3)];
+
+    let opVariety = 'alternating_add_sub';
+    let missingPosMode = 'random'; // 'random', 'rule_a', 'rule_b', 'end', 'middle'
+
+    if (chosenVariety.includes('sub_add')) opVariety = 'alternating_sub_add';
+    else if (chosenVariety.includes('add_add')) opVariety = 'alternating_add_add';
+    else if (chosenVariety.includes('sub_sub')) opVariety = 'alternating_sub_sub';
+    else if (chosenVariety.includes('add_sub')) opVariety = 'alternating_add_sub';
+    else {
+      opVariety = ['alternating_add_sub', 'alternating_sub_add', 'alternating_add_add', 'alternating_sub_sub'][Math.floor(Math.random() * 4)];
     }
+
+    if (chosenVariety.includes('rule_a')) missingPosMode = 'rule_a';
+    else if (chosenVariety.includes('rule_b')) missingPosMode = 'rule_b';
+    else if (chosenVariety.includes('end')) missingPosMode = 'end';
+    else if (chosenVariety.includes('middle')) missingPosMode = 'middle';
 
     let a = 1500;
     let b = 500;
@@ -211,7 +224,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     let op2Val = 500;
     let startVal = 50000;
 
-    if (chosenVariety === 'alternating_add_sub') {
+    if (opVariety === 'alternating_add_sub') {
       const aOptions = [1000, 1500, 2000, 2500, 3000];
       const bOptions = [300, 500, 600, 800, 1000];
       a = aOptions[Math.floor(Math.random() * aOptions.length)];
@@ -221,7 +234,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       op1Val = a;
       op2Val = b;
       startVal = (Math.floor(Math.random() * 30) + 20) * 1000;
-    } else if (chosenVariety === 'alternating_sub_add') {
+    } else if (opVariety === 'alternating_sub_add') {
       const aOptions = [1000, 1500, 2000, 2500];
       const bOptions = [300, 500, 800, 1000];
       a = aOptions[Math.floor(Math.random() * aOptions.length)];
@@ -231,8 +244,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       op1Val = a;
       op2Val = b;
       startVal = (Math.floor(Math.random() * 30) + 40) * 1000;
-    } else {
-      // alternating_add_add
+    } else if (opVariety === 'alternating_add_add') {
       a = [500, 1000, 1500][Math.floor(Math.random() * 3)];
       b = [2000, 2500, 3000][Math.floor(Math.random() * 3)];
       op1Sign = '+';
@@ -240,6 +252,15 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       op1Val = a;
       op2Val = b;
       startVal = (Math.floor(Math.random() * 20) + 15) * 1000;
+    } else {
+      // alternating_sub_sub
+      a = [1000, 2000, 3000][Math.floor(Math.random() * 3)];
+      b = [500, 1000, 1500][Math.floor(Math.random() * 3)];
+      op1Sign = '-';
+      op2Sign = '-';
+      op1Val = a;
+      op2Val = b;
+      startVal = (Math.floor(Math.random() * 25) + 60) * 1000;
     }
 
     const pattern = [];
@@ -249,8 +270,21 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       curr += (i % 2 === 0 ? (op1Sign === '+' ? op1Val : -op1Val) : (op2Sign === '+' ? op2Val : -op2Val));
     }
 
-    // Missing term is term 4 (index 4) so students see first 4 numbers [0, 1, 2, 3] to identify both rules
-    const missingIndex = 4;
+    // Determine missingIndex dynamically across positions (2, 3, 4, 5)
+    let missingIndex = 4;
+    if (missingPosMode === 'end') {
+      missingIndex = 5;
+    } else if (missingPosMode === 'middle') {
+      missingIndex = Math.random() < 0.5 ? 2 : 3;
+    } else if (missingPosMode === 'rule_a') {
+      missingIndex = Math.random() < 0.5 ? 3 : 5; // index 3 (jump 2 is rule A) or index 5 (jump 4 is rule A)
+    } else if (missingPosMode === 'rule_b') {
+      missingIndex = Math.random() < 0.5 ? 2 : 4; // index 2 (jump 1 is rule B) or index 4 (jump 3 is rule B)
+    } else {
+      // Truly random across 2, 3, 4, 5
+      missingIndex = [2, 3, 4, 5][Math.floor(Math.random() * 4)];
+    }
+
     const correctNum = pattern[missingIndex];
     finalAnswer = correctNum.toString();
 
@@ -266,22 +300,34 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     promptInstruction = `- Question stem: "Find the missing number in the alternating number pattern: ${displayNodes.join(', ')}."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
-    const high01 = Math.max(pattern[0], pattern[1]);
-    const low01 = Math.min(pattern[0], pattern[1]);
-    const high12 = Math.max(pattern[1], pattern[2]);
-    const low12 = Math.min(pattern[1], pattern[2]);
+    let pairA1 = 0, pairA2 = 1;
+    let pairB1 = 1, pairB2 = 2;
+    if (missingIndex === 2) {
+      pairB1 = 4; pairB2 = 5;
+    }
 
-    // From pattern[3] to pattern[4] uses rule 1 (op1)
-    const prevNum = pattern[3];
-    const step3Equation = `${prevNum} ${op1Sign} ${op1Val} = ${correctNum}`;
+    const highA = Math.max(pattern[pairA1], pattern[pairA2]);
+    const lowA = Math.min(pattern[pairA1], pattern[pairA2]);
+    const highB = Math.max(pattern[pairB1], pattern[pairB2]);
+    const lowB = Math.min(pattern[pairB1], pattern[pairB2]);
+
+    const leadingJump = missingIndex - 1;
+    const isTargetOnRuleA = leadingJump % 2 === 0;
+    const appliedSign = isTargetOnRuleA ? op1Sign : op2Sign;
+    const appliedVal = isTargetOnRuleA ? op1Val : op2Val;
+    const prevNum = pattern[missingIndex - 1];
+    const step3Equation = `${prevNum} ${appliedSign} ${appliedVal} = ${correctNum}`;
 
     if (isMCQ) {
-      const wrongRuleNum = op2Sign === '+' ? prevNum + op2Val : prevNum - op2Val;
-      const reverseRuleNum = op1Sign === '+' ? prevNum - op1Val : prevNum + op1Val;
+      const wrongRuleSign = isTargetOnRuleA ? op2Sign : op1Sign;
+      const wrongRuleVal = isTargetOnRuleA ? op2Val : op1Val;
+      const wrongRuleNum = wrongRuleSign === '+' ? prevNum + wrongRuleVal : prevNum - wrongRuleVal;
+      const reverseRuleNum = appliedSign === '+' ? prevNum - appliedVal : prevNum + appliedVal;
+
       const mcqRes = buildMcqOptions(finalAnswer, [
         { val: wrongRuleNum.toString(), defect: 'APPLIED_WRONG_ALTERNATING_RULE' },
         { val: reverseRuleNum.toString(), defect: 'REVERSED_OPERATION_SIGN' },
-        { val: pattern[3].toString(), defect: 'RETURNED_PREVIOUS_TERM' }
+        { val: pattern[missingIndex - 1].toString(), defect: 'RETURNED_PREVIOUS_TERM' }
       ]);
       options = mcqRes.options;
       defectMap = mcqRes.defectMap;
@@ -291,13 +337,13 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         steps: [
           {
             label: "Write the working equation to find the first alternating rule:",
-            expectedAnswer: `${high01} - ${low01} = ${op1Val}`,
-            acceptedAnswers: [`${high01} - ${low01} = ${op1Val}`, `${high01}-${low01}=${op1Val}`]
+            expectedAnswer: `${highA} - ${lowA} = ${op1Val}`,
+            acceptedAnswers: [`${highA} - ${lowA} = ${op1Val}`, `${highA}-${lowA}=${op1Val}`]
           },
           {
             label: "Write the working equation to find the second alternating rule:",
-            expectedAnswer: `${high12} - ${low12} = ${op2Val}`,
-            acceptedAnswers: [`${high12} - ${low12} = ${op2Val}`, `${high12}-${low12}=${op2Val}`]
+            expectedAnswer: `${highB} - ${lowB} = ${op2Val}`,
+            acceptedAnswers: [`${highB} - ${lowB} = ${op2Val}`, `${highB}-${lowB}=${op2Val}`]
           },
           {
             label: "Write the working equation to find the missing number:",
