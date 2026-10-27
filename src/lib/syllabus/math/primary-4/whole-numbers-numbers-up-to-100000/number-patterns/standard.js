@@ -735,45 +735,160 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   // ==========================================================================
   } else if (resolvedVariant === 'standard_equation_sequence_hybrid') {
     let chosenVariety = varietyStr;
-    if (!['find_difference', 'find_sum'].includes(chosenVariety)) {
-      chosenVariety = Math.random() < 0.5 ? 'find_difference' : 'find_sum';
+    const isDiff = chosenVariety.includes('diff') || (!chosenVariety.includes('sum') && Math.random() < 0.5);
+    const isDescending = chosenVariety.includes('descending') || Math.random() < 0.25;
+
+    const stepOptions = [500, 1000, 1500, 2000, 2500, 3000, 5000];
+    const d = stepOptions[Math.floor(Math.random() * stepOptions.length)];
+
+    let startVal = 20000;
+    if (!isDiff) {
+      // Must ensure A + B <= 95000 => startVal <= (95000 - 8*d) / 2
+      const maxStartSum = Math.floor((95000 - (8 * d)) / 2000) * 1000;
+      if (isDescending) {
+        const minStart = (4 * d) + 5000;
+        const maxStart = Math.min(75000, maxStartSum);
+        startVal = Math.floor(Math.random() * Math.max(1, (maxStart - minStart) / 1000)) * 1000 + minStart;
+      } else {
+        const maxStart = Math.min(38000, maxStartSum);
+        startVal = (Math.floor(Math.random() * Math.max(1, (maxStart - 8000) / 1000))) * 1000 + 8000;
+      }
+    } else {
+      if (isDescending) {
+        // Must ensure startVal - 4*d >= 2000
+        const minStart = (4 * d) + 5000;
+        const maxStart = 85000;
+        startVal = Math.floor(Math.random() * Math.max(1, (maxStart - minStart) / 1000)) * 1000 + minStart;
+      } else {
+        // Must ensure startVal + 4*d <= 95000
+        const maxStart = 95000 - (4 * d);
+        startVal = (Math.floor(Math.random() * Math.max(1, (maxStart - 10000) / 1000))) * 1000 + 10000;
+      }
     }
 
-    const stepOptions = [500, 1000, 2000, 2500, 3000, 5000];
-    const d = stepOptions[Math.floor(Math.random() * stepOptions.length)];
-    const startVal = (Math.floor(Math.random() * 20) + 15) * 1000;
+    const pattern = [];
+    for (let i = 0; i < 5; i++) {
+      pattern.push(isDescending ? startVal - (i * d) : startVal + (i * d));
+    }
 
-    // Terms: N0, A (N1), N2, N3, B (N4)
-    const n0 = startVal;
-    const aVal = n0 + d;
-    const n2 = n0 + (2 * d);
-    const n3 = n0 + (3 * d);
-    const bVal = n0 + (4 * d);
+    // 7 valid configurations of pair positions where each missing term is adjacent to at least one known term
+    const validConfigurations = [
+      [0, 2],
+      [0, 3],
+      [0, 4],
+      [1, 2],
+      [1, 4],
+      [2, 3],
+      [2, 4]
+    ];
+    const chosenPair = validConfigurations[Math.floor(Math.random() * validConfigurations.length)];
 
-    const isDiff = chosenVariety === 'find_difference';
-    finalAnswer = isDiff ? (bVal - aVal).toString() : (aVal + bVal).toString();
+    // Randomize whether A or B comes first
+    const flipLetters = Math.random() < 0.5;
+    const idxA = flipLetters ? chosenPair[1] : chosenPair[0];
+    const idxB = flipLetters ? chosenPair[0] : chosenPair[1];
+
+    const aVal = pattern[idxA];
+    const bVal = pattern[idxB];
+
+    const largerVal = Math.max(aVal, bVal);
+    const smallerVal = Math.min(aVal, bVal);
+    const largerLetter = aVal >= bVal ? "A" : "B";
+    const smallerLetter = aVal >= bVal ? "B" : "A";
+
+    const operationLabel = isDiff ? `${largerLetter} - ${smallerLetter}` : "A + B";
+    finalAnswer = isDiff ? (largerVal - smallerVal).toString() : (aVal + bVal).toString();
+
+    const displayNodes = pattern.map((num, idx) => {
+      if (idx === idxA) return "A";
+      if (idx === idxB) return "B";
+      return num.toString();
+    });
 
     visualEngineStr = JSON.stringify({
       componentToRender: "NUMBER_SEQUENCE_BLOCKS",
       componentData: {
-        nodes: [n0.toString(), "A", n2.toString(), n3.toString(), "B"],
+        nodes: displayNodes,
         orientation: "horizontal"
       }
     }, null, 2);
 
-    const operationLabel = isDiff ? "B - A" : "A + B";
-    promptInstruction = `- Question stem: "In the number pattern: ${n0}, A, ${n2}, ${n3}, B, find the value of ${operationLabel}."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    promptInstruction = `- Question stem: "In the number pattern: ${displayNodes.join(', ')}, find the value of ${operationLabel}."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
-    const step4Equation = isDiff
-      ? `${bVal} - ${aVal} = ${finalAnswer}`
-      : `${aVal} + ${bVal} = ${finalAnswer}`;
+    // Find known adjacent pair to deduce step d
+    const knownIndices = [0, 1, 2, 3, 4].filter(i => i !== idxA && i !== idxB);
+    let p1 = knownIndices[0], p2 = knownIndices[1];
+    for (let i = 0; i < knownIndices.length - 1; i++) {
+      if (knownIndices[i + 1] === knownIndices[i] + 1) {
+        p1 = knownIndices[i];
+        p2 = knownIndices[i + 1];
+        break;
+      }
+    }
+    const highKnown = Math.max(pattern[p1], pattern[p2]);
+    const lowKnown = Math.min(pattern[p1], pattern[p2]);
+
+    // Equations to find A
+    let aPrimaryEq = "";
+    const aAccepted = [];
+    if (idxA > 0 && idxA - 1 !== idxB) {
+      const left = pattern[idxA - 1];
+      const op = isDescending ? '-' : '+';
+      aPrimaryEq = `${left} ${op} ${d} = ${aVal}`;
+      aAccepted.push(aPrimaryEq, `${left}${op}${d}=${aVal}`);
+    }
+    if (idxA < 4 && idxA + 1 !== idxB) {
+      const right = pattern[idxA + 1];
+      const op = isDescending ? '+' : '-';
+      const eq = `${right} ${op} ${d} = ${aVal}`;
+      if (!aPrimaryEq) aPrimaryEq = eq;
+      aAccepted.push(eq, `${right}${op}${d}=${aVal}`);
+    }
+
+    // Equations to find B
+    let bPrimaryEq = "";
+    const bAccepted = [];
+    if (idxB > 0 && idxB - 1 !== idxA) {
+      const left = pattern[idxB - 1];
+      const op = isDescending ? '-' : '+';
+      bPrimaryEq = `${left} ${op} ${d} = ${bVal}`;
+      bAccepted.push(bPrimaryEq, `${left}${op}${d}=${bVal}`);
+    }
+    if (idxB < 4 && idxB + 1 !== idxA) {
+      const right = pattern[idxB + 1];
+      const op = isDescending ? '+' : '-';
+      const eq = `${right} ${op} ${d} = ${bVal}`;
+      if (!bPrimaryEq) bPrimaryEq = eq;
+      bAccepted.push(eq, `${right}${op}${d}=${bVal}`);
+    }
+
+    // Equation for combining A and B
+    let step4PrimaryEq = "";
+    let step4Accepted = [];
+    if (isDiff) {
+      step4PrimaryEq = `${largerVal} - ${smallerVal} = ${finalAnswer}`;
+      step4Accepted = [step4PrimaryEq, step4PrimaryEq.replace(/\s+/g, '')];
+    } else {
+      step4PrimaryEq = `${aVal} + ${bVal} = ${finalAnswer}`;
+      step4Accepted = [
+        step4PrimaryEq,
+        step4PrimaryEq.replace(/\s+/g, ''),
+        `${bVal} + ${aVal} = ${finalAnswer}`,
+        `${bVal}+${aVal}=${finalAnswer}`
+      ];
+    }
 
     if (isMCQ) {
-      const oppositeAns = isDiff ? (aVal + bVal).toString() : (bVal - aVal).toString();
+      const oppositeAns = isDiff ? (aVal + bVal) : (largerVal - smallerVal);
+      let safeOpposite = oppositeAns.toString();
+      if (oppositeAns <= 0 || oppositeAns > 100000) {
+        safeOpposite = (Number(finalAnswer) + d).toString();
+      }
+
       const mcqRes = buildMcqOptions(finalAnswer, [
         { val: bVal.toString(), defect: 'RETURNED_SINGLE_TERM_B' },
         { val: aVal.toString(), defect: 'RETURNED_SINGLE_TERM_A' },
-        { val: oppositeAns, defect: 'WRONG_OPERATION_APPLIED' }
+        { val: safeOpposite, defect: 'WRONG_OPERATION_APPLIED' }
       ]);
       options = mcqRes.options;
       defectMap = mcqRes.defectMap;
@@ -782,41 +897,31 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         inputType: "MULTI_STEP_INPUT",
         steps: [
           {
-            label: "Write the working equation to find the pattern rule:",
-            expectedAnswer: `${n3} - ${n2} = ${d}`,
-            acceptedAnswers: [`${n3} - ${n2} = ${d}`, `${n3}-${n2}=${d}`]
+            label: "Write the working equation to find the pattern rule using the adjacent numbers:",
+            expectedAnswer: `${highKnown} - ${lowKnown} = ${d}`,
+            acceptedAnswers: [`${highKnown} - ${lowKnown} = ${d}`, `${highKnown}-${lowKnown}=${d}`]
           },
           {
             label: "Write the working equation to find the value of A:",
-            expectedAnswer: `${n0} + ${d} = ${aVal}`,
-            acceptedAnswers: [
-              `${n0} + ${d} = ${aVal}`,
-              `${n0}+${d}=${aVal}`,
-              `${n2} - ${d} = ${aVal}`,
-              `${n2}-${d}=${aVal}`
-            ]
+            expectedAnswer: aPrimaryEq,
+            acceptedAnswers: aAccepted
           },
           {
             label: "Write the working equation to find the value of B:",
-            expectedAnswer: `${n3} + ${d} = ${bVal}`,
-            acceptedAnswers: [`${n3} + ${d} = ${bVal}`, `${n3}+${d}=${bVal}`]
+            expectedAnswer: bPrimaryEq,
+            acceptedAnswers: bAccepted
           },
           {
             label: `Write the working equation to find ${operationLabel}:`,
-            expectedAnswer: step4Equation,
-            acceptedAnswers: [
-              step4Equation,
-              step4Equation.replace(/\s+/g, ''),
-              isDiff ? `${bVal} - ${aVal} = ${finalAnswer}` : `${bVal} + ${aVal} = ${finalAnswer}`,
-              isDiff ? `${bVal}-${aVal}=${finalAnswer}` : `${bVal}+${aVal}=${finalAnswer}`
-            ]
+            expectedAnswer: step4PrimaryEq,
+            acceptedAnswers: step4Accepted
           }
         ]
       }, null, 2);
     }
 
-    ruleDesc = `a constant step of ${d}`;
-    hint = `First find the pattern rule using the two adjacent numbers (${n3} - ${n2} = ${d}). Then find A (${n0} + ${d} = ${aVal}) and B (${n3} + ${d} = ${bVal}). Finally, calculate ${operationLabel}.`;
+    ruleDesc = `${isDescending ? 'subtracting' : 'adding'} a constant step of ${d}`;
+    hint = `First find the pattern rule using the two adjacent numbers (${highKnown} - ${lowKnown} = ${d}). Then find A (${aPrimaryEq}) and B (${bPrimaryEq}). Finally, calculate ${operationLabel}.`;
 
   // ==========================================================================
   // VARIANT 6: standard_pattern_crossing
