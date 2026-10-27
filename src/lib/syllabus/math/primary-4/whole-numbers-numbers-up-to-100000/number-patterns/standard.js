@@ -516,12 +516,25 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   // ==========================================================================
   } else if (resolvedVariant === 'standard_growing_shrinking_interval') {
     let chosenVariety = varietyStr;
-    if (!['growing_intervals', 'shrinking_intervals'].includes(chosenVariety)) {
-      chosenVariety = Math.random() < 0.5 ? 'growing_intervals' : 'shrinking_intervals';
+    let isGrowing = true;
+    if (chosenVariety.includes('shrinking')) {
+      isGrowing = false;
+    } else if (chosenVariety.includes('growing')) {
+      isGrowing = true;
+    } else {
+      isGrowing = Math.random() < 0.5;
     }
 
-    const isGrowing = chosenVariety === 'growing_intervals';
-    const rateOptions = [100, 200, 500];
+    let missingPosMode = 'random';
+    if (chosenVariety.includes('missing_start') || chosenVariety.includes('start')) {
+      missingPosMode = 'start';
+    } else if (chosenVariety.includes('missing_end') || chosenVariety.includes('end')) {
+      missingPosMode = 'end';
+    } else if (chosenVariety.includes('missing_middle') || chosenVariety.includes('middle')) {
+      missingPosMode = 'middle';
+    }
+
+    const rateOptions = [100, 200, 250, 500, 1000];
     const k = rateOptions[Math.floor(Math.random() * rateOptions.length)];
 
     let intervals = [];
@@ -531,15 +544,32 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       intervals = [4 * k, 3 * k, 2 * k, k];
     }
 
-    const startVal = (Math.floor(Math.random() * 30) + 20) * 1000;
+    // Keep numbers comfortably within [1000, 100000]
+    const totalGrowth = intervals.reduce((a, b) => a + b, 0);
+    const maxStart = 100000 - totalGrowth - 5000;
+    const startVal = (Math.floor(Math.random() * Math.max(1, (maxStart - 10000) / 1000))) * 1000 + 10000;
+
     const pattern = [startVal];
     for (let i = 0; i < 4; i++) {
       pattern.push(pattern[i] + intervals[i]);
     }
 
-    // Pattern terms: N0, N1, N2, N3, N4 (missing is N4)
-    finalAnswer = pattern[4].toString();
-    const displayNodes = [pattern[0].toString(), pattern[1].toString(), pattern[2].toString(), pattern[3].toString(), "?"];
+    // Determine missingIndex dynamically across positions [0, 1, 2, 3, 4]
+    let missingIndex = 4;
+    if (missingPosMode === 'end') {
+      missingIndex = 4;
+    } else if (missingPosMode === 'start') {
+      missingIndex = 0;
+    } else if (missingPosMode === 'middle') {
+      missingIndex = [1, 2, 3][Math.floor(Math.random() * 3)];
+    } else {
+      missingIndex = [0, 1, 2, 3, 4][Math.floor(Math.random() * 5)];
+    }
+
+    const correctNum = pattern[missingIndex];
+    finalAnswer = correctNum.toString();
+
+    const displayNodes = pattern.map((num, idx) => idx === missingIndex ? "?" : num.toString());
 
     visualEngineStr = JSON.stringify({
       componentToRender: "NUMBER_SEQUENCE_BLOCKS",
@@ -549,21 +579,128 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       }
     }, null, 2);
 
-    promptInstruction = `- Question stem: "Find the next number in the number pattern: ${pattern[0]}, ${pattern[1]}, ${pattern[2]}, ${pattern[3]}, ?."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    promptInstruction = `- Question stem: "Find the missing number in the number pattern: ${displayNodes.join(', ')}."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
-    const d1 = intervals[0];
-    const d2 = intervals[1];
-    const nextInterval = intervals[3];
-    const step3Equation = `${pattern[3]} + ${nextInterval} = ${pattern[4]}`;
+    let step1Expected = "";
+    let step1Accepted = [];
+    let step2Expected = "";
+    let step3Expected = "";
+    let step3Accepted = [];
+    let distractors = [];
+
+    if (missingIndex === 4) {
+      // Missing End: N0, N1, N2, N3, ?
+      step1Expected = `${pattern[1]} - ${pattern[0]} = ${intervals[0]}, ${pattern[2]} - ${pattern[1]} = ${intervals[1]}`;
+      step1Accepted = [
+        step1Expected,
+        `${pattern[1]}-${pattern[0]}=${intervals[0]}, ${pattern[2]}-${pattern[1]}=${intervals[1]}`,
+        `${pattern[1]}-${pattern[0]}=${intervals[0]},${pattern[2]}-${pattern[1]}=${intervals[1]}`
+      ];
+      step2Expected = intervals[3].toString();
+      step3Expected = `${pattern[3]} + ${intervals[3]} = ${pattern[4]}`;
+      step3Accepted = [step3Expected, step3Expected.replace(/\s+/g, '')];
+
+      distractors = [
+        { val: (pattern[3] + intervals[2]).toString(), defect: 'CONSTANT_INTERVAL_MISCONCEPTION' },
+        { val: (pattern[3] + k).toString(), defect: 'ADDED_RATE_INCORRECTLY' },
+        { val: (pattern[4] + k).toString(), defect: 'WRONG_INTERVAL_INCREMENT' }
+      ];
+      hint = `Calculate the differences between consecutive terms: ${pattern[1]} - ${pattern[0]} = ${intervals[0]}, ${pattern[2]} - ${pattern[1]} = ${intervals[1]}. Notice how the jump size changes by ${k} each time, so the next jump will be +${intervals[3]}.`;
+
+    } else if (missingIndex === 3) {
+      // Missing Term 4: N0, N1, N2, ?, N4
+      step1Expected = `${pattern[1]} - ${pattern[0]} = ${intervals[0]}, ${pattern[2]} - ${pattern[1]} = ${intervals[1]}`;
+      step1Accepted = [
+        step1Expected,
+        `${pattern[1]}-${pattern[0]}=${intervals[0]}, ${pattern[2]}-${pattern[1]}=${intervals[1]}`,
+        `${pattern[1]}-${pattern[0]}=${intervals[0]},${pattern[2]}-${pattern[1]}=${intervals[1]}`
+      ];
+      step2Expected = intervals[2].toString();
+      step3Expected = `${pattern[2]} + ${intervals[2]} = ${pattern[3]}`;
+      step3Accepted = [
+        step3Expected,
+        step3Expected.replace(/\s+/g, ''),
+        `${pattern[4]} - ${intervals[3]} = ${pattern[3]}`,
+        `${pattern[4]}-${intervals[3]}=${pattern[3]}`
+      ];
+
+      distractors = [
+        { val: (pattern[2] + intervals[1]).toString(), defect: 'CONSTANT_INTERVAL_MISCONCEPTION' },
+        { val: (pattern[2] + k).toString(), defect: 'ADDED_RATE_INCORRECTLY' },
+        { val: (pattern[3] + k).toString(), defect: 'WRONG_INTERVAL_INCREMENT' }
+      ];
+      hint = `Calculate the differences between the first three terms: ${pattern[1]} - ${pattern[0]} = ${intervals[0]}, ${pattern[2]} - ${pattern[1]} = ${intervals[1]}. The jump size changes by ${k} each time, so the jump to the missing number is +${intervals[2]}.`;
+
+    } else if (missingIndex === 2) {
+      // Missing Term 3: N0, N1, ?, N3, N4
+      step1Expected = `${pattern[1]} - ${pattern[0]} = ${intervals[0]}, ${pattern[4]} - ${pattern[3]} = ${intervals[3]}`;
+      step1Accepted = [
+        step1Expected,
+        `${pattern[1]}-${pattern[0]}=${intervals[0]}, ${pattern[4]}-${pattern[3]}=${intervals[3]}`,
+        `${pattern[1]}-${pattern[0]}=${intervals[0]},${pattern[4]}-${pattern[3]}=${intervals[3]}`
+      ];
+      step2Expected = intervals[1].toString();
+      step3Expected = `${pattern[1]} + ${intervals[1]} = ${pattern[2]}`;
+      step3Accepted = [
+        step3Expected,
+        step3Expected.replace(/\s+/g, ''),
+        `${pattern[3]} - ${intervals[2]} = ${pattern[2]}`,
+        `${pattern[3]}-${intervals[2]}=${pattern[2]}`
+      ];
+
+      distractors = [
+        { val: (pattern[1] + intervals[0]).toString(), defect: 'CONSTANT_INTERVAL_MISCONCEPTION' },
+        { val: (pattern[1] + k).toString(), defect: 'ADDED_RATE_INCORRECTLY' },
+        { val: (pattern[2] + k).toString(), defect: 'WRONG_INTERVAL_INCREMENT' }
+      ];
+      hint = `Compare the differences at the ends: ${pattern[1]} - ${pattern[0]} = ${intervals[0]} and ${pattern[4]} - ${pattern[3]} = ${intervals[3]}. The jump size changes by ${k} each time, so add ${intervals[1]} to ${pattern[1]} to find the missing number.`;
+
+    } else if (missingIndex === 1) {
+      // Missing Term 2: N0, ?, N2, N3, N4
+      step1Expected = `${pattern[3]} - ${pattern[2]} = ${intervals[2]}, ${pattern[4]} - ${pattern[3]} = ${intervals[3]}`;
+      step1Accepted = [
+        step1Expected,
+        `${pattern[3]}-${pattern[2]}=${intervals[2]}, ${pattern[4]}-${pattern[3]}=${intervals[3]}`,
+        `${pattern[3]}-${pattern[2]}=${intervals[2]},${pattern[4]}-${pattern[3]}=${intervals[3]}`
+      ];
+      step2Expected = intervals[0].toString();
+      step3Expected = `${pattern[0]} + ${intervals[0]} = ${pattern[1]}`;
+      step3Accepted = [
+        step3Expected,
+        step3Expected.replace(/\s+/g, ''),
+        `${pattern[2]} - ${intervals[1]} = ${pattern[1]}`,
+        `${pattern[2]}-${intervals[1]}=${pattern[1]}`
+      ];
+
+      distractors = [
+        { val: (pattern[0] + intervals[1]).toString(), defect: 'CONSTANT_INTERVAL_MISCONCEPTION' },
+        { val: (pattern[0] + k).toString(), defect: 'ADDED_RATE_INCORRECTLY' },
+        { val: (pattern[1] + k).toString(), defect: 'WRONG_INTERVAL_INCREMENT' }
+      ];
+      hint = `Compare the known consecutive terms: ${pattern[3]} - ${pattern[2]} = ${intervals[2]}, ${pattern[4]} - ${pattern[3]} = ${intervals[3]}. The jump size changes by ${k} each time. Working backwards, the first jump is +${intervals[0]}.`;
+
+    } else {
+      // Missing Term 1 (Start): ?, N1, N2, N3, N4
+      step1Expected = `${pattern[2]} - ${pattern[1]} = ${intervals[1]}, ${pattern[3]} - ${pattern[2]} = ${intervals[2]}`;
+      step1Accepted = [
+        step1Expected,
+        `${pattern[2]}-${pattern[1]}=${intervals[1]}, ${pattern[3]}-${pattern[2]}=${intervals[2]}`,
+        `${pattern[2]}-${pattern[1]}=${intervals[1]},${pattern[3]}-${pattern[2]}=${intervals[2]}`
+      ];
+      step2Expected = intervals[0].toString();
+      step3Expected = `${pattern[1]} - ${intervals[0]} = ${pattern[0]}`;
+      step3Accepted = [step3Expected, step3Expected.replace(/\s+/g, '')];
+
+      distractors = [
+        { val: (pattern[1] + intervals[0]).toString(), defect: 'REVERSED_OPERATION_SIGN' },
+        { val: (pattern[1] - intervals[1]).toString(), defect: 'CONSTANT_INTERVAL_MISCONCEPTION' },
+        { val: (pattern[1] - k).toString(), defect: 'ADDED_RATE_INCORRECTLY' }
+      ];
+      hint = `Find the differences between the given terms: ${pattern[2]} - ${pattern[1]} = ${intervals[1]}, ${pattern[3]} - ${pattern[2]} = ${intervals[2]}. The jump size changes by ${k} each time. Subtract the first interval (${intervals[0]}) from ${pattern[1]} to find the 1st number.`;
+    }
 
     if (isMCQ) {
-      const repeatedInterval = pattern[3] + intervals[2]; // repeated previous jump
-      const addedRateOnly = pattern[3] + k; // added rate directly
-      const mcqRes = buildMcqOptions(finalAnswer, [
-        { val: repeatedInterval.toString(), defect: 'CONSTANT_INTERVAL_MISCONCEPTION' },
-        { val: addedRateOnly.toString(), defect: 'ADDED_RATE_INCORRECTLY' },
-        { val: (pattern[4] + k).toString(), defect: 'WRONG_INTERVAL_INCREMENT' }
-      ]);
+      const mcqRes = buildMcqOptions(finalAnswer, distractors);
       options = mcqRes.options;
       defectMap = mcqRes.defectMap;
     } else if (isStructure) {
@@ -571,30 +708,27 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         inputType: "MULTI_STEP_INPUT",
         steps: [
           {
-            label: "Write the working equations to find the first two intervals:",
-            expectedAnswer: `${pattern[1]} - ${pattern[0]} = ${d1}, ${pattern[2]} - ${pattern[1]} = ${d2}`,
-            acceptedAnswers: [
-              `${pattern[1]} - ${pattern[0]} = ${d1}, ${pattern[2]} - ${pattern[1]} = ${d2}`,
-              `${pattern[1]}-${pattern[0]}=${d1}, ${pattern[2]}-${pattern[1]}=${d2}`,
-              `${pattern[1]}-${pattern[0]}=${d1},${pattern[2]}-${pattern[1]}=${d2}`
-            ]
+            label: "Write the working equations to find the known intervals:",
+            expectedAnswer: step1Expected,
+            acceptedAnswers: step1Accepted
           },
           {
-            label: "What is the next interval amount?",
-            expectedAnswer: nextInterval.toString(),
-            acceptedAnswers: [nextInterval.toString(), `+${nextInterval}`, `+ ${nextInterval}`]
+            label: "What is the interval to the missing number?",
+            expectedAnswer: step2Expected,
+            acceptedAnswers: [step2Expected, `+${step2Expected}`, `+ ${step2Expected}`]
           },
           {
             label: "Write the working equation to find the missing number:",
-            expectedAnswer: step3Equation,
-            acceptedAnswers: [step3Equation, step3Equation.replace(/\s+/g, '')]
+            expectedAnswer: step3Expected,
+            acceptedAnswers: step3Accepted
           }
         ]
       }, null, 2);
     }
 
-    ruleDesc = isGrowing ? `increasing intervals (+${d1}, +${d2}, +${intervals[2]}, +${nextInterval})` : `decreasing intervals (+${d1}, +${d2}, +${intervals[2]}, +${nextInterval})`;
-    hint = `Calculate the differences between consecutive terms: ${pattern[1]} - ${pattern[0]} = ${d1}, ${pattern[2]} - ${pattern[1]} = ${d2}. Notice how the jump size changes by ${k} each time, so the next jump will be +${nextInterval}.`;
+    ruleDesc = isGrowing
+      ? `increasing intervals (+${intervals[0]}, +${intervals[1]}, +${intervals[2]}, +${intervals[3]})`
+      : `decreasing intervals (+${intervals[0]}, +${intervals[1]}, +${intervals[2]}, +${intervals[3]})`;
 
   // ==========================================================================
   // VARIANT 5: standard_equation_sequence_hybrid
