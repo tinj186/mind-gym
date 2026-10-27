@@ -33,18 +33,18 @@ export const p4NumberPatternsBlueprint = {
     foundation_incorrect_anomaly: 'Identify the incorrect number in a sequence where one term breaks the pattern rule.',
     foundation_two_step_extension: 'Find the term that is two positions away from the given numbers in a sequence (e.g. 5th number or 1st number).',
 
-    //    standard_pattern_crossing: 'Complete number sequences crossing place-value boundaries (thousands, ten-thousands, or approaching 100 000).',
-    //    standard_non_adjacent_gap_deduction: 'Deduce the interval and find missing terms across non-adjacent gaps on a number line.',
-    //    standard_alternating_rule: 'Identify and apply alternating two-step operations (+A, -B) in a number pattern.',
-    //    standard_table_input_output: 'Determine the constant rule and calculate missing input or output values in a function table.',
-    //    standard_growing_shrinking_interval: 'Analyze sequences with increasing or decreasing interval step sizes (difference of differences).',
+    standard_pattern_crossing: 'Complete number sequences crossing place-value boundaries (thousands, ten-thousands, or approaching 100 000).',
+    standard_non_adjacent_gap_deduction: 'Deduce the interval and find missing terms across non-adjacent gaps on a number line.',
+    standard_alternating_rule: 'Identify and apply alternating two-step operations (+A, -B) in a number pattern.',
+    standard_table_input_output: 'Determine the constant rule and calculate missing input or output values in a function table.',
+    standard_growing_shrinking_interval: 'Analyze sequences with increasing or decreasing interval step sizes (difference of differences).',
     standard_equation_sequence_hybrid: 'Solve for the sum or difference of two missing terms (A and B) in a number pattern.',
 
-    advanced_alternating_add_sub: 'Two-step alternating rule with addition and subtraction.',
-    advanced_alternating_add_add: 'Two-step alternating rule with two different additions.',
-    advanced_growing_jumps: 'Number sequence with increasing jump increments.',
-    advanced_large_jumps: 'Sequences with non-standard step sizes (e.g. 1250, 2500, 5000).',
-    advanced_two_missing_terms: 'Find sum of two missing terms (A + B) in a sequence.'
+    advanced_interleaved_sequences: 'Identify and complete two independent sequences interleaved at alternate positions.',
+    advanced_fibonacci_lookback: 'Deduce and apply additive look-back patterns where each term is the sum of previous terms.',
+    advanced_distant_term_generalization: 'Deduce the general rule to calculate a distant term (e.g. 10th, 15th, or 20th term).',
+    advanced_figurate_scaled_patterns: 'Recognize and extend sequences based on square or triangular number progressions.',
+    advanced_table_two_step_rule: 'Determine two-step operations (multiply then add/subtract) in a function table.'
   },
 
   variantVarieties: {
@@ -119,10 +119,40 @@ export const p4NumberPatternsBlueprint = {
       'find_sum',
       'random_positions',
       'descending_sequence'
+    ],
+    advanced_interleaved_sequences: [
+      'missing_even_position',
+      'missing_odd_position',
+      'opposing_directions',
+      'both_ascending'
+    ],
+    advanced_fibonacci_lookback: [
+      'lookback_sum_end',
+      'lookback_sum_middle',
+      'lookback_find_start'
+    ],
+    advanced_distant_term_generalization: [
+      'find_10th_term',
+      'find_12th_term',
+      'find_15th_term',
+      'find_20th_term',
+      'descending_distant_term'
+    ],
+    advanced_figurate_scaled_patterns: [
+      'square_numbers_scaled',
+      'triangular_numbers_scaled',
+      'missing_next_term',
+      'missing_intermediate_term'
+    ],
+    advanced_table_two_step_rule: [
+      'table_multiply_add',
+      'table_multiply_subtract',
+      'find_missing_output',
+      'find_missing_input'
     ]
   },
 
-  generate: function (difficulty, activeVariant, type, options = { }) {
+  generate: function (difficulty, activeVariant, type, options = {}) {
     const level = 'Primary 4';
     const topic = 'Whole Numbers - Numbers up to 100 000';
     const subtopic = 'Number Patterns';

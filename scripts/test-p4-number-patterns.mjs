@@ -180,9 +180,65 @@ for (const alias of legacyStandardAliases) {
   assert(resAlias.aiPrompt.includes('"variant": "standard_pattern_crossing"'), `Legacy alias ${alias} routes to standard_pattern_crossing`);
 }
 
-// 7. Advanced still works
-const advRes = p4NumberPatternsBlueprint.generate('advanced', 'advanced_alternating_add_sub', 'short question');
-assert(advRes && advRes.aiPrompt.includes('advanced-level'), 'Advanced level generates prompt');
+// 7. Advanced variants test suite across all 5 new variants, varieties, and types
+const expectedAdvancedVariants = [
+  'advanced_interleaved_sequences',
+  'advanced_fibonacci_lookback',
+  'advanced_distant_term_generalization',
+  'advanced_figurate_scaled_patterns',
+  'advanced_table_two_step_rule'
+];
+
+for (const advVariant of expectedAdvancedVariants) {
+  assert(p4NumberPatternsBlueprint.variants[advVariant] !== undefined, `${advVariant} exists in blueprint.variants`);
+  assert(Array.isArray(p4NumberPatternsBlueprint.variantVarieties[advVariant]), `Varieties configured for ${advVariant}`);
+
+  const advVarieties = p4NumberPatternsBlueprint.variantVarieties[advVariant];
+  for (const variety of advVarieties) {
+    for (const qType of ['mcq', 'short question', 'structured']) {
+      const res = p4NumberPatternsBlueprint.generate('advanced', advVariant, qType, { variety });
+      assert(res && typeof res.aiPrompt === 'string', `${advVariant} (${variety}) [${qType}] generates prompt`);
+
+      const prompt = res.aiPrompt;
+      assert(prompt.includes('advanced-level'), `${advVariant} prompt is advanced-level`);
+
+      if (qType === 'mcq') {
+        const optionsMatch = prompt.match(/Generate EXACTLY 4 options: (\[[^\]]+\])/);
+        assert(optionsMatch !== null, `MCQ options found for ${advVariant} (${variety})`);
+        if (optionsMatch) {
+          const opts = JSON.parse(optionsMatch[1]);
+          assert(opts.length === 4, `MCQ options has 4 items for ${advVariant} (${variety})`);
+          assert(new Set(opts).size === 4, `MCQ options all distinct for ${advVariant} (${variety})`);
+        }
+      }
+
+      if (qType === 'structured') {
+        assert(prompt.includes('"inputType": "MULTI_STEP_INPUT"'), `Structured has MULTI_STEP_INPUT for ${advVariant} (${variety})`);
+        assert(prompt.includes('"steps":'), `Structured has steps array for ${advVariant} (${variety})`);
+      }
+
+      if (advVariant === 'advanced_table_two_step_rule') {
+        assert(prompt.includes('"componentToRender": "TABLE_PATTERN_VISUALIZER"'), `${advVariant} uses TABLE_PATTERN_VISUALIZER`);
+      } else {
+        assert(prompt.includes('"componentToRender": "NUMBER_SEQUENCE_BLOCKS"'), `${advVariant} uses NUMBER_SEQUENCE_BLOCKS`);
+      }
+    }
+  }
+}
+
+// 8. Legacy advanced aliases backward compatibility
+const legacyAdvancedAliases = [
+  'advanced_alternating_add_sub',
+  'advanced_alternating_add_add',
+  'advanced_growing_jumps',
+  'advanced_large_jumps',
+  'advanced_two_missing_terms'
+];
+
+for (const alias of legacyAdvancedAliases) {
+  const resAlias = p4NumberPatternsBlueprint.generate('advanced', alias, 'mcq');
+  assert(resAlias && typeof resAlias.aiPrompt === 'string', `Legacy advanced alias ${alias} generates successfully`);
+}
 
 console.log(`\n========================================`);
 console.log(`Tests finished: ${totalTests} total, ${passedTests} passed, ${failedTests} failed.`);
@@ -191,3 +247,4 @@ console.log(`========================================\n`);
 if (failedTests > 0) {
   process.exit(1);
 }
+
