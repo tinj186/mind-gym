@@ -33,11 +33,7 @@ export const p4NumberPatternsBlueprint = {
     foundation_incorrect_anomaly: 'Identify the incorrect number in a sequence where one term breaks the pattern rule.',
     foundation_two_step_extension: 'Find the term that is two positions away from the given numbers in a sequence (e.g. 5th number or 1st number).',
 
-    standard_add_cross_thousands: 'Count on crossing thousands boundary.',
-    standard_subtract_cross_thousands: 'Count back crossing thousands boundary.',
-    standard_add_cross_ten_thousands: 'Count on crossing ten-thousands boundary.',
-    standard_subtract_cross_ten_thousands: 'Count back crossing ten-thousands boundary.',
-    standard_reach_100000: 'Number sequences approaching or reaching 100 000.',
+    standard_pattern_crossing: 'Complete number sequences crossing place-value boundaries (thousands, ten-thousands, or approaching 100 000).',
 
     advanced_alternating_add_sub: 'Two-step alternating rule with addition and subtraction.',
     advanced_alternating_add_add: 'Two-step alternating rule with two different additions.',
@@ -77,6 +73,13 @@ export const p4NumberPatternsBlueprint = {
       'extend_end_descending',
       'extend_start_ascending',
       'extend_start_descending'
+    ],
+    standard_pattern_crossing: [
+      'add_cross_thousands',
+      'subtract_cross_thousands',
+      'add_cross_ten_thousands',
+      'subtract_cross_ten_thousands',
+      'reach_100000'
     ]
   },
 
@@ -124,6 +127,21 @@ export const p4NumberPatternsBlueprint = {
     if (resolvedVariant in legacyFoundationMap) {
       explicitVariety = explicitVariety || legacyFoundationMap[resolvedVariant];
       resolvedVariant = 'foundation_adjacent_term_deduction';
+    }
+
+    // Support legacy standard variant aliases for backward compatibility
+    const legacyStandardMap = {
+      standard_add_cross_thousands: 'add_cross_thousands',
+      standard_subtract_cross_thousands: 'subtract_cross_thousands',
+      standard_add_cross_ten_thousands: 'add_cross_ten_thousands',
+      standard_subtract_cross_ten_thousands: 'subtract_cross_ten_thousands',
+      standard_reach_100000: 'reach_100000',
+      standard_boundary_crossing: null
+    };
+
+    if (resolvedVariant in legacyStandardMap) {
+      explicitVariety = explicitVariety || legacyStandardMap[resolvedVariant];
+      resolvedVariant = 'standard_pattern_crossing';
     }
 
     const getFormatInstructions = (visualEngineStr = '{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }', inputRequirementStr = null, variantOverride = null) => `CRITICAL INSTRUCTION: You MUST use the EXACT "visualEngine" and "inputRequirement" JSON objects provided in the template below.

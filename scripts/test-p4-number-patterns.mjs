@@ -108,10 +108,58 @@ for (const variant of expectedVariants) {
   }
 }
 
-// 5. Standard and Advanced still work
-const stdRes = p4NumberPatternsBlueprint.generate('standard', 'standard_add_cross_thousands', 'mcq');
-assert(stdRes && stdRes.aiPrompt.includes('standard-level'), 'Standard level generates prompt');
+// 5. Standard Pattern Crossing tests across all varieties and question types
+assert(p4NumberPatternsBlueprint.variants.standard_pattern_crossing !== undefined, 'standard_pattern_crossing exists in blueprint');
+assert(Array.isArray(p4NumberPatternsBlueprint.variantVarieties.standard_pattern_crossing), 'Varieties configured for standard_pattern_crossing');
 
+const stdVarieties = p4NumberPatternsBlueprint.variantVarieties.standard_pattern_crossing;
+for (const variety of stdVarieties) {
+  for (const qType of ['mcq', 'short question', 'structured']) {
+    const res = p4NumberPatternsBlueprint.generate('standard', 'standard_pattern_crossing', qType, { variety });
+    assert(res && typeof res.aiPrompt === 'string', `standard_pattern_crossing (${variety}) [${qType}] generates prompt`);
+
+    const prompt = res.aiPrompt;
+    assert(prompt.includes('"variant": "standard_pattern_crossing"'), 'standard_pattern_crossing metadata variant is correct');
+    assert(prompt.includes('standard-level'), 'standard-level prompt is present');
+
+    // Check MCQ requirements
+    if (qType === 'mcq') {
+      const optionsMatch = prompt.match(/Generate EXACTLY 4 options: (\[[^\]]+\])/);
+      assert(optionsMatch !== null, `MCQ options found for standard (${variety})`);
+      if (optionsMatch) {
+        const opts = JSON.parse(optionsMatch[1]);
+        assert(opts.length === 4, `MCQ options has exactly 4 items for standard (${variety})`);
+        assert(new Set(opts).size === 4, `MCQ options all distinct for standard (${variety})`);
+      }
+    }
+
+    // Check Structured requirements
+    if (qType === 'structured') {
+      assert(prompt.includes('"inputType": "MULTI_STEP_INPUT"'), `Structured has MULTI_STEP_INPUT for standard (${variety})`);
+      assert(prompt.includes('"steps":'), `Structured has steps array for standard (${variety})`);
+    }
+
+    // Check visual engine uses NUMBER_SEQUENCE_BLOCKS
+    assert(prompt.includes('"componentToRender": "NUMBER_SEQUENCE_BLOCKS"'), `Standard uses NUMBER_SEQUENCE_BLOCKS`);
+  }
+}
+
+// 6. Test legacy standard variant aliases backward compatibility
+const legacyStandardAliases = [
+  'standard_add_cross_thousands',
+  'standard_subtract_cross_thousands',
+  'standard_add_cross_ten_thousands',
+  'standard_subtract_cross_ten_thousands',
+  'standard_reach_100000'
+];
+
+for (const alias of legacyStandardAliases) {
+  const resAlias = p4NumberPatternsBlueprint.generate('standard', alias, 'mcq');
+  assert(resAlias && typeof resAlias.aiPrompt === 'string', `Legacy alias ${alias} generates successfully`);
+  assert(resAlias.aiPrompt.includes('"variant": "standard_pattern_crossing"'), `Legacy alias ${alias} routes to standard_pattern_crossing`);
+}
+
+// 7. Advanced still works
 const advRes = p4NumberPatternsBlueprint.generate('advanced', 'advanced_alternating_add_sub', 'short question');
 assert(advRes && advRes.aiPrompt.includes('advanced-level'), 'Advanced level generates prompt');
 
