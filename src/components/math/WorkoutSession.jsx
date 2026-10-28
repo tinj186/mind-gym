@@ -209,9 +209,11 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
         .replace(/\\displaystyle/g, '') // Strip display style
         .replace(/\\textstyle/g, '') // Strip text style
         .replace(/\\left/g, '') // Strip left
-        .replace(/\\right/g, '') // Strip right
-        .replace(/\\[dt]?frac\s*\{?([^{}]+)\}?\s*\{?([^{}]+)\}?/g, '$1/$2') // Convert MathLive fractions (frac, dfrac, tfrac) to standard slashes
-        .replace(/\\text\{([^}]*)\}/g, '$1') // MathLive text wrappers
+        .replace(/(?:(\d+)\s*)?\\[dt]?frac\s*(?:\{([^{}]+)\}|([a-zA-Z0-9]))\s*(?:\{([^{}]+)\}|([a-zA-Z0-9]))/g, (m, int, n1, n2, d1, d2) => {
+          const num = (n1 || n2 || '').trim();
+          const den = (d1 || d2 || '').trim();
+          return int ? `${int} ${num}/${den}` : `${num}/${den}`;
+        }) // Convert MathLive fractions (frac, dfrac, tfrac), including mixed numbers and single-token fractions
         .replace(/\\operatorname\{\\mathrm\{([^}]*)\}\}/g, '$1') // MathLive text wrappers
         .replace(/\\mathrm\{([^}]*)\}/g, '$1') // MathLive text wrappers
         .replace(/\\times/g, '*') // Normalize multiplication

@@ -224,6 +224,13 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
             { label: `List the amounts from the ${isAscending ? 'least to the most' : 'greatest to the smallest'}:`, expectedAnswer: answer }
           ]
         });
+      } else {
+        const maxD = Math.max(...sortedSet.map(f => f.d));
+        const commonDAnswer = sortedSet.map(f => `${f.n * (maxD / f.d)}/${maxD}`).join(', ');
+        inputRequirementStr = JSON.stringify({
+          inputType: "STANDARD_TEXT",
+          acceptedAnswers: [commonDAnswer]
+        });
       }
       
       askText = getQText(structText, shortText);

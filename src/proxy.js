@@ -39,7 +39,7 @@ export default withAuth(
         const path = req.nextUrl.pathname;
         const isProtectedRoute = 
           path.startsWith('/hub') || 
-          path.startsWith('/math') || 
+          (path.startsWith('/math') && !req.nextUrl.searchParams.has('previewId')) || 
           path.startsWith('/parent') || 
           path.startsWith('/admin');
         

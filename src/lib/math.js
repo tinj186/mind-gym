@@ -15,16 +15,17 @@ export function normalizeAnswer(val) {
   str = str.replace(/(\d),(\d{3})(?!\d)/g, '$1$2');
   str = str.replace(/(\d),(\d{3})(?!\d)/g, '$1$2');
 
+  // 2. Handle LaTeX formats (from MathInput) to standard fraction strings
+  str = str.replace(/(?:(\d+)\s*)?\\[dt]?frac\s*(?:\{([^{}]+)\}|([a-zA-Z0-9]))\s*(?:\{([^{}]+)\}|([a-zA-Z0-9]))/g, (m, int, n1, n2, d1, d2) => {
+    const num = (n1 || n2 || '').trim();
+    const den = (d1 || d2 || '').trim();
+    return int ? `${int} ${num}/${den}` : `${num}/${den}`;
+  });
+
   // Handle lists by splitting at commas
   if (str.includes(',')) {
     return str.split(',').map(part => normalizeAnswer(part)).join(',');
   }
-
-  // 2. Handle LaTeX formats (from MathInput) to standard fraction strings
-  // Converts \frac{1}{2} to 1/2
-  str = str.replace(/\\frac\{(\d+)\}\{(\d+)\}/g, '$1/$2');
-  // Converts mixed LaTeX like 3\frac{1}{4} to 3 1/4
-  str = str.replace(/(\d+)\\frac\{(\d+)\}\{(\d+)\}/g, '$1 $2/$3');
 
   // 3. Remove most units (cm, kg, m, etc.), but PRESERVE currency symbols ($ and ¢)
   // We keep digits, dots (decimal points), slashes (fractions), spaces (for mixed numbers), and $-/¢.
