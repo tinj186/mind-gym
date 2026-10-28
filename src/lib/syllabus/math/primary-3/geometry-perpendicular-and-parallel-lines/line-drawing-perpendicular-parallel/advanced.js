@@ -52,67 +52,97 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
   };
 
   if (variant === 'advanced_identifying_slanted_perpendiculars') {
+    // Generate distinct dx and dy to guarantee non-degenerate points
     const dx = getRandomInt(2, 5);
-    const dy = getRandomInt(2, 5);
+    let dy = getRandomInt(2, 5);
+    while (dy === dx) {
+      dy = getRandomInt(2, 5);
+    }
     const sum = dx + dy;
     
     // Master Line AB
-    const startA = {x: 80, y: 80};
-    const endB = {x: 80 + dx * 20, y: 80 - dy * 20}; // up and right
+    // Position startA at (60, 140) so endB and all candidate endpoints stay cleanly within [40, 260]
+    const startA = { x: 60, y: 140 };
+    const endB = { x: startA.x + dx * 20, y: startA.y - dy * 20 }; // up and right
     
     // True perpendicular BC (swaps dx and dy, one is negative)
-    // To go right and down: dx2 = dy, dy2 = -dx. (dot product: dx*dy + dy*(-dx) = 0)
-    const trueC = {x: endB.x + dy * 20, y: endB.y + dx * 20};
+    // To go right and down: vector (dy, dx). Dot product: dx*dy + (-dy)*dx = 0
+    const trueC = { x: endB.x + dy * 20, y: endB.y + dx * 20 };
     
-    // Fake C1 (same dx, diff dy)
-    const fakeC1 = {x: endB.x + dx * 20, y: endB.y + dy * 20};
-    // Fake C2 (diff dx, same dy)
-    const fakeC2 = {x: endB.x + dy * 20, y: endB.y + dy * 20};
+    // Fake C1: forgot to swap dx and dy (goes dx right, dy down)
+    const fakeC1 = { x: endB.x + dx * 20, y: endB.y + dy * 20 };
+    // Fake C2: used vertical step for both (goes dy right, dy down)
+    const fakeC2 = { x: endB.x + dy * 20, y: endB.y + dy * 20 };
+    // Fake C3: used horizontal step for both (goes dx right, dx down)
+    const fakeC3 = { x: endB.x + dx * 20, y: endB.y + dx * 20 };
 
     const candidates = [
-      {pt: trueC, label: ""}, 
-      {pt: fakeC1, label: ""}, 
-      {pt: fakeC2, label: ""}
+      { pt: trueC, type: 'correct' }, 
+      { pt: fakeC1, type: 'unswapped' }, 
+      { pt: fakeC2, type: 'equal_v' },
+      { pt: fakeC3, type: 'equal_h' }
     ];
     for (let i = candidates.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
     }
     
-    const candidateLabels = ["P", "Q", "R"];
+    const candidateLabels = ["P", "Q", "R", "S"];
     let correctAnswerLabel = "";
+    const defectMap = {};
     
-    const candidateLines = candidates.map((c, idx) => {
+    candidates.forEach((c, idx) => {
       c.label = candidateLabels[idx];
-      if (c.pt.x === trueC.x && c.pt.y === trueC.y) {
-        correctAnswerLabel = candidateLabels[idx];
+      const lineName = `Line B${c.label}`;
+      if (c.type === 'correct') {
+        correctAnswerLabel = c.label;
+      } else if (c.type === 'unswapped') {
+        defectMap[lineName] = "CONCEPTUAL_ERROR";
+      } else if (c.type === 'equal_v') {
+        defectMap[lineName] = "CARELESS_CALCULATION";
+      } else if (c.type === 'equal_h') {
+        defectMap[lineName] = "CONFUSED_OPERATION";
       }
-      return { vertices: [endB, c.pt], isOpen: true, strokeColor: "#ef4444" }; // Candidate lines
     });
+
+    const candidateLines = candidates.map((c) => ({
+      vertices: [endB, c.pt],
+      isOpen: true,
+      strokeColor: "#ef4444"
+    }));
 
     const candidateDots = candidates.map((c) => createLabeledDot(c.pt, c.label, "#ef4444"));
 
     if (isStructure) {
-      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A game designer draws a slanted laser beam, Line AB, on a grid. Line AB spans ${dx} horizontal boxes and ${dy} vertical boxes. The designer wants to draw a shield, Line BC, that perfectly deflects the laser at a right angle (perpendicular). He draws 3 candidate lines (Lines P, Q, and R). By knowing that perpendicular slanted lines on a grid "swap" their horizontal and vertical box counts, visually verify which drawn line is the true perpendicular shield. Then, calculate the total horizontal and vertical boxes spanned by the chosen shield line."`;
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A game designer draws a slanted laser beam, Line AB, on a grid. Line AB spans ${dx} horizontal boxes and ${dy} vertical boxes. The designer wants to draw a shield, Line BC, that perfectly deflects the laser at a right angle (perpendicular). Four candidate lines are drawn from Point B to Points P, Q, R, and S (Lines BP, BQ, BR, and BS). By knowing that perpendicular slanted lines on a grid swap their horizontal and vertical box counts, visually verify which drawn line is the true perpendicular shield. Then, calculate the total horizontal and vertical boxes spanned by the chosen shield line."`;
       const stepsArr = [
         { label: `Look at the master Line AB. It spans ${dx} horizontal boxes and ${dy} vertical boxes. To be perfectly perpendicular, the drawn Line BC must swap these. How many horizontal boxes must Line BC span?`, expectedAnswer: String(dy), acceptedAnswers: [] },
         { label: "How many vertical boxes must the drawn Line BC span?", expectedAnswer: String(dx), acceptedAnswers: [] },
-        { label: "Visually match these box counts to the candidate lines. Which line is the correct perpendicular shield?", expectedAnswer: correctAnswerLabel, acceptedAnswers: [`Line ${correctAnswerLabel}`] },
-        { label: "Write the working equation to find the total sum of horizontal and vertical boxes spanned by the drawn shield:", expectedAnswer: `${dy} + ${dx} = ${sum}`, acceptedAnswers: [`${dx}+${dy}=${sum}`] },
+        { label: "Visually match these box counts to the candidate lines. Which line is the correct perpendicular shield (Line BP, Line BQ, Line BR, or Line BS)?", expectedAnswer: `Line B${correctAnswerLabel}`, acceptedAnswers: [`Line B${correctAnswerLabel}`, `Line ${correctAnswerLabel}`, `B${correctAnswerLabel}`, correctAnswerLabel] },
+        { label: "Write the working equation to find the total sum of horizontal and vertical boxes spanned by the drawn shield:", expectedAnswer: `${dy} + ${dx} = ${sum}`, acceptedAnswers: [`${dx}+${dy}=${sum}`, `${dy}+${dx}=${sum}`] },
         { label: "Total boxes spanned:", expectedAnswer: String(sum), acceptedAnswers: [] }
       ];
       inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
       finalAnswer = String(sum);
     } else if (isMCQ) {
-      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"Line XY goes ${dy} units up and ${dx} units right. A perfectly perpendicular drawn line YZ will go ${dy} units right and how many units down?"`;
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"Look at the grid. Line AB (in blue) is a slanted line that goes ${dx} units right and ${dy} units up. Which of the red candidate lines drawn from Point B (Line BP, Line BQ, Line BR, or Line BS) is perpendicular to Line AB?"`;
       inputRequirementStr = JSON.stringify({ inputType: "MCQ_BUTTONS" });
-      finalAnswer = String(dx);
-      const opts = getFourOptions(finalAnswer, [String(dy), String(sum), String(dx + 1), String(dx + 2)]);
-      mcqOptionsPrompt = `Generate EXACTLY 4 options in "content.options":\n- "${opts[0]}"\n- "${opts[1]}"\n- "${opts[2]}"\n- "${opts[3]}"\nCRITICAL: The options array MUST contain exactly these 4 options. One option MUST match finalAnswer ("${finalAnswer}") exactly.`;
+      finalAnswer = `Line B${correctAnswerLabel}`;
+      const opts = ["Line BP", "Line BQ", "Line BR", "Line BS"];
+      mcqOptionsPrompt = `Generate EXACTLY 4 options in "content.options":\n- "${opts[0]}"\n- "${opts[1]}"\n- "${opts[2]}"\n- "${opts[3]}"\nCRITICAL: The options array MUST contain exactly these 4 options. One option MUST match finalAnswer ("${finalAnswer}") exactly.\nIn "content.defectMap", map each distractor option to its error category:\n${JSON.stringify(defectMap)}`;
     } else {
-      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"Line AB is slanted on a grid. You draw Line BC perpendicular to it. If AB spans ${dx} horizontal boxes, and BC is drawn perfectly perpendicular, how many vertical boxes must BC span?"`;
-      inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
-      finalAnswer = String(dx); // Wait, "AB spans dx horizontal, BC must span dx vertical". So answer is dx.
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"Look at the grid. Line AB (in blue) is a slanted line that goes ${dx} units right and ${dy} units up. Which of the red candidate lines (Line BP, Line BQ, Line BR, or Line BS) is perpendicular to Line AB?"`;
+      finalAnswer = `Line B${correctAnswerLabel}`;
+      inputRequirementStr = JSON.stringify({
+        inputType: "STANDARD_TEXT",
+        acceptedAnswers: [
+          `Line B${correctAnswerLabel}`,
+          `Line ${correctAnswerLabel}`,
+          `B${correctAnswerLabel}`,
+          correctAnswerLabel,
+          `Point ${correctAnswerLabel}`
+        ]
+      });
     }
 
     visualEngineStr = JSON.stringify({
@@ -413,13 +443,13 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
       inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
       finalAnswer = String(sum);
     } else if (isMCQ) {
-      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"You draw a slanted parallelogram. The top line goes ${dx} units right and ${dy} units down. The bottom line must be drawn perfectly parallel to it. The bottom line must also go ${dx} units right and how many units down?"`;
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"Look at the grid. Point A, Point B, and Point C are plotted. Line AB goes ${dx} units right and ${dy} unit(s) up. To complete a parallelogram with Line CD parallel to Line AB, Point D must be placed how many units up from Point C?"`;
       inputRequirementStr = JSON.stringify({ inputType: "MCQ_BUTTONS" });
       finalAnswer = String(dy);
       const opts = getFourOptions(finalAnswer, [String(dx), String(sum), String(dy + 1), String(dy + 2)]);
       mcqOptionsPrompt = `Generate EXACTLY 4 options in "content.options":\n- "${opts[0]}"\n- "${opts[1]}"\n- "${opts[2]}"\n- "${opts[3]}"\nCRITICAL: The options array MUST contain exactly these 4 options. One option MUST match finalAnswer ("${finalAnswer}") exactly.`;
     } else {
-      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"Line AB is a slanted line going ${dx} units right and ${dy} unit(s) up. To draw a parallel line CD starting from Point C, how many units right must Point D be from Point C?"`;
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"Look at the grid. Line AB is a slanted line going ${dx} units right and ${dy} unit(s) up. To draw a parallel line CD starting from Point C, how many units right must Point D be from Point C?"`;
       inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
       finalAnswer = String(dx);
     }
