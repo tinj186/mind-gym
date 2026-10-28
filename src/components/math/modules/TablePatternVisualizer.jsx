@@ -12,7 +12,7 @@ import React from 'react';
  * - data.rows: array of pairs (e.g., [["1", "45000"], ["2", "46500"], ["3", "?"], ["4", "49500"]])
  * - data.title: optional table title string
  */
-export default function TablePatternVisualizer({ data }) {
+export default function TablePatternVisualizer({ data, hideCardStyles = false }) {
   if (!data) return null;
 
   const headers = Array.isArray(data.headers) && data.headers.length >= 2
@@ -22,8 +22,12 @@ export default function TablePatternVisualizer({ data }) {
   const rows = Array.isArray(data.rows) ? data.rows : [];
   if (rows.length === 0) return null;
 
+  const wrapperClass = hideCardStyles
+    ? 'w-full max-w-xl mx-auto select-none py-2'
+    : 'my-6 w-full max-w-xl mx-auto p-4 sm:p-6 bg-slate-50 rounded-2xl sm:rounded-3xl border-2 border-slate-200 select-none shadow-sm';
+
   return (
-    <div className="my-8 w-full max-w-xl mx-auto p-6 sm:p-8 bg-slate-50 rounded-[2.5rem] border-2 border-slate-200 select-none shadow-sm">
+    <div className={wrapperClass}>
       {data.title && (
         <h4 className="text-center font-black text-slate-800 text-sm sm:text-base uppercase tracking-wider mb-4">
           {data.title}

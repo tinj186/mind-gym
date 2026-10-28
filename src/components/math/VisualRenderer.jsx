@@ -113,8 +113,8 @@ export default function VisualRenderer({ type, ...props }) {
           case 'NUMBER_CARDS':
           case 'DIGIT_CARD_SORTER': return <NumberCards {...props} data={props.visualEngine?.componentData || props.data} />;
           case 'NUMBER_PATTERN': return <NumberPattern {...props} />;
-          case 'NUMBER_SEQUENCE_BLOCKS': return <NumberSequenceBlocks data={props.visualEngine?.componentData || props.data} />;
-          case 'TABLE_PATTERN_VISUALIZER': return <TablePatternVisualizer data={props.visualEngine?.componentData || props.data} />;
+          case 'NUMBER_SEQUENCE_BLOCKS': return <NumberSequenceBlocks data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
+          case 'TABLE_PATTERN_VISUALIZER': return <TablePatternVisualizer data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
           case 'NUMBER_LINE':
           case 'NUMBER_LINE_ADVANCED': return <NumberLine data={props.visualEngine?.componentData || props.data} />;
           case 'EQUAL_GROUPS': return <EqualGroups {...props} />;
