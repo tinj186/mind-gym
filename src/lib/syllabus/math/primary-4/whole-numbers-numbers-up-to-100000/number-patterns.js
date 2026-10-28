@@ -40,11 +40,11 @@ export const p4NumberPatternsBlueprint = {
     standard_growing_shrinking_interval: 'Analyze sequences with increasing or decreasing interval step sizes (difference of differences).',
     standard_equation_sequence_hybrid: 'Solve for the sum or difference of two missing terms (A and B) in a number pattern.',
 
-    advanced_interleaved_sequences: 'Identify and complete two independent sequences interleaved at alternate positions.',
-    advanced_fibonacci_lookback: 'Deduce and apply additive look-back patterns where each term is the sum of previous terms.',
-    advanced_distant_term_generalization: 'Deduce the general rule to calculate a distant term (e.g. 10th, 15th, or 20th term).',
-    advanced_figurate_scaled_patterns: 'Recognize and extend sequences based on square or triangular number progressions.',
-    advanced_table_two_step_rule: 'Determine two-step operations (multiply then add/subtract) in a function table.'
+    advanced_long_jump_deduction: 'The Long Jump Deduction (Calculate distant term values without full sequence listing).',
+    advanced_floating_number_line: 'Floating Number Line (Deduce interval size from interior ticks and extrapolate start and end points).',
+    advanced_interlocking_sequences: 'Two Interlocking Sequences (Identify dual alternating patterns and determine missing terms).',
+    advanced_accumulated_target_term: 'The Accumulated Target (Determine the target day or term position N required to reach a specific value).',
+    advanced_simultaneous_offset_deduction: 'The Simultaneous Offset Deduction (Calculate the cumulative difference between two simultaneous sequences at Term N).'
   },
 
   variantVarieties: {
@@ -120,39 +120,44 @@ export const p4NumberPatternsBlueprint = {
       'random_positions',
       'descending_sequence'
     ],
-    advanced_interleaved_sequences: [
-      'missing_even_position',
-      'missing_odd_position',
-      'opposing_directions',
-      'both_ascending'
+    advanced_long_jump_deduction: [
+      'target_term_6_to_8',
+      'target_term_9_to_10',
+      'target_term_11_to_12',
+      'step_250_500',
+      'step_800_1500'
     ],
-    advanced_fibonacci_lookback: [
-      'lookback_sum_end',
-      'lookback_sum_middle',
-      'lookback_find_start'
+    advanced_floating_number_line: [
+      'ticks_2_and_5',
+      'ticks_2_and_4',
+      'ticks_3_and_5',
+      'find_last_tick',
+      'find_first_tick'
     ],
-    advanced_distant_term_generalization: [
-      'find_10th_term',
-      'find_12th_term',
-      'find_15th_term',
-      'find_20th_term',
-      'descending_distant_term'
+    advanced_interlocking_sequences: [
+      'opposing_ascending_descending',
+      'both_ascending',
+      'find_first_missing_a',
+      'find_second_missing_b',
+      'find_sum_a_plus_b'
     ],
-    advanced_figurate_scaled_patterns: [
-      'square_numbers_scaled',
-      'triangular_numbers_scaled',
-      'missing_next_term',
-      'missing_intermediate_term'
+    advanced_accumulated_target_term: [
+      'daily_production_units',
+      'savings_deposit_growth',
+      'distance_travelled_steps',
+      'small_gap_4_to_6_jumps',
+      'large_gap_7_to_10_jumps'
     ],
-    advanced_table_two_step_rule: [
-      'table_multiply_add',
-      'table_multiply_subtract',
-      'find_missing_output',
-      'find_missing_input'
+    advanced_simultaneous_offset_deduction: [
+      'same_starting_point',
+      'target_term_4_to_6',
+      'target_term_7_to_10',
+      'small_rate_diff_100_300',
+      'large_rate_diff_400_800'
     ]
   },
 
-  generate: function (difficulty, activeVariant, type, options = {}) {
+  generate: function (difficulty, activeVariant, type, options = { }) {
     const level = 'Primary 4';
     const topic = 'Whole Numbers - Numbers up to 100 000';
     const subtopic = 'Number Patterns';
@@ -220,6 +225,24 @@ export const p4NumberPatternsBlueprint = {
       const mapping = legacyStandardMap[resolvedVariant];
       explicitVariety = explicitVariety || mapping.variety;
       resolvedVariant = mapping.variant;
+    }
+
+    // Support legacy advanced variant aliases for backward compatibility
+    const legacyAdvancedMap = {
+      advanced_interleaved_sequences: 'advanced_interlocking_sequences',
+      advanced_fibonacci_lookback: 'advanced_floating_number_line',
+      advanced_distant_term_generalization: 'advanced_long_jump_deduction',
+      advanced_figurate_scaled_patterns: 'advanced_accumulated_target_term',
+      advanced_table_two_step_rule: 'advanced_simultaneous_offset_deduction',
+      advanced_alternating_add_sub: 'advanced_interlocking_sequences',
+      advanced_alternating_add_add: 'advanced_interlocking_sequences',
+      advanced_growing_jumps: 'advanced_accumulated_target_term',
+      advanced_large_jumps: 'advanced_long_jump_deduction',
+      advanced_two_missing_terms: 'advanced_floating_number_line'
+    };
+
+    if (resolvedVariant in legacyAdvancedMap) {
+      resolvedVariant = legacyAdvancedMap[resolvedVariant];
     }
 
     const getFormatInstructions = (visualEngineStr = '{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }', inputRequirementStr = null, variantOverride = null) => `CRITICAL INSTRUCTION: You MUST use the EXACT "visualEngine" and "inputRequirement" JSON objects provided in the template below.

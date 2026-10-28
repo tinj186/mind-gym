@@ -34,49 +34,40 @@ export default function TablePatternVisualizer({ data }) {
         <table className="w-full text-center border-collapse">
           <thead>
             <tr className="bg-slate-900 text-white divide-x-2 divide-slate-800">
-              <th className="py-3 px-4 font-black text-xs sm:text-sm tracking-wider uppercase w-1/2">
-                {headers[0]}
-              </th>
-              <th className="py-3 px-4 font-black text-xs sm:text-sm tracking-wider uppercase w-1/2">
-                {headers[1]}
-              </th>
+              {headers.map((h, i) => (
+                <th key={i} className="py-3 px-4 font-black text-xs sm:text-sm tracking-wider uppercase">
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody className="divide-y-2 divide-slate-200">
-            {rows.map((row, idx) => {
-              const cell1 = row[0];
-              const cell2 = row[1];
-              const isMissing1 = cell1 === '?' || cell1 === '';
-              const isMissing2 = cell2 === '?' || cell2 === '';
-
-              return (
-                <tr
-                  key={idx}
-                  className={`divide-x-2 divide-slate-200 transition-colors ${
-                    idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'
-                  }`}
-                >
-                  <td
-                    className={`py-3 px-4 font-black text-sm sm:text-base ${
-                      isMissing1
-                        ? 'text-amber-600 bg-amber-50 animate-pulse font-black text-xl'
-                        : 'text-slate-700'
-                    }`}
-                  >
-                    {isMissing1 ? '?' : cell1}
-                  </td>
-                  <td
-                    className={`py-3 px-4 font-black text-sm sm:text-base ${
-                      isMissing2
-                        ? 'text-amber-600 bg-amber-50 animate-pulse font-black text-xl'
-                        : 'text-slate-900'
-                    }`}
-                  >
-                    {isMissing2 ? '?' : cell2}
-                  </td>
-                </tr>
-              );
-            })}
+            {rows.map((row, idx) => (
+              <tr
+                key={idx}
+                className={`divide-x-2 divide-slate-200 transition-colors ${
+                  idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'
+                }`}
+              >
+                {row.map((cell, cIdx) => {
+                  const isMissing = cell === '?' || cell === '';
+                  return (
+                    <td
+                      key={cIdx}
+                      className={`py-3 px-4 font-black text-sm sm:text-base ${
+                        isMissing
+                          ? 'text-amber-600 bg-amber-50 animate-pulse font-black text-xl'
+                          : cIdx === 0
+                          ? 'text-slate-700'
+                          : 'text-slate-900'
+                      }`}
+                    >
+                      {isMissing ? '?' : cell}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

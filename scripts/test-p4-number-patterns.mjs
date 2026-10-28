@@ -1,6 +1,7 @@
 import { p4NumberPatternsBlueprint } from '../src/lib/syllabus/math/primary-4/whole-numbers-numbers-up-to-100000/number-patterns.js';
+import { UniversalQuestionSchema } from '../src/app/api/admin/generate/questionSchema.js';
 
-console.log('Testing Primary 4 Number Patterns Blueprint (5 Foundation Variants Suite)...');
+console.log('Testing Primary 4 Number Patterns Blueprint (Full Suite)...');
 
 let totalTests = 0;
 let passedTests = 0;
@@ -13,6 +14,26 @@ function assert(condition, message) {
   } else {
     failedTests++;
     console.error(`❌ FAIL: ${message}`);
+  }
+}
+
+function validatePromptJsonSchema(prompt, context) {
+  const jsonMatch = prompt.match(/OUTPUT FORMAT [^{]*([\s\S]*)/);
+  if (!jsonMatch) {
+    assert(false, `${context}: Could not extract JSON from prompt`);
+    return;
+  }
+  const rawJson = jsonMatch[1].trim();
+  try {
+    const parsed = JSON.parse(rawJson);
+    const validated = UniversalQuestionSchema.safeParse(parsed);
+    if (!validated.success) {
+      assert(false, `${context}: UniversalQuestionSchema validation failed: ${JSON.stringify(validated.error.format())}`);
+    } else {
+      assert(true, `${context}: JSON template strictly satisfies UniversalQuestionSchema`);
+    }
+  } catch (err) {
+    assert(false, `${context}: JSON.parse error: ${err.message}`);
   }
 }
 
@@ -180,13 +201,13 @@ for (const alias of legacyStandardAliases) {
   assert(resAlias.aiPrompt.includes('"variant": "standard_pattern_crossing"'), `Legacy alias ${alias} routes to standard_pattern_crossing`);
 }
 
-// 7. Advanced variants test suite across all 5 new variants, varieties, and types
+// 7. Advanced variants test suite across all 5 new Singapore Math heuristic variants, varieties, and types
 const expectedAdvancedVariants = [
-  'advanced_interleaved_sequences',
-  'advanced_fibonacci_lookback',
-  'advanced_distant_term_generalization',
-  'advanced_figurate_scaled_patterns',
-  'advanced_table_two_step_rule'
+  'advanced_long_jump_deduction',
+  'advanced_floating_number_line',
+  'advanced_interlocking_sequences',
+  'advanced_accumulated_target_term',
+  'advanced_simultaneous_offset_deduction'
 ];
 
 for (const advVariant of expectedAdvancedVariants) {
@@ -217,17 +238,28 @@ for (const advVariant of expectedAdvancedVariants) {
         assert(prompt.includes('"steps":'), `Structured has steps array for ${advVariant} (${variety})`);
       }
 
-      if (advVariant === 'advanced_table_two_step_rule') {
-        assert(prompt.includes('"componentToRender": "TABLE_PATTERN_VISUALIZER"'), `${advVariant} uses TABLE_PATTERN_VISUALIZER`);
-      } else {
+      if (advVariant === 'advanced_floating_number_line') {
+        assert(prompt.includes('"componentToRender": "NUMBER_LINE_ADVANCED"'), `${advVariant} uses NUMBER_LINE_ADVANCED`);
+      } else if (advVariant === 'advanced_interlocking_sequences') {
         assert(prompt.includes('"componentToRender": "NUMBER_SEQUENCE_BLOCKS"'), `${advVariant} uses NUMBER_SEQUENCE_BLOCKS`);
+        assert(prompt.includes('"nodeColors":'), `${advVariant} provides nodeColors`);
+      } else {
+        assert(prompt.includes('"componentToRender": "TABLE_PATTERN_VISUALIZER"'), `${advVariant} uses TABLE_PATTERN_VISUALIZER`);
       }
+
+      // Strictly validate schema against UniversalQuestionSchema
+      validatePromptJsonSchema(prompt, `${advVariant} (${variety}) [${qType}]`);
     }
   }
 }
 
 // 8. Legacy advanced aliases backward compatibility
 const legacyAdvancedAliases = [
+  'advanced_interleaved_sequences',
+  'advanced_fibonacci_lookback',
+  'advanced_distant_term_generalization',
+  'advanced_figurate_scaled_patterns',
+  'advanced_table_two_step_rule',
   'advanced_alternating_add_sub',
   'advanced_alternating_add_add',
   'advanced_growing_jumps',

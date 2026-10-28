@@ -88,26 +88,37 @@ export default function NumberSequenceBlocks({ data }) {
               ? config.fontMedium
               : config.fontLarge;
 
+            const nodeColor = data.nodeColors?.[idx];
+            let colorClasses = 'bg-white border-slate-900 shadow-[3px_3px_0px_0px_rgba(15,23,42,1)] hover:-translate-y-0.5';
+            let textClass = 'text-slate-900';
+
+            if (isMissing) {
+              if (nodeColor === 'blue') {
+                colorClasses = 'bg-blue-100 border-blue-500 shadow-[3px_3px_0px_0px_rgba(59,130,246,1)] animate-pulse';
+                textClass = 'text-blue-600';
+              } else {
+                colorClasses = 'bg-amber-50 border-amber-500 shadow-[3px_3px_0px_0px_rgba(245,158,11,1)] animate-pulse';
+                textClass = 'text-amber-600';
+              }
+            } else if (isVariable) {
+              colorClasses = 'bg-indigo-50 border-indigo-600 shadow-[3px_3px_0px_0px_rgba(79,70,229,1)] hover:-translate-y-0.5';
+              textClass = 'text-indigo-700';
+            } else if (nodeColor === 'blue') {
+              colorClasses = 'bg-blue-50 border-blue-600 shadow-[3px_3px_0px_0px_rgba(37,99,235,1)] hover:-translate-y-0.5';
+              textClass = 'text-blue-800';
+            } else if (nodeColor === 'orange' || nodeColor === 'amber') {
+              colorClasses = 'bg-amber-50 border-amber-600 shadow-[3px_3px_0px_0px_rgba(217,119,6,1)] hover:-translate-y-0.5';
+              textClass = 'text-amber-800';
+            }
+
             return (
               <React.Fragment key={idx}>
                 {/* Geometric Number Node */}
                 <div
-                  className={`relative ${config.nodeWidth} ${config.nodeHeight} ${config.nodePx} flex items-center justify-center border-4 transition-all duration-200 shrink ${roundedClass} ${
-                    isMissing
-                      ? 'bg-amber-50 border-amber-500 shadow-[3px_3px_0px_0px_rgba(245,158,11,1)] animate-pulse'
-                      : isVariable
-                      ? 'bg-indigo-50 border-indigo-600 shadow-[3px_3px_0px_0px_rgba(79,70,229,1)] hover:-translate-y-0.5'
-                      : 'bg-white border-slate-900 shadow-[3px_3px_0px_0px_rgba(15,23,42,1)] hover:-translate-y-0.5'
-                  }`}
+                  className={`relative ${config.nodeWidth} ${config.nodeHeight} ${config.nodePx} flex items-center justify-center border-4 transition-all duration-200 shrink ${roundedClass} ${colorClasses}`}
                 >
                   <span
-                    className={`font-black tracking-tight text-center truncate ${fontClass} ${
-                      isMissing
-                        ? 'text-amber-600'
-                        : isVariable
-                        ? 'text-indigo-700'
-                        : 'text-slate-900'
-                    }`}
+                    className={`font-black tracking-tight text-center truncate ${fontClass} ${textClass}`}
                   >
                     {displayVal}
                   </span>
