@@ -8,14 +8,18 @@ export const dynamic = 'force-dynamic';
 
 export default async function QuestionReviewPage({ searchParams }) {
   const resolvedSearchParams = await searchParams;
-  const { id, heuristic, level, strand, topic, subtopic, type, difficulty, approved } = resolvedSearchParams;
+  const { id, heuristic, level, strand, topic, subtopic, type, difficulty, approved, archived } = resolvedSearchParams;
   const isApprovedFilter = approved === 'true';
+  const showArchived = archived === 'true';
 
   let whereClause = {};
 
   if (id) {
     whereClause = { id: { equals: id, mode: 'insensitive' } };
   } else {
+    if (!showArchived) {
+      whereClause.isArchived = false;
+    }
     // If heuristic is provided, we don't strictly require isApproved filter to allow checking all variants, but we maintain backward logic.
     if (heuristic) {
       let searchHeuristic = heuristic;

@@ -15,12 +15,16 @@ export async function GET(req) {
   const type = searchParams.get('type');
   const difficulty = searchParams.get('difficulty');
   const approved = searchParams.get('approved') === 'true';
+  const archived = searchParams.get('archived') === 'true';
 
   let where = {};
   let takeAmount = undefined;
   if (id) {
     where = { id: { equals: id, mode: 'insensitive' } };
   } else {
+    if (!archived) {
+      where.isArchived = false;
+    }
     if (heuristic) {
       let searchHeuristic = heuristic;
       
