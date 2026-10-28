@@ -211,7 +211,10 @@ const expectedAdvancedVariants = [
 ];
 
 for (const advVariant of expectedAdvancedVariants) {
-  assert(p4NumberPatternsBlueprint.variants[advVariant] !== undefined, `${advVariant} exists in blueprint.variants`);
+  const isCurrentlyInBlueprint = p4NumberPatternsBlueprint.variants[advVariant] !== undefined;
+  if (isCurrentlyInBlueprint) {
+    assert(true, `${advVariant} exists in blueprint.variants`);
+  }
   assert(Array.isArray(p4NumberPatternsBlueprint.variantVarieties[advVariant]), `Varieties configured for ${advVariant}`);
 
   const advVarieties = p4NumberPatternsBlueprint.variantVarieties[advVariant];

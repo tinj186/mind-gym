@@ -64,7 +64,8 @@ export const primary4Syllabus = [
         "name": "Number Patterns",
         "allowedTypes": [
           QUESTION_TYPES.SHORT_QUESTION.label,
-          QUESTION_TYPES.MCQ.label
+          QUESTION_TYPES.MCQ.label,
+          QUESTION_TYPES.STRUCTURED.label
         ],
         "blueprint": "Focus on number patterns in accordance with Singapore MOE syllabus learning outcomes.",
         "visualType": "NUMBER_PATTERN",

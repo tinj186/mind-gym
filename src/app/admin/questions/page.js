@@ -53,7 +53,7 @@ export default async function AdminQuestionsPage({ searchParams }) {
         if (s.type === 'Structured' && s.subtopic === 'Number Notation') return;
         if (s.type === 'Structured' && s.subtopic === 'Place Values (Thousands)') return;
         if (s.type === 'Structured' && s.subtopic === 'Number Comparison and Ordering') return;
-        if (s.type === 'Structured' && s.subtopic === 'Number Patterns') return;
+        if (s.type === 'Structured' && s.subtopic === 'Number Patterns' && s.level !== 'Primary 4') return;
 
         const pending = matches.filter(m => !m.isApproved).reduce((acc, curr) => acc + curr._count._all, 0);
         const approved = matches.filter(m => m.isApproved).reduce((acc, curr) => acc + curr._count._all, 0);
@@ -88,7 +88,7 @@ export default async function AdminQuestionsPage({ searchParams }) {
     if (t === 'Structured' && subtopic === 'Number Notation') return false;
     if (t === 'Structured' && subtopic === 'Place Values (Thousands)') return false;
     if (t === 'Structured' && subtopic === 'Number Comparison and Ordering') return false;
-    if (t === 'Structured' && subtopic === 'Number Patterns') return false;
+    if (t === 'Structured' && subtopic === 'Number Patterns' && level !== 'Primary 4') return false;
     return true;
   });
   const distinctDifficulties = DEFAULT_DIFFICULTIES;
