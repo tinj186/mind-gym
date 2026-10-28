@@ -339,6 +339,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const d1Options = [1000, 1500, 2000, 2500, 3000];
     const d1 = d1Options[Math.floor(Math.random() * d1Options.length)];
     const start1 = (Math.floor(Math.random() * 20) + 10) * 1000; // 10 000 to 29 000
+    const blueVals = [start1, start1 + d1, start1 + 2 * d1, start1 + 3 * d1];
 
     // Sequence 2 (Even: index 1, 3, 5, 7): start2, start2 +/- d2...
     const d2Options = [1000, 2000, 2500, 3000, 5000];
@@ -347,20 +348,59 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const start2 = isOpposing
       ? (Math.floor(Math.random() * 15) + 65) * 1000 // 65 000 to 79 000
       : (Math.floor(Math.random() * 15) + 35) * 1000;
-
-    const termA = start1 + (3 * d1);
-    const termB = start2 + (3 * d2Sign * d2);
-
-    const patternDisplay = [
-      start1.toString(),
-      start2.toString(),
-      (start1 + d1).toString(),
-      (start2 + d2Sign * d2).toString(),
-      (start1 + 2 * d1).toString(),
-      (start2 + 2 * d2Sign * d2).toString(),
-      "A",
-      "B"
+    const orangeVals = [
+      start2,
+      start2 + d2Sign * d2,
+      start2 + 2 * d2Sign * d2,
+      start2 + 3 * d2Sign * d2
     ];
+
+    // 4 Position configurations for A (blue, odd index) and B (orange, even index):
+    // In all configurations, indices 0, 2 (blue) and 1, 3 (orange) are given so rules are always clearly deducible!
+    const positionConfigs = [
+      { mode: 'end', posA: 6, posB: 7 },              // Terms 7 & 8 are A & B (end)
+      { mode: 'middle', posA: 4, posB: 5 },           // Terms 5 & 6 are A & B (middle)
+      { mode: 'split_middle_end', posA: 4, posB: 7 }, // Term 5 is A, Term 8 is B (split)
+      { mode: 'split_end_middle', posA: 6, posB: 5 }  // Term 7 is A, Term 6 is B (split)
+    ];
+
+    let selectedPos = null;
+    if (chosenVariety.includes('middle')) {
+      selectedPos = positionConfigs[1];
+    } else if (chosenVariety.includes('split_middle_end')) {
+      selectedPos = positionConfigs[2];
+    } else if (chosenVariety.includes('split_end_middle')) {
+      selectedPos = positionConfigs[3];
+    } else if (chosenVariety.includes('end')) {
+      selectedPos = positionConfigs[0];
+    } else {
+      selectedPos = positionConfigs[Math.floor(Math.random() * positionConfigs.length)];
+    }
+
+    const { posA, posB } = selectedPos;
+
+    // Blue term index for A: posA is 4 (index 2) or 6 (index 3)
+    const bIndexA = posA / 2;
+    const valA = blueVals[bIndexA];
+    const prevBlueVal = blueVals[bIndexA - 1];
+
+    // Orange term index for B: posB is 5 (index 2) or 7 (index 3)
+    const oIndexB = Math.floor(posB / 2);
+    const valB = orangeVals[oIndexB];
+    const prevOrangeVal = orangeVals[oIndexB - 1];
+
+    const patternDisplay = [];
+    for (let i = 0; i < 8; i++) {
+      if (i === posA) {
+        patternDisplay.push("A");
+      } else if (i === posB) {
+        patternDisplay.push("B");
+      } else if (i % 2 === 0) {
+        patternDisplay.push(blueVals[i / 2].toString());
+      } else {
+        patternDisplay.push(orangeVals[Math.floor(i / 2)].toString());
+      }
+    }
 
     let findTarget = 'A';
     if (chosenVariety.includes('sum') || chosenVariety.includes('a_plus_b')) {
@@ -375,7 +415,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     const findSum = findTarget === 'sum';
     const findB = findTarget === 'B';
-    const correctNum = findSum ? (termA + termB) : (findB ? termB : termA);
+    const correctNum = findSum ? (valA + valB) : (findB ? valB : valA);
     finalAnswer = correctNum.toString();
 
     visualEngineStr = JSON.stringify({
@@ -387,25 +427,36 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       }
     }, null, 2);
 
-    const questionTargetText = findSum ? "find the sum of A + B" : (findB ? "find the value of B" : "find the value of A");
-    promptInstruction = `- Question stem: "The sequence below has two alternating patterns (odd positions in blue, even positions in orange): ${patternDisplay.join(', ')}. By identifying the separate rules, ${questionTargetText}."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    const questionTargetText = findSum ? "find the sum of A + B" : (findB ? "find the value of missing number B" : "find the value of missing number A");
+    promptInstruction = `- Question stem: "The sequence below contains two interlocking patterns (blue boxes for odd positions and orange boxes for even positions). By identifying the separate rules, ${questionTargetText}."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
-    const oddHigh = start1 + d1;
-    const oddLow = start1;
-    const evenHigh = Math.max(start2, start2 + d2Sign * d2);
-    const evenLow = Math.min(start2, start2 + d2Sign * d2);
+    const oddHigh = blueVals[1];
+    const oddLow = blueVals[0];
+    const evenHigh = Math.max(orangeVals[0], orangeVals[1]);
+    const evenLow = Math.min(orangeVals[0], orangeVals[1]);
 
     const step1Eq = `${oddHigh} - ${oddLow} = ${d1}`;
     const step2Eq = `${evenHigh} - ${evenLow} = ${d2}`;
-    const step3Eq = `${start1 + 2 * d1} + ${d1} = ${termA}`;
+    const step3Eq = `${prevBlueVal} + ${d1} = ${valA}`;
     const step4Eq = isOpposing
-      ? `${start2 + 2 * d2Sign * d2} - ${d2} = ${termB}`
-      : `${start2 + 2 * d2Sign * d2} + ${d2} = ${termB}`;
+      ? `${prevOrangeVal} - ${d2} = ${valB}`
+      : `${prevOrangeVal} + ${d2} = ${valB}`;
 
     if (isMCQ) {
-      const distractorWrongStep = findSum ? (termA + d2 + termB) : (start1 + 2 * d1 + d2);
-      const distractorReversed = findSum ? (termA - d1 + termB) : (start1 + 2 * d1 - d1);
-      const distractorRepeat = findSum ? (start1 + 2 * d1 + start2 + 2 * d2Sign * d2) : (start1 + 2 * d1);
+      let distractorWrongStep, distractorReversed, distractorRepeat;
+      if (findSum) {
+        distractorWrongStep = valA + d2 + valB;
+        distractorReversed = valA - d1 + valB;
+        distractorRepeat = prevBlueVal + prevOrangeVal;
+      } else if (findB) {
+        distractorWrongStep = prevOrangeVal + d1;
+        distractorReversed = isOpposing ? prevOrangeVal + d2 : prevOrangeVal - d2;
+        distractorRepeat = prevOrangeVal;
+      } else {
+        distractorWrongStep = prevBlueVal + d2;
+        distractorReversed = prevBlueVal - d1;
+        distractorRepeat = prevBlueVal;
+      }
 
       const mcqRes = buildMcqOptions(finalAnswer, [
         { val: distractorWrongStep.toString(), defect: 'CONFUSED_SUBSEQUENCE_RULES' },
@@ -415,35 +466,48 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       options = mcqRes.options;
       defectMap = mcqRes.defectMap;
     } else if (isStructure) {
+      const structSteps = [
+        {
+          label: "Write the working equation to find the rule for the blue sequence (odd positions):",
+          expectedAnswer: step1Eq,
+          acceptedAnswers: [step1Eq, step1Eq.replace(/\s+/g, '')]
+        },
+        {
+          label: "Write the working equation to find the rule for the orange sequence (even positions):",
+          expectedAnswer: step2Eq,
+          acceptedAnswers: [step2Eq, step2Eq.replace(/\s+/g, '')]
+        },
+        {
+          label: "Write the working equation for the first missing number (A):",
+          expectedAnswer: step3Eq,
+          acceptedAnswers: [step3Eq, step3Eq.replace(/\s+/g, '')]
+        },
+        {
+          label: "Write the working equation for the second missing number (B):",
+          expectedAnswer: step4Eq,
+          acceptedAnswers: [step4Eq, step4Eq.replace(/\s+/g, '')]
+        }
+      ];
+
+      if (findSum) {
+        structSteps.push({
+          label: "Write the working equation to find the sum of A + B:",
+          expectedAnswer: `${valA} + ${valB} = ${valA + valB}`,
+          acceptedAnswers: [
+            `${valA} + ${valB} = ${valA + valB}`,
+            `${valA}+${valB}=${valA + valB}`
+          ]
+        });
+      }
+
       inputRequirementStr = JSON.stringify({
         inputType: "MULTI_STEP_INPUT",
-        steps: [
-          {
-            label: "Write the working equation to find the rule for the blue sequence (1st, 3rd, and 5th numbers):",
-            expectedAnswer: step1Eq,
-            acceptedAnswers: [step1Eq, step1Eq.replace(/\s+/g, '')]
-          },
-          {
-            label: "Write the working equation to find the rule for the orange sequence (2nd, 4th, and 6th numbers):",
-            expectedAnswer: step2Eq,
-            acceptedAnswers: [step2Eq, step2Eq.replace(/\s+/g, '')]
-          },
-          {
-            label: "Write the working equation for the first missing number (A):",
-            expectedAnswer: step3Eq,
-            acceptedAnswers: [step3Eq, step3Eq.replace(/\s+/g, '')]
-          },
-          {
-            label: "Write the working equation for the second missing number (B):",
-            expectedAnswer: step4Eq,
-            acceptedAnswers: [step4Eq, step4Eq.replace(/\s+/g, '')]
-          }
-        ]
+        steps: structSteps
       }, null, 2);
     }
 
     ruleDesc = `two interlocking sequences: blue numbers change by +${d1}, orange numbers change by ${d2Sign * d2}`;
-    hint = `Notice the alternate colored blocks: the blue numbers (${start1}, ${start1 + d1}, ${start1 + 2 * d1}) increase by ${d1} each step (${oddHigh} - ${oddLow} = ${d1}). The orange numbers (${start2}, ${start2 + d2Sign * d2}, ${start2 + 2 * d2Sign * d2}) change by ${d2Sign * d2} each step. Apply the blue rule to find A (${step3Eq}) and the orange rule to find B (${step4Eq}).`;
+    hint = `Notice the alternate colored blocks: the blue numbers (${blueVals[0]}, ${blueVals[1]}) increase by ${d1} each step (${oddHigh} - ${oddLow} = ${d1}). The orange numbers (${orangeVals[0]}, ${orangeVals[1]}) change by ${d2Sign * d2} each step (${evenHigh} - ${evenLow} = ${d2}). Apply the blue rule to find A (${step3Eq}) and the orange rule to find B (${step4Eq}).` + (findSum ? ` Finally, add A and B: ${valA} + ${valB} = ${valA + valB}.` : '');
 
   // ==========================================================================
   // VARIANT 4: advanced_accumulated_target_term (The Accumulated Target: Finding N)

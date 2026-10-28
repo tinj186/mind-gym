@@ -25,41 +25,53 @@ export default function NumberSequenceBlocks({ data }) {
   const roundedClass = nodeShape === 'circle' ? 'rounded-full' : 'rounded-2xl sm:rounded-3xl';
   const nodeCount = rawNodes.length;
 
-  // Auto-adjust layout sizing so any sequence (4, 5, 6+ nodes) is completely visible without clipping
-  const config = nodeCount >= 6
+  // Auto-adjust layout sizing so any sequence (4, 5, 6, 8+ nodes) is completely visible without clipping
+  const config = nodeCount >= 8
     ? {
         cardPadding: 'p-3 sm:p-4 md:p-6',
         gap: 'gap-1 sm:gap-1.5 md:gap-2',
-        nodeWidth: 'min-w-11 sm:min-w-13 md:min-w-16 flex-1 max-w-24',
+        nodeWidth: 'min-w-[4.2rem] sm:min-w-[4.6rem] md:min-w-[5.2rem] flex-1 max-w-28',
+        nodeHeight: 'h-11 sm:h-12 md:h-13',
+        nodePx: 'px-1 sm:px-1.5',
+        arrowSize: 'text-xs sm:text-sm md:text-base',
+        fontLarge: 'text-xs sm:text-sm md:text-base font-black',
+        fontMedium: 'text-[10px] sm:text-[11px] md:text-xs font-black tracking-tighter',
+        fontSmall: 'text-[9px] sm:text-[10px] md:text-[11px] font-black tracking-tightest',
+      }
+    : nodeCount >= 6
+    ? {
+        cardPadding: 'p-3 sm:p-4 md:p-6',
+        gap: 'gap-1.5 sm:gap-2 md:gap-2.5',
+        nodeWidth: 'min-w-[4.5rem] sm:min-w-[5rem] md:min-w-[5.5rem] flex-1 max-w-28',
         nodeHeight: 'h-12 sm:h-13 md:h-15',
-        nodePx: 'px-1 sm:px-2 md:px-2.5',
+        nodePx: 'px-1.5 sm:px-2 md:px-2.5',
         arrowSize: 'text-sm sm:text-base md:text-lg',
-        fontLarge: 'text-xs sm:text-sm md:text-base',
-        fontMedium: 'text-[11px] sm:text-xs md:text-sm',
-        fontSmall: 'text-[10px] sm:text-[11px] md:text-xs',
+        fontLarge: 'text-xs sm:text-sm md:text-base font-black',
+        fontMedium: 'text-[11px] sm:text-xs md:text-sm font-black tracking-tighter',
+        fontSmall: 'text-[10px] sm:text-[11px] md:text-xs font-black tracking-tightest',
       }
     : nodeCount === 5
     ? {
         cardPadding: 'p-3.5 sm:p-5 md:p-6',
-        gap: 'gap-1.5 sm:gap-2 md:gap-3',
-        nodeWidth: 'min-w-13 sm:min-w-16 md:min-w-20 flex-1 max-w-28',
+        gap: 'gap-2 sm:gap-2.5 md:gap-3',
+        nodeWidth: 'min-w-[5rem] sm:min-w-[5.5rem] md:min-w-[6rem] flex-1 max-w-32',
         nodeHeight: 'h-13 sm:h-14 md:h-16',
-        nodePx: 'px-1.5 sm:px-2.5 md:px-3.5',
+        nodePx: 'px-2 sm:px-2.5 md:px-3',
         arrowSize: 'text-base sm:text-lg md:text-xl',
-        fontLarge: 'text-sm sm:text-base md:text-lg',
-        fontMedium: 'text-xs sm:text-sm md:text-base',
-        fontSmall: 'text-[11px] sm:text-xs md:text-sm',
+        fontLarge: 'text-sm sm:text-base md:text-lg font-black',
+        fontMedium: 'text-xs sm:text-sm md:text-base font-black',
+        fontSmall: 'text-[11px] sm:text-xs md:text-sm font-black',
       }
     : {
         cardPadding: 'p-4 sm:p-6 md:p-8',
-        gap: 'gap-2 sm:gap-3 md:gap-4',
-        nodeWidth: 'min-w-16 sm:min-w-20 md:min-w-24 flex-1 max-w-32',
+        gap: 'gap-2.5 sm:gap-3 md:gap-4',
+        nodeWidth: 'min-w-16 sm:min-w-20 md:min-w-24 flex-1 max-w-36',
         nodeHeight: 'h-14 sm:h-16 md:h-18',
         nodePx: 'px-2 sm:px-4 md:px-5',
         arrowSize: 'text-xl sm:text-2xl md:text-3xl',
-        fontLarge: 'text-base sm:text-xl md:text-2xl',
-        fontMedium: 'text-sm sm:text-base md:text-lg',
-        fontSmall: 'text-xs sm:text-sm md:text-base',
+        fontLarge: 'text-base sm:text-xl md:text-2xl font-black',
+        fontMedium: 'text-sm sm:text-base md:text-lg font-black',
+        fontSmall: 'text-xs sm:text-sm md:text-base font-black',
       };
 
   return (
@@ -82,9 +94,9 @@ export default function NumberSequenceBlocks({ data }) {
 
             const fontClass = isMissing || isVariable
               ? config.fontLarge
-              : displayVal.length > 6
+              : displayVal.length >= 6
               ? config.fontSmall
-              : displayVal.length > 4
+              : displayVal.length >= 5
               ? config.fontMedium
               : config.fontLarge;
 
@@ -101,8 +113,16 @@ export default function NumberSequenceBlocks({ data }) {
                 textClass = 'text-amber-600';
               }
             } else if (isVariable) {
-              colorClasses = 'bg-indigo-50 border-indigo-600 shadow-[3px_3px_0px_0px_rgba(79,70,229,1)] hover:-translate-y-0.5';
-              textClass = 'text-indigo-700';
+              if (nodeColor === 'blue') {
+                colorClasses = 'bg-blue-100 border-blue-600 shadow-[3px_3px_0px_0px_rgba(37,99,235,1)] hover:-translate-y-0.5';
+                textClass = 'text-blue-700';
+              } else if (nodeColor === 'orange' || nodeColor === 'amber') {
+                colorClasses = 'bg-amber-100 border-amber-600 shadow-[3px_3px_0px_0px_rgba(217,119,6,1)] hover:-translate-y-0.5';
+                textClass = 'text-amber-800';
+              } else {
+                colorClasses = 'bg-indigo-50 border-indigo-600 shadow-[3px_3px_0px_0px_rgba(79,70,229,1)] hover:-translate-y-0.5';
+                textClass = 'text-indigo-700';
+              }
             } else if (nodeColor === 'blue') {
               colorClasses = 'bg-blue-50 border-blue-600 shadow-[3px_3px_0px_0px_rgba(37,99,235,1)] hover:-translate-y-0.5';
               textClass = 'text-blue-800';
@@ -115,10 +135,10 @@ export default function NumberSequenceBlocks({ data }) {
               <React.Fragment key={idx}>
                 {/* Geometric Number Node */}
                 <div
-                  className={`relative ${config.nodeWidth} ${config.nodeHeight} ${config.nodePx} flex items-center justify-center border-4 transition-all duration-200 shrink ${roundedClass} ${colorClasses}`}
+                  className={`relative ${config.nodeWidth} ${config.nodeHeight} ${config.nodePx} flex items-center justify-center border-4 transition-all duration-200 shrink-0 ${roundedClass} ${colorClasses}`}
                 >
                   <span
-                    className={`font-black tracking-tight text-center truncate ${fontClass} ${textClass}`}
+                    className={`font-black text-center whitespace-nowrap leading-none ${fontClass} ${textClass}`}
                   >
                     {displayVal}
                   </span>
