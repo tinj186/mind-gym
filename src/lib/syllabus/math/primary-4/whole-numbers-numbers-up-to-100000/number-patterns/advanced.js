@@ -185,69 +185,122 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   } else if (resolvedVariant === 'advanced_floating_number_line') {
     let chosenVariety = varietyStr;
 
-    // Pick two interior tick indices: 0: Tick 1, 1: Tick 2, 2: Tick 3, 3: Tick 4, 4: Tick 5, 5: Tick 6
-    let idx1 = 1; // Tick 2
-    let idx2 = 4; // Tick 5
+    // Available combinations of (totalTicks, idx1, idx2)
+    const tickConfigs = [
+      { totalTicks: 6, idx1: 1, idx2: 3 }, // Ticks 2 & 4 (gap 2)
+      { totalTicks: 6, idx1: 1, idx2: 4 }, // Ticks 2 & 5 (gap 3)
+      { totalTicks: 6, idx1: 2, idx2: 4 }, // Ticks 3 & 5 (gap 2)
+      { totalTicks: 7, idx1: 1, idx2: 4 }, // Ticks 2 & 5 (gap 3)
+      { totalTicks: 7, idx1: 2, idx2: 5 }, // Ticks 3 & 6 (gap 3)
+      { totalTicks: 7, idx1: 1, idx2: 5 }, // Ticks 2 & 6 (gap 4)
+      { totalTicks: 7, idx1: 2, idx2: 4 }, // Ticks 3 & 5 (gap 2)
+      { totalTicks: 8, idx1: 2, idx2: 5 }, // Ticks 3 & 6 (gap 3)
+      { totalTicks: 8, idx1: 1, idx2: 5 }, // Ticks 2 & 6 (gap 4)
+      { totalTicks: 8, idx1: 2, idx2: 6 }, // Ticks 3 & 7 (gap 4)
+      { totalTicks: 8, idx1: 1, idx2: 4 }  // Ticks 2 & 5 (gap 3)
+    ];
+
+    let selectedConfig = null;
     if (chosenVariety.includes('2_and_4')) {
-      idx1 = 1; idx2 = 3;
+      selectedConfig = { totalTicks: 6, idx1: 1, idx2: 3 };
     } else if (chosenVariety.includes('3_and_5')) {
-      idx1 = 2; idx2 = 4;
+      selectedConfig = { totalTicks: 6, idx1: 2, idx2: 4 };
+    } else if (chosenVariety.includes('2_and_5')) {
+      selectedConfig = { totalTicks: 6, idx1: 1, idx2: 4 };
+    } else if (chosenVariety.includes('3_and_6')) {
+      selectedConfig = { totalTicks: 7, idx1: 2, idx2: 5 };
+    } else if (chosenVariety.includes('2_and_6')) {
+      selectedConfig = { totalTicks: 7, idx1: 1, idx2: 5 };
+    } else if (chosenVariety.includes('7_ticks')) {
+      const c7 = tickConfigs.filter(c => c.totalTicks === 7);
+      selectedConfig = c7[Math.floor(Math.random() * c7.length)];
+    } else if (chosenVariety.includes('8_ticks')) {
+      const c8 = tickConfigs.filter(c => c.totalTicks === 8);
+      selectedConfig = c8[Math.floor(Math.random() * c8.length)];
+    } else {
+      selectedConfig = tickConfigs[Math.floor(Math.random() * tickConfigs.length)];
     }
 
+    const { totalTicks, idx1, idx2 } = selectedConfig;
+    const totalIntervals = totalTicks - 1;
     const numJumps = idx2 - idx1;
-    const stepOptions = [1000, 1500, 2000, 2500, 3000, 4000, 5000];
+
+    const stepOptions = [500, 800, 1000, 1200, 1500, 2000, 2500, 3000, 4000, 5000];
     const d = stepOptions[Math.floor(Math.random() * stepOptions.length)];
 
-    const maxTick1 = 90000 - (5 * d);
+    const maxTick1 = 98000 - (totalIntervals * d);
     const tick1 = (Math.floor(Math.random() * Math.max(1, (maxTick1 - 10000) / 1000))) * 1000 + 10000;
-    const tick6 = tick1 + (5 * d);
+    const lastTick = tick1 + (totalIntervals * d);
 
     const val1 = tick1 + (idx1 * d);
     const val2 = tick1 + (idx2 * d);
     const diffKnown = val2 - val1;
 
-    const findFirst = chosenVariety.includes('find_first_tick');
-    const correctNum = findFirst ? tick1 : tick6;
+    let findFirst = Math.random() < 0.5;
+    if (chosenVariety.includes('find_first_tick')) findFirst = true;
+    if (chosenVariety.includes('find_last_tick')) findFirst = false;
+
+    const correctNum = findFirst ? tick1 : lastTick;
     finalAnswer = correctNum.toString();
 
-    const targetTickLabel = findFirst ? "first tick mark (Tick 1)" : "last tick mark (Tick 6)";
+    const targetTickLabel = findFirst ? "first tick mark (Tick 1)" : `last tick mark (Tick ${totalTicks})`;
 
     visualEngineStr = JSON.stringify({
       componentToRender: "NUMBER_LINE_ADVANCED",
       componentData: {
         min: tick1,
-        max: tick6,
-        numIntervals: 5,
+        max: lastTick,
+        numIntervals: totalIntervals,
         labeledPoints: [
           { index: 0, label: findFirst ? "Tick 1 (?)" : "Tick 1" },
           { index: idx1, label: val1.toLocaleString() },
           { index: idx2, label: val2.toLocaleString() },
-          { index: 5, label: findFirst ? "Tick 6" : "Tick 6 (?)" }
+          { index: totalIntervals, label: findFirst ? `Tick ${totalTicks}` : `Tick ${totalTicks} (?)` }
         ]
       }
     }, null, 2);
 
-    promptInstruction = `- Question stem: "The number line below has 6 equally spaced tick marks. Tick ${idx1 + 1} is ${val1.toLocaleString()} and Tick ${idx2 + 1} is ${val2.toLocaleString()}. Find the value of the ${targetTickLabel}."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    promptInstruction = `- Question stem: "The number line below has ${totalTicks} equally spaced tick marks. Tick ${idx1 + 1} is ${val1.toLocaleString()} and Tick ${idx2 + 1} is ${val2.toLocaleString()}. Find the value of the ${targetTickLabel}."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
     const step1Eq = `${val2} - ${val1} = ${diffKnown}`;
     const step2Eq = `${diffKnown} / ${numJumps} = ${d}`;
-    const step3Eq = `${val1} - ${idx1 * d} = ${tick1}`;
-    const step4Eq = `${val2} + ${(5 - idx2) * d} = ${tick6}`;
+    const targetEq = findFirst
+      ? `${val1} - ${idx1 * d} = ${tick1}`
+      : `${val2} + ${(totalIntervals - idx2) * d} = ${lastTick}`;
 
     if (isMCQ) {
-      const distractorDiffAsStep = val2 + diffKnown;
       const wrongD = Math.floor(diffKnown / (numJumps === 2 ? 3 : 2));
-      const distractorWrongJump = findFirst ? val1 - wrongD : val2 + wrongD;
-      const distractorReversed = findFirst ? val1 + d : val2 - d;
+      let distractorDiffAsStep, distractorWrongJump, distractorReversed, distractorOneStep;
+
+      if (findFirst) {
+        distractorDiffAsStep = Math.max(1000, val1 - diffKnown);
+        distractorWrongJump = Math.max(1000, val1 - wrongD);
+        distractorReversed = val1 + d;
+        distractorOneStep = idx1 > 1 ? val1 - d : tick1 + d;
+      } else {
+        distractorDiffAsStep = val2 + diffKnown;
+        distractorWrongJump = val2 + wrongD;
+        distractorReversed = val2 - d;
+        distractorOneStep = (totalIntervals - idx2) > 1 ? val2 + d : lastTick - d;
+      }
 
       const mcqRes = buildMcqOptions(finalAnswer, [
         { val: distractorDiffAsStep.toString(), defect: 'CONFUSED_TOTAL_DIFF_WITH_SINGLE_INTERVAL' },
         { val: distractorWrongJump.toString(), defect: 'WRONG_INTERVAL_COUNT_DIVISION' },
-        { val: distractorReversed.toString(), defect: 'REVERSED_OPERATION_DIRECTION' }
+        { val: distractorReversed.toString(), defect: 'REVERSED_OPERATION_DIRECTION' },
+        { val: distractorOneStep.toString(), defect: 'OFF_BY_ONE_STEP' }
       ]);
       options = mcqRes.options;
       defectMap = mcqRes.defectMap;
     } else if (isStructure) {
+      const step3Label = findFirst
+        ? `Write the working equation to find the first tick mark (Tick 1) by counting backwards ${idx1} step(s) from Tick ${idx1 + 1}:`
+        : `Write the working equation to find the last tick mark (Tick ${totalTicks}) by counting forwards ${totalIntervals - idx2} step(s) from Tick ${idx2 + 1}:`;
+
+      const acceptedTarget = findFirst
+        ? [targetEq, targetEq.replace(/\s+/g, ''), `${val1} - ${idx1} * ${d} = ${tick1}`, `${val1}-${idx1}*${d}=${tick1}`]
+        : [targetEq, targetEq.replace(/\s+/g, ''), `${val2} + ${totalIntervals - idx2} * ${d} = ${lastTick}`, `${val2}+${totalIntervals - idx2}*${d}=${lastTick}`];
+
       inputRequirementStr = JSON.stringify({
         inputType: "MULTI_STEP_INPUT",
         steps: [
@@ -262,21 +315,18 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
             acceptedAnswers: [step2Eq, step2Eq.replace(/\s+/g, '')]
           },
           {
-            label: "Write the working equation to find the first tick mark (Tick 1):",
-            expectedAnswer: step3Eq,
-            acceptedAnswers: [step3Eq, step3Eq.replace(/\s+/g, '')]
-          },
-          {
-            label: "Write the working equation to find the last tick mark (Tick 6):",
-            expectedAnswer: step4Eq,
-            acceptedAnswers: [step4Eq, step4Eq.replace(/\s+/g, '')]
+            label: step3Label,
+            expectedAnswer: targetEq,
+            acceptedAnswers: acceptedTarget
           }
         ]
       }, null, 2);
     }
 
     ruleDesc = `equal intervals of ${d} along the number line`;
-    hint = `First find the difference between the two known marks: ${val2} - ${val1} = ${diffKnown}. There are ${numJumps} jumps between them, so each interval is ${diffKnown} / ${numJumps} = ${d}. To find Tick 1, count backwards: ${val1} - ${idx1 * d} = ${tick1}. To find Tick 6, count forwards: ${val2} + ${(5 - idx2) * d} = ${tick6}.`;
+    hint = findFirst
+      ? `First find the difference between the two known marks: ${val2} - ${val1} = ${diffKnown}. There are ${numJumps} jumps between them, so each interval is ${diffKnown} / ${numJumps} = ${d}. To find Tick 1, count backwards ${idx1} step(s) from Tick ${idx1 + 1}: ${val1} - ${idx1 * d} = ${tick1}.`
+      : `First find the difference between the two known marks: ${val2} - ${val1} = ${diffKnown}. There are ${numJumps} jumps between them, so each interval is ${diffKnown} / ${numJumps} = ${d}. To find Tick ${totalTicks}, count forwards ${totalIntervals - idx2} step(s) from Tick ${idx2 + 1}: ${val2} + ${(totalIntervals - idx2) * d} = ${lastTick}.`;
 
   // ==========================================================================
   // VARIANT 3: advanced_interlocking_sequences (Two Interlocking Sequences)
@@ -312,8 +362,19 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       "B"
     ];
 
-    const findSum = chosenVariety.includes('sum');
-    const findB = chosenVariety.includes('missing_b');
+    let findTarget = 'A';
+    if (chosenVariety.includes('sum') || chosenVariety.includes('a_plus_b')) {
+      findTarget = 'sum';
+    } else if (chosenVariety.includes('missing_b') || chosenVariety.includes('second_missing')) {
+      findTarget = 'B';
+    } else if (chosenVariety.includes('missing_a') || chosenVariety.includes('first_missing')) {
+      findTarget = 'A';
+    } else {
+      findTarget = ['A', 'B', 'sum'][Math.floor(Math.random() * 3)];
+    }
+
+    const findSum = findTarget === 'sum';
+    const findB = findTarget === 'B';
     const correctNum = findSum ? (termA + termB) : (findB ? termB : termA);
     finalAnswer = correctNum.toString();
 
@@ -404,22 +465,60 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const targetVal = startVal + totalDiff;
     finalAnswer = targetDay.toString();
 
+    const themes = [
+      {
+        title: "Daily Production Schedule",
+        unitName: "Day",
+        valName: "Units Produced",
+        stem: `A factory produces ${startVal.toLocaleString()} units on Day 1. Each day it produces ${d.toLocaleString()} more units than the day before. On which day will it produce ${targetVal.toLocaleString()} units?`,
+        step3Label: "Write the working equation to find the final Day number (adding 1 for Day 1):",
+        hintText: `First find the total increase needed to reach the target: ${targetVal} - ${startVal} = ${totalDiff}. Divide by the daily increase (${totalDiff} / ${d} = ${jumps} jumps). Since Day 1 is the starting point, add 1 for the starting day: 1 + ${jumps} = Day ${targetDay}.`
+      },
+      {
+        title: "Monthly Savings Plan",
+        unitName: "Month",
+        valName: "Total Savings ($)",
+        stem: `A student had saved $${startVal.toLocaleString()} in Month 1. Each month, the student saves an additional $${d.toLocaleString()}. In which month will the total savings reach $${targetVal.toLocaleString()}?`,
+        step3Label: "Write the working equation to find the final Month number (adding 1 for Month 1):",
+        hintText: `First find the total savings increase needed to reach the target: ${targetVal} - ${startVal} = ${totalDiff}. Divide by the monthly savings amount (${totalDiff} / ${d} = ${jumps} jumps). Since Month 1 is the starting point, add 1 for the first month: 1 + ${jumps} = Month ${targetDay}.`
+      },
+      {
+        title: "Weekly Distance Program",
+        unitName: "Week",
+        valName: "Distance Run (m)",
+        stem: `An athlete ran ${startVal.toLocaleString()} m in Week 1. Each week, the athlete increases the running distance by ${d.toLocaleString()} m. In which week will the athlete run ${targetVal.toLocaleString()} m?`,
+        step3Label: "Write the working equation to find the final Week number (adding 1 for Week 1):",
+        hintText: `First find the total distance increase needed: ${targetVal} - ${startVal} = ${totalDiff}. Divide by the weekly increase (${totalDiff} / ${d} = ${jumps} jumps). Since Week 1 is the starting point, add 1 for the first week: 1 + ${jumps} = Week ${targetDay}.`
+      }
+    ];
+
+    let theme = themes[0];
+    if (chosenVariety.includes('savings')) {
+      theme = themes[1];
+    } else if (chosenVariety.includes('distance')) {
+      theme = themes[2];
+    } else if (chosenVariety.includes('daily_production')) {
+      theme = themes[0];
+    } else {
+      theme = themes[Math.floor(Math.random() * themes.length)];
+    }
+
     visualEngineStr = JSON.stringify({
       componentToRender: "TABLE_PATTERN_VISUALIZER",
       componentData: {
-        title: "Daily Production Schedule",
-        headers: ["Day", "Units Produced"],
+        title: theme.title,
+        headers: [theme.unitName, theme.valName],
         rows: [
-          ["Day 1", startVal.toLocaleString()],
-          ["Day 2", (startVal + d).toLocaleString()],
-          ["Day 3", (startVal + (2 * d)).toLocaleString()],
+          [`${theme.unitName} 1`, startVal.toLocaleString()],
+          [`${theme.unitName} 2`, (startVal + d).toLocaleString()],
+          [`${theme.unitName} 3`, (startVal + (2 * d)).toLocaleString()],
           ["...", "..."],
-          ["Day ?", targetVal.toLocaleString()]
+          [`${theme.unitName} ?`, targetVal.toLocaleString()]
         ]
       }
     }, null, 2);
 
-    promptInstruction = `- Question stem: "A factory produces ${startVal.toLocaleString()} units on Day 1. Each day it produces ${d.toLocaleString()} more units than the day before. On which day will it produce ${targetVal.toLocaleString()} units?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    promptInstruction = `- Question stem: "${theme.stem}"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
     const step1Eq = `${targetVal} - ${startVal} = ${totalDiff}`;
     const step2Eq = `${totalDiff} / ${d} = ${jumps}`;
@@ -452,7 +551,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
             acceptedAnswers: [step2Eq, step2Eq.replace(/\s+/g, '')]
           },
           {
-            label: "Write the working equation to find the final Day number (adding 1 for Day 1):",
+            label: theme.step3Label,
             expectedAnswer: step3Eq,
             acceptedAnswers: [step3Eq, step3Eq.replace(/\s+/g, ''), `${jumps} + 1 = ${targetDay}`, `${jumps}+1=${targetDay}`]
           }
@@ -460,8 +559,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       }, null, 2);
     }
 
-    ruleDesc = `growing by ${d} units each day to reach ${targetVal}`;
-    hint = `First find the total increase needed to reach the target: ${targetVal} - ${startVal} = ${totalDiff}. Divide by the daily increase (${totalDiff} / ${d} = ${jumps} jumps). Since Day 1 is the starting point, add 1 for the starting day: 1 + ${jumps} = Day ${targetDay}.`;
+    ruleDesc = `growing by ${d} units each ${theme.unitName.toLowerCase()} to reach ${targetVal}`;
+    hint = theme.hintText;
 
   // ==========================================================================
   // VARIANT 5: advanced_simultaneous_offset_deduction (Simultaneous Offset)

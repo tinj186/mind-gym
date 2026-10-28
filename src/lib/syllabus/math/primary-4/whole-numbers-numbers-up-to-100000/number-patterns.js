@@ -40,11 +40,11 @@ export const p4NumberPatternsBlueprint = {
     standard_growing_shrinking_interval: 'Analyze sequences with increasing or decreasing interval step sizes (difference of differences).',
     standard_equation_sequence_hybrid: 'Solve for the sum or difference of two missing terms (A and B) in a number pattern.',
 
-    advanced_long_jump_deduction: 'The Long Jump Deduction (Calculate distant term values without full sequence listing).',
+    //    advanced_long_jump_deduction: 'The Long Jump Deduction (Calculate distant term values without full sequence listing).',
     advanced_floating_number_line: 'Floating Number Line (Deduce interval size from interior ticks and extrapolate start and end points).',
-    advanced_interlocking_sequences: 'Two Interlocking Sequences (Identify dual alternating patterns and determine missing terms).',
-    advanced_accumulated_target_term: 'The Accumulated Target (Determine the target day or term position N required to reach a specific value).',
-    advanced_simultaneous_offset_deduction: 'The Simultaneous Offset Deduction (Calculate the cumulative difference between two simultaneous sequences at Term N).'
+    //    advanced_interlocking_sequences: 'Two Interlocking Sequences (Identify dual alternating patterns and determine missing terms).',
+    //    advanced_accumulated_target_term: 'The Accumulated Target (Determine the target day or term position N required to reach a specific value).',
+    //    advanced_simultaneous_offset_deduction: 'The Simultaneous Offset Deduction (Calculate the cumulative difference between two simultaneous sequences at Term N).'
   },
 
   variantVarieties: {
@@ -131,6 +131,10 @@ export const p4NumberPatternsBlueprint = {
       'ticks_2_and_5',
       'ticks_2_and_4',
       'ticks_3_and_5',
+      'ticks_3_and_6',
+      'ticks_2_and_6',
+      '7_ticks',
+      '8_ticks',
       'find_last_tick',
       'find_first_tick'
     ],
