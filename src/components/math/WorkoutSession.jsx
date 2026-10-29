@@ -169,7 +169,8 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
         startTransition(async () => {
           try {
             await saveAttemptAction(studentId, result);
-            const summaryData = await finalizeWorkoutAction(studentId, newLog);
+            const userTimeZone = typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'Asia/Singapore';
+            const summaryData = await finalizeWorkoutAction(studentId, newLog, userTimeZone);
             await updateWorkoutProgressAction(studentId, null);
             setSummary(summaryData);
           } catch (e) { console.error("Finalization failed:", e); }

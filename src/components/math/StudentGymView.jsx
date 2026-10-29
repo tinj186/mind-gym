@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { StudentProvider } from '@/contexts/StudentContext';
 import { getThemeForLevel, getDailyTargetReps } from '@/lib/LevelThemeConfig';
 import { getCurrentStudentId } from '@/lib/auth-utils';
+import { cookies } from 'next/headers';
+import { getStartOfUserDayUTC, getCalendarDaysDiff } from '@/lib/date-utils';
 
 /**
  * StudentGymView: The primary neuro-trainer dashboard for students.
@@ -56,9 +58,10 @@ export default async function StudentGymView({ levelOverride }) {
     overallStrength = Math.round((correctReps / totalReps) * 100);
   }
 
-  // 5. Daily Goal Tracking
-  const startOfToday = new Date();
-  startOfToday.setHours(0, 0, 0, 0);
+  // 5. Daily Goal Tracking & Streak Validation (Dynamic Timezone)
+  const cookieStore = await cookies();
+  const userTimeZone = cookieStore.get('user-timezone')?.value || 'Asia/Singapore';
+  const startOfToday = getStartOfUserDayUTC(userTimeZone);
 
   const todayReps = await prisma.attemptLog.count({
     where: { 
@@ -68,7 +71,17 @@ export default async function StudentGymView({ levelOverride }) {
   });
 
   const dailyTarget = getDailyTargetReps(currentLevel);
-  const currentStreak = profile?.currentStreak || 0;
+  
+  // Dynamic Streak Display:
+  // If the student practiced today (daysSinceLast === 0) or yesterday (daysSinceLast === 1), streak is intact.
+  // If they missed yesterday (daysSinceLast > 1), the active streak has lapsed and displays as 0.
+  let currentStreak = profile?.currentStreak || 0;
+  if (profile?.lastPracticeDate) {
+    const daysSinceLast = getCalendarDaysDiff(new Date(), profile.lastPracticeDate, userTimeZone);
+    if (daysSinceLast !== null && daysSinceLast > 1) {
+      currentStreak = 0;
+    }
+  }
 
   const bottleneck = masteryData.length > 0
     ? masteryData.reduce((prev, curr) => ((prev.synapseStrength || 0) < (curr.synapseStrength || 0)) ? prev : curr)

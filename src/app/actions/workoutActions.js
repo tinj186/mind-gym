@@ -3,7 +3,9 @@
 import { prisma } from "@/lib/db";
 import { calculateSynapseStrength } from "@/lib/intelligence/synapse";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { runBackgroundDiagnostic } from "./diagnosticActions";
+import { getCalendarDaysDiff, normalizeTimeZone } from "@/lib/date-utils";
 
 /**
  * Real-Time Saving: Logs an individual attempt and increments the rep count.
@@ -44,7 +46,7 @@ export async function saveAttemptAction(studentId, result) {
 /**
  * Updates synapse strength for each sub-topic in the set and checks thresholds.
  */
-export async function finalizeWorkoutAction(studentId, results) {
+export async function finalizeWorkoutAction(studentId, results, clientTimeZone = null) {
   const rankUps = [];
   let totalGrowth = 0;
 
@@ -155,38 +157,36 @@ export async function finalizeWorkoutAction(studentId, results) {
     }
   }
 
-  // --- STREAK TRACKING LOGIC ---
+  // --- STREAK TRACKING LOGIC (DYNAMIC TIMEZONE) ---
+  let effectiveTimeZone = clientTimeZone;
+  if (!effectiveTimeZone) {
+    try {
+      const cookieStore = await cookies();
+      effectiveTimeZone = cookieStore.get('user-timezone')?.value;
+    } catch {}
+  }
+  const timeZone = normalizeTimeZone(effectiveTimeZone);
+
   const profile = await prisma.studentProfile.findUnique({
     where: { id: studentId },
     select: { currentStreak: true, longestStreak: true, lastPracticeDate: true }
   });
 
   if (profile) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const lastDate = profile.lastPracticeDate ? new Date(profile.lastPracticeDate) : null;
-    if (lastDate) lastDate.setHours(0, 0, 0, 0);
+    const now = new Date();
+    const daysDiff = getCalendarDaysDiff(now, profile.lastPracticeDate, timeZone);
 
     let newStreak = profile.currentStreak || 0;
     let newLongest = profile.longestStreak || 0;
 
-    if (!lastDate) {
+    if (daysDiff === null) {
       newStreak = 1;
-    } else {
-      const msPerDay = 1000 * 60 * 60 * 24;
-      // Use UTC dates to avoid daylight saving time edge cases
-      const utcToday = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
-      const utcLast = Date.UTC(lastDate.getFullYear(), lastDate.getMonth(), lastDate.getDate());
-      const daysDiff = Math.floor((utcToday - utcLast) / msPerDay);
-
-      if (daysDiff === 1) {
-        newStreak += 1;
-      } else if (daysDiff > 1) {
-        newStreak = 1;
-      }
-      // If daysDiff === 0, it means they already practiced today, keep the same streak.
+    } else if (daysDiff === 1) {
+      newStreak += 1;
+    } else if (daysDiff > 1) {
+      newStreak = 1;
     }
+    // If daysDiff === 0, it means they already practiced today, keep the same streak.
 
     if (newStreak > newLongest) {
       newLongest = newStreak;
@@ -195,7 +195,7 @@ export async function finalizeWorkoutAction(studentId, results) {
     await prisma.studentProfile.update({
       where: { id: studentId },
       data: {
-        lastPracticeDate: new Date(),
+        lastPracticeDate: now,
         currentStreak: newStreak,
         longestStreak: newLongest
       }

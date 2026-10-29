@@ -24,6 +24,16 @@ export default function RootLayout({ children }) {
             window.MathfieldElement.soundsDirectory = "https://unpkg.com/mathlive@0.109.1/dist/sounds/";
           `
         }} />
+        <Script id="timezone-detector" strategy="beforeInteractive" dangerouslySetInnerHTML={{
+          __html: `
+            try {
+              var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+              if (tz && document.cookie.indexOf('user-timezone=' + encodeURIComponent(tz)) === -1) {
+                document.cookie = 'user-timezone=' + encodeURIComponent(tz) + '; path=/; max-age=31536000; SameSite=Lax';
+              }
+            } catch (e) {}
+          `
+        }} />
       </head>
       <body>
         <GlobalNavbar />
