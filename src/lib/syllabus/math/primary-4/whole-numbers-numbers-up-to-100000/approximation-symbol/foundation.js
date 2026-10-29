@@ -234,23 +234,105 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       };
     }
   } else if (activeVariant === 'foundation_identify_rounding_place_from_approx') {
-    // "In the statement 83 240 ≈ 83 000, to which place value has 83 240 been rounded?"
-    const choices = [
-      { num: 68340, rounded: 68000, answer: "nearest thousand" },
-      { num: 45720, rounded: 45700, answer: "nearest hundred" },
-      { num: 39462, rounded: 39460, answer: "nearest ten" }
+    // Identifies which place value a number was rounded to from an approximation statement
+    const placeOptions = [
+      {
+        name: "nearest ten",
+        unitNum: 10,
+        accepted: ["nearest ten", "ten", "tens", "nearest 10", "10"],
+        digitChecked: "ones"
+      },
+      {
+        name: "nearest hundred",
+        unitNum: 100,
+        accepted: ["nearest hundred", "hundred", "hundreds", "nearest 100", "100"],
+        digitChecked: "tens"
+      },
+      {
+        name: "nearest thousand",
+        unitNum: 1000,
+        accepted: ["nearest thousand", "thousand", "thousands", "nearest 1000", "1000", "nearest 1,000", "1,000"],
+        digitChecked: "hundreds"
+      },
+      {
+        name: "nearest ten thousand",
+        unitNum: 10000,
+        accepted: ["nearest ten thousand", "ten thousand", "ten thousands", "nearest 10000", "10000", "nearest 10,000", "10,000"],
+        digitChecked: "thousands"
+      }
     ];
-    const picked = choices[Math.floor(Math.random() * choices.length)];
-    finalAnswer = picked.answer;
 
-    promptInstruction = `- Question stem: "In the statement ${picked.num.toLocaleString()} ≈ ${picked.rounded.toLocaleString()}, to which place value has the number been rounded?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    const picked = placeOptions[Math.floor(Math.random() * placeOptions.length)];
+    finalAnswer = picked.name;
+    acceptedAnswers = picked.accepted;
+
+    let num, rounded;
+    if (picked.name === "nearest ten") {
+      while (true) {
+        const prefix = Math.floor(Math.random() * 850 + 100); // 100 to 949
+        const tens = Math.floor(Math.random() * 8) + 1; // 1 to 8 avoids cascading into hundred
+        const ones = Math.floor(Math.random() * 9) + 1; // 1 to 9 (non-zero)
+        num = (prefix * 100) + (tens * 10) + ones;
+        rounded = Math.round(num / 10) * 10;
+        if (rounded % 100 !== 0) break; // guarantees exactly 1 trailing zero
+      }
+    } else if (picked.name === "nearest hundred") {
+      while (true) {
+        const thousands = Math.floor(Math.random() * 80 + 12);
+        const hundreds = Math.floor(Math.random() * 8) + 1; // 1 to 8 avoids cascading into thousand
+        const tensOnes = Math.floor(Math.random() * 80 + 11); // 11 to 90
+        num = (thousands * 1000) + (hundreds * 100) + tensOnes;
+        rounded = Math.round(num / 100) * 100;
+        if (rounded % 1000 !== 0) break; // guarantees exactly 2 trailing zeros
+      }
+    } else if (picked.name === "nearest thousand") {
+      while (true) {
+        const tenThousands = Math.floor(Math.random() * 8) + 1;
+        const thousands = Math.floor(Math.random() * 8) + 1; // 1 to 8 avoids cascading into ten thousand
+        const rest = Math.floor(Math.random() * 800 + 101); // 101 to 900
+        num = (tenThousands * 10000) + (thousands * 1000) + rest;
+        rounded = Math.round(num / 1000) * 1000;
+        if (rounded % 10000 !== 0) break; // guarantees exactly 3 trailing zeros
+      }
+    } else {
+      // nearest ten thousand
+      while (true) {
+        const tenThousands = Math.floor(Math.random() * 8) + 1;
+        const thousands = Math.floor(Math.random() * 8) + 1;
+        const rest = Math.floor(Math.random() * 800 + 100);
+        num = (tenThousands * 10000) + (thousands * 1000) + rest;
+        rounded = Math.round(num / 10000) * 10000;
+        if (rounded < 100000) break; // guarantees exactly 4 trailing zeros
+      }
+    }
+
+    const name = getRandomNames(1)[0];
+    const stemVariations = [
+      `In the statement ${num.toLocaleString()} ≈ ${rounded.toLocaleString()}, to which place value has the number been rounded?`,
+      `${name} wrote the approximation statement: ${num.toLocaleString()} ≈ ${rounded.toLocaleString()}.\nTo which place value was ${num.toLocaleString()} rounded?`,
+      `Given the mathematical approximation ${num.toLocaleString()} ≈ ${rounded.toLocaleString()}, identify the place value to which the number was rounded.`
+    ];
+    const stem = stemVariations[Math.floor(Math.random() * stemVariations.length)];
+
+    promptInstruction = `- Question stem: EXACTLY "${stem}"
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  * Step 1: Compare original number ${num.toLocaleString()} and rounded number ${rounded.toLocaleString()}.
+  * Step 2: Note which digits became zero and identify that the ${picked.digitChecked} place was inspected.
+  * Step 3: Conclude that the number has been rounded to the ${picked.name}.
+- In the hint: Check which digit place turned to zero in the rounded number!`;
 
     if (isMCQ) {
       const allOptions = ["nearest ten", "nearest hundred", "nearest thousand", "nearest ten thousand"];
       options = allOptions.sort(() => Math.random() - 0.5);
       defectMap = {};
+      const order = { "nearest ten": 1, "nearest hundred": 2, "nearest thousand": 3, "nearest ten thousand": 4 };
       options.forEach(opt => {
-        if (opt !== finalAnswer) defectMap[opt] = "MISIDENTIFIED_ROUNDING_PLACE_VALUE";
+        if (opt !== finalAnswer) {
+          defectMap[opt] = order[opt] < order[finalAnswer]
+            ? "UNDERESTIMATED_ROUNDING_SCALE"
+            : "OVERESTIMATED_ROUNDING_SCALE";
+        }
       });
     }
   } else {
