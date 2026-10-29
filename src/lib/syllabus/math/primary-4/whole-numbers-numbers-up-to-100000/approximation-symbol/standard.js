@@ -157,22 +157,138 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       }
     }
   } else if (activeVariant === 'standard_find_original_from_approx') {
-    const target = Math.floor(Math.random() * 60 + 20) * 1000; // e.g. 48 000
-    const correctNum = target + Math.floor(Math.random() * 400 + 40); // 48 040 to 48 440 -> rounds to 48 000
-    finalAnswer = correctNum.toLocaleString();
+    // Dynamic place value selection: nearest thousand, nearest hundred, or nearest ten
+    const placeValues = [
+      { name: "nearest thousand", unit: 1000, half: 500, minTarget: 20, maxTarget: 89, mul: 1000 },
+      { name: "nearest hundred", unit: 100, half: 50, minTarget: 200, maxTarget: 899, mul: 100 },
+      { name: "nearest ten", unit: 10, half: 5, minTarget: 2000, maxTarget: 8999, mul: 10 }
+    ];
+    // Weight towards thousand and hundred
+    const pvWeights = [0, 0, 1, 1, 2];
+    const pv = placeValues[pvWeights[Math.floor(Math.random() * pvWeights.length)]];
+    const target = Math.floor(Math.random() * (pv.maxTarget - pv.minTarget + 1) + pv.minTarget) * pv.mul;
 
-    const d1 = (target + 550).toLocaleString(); // rounds to target + 1000
-    const d2 = (target - 550).toLocaleString(); // rounds to target - 1000
-    const d3 = (target + 1200).toLocaleString();
+    // Pick variable name or phrasing
+    const varNames = ['Y', 'X', 'N', 'P', 'M', 'K', 'W'];
+    const varName = varNames[Math.floor(Math.random() * varNames.length)];
 
-    options = [finalAnswer, d1, d2, d3].sort(() => Math.random() - 0.5);
-    defectMap = {
-      [d1]: "OUTSIDE_ROUNDING_INTERVAL",
-      [d2]: "OUTSIDE_ROUNDING_INTERVAL",
-      [d3]: "OUTSIDE_ROUNDING_INTERVAL"
-    };
+    // Correct number: either rounds up or rounds down to target
+    const roundUp = Math.random() < 0.5;
+    const offsetMin = Math.max(1, Math.floor(pv.half * 0.1));
+    const offsetMax = pv.half - 1;
+    const offset = Math.floor(Math.random() * (offsetMax - offsetMin + 1)) + offsetMin;
+    const correctNum = roundUp ? target - offset : target + offset;
 
-    promptInstruction = `- Question stem: "If Y ≈ ${target.toLocaleString()} when rounded to the nearest thousand, which of the following numbers could be Y?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    // Distractor 1: rounds up to target + unit
+    const d1Offset = pv.half + Math.floor(Math.random() * Math.floor(pv.half * 0.6) + Math.max(1, Math.floor(pv.half * 0.05)));
+    const d1 = target + d1Offset;
+
+    // Distractor 2: rounds down to target - unit
+    const d2Offset = pv.half + Math.floor(Math.random() * Math.floor(pv.half * 0.6) + Math.max(1, Math.floor(pv.half * 0.05)));
+    const d2 = target - d2Offset;
+
+    // Distractor 3: further off
+    const d3 = target + pv.unit + Math.floor(Math.random() * Math.floor(pv.half * 0.8) + Math.max(1, Math.floor(pv.half * 0.1)));
+
+    const lowerBound = target - pv.half;
+    const upperBound = target + pv.half - 1;
+
+    const correctStr = correctNum.toLocaleString();
+    const d1Str = d1.toLocaleString();
+    const d2Str = d2.toLocaleString();
+    const d3Str = d3.toLocaleString();
+
+    // Question stems
+    const stems = [
+      `If ${varName} ≈ ${target.toLocaleString()} when rounded to the ${pv.name}, which of the following numbers could be ${varName}?`,
+      `Given that ${varName} ≈ ${target.toLocaleString()} when rounded to the ${pv.name}, which number can ${varName} be?`,
+      `Which of the following numbers gives ${target.toLocaleString()} when rounded to the ${pv.name}?`
+    ];
+    const baseStem = stems[Math.floor(Math.random() * stems.length)];
+
+    if (isMCQ) {
+      finalAnswer = correctStr;
+      options = [correctStr, d1Str, d2Str, d3Str].sort(() => Math.random() - 0.5);
+      defectMap = {
+        [d1Str]: "ROUNDS_UP_TO_NEXT_PLACE_VALUE",
+        [d2Str]: "ROUNDS_DOWN_TO_PREVIOUS_PLACE_VALUE",
+        [d3Str]: "OUTSIDE_ROUNDING_INTERVAL"
+      };
+
+      promptInstruction = `- Question stem: EXACTLY "${baseStem}"
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  * Step 1: State that to round to the ${pv.name}, numbers from ${lowerBound.toLocaleString()} to ${upperBound.toLocaleString()} round to ${target.toLocaleString()}.
+  * Step 2: Test each option:
+    - ${correctStr} is between ${lowerBound.toLocaleString()} and ${upperBound.toLocaleString()}, so it rounds to ${target.toLocaleString()} (correct).
+    - ${d1Str} rounds to ${(Math.round(d1 / pv.unit) * pv.unit).toLocaleString()}.
+    - ${d2Str} rounds to ${(Math.round(d2 / pv.unit) * pv.unit).toLocaleString()}.
+    - ${d3Str} rounds to ${(Math.round(d3 / pv.unit) * pv.unit).toLocaleString()}.
+  * Step 3: Conclude that ${finalAnswer} is the correct number.
+- In the hint: Any number between ${lowerBound.toLocaleString()} and ${upperBound.toLocaleString()} rounds to ${target.toLocaleString()} when rounded to the ${pv.name}!`;
+    } else {
+      // Short question: provide options directly in stem so student can answer
+      const isLetterStyle = Math.random() < 0.5;
+      const rawChoices = [
+        { text: correctStr, isCorrect: true, defect: null },
+        { text: d1Str, isCorrect: false, defect: "ROUNDS_UP_TO_NEXT_PLACE_VALUE" },
+        { text: d2Str, isCorrect: false, defect: "ROUNDS_DOWN_TO_PREVIOUS_PLACE_VALUE" },
+        { text: d3Str, isCorrect: false, defect: "OUTSIDE_ROUNDING_INTERVAL" }
+      ].sort(() => Math.random() - 0.5);
+
+      if (isLetterStyle) {
+        const labels = ["Option A", "Option B", "Option C", "Option D"];
+        const labeledChoices = rawChoices.map((c, idx) => ({
+          label: labels[idx],
+          text: c.text,
+          isCorrect: c.isCorrect
+        }));
+        const correctChoice = labeledChoices.find(c => c.isCorrect);
+        finalAnswer = correctChoice.label;
+        const letterOnly = correctChoice.label.replace("Option ", "");
+
+        acceptedAnswers = [
+          correctChoice.label,
+          correctChoice.label.toLowerCase(),
+          letterOnly,
+          letterOnly.toLowerCase(),
+          correctStr,
+          correctNum.toString(),
+          correctStr.replace(/,/g, ' ')
+        ];
+
+        const choicesBlock = labeledChoices.map(c => `${c.label}: ${c.text}`).join("\\n");
+        promptInstruction = `- Question stem: EXACTLY "${baseStem}\\n${choicesBlock}\\nWrite Option A, Option B, Option C, or Option D."
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  * Step 1: Note that whole numbers from ${lowerBound.toLocaleString()} to ${upperBound.toLocaleString()} round to ${target.toLocaleString()} when rounded to the ${pv.name}.
+  * Step 2: Check each option to see which falls in the range [${lowerBound.toLocaleString()}, ${upperBound.toLocaleString()}].
+  * Step 3: ${correctChoice.label} (${correctStr}) rounds to ${target.toLocaleString()}.
+  * Step 4: Conclude that ${finalAnswer} is the correct option.
+- In the hint: Look at the rounding rule for ${pv.name} and check which option falls between ${lowerBound.toLocaleString()} and ${upperBound.toLocaleString()}!`;
+      } else {
+        // Direct list selection style
+        finalAnswer = correctStr;
+        acceptedAnswers = [
+          correctStr,
+          correctNum.toString(),
+          correctStr.replace(/,/g, ' ')
+        ];
+
+        const choicesList = rawChoices.map(c => c.text).join(", ");
+        promptInstruction = `- Question stem: EXACTLY "${baseStem}\\nChoices: ${choicesList}\\nWrite the correct number."
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  * Step 1: Recall the rounding range for ${pv.name}: whole numbers from ${lowerBound.toLocaleString()} to ${upperBound.toLocaleString()} round to ${target.toLocaleString()}.
+  * Step 2: Evaluate the numbers in the list:
+    - ${correctStr} rounds to ${target.toLocaleString()} (correct).
+    - ${d1Str} rounds to ${(Math.round(d1 / pv.unit) * pv.unit).toLocaleString()}.
+    - ${d2Str} rounds to ${(Math.round(d2 / pv.unit) * pv.unit).toLocaleString()}.
+    - ${d3Str} rounds to ${(Math.round(d3 / pv.unit) * pv.unit).toLocaleString()}.
+  * Step 3: Conclude that the correct number is ${finalAnswer}.
+- In the hint: Check which of the listed numbers falls in the range from ${lowerBound.toLocaleString()} to ${upperBound.toLocaleString()}!`;
+      }
+    }
   } else if (activeVariant === 'standard_error_analysis') {
     const studentName = getRandomNames(1)[0];
     const num = Math.floor(Math.random() * 60 + 20) * 1000 + Math.floor(Math.random() * 400 + 550); // rounds up
