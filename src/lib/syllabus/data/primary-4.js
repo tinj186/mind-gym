@@ -86,7 +86,7 @@ export const primary4Syllabus = [
           QUESTION_TYPES.MCQ.label
         ],
         "blueprint": "Focus on number rounding in accordance with Singapore MOE syllabus learning outcomes.",
-        "visualType": "NONE",
+        "visualType": "DYNAMIC",
         "vocabulary": [
           "round off",
           "nearest 10",

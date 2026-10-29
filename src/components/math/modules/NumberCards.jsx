@@ -22,11 +22,11 @@ export default function NumberCards({ data }) {
           <span className="font-extrabold text-indigo-900">{condition.toUpperCase()}</span>
         </div>
       )}
-      <div className={`flex ${layout === 'vertical' ? 'flex-col' : 'flex-row flex-wrap'} justify-center gap-6 p-6`}>
+      <div className={`flex ${layout === 'vertical' ? 'flex-col' : 'flex-row flex-wrap'} justify-center gap-4 sm:gap-6 p-3 sm:p-6`}>
       {items.map((item, idx) => (
         <div 
           key={idx} 
-          className="bg-white min-w-[120px] p-6 rounded-[2rem] border-4 border-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] flex flex-col items-center justify-center hover:-translate-y-1 hover:shadow-[8px_12px_0px_0px_rgba(15,23,42,1)] transition-all"
+          className="bg-white min-w-[95px] sm:min-w-[120px] p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] border-3 sm:border-4 border-slate-900 shadow-[5px_5px_0px_0px_rgba(15,23,42,1)] sm:shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] flex flex-col items-center justify-center hover:-translate-y-1 hover:shadow-[8px_12px_0px_0px_rgba(15,23,42,1)] transition-all"
           style={{ backgroundColor: item.color || '#ffffff' }}
         >
           {item.label && (
@@ -36,12 +36,18 @@ export default function NumberCards({ data }) {
           )}
           {item.type === 'fraction' ? (
             <div className="flex flex-col items-center justify-center font-black text-slate-900">
-              <span className="text-4xl leading-none px-2">{item.num}</span>
+              <span className="text-3xl sm:text-4xl leading-none px-2">{item.num}</span>
               <div className="h-1 w-full bg-slate-900 my-1 rounded"></div>
-              <span className="text-4xl leading-none px-2">{item.denom}</span>
+              <span className="text-3xl sm:text-4xl leading-none px-2">{item.denom}</span>
             </div>
           ) : (
-            <span className="text-4xl font-black text-slate-900">
+            <span className={`font-black text-slate-900 whitespace-nowrap leading-none ${
+              String(item.value || '').length > 6 
+                ? 'text-xl sm:text-2xl md:text-3xl' 
+                : String(item.value || '').length >= 5 
+                ? 'text-2xl sm:text-3xl md:text-4xl' 
+                : 'text-3xl sm:text-4xl md:text-5xl'
+            }`}>
               {item.value || item.lengthUnits}
             </span>
           )}

@@ -111,27 +111,90 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       }
     }
   } else if (activeVariant === 'standard_which_numbers_round_to') {
-    const targetThousands = Math.floor(Math.random() * 70 + 20) * 1000; // e.g. 45 000
-    // Correct number must be between target - 500 and target + 499
+    // Variety: nearest thousand, nearest hundred, or nearest ten
+    const placeTypes = [
+      { name: 'thousand', step: 1000, half: 500, rangeMin: 20, rangeMax: 89 },
+      { name: 'hundred', step: 100, half: 50, rangeMin: 100, rangeMax: 890 },
+      { name: 'ten', step: 10, half: 5, rangeMin: 1000, rangeMax: 8900 }
+    ];
+    const rand = Math.random();
+    const pickedPlace = rand < 0.6 ? placeTypes[0] : (rand < 0.8 ? placeTypes[1] : placeTypes[2]);
+    const { name: placeName, step, half, rangeMin, rangeMax } = pickedPlace;
+
+    const target = Math.floor(Math.random() * (rangeMax - rangeMin) + rangeMin) * step;
+
+    // 1. Correct number: strictly inside [target - half, target + half - 1], not equal to target
     const isAbove = Math.random() < 0.5;
-    const correctNum = isAbove
-      ? targetThousands + Math.floor(Math.random() * 400 + 50) // +50 to +450
-      : targetThousands - Math.floor(Math.random() * 400 + 50); // -50 to -450
+    let correctNum;
+    if (step === 1000) {
+      correctNum = isAbove
+        ? target + Math.floor(Math.random() * 400 + 40)
+        : target - Math.floor(Math.random() * 400 + 40);
+    } else if (step === 100) {
+      correctNum = isAbove
+        ? target + Math.floor(Math.random() * 40 + 5)
+        : target - Math.floor(Math.random() * 40 + 5);
+    } else {
+      correctNum = isAbove
+        ? target + Math.floor(Math.random() * 4 + 1)
+        : target - Math.floor(Math.random() * 4 + 1);
+    }
     finalAnswer = correctNum.toString();
 
-    // 3 Distractors outside [target - 500, target + 499]
-    const d1 = (targetThousands + Math.floor(Math.random() * 300 + 520)).toString(); // >= target + 500
-    const d2 = (targetThousands - Math.floor(Math.random() * 300 + 520)).toString(); // < target - 500
-    const d3 = (targetThousands + 1500).toString();
+    // 2. Distractor 1: Just above upper threshold (rounds up to target + step)
+    let d1;
+    if (step === 1000) {
+      d1 = target + half + Math.floor(Math.random() * 250 + 10);
+    } else if (step === 100) {
+      d1 = target + half + Math.floor(Math.random() * 25 + 5);
+    } else {
+      d1 = target + half + Math.floor(Math.random() * 3 + 1);
+    }
 
-    options = [finalAnswer, d1, d2, d3].sort(() => Math.random() - 0.5);
-    defectMap = {
-      [d1]: "OUTSIDE_ROUNDING_INTERVAL",
-      [d2]: "OUTSIDE_ROUNDING_INTERVAL",
-      [d3]: "OUTSIDE_ROUNDING_INTERVAL"
-    };
+    // 3. Distractor 2: Just below lower threshold (rounds down to target - step)
+    let d2;
+    if (step === 1000) {
+      d2 = target - half - Math.floor(Math.random() * 250 + 10);
+    } else if (step === 100) {
+      d2 = target - half - Math.floor(Math.random() * 25 + 5);
+    } else {
+      d2 = target - half - Math.floor(Math.random() * 3 + 1);
+    }
 
-    promptInstruction = `- Question stem: "Which of the following numbers gives ${targetThousands.toLocaleString()} when rounded to the nearest thousand?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    // 4. Distractor 3: Clearly outside the rounding interval
+    let d3;
+    if (step === 1000) {
+      d3 = target + 1500;
+    } else if (step === 100) {
+      d3 = target + 150;
+    } else {
+      d3 = target + 15;
+    }
+
+    const candidateList = [correctNum, d1, d2, d3].sort(() => Math.random() - 0.5);
+
+    visualEngineStr = JSON.stringify({
+      componentToRender: "NUMBER_CARDS",
+      componentData: {
+        items: candidateList.map(n => n.toLocaleString())
+      }
+    }, null, 2);
+
+    promptInstruction = `- Question stem: "From the number cards below, which number gives ${target.toLocaleString()} when rounded to the nearest ${placeName}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+    if (isMCQ) {
+      options = candidateList.map(n => n.toString());
+      defectMap = {
+        [d1.toString()]: "ROUNDS_UP_TO_NEXT_INTERVAL",
+        [d2.toString()]: "ROUNDS_DOWN_TO_PREVIOUS_INTERVAL",
+        [d3.toString()]: "OUTSIDE_ROUNDING_INTERVAL"
+      };
+      options.forEach(opt => {
+        if (opt !== finalAnswer && !defectMap[opt]) {
+          defectMap[opt] = "OUTSIDE_ROUNDING_INTERVAL";
+        }
+      });
+    }
   } else if (activeVariant === 'standard_find_smallest_largest_bound') {
     const isSmallest = Math.random() < 0.5;
     const roundType = Math.random() < 0.5 ? 'thousand' : 'hundred';
@@ -211,7 +274,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const diffVal = Math.abs(round100 - round10);
     finalAnswer = diffVal.toString();
 
-    promptInstruction = `- Question stem: "When ${num.toLocaleString()} is rounded to the nearest ten, the result is A. When it is rounded to the nearest hundred, the result is B. What is the value of |B - A|?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    promptInstruction = `- Question stem: "When ${num.toLocaleString()} is rounded to the nearest ten, the result is A. When it is rounded to the nearest hundred, the result is B. What is the difference between B and A?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
     if (isMCQ) {
       const d1 = (diffVal + 10).toString();
