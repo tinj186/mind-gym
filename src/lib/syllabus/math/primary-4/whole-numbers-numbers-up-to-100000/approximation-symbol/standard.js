@@ -495,30 +495,174 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
   } else {
     // standard_estimation_chain
-    // e.g. "43 890 + 27 120 ≈ 44 000 + 27 000 = ________"
-    const a = Math.floor(Math.random() * 30 + 20) * 1000 + Math.floor(Math.random() * 400 + 600);
-    const b = Math.floor(Math.random() * 20 + 10) * 1000 + Math.floor(Math.random() * 300 + 100);
-    const ra = Math.round(a / 1000) * 1000;
-    const rb = Math.round(b / 1000) * 1000;
-    const sum = ra + rb;
-    finalAnswer = sum.toString();
+    // Tests multi-step estimation calculation chains:
+    // 1) Full two-step chain calculation (Round each number, then add/subtract)
+    // 2) Missing rounded term in the estimation chain
+    // 3) Missing intermediate expression in the chain
+    const isHundred = Math.random() < 0.3;
+    const pvName = isHundred ? "nearest hundred" : "nearest thousand";
+    const pvUnit = isHundred ? 100 : 1000;
 
-    promptInstruction = `- Question stem: "Complete the estimation sentence:\\n${a.toLocaleString()} + ${b.toLocaleString()} ≈ ${ra.toLocaleString()} + ${rb.toLocaleString()} = ________"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    const isSubtraction = Math.random() < 0.5;
+    const op = isSubtraction ? "-" : "+";
+    const termName = isSubtraction ? "difference" : "sum";
 
-    if (isMCQ) {
-      const d1 = (a + b).toString(); // exact sum without rounding
-      const d2 = (sum + 1000).toString();
-      const d3 = (sum - 1000).toString();
-      const set = new Set([finalAnswer, d1, d2, d3]);
-      while (set.size < 4) {
-        set.add((sum + 2000).toString());
+    const aRaw = Math.floor(Math.random() * 40 + 30) * 1000 + Math.floor(Math.random() * 800 + 100);
+    const bRaw = Math.floor(Math.random() * 20 + 10) * 1000 + Math.floor(Math.random() * 800 + 100);
+
+    const a = isSubtraction ? Math.max(aRaw, bRaw + 8000) : aRaw;
+    const b = isSubtraction ? Math.min(bRaw, a - 8000) : bRaw;
+
+    const ra = Math.round(a / pvUnit) * pvUnit;
+    const rb = Math.round(b / pvUnit) * pvUnit;
+    const res = isSubtraction ? ra - rb : ra + rb;
+    const exactRes = isSubtraction ? a - b : a + b;
+
+    const archetypes = ['full_chain_calculation', 'missing_rounded_term', 'missing_expression'];
+    const archetype = archetypes[Math.floor(Math.random() * archetypes.length)];
+
+    if (archetype === 'full_chain_calculation') {
+      finalAnswer = res.toLocaleString();
+      acceptedAnswers = [
+        res.toLocaleString(),
+        res.toString(),
+        res.toLocaleString().replace(/,/g, ' ')
+      ];
+
+      const stem = `Estimate the value of ${a.toLocaleString()} ${op} ${b.toLocaleString()} by rounding each number to the ${pvName} first.\\nComplete the estimation chain:\\n${a.toLocaleString()} ${op} ${b.toLocaleString()} ≈ ________ ${op} ________ = ________\\nWhat is the estimated ${termName}?`;
+
+      promptInstruction = `- Question stem: EXACTLY "${stem}"
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  * Step 1: Round each number to the ${pvName}:
+    - ${a.toLocaleString()} rounds to ${ra.toLocaleString()}.
+    - ${b.toLocaleString()} rounds to ${rb.toLocaleString()}.
+  * Step 2: Compute the ${termName}: ${ra.toLocaleString()} ${op} ${rb.toLocaleString()} = ${res.toLocaleString()}.
+  * Step 3: Complete the full estimation chain:
+    ${a.toLocaleString()} ${op} ${b.toLocaleString()} ≈ ${ra.toLocaleString()} ${op} ${rb.toLocaleString()} = ${res.toLocaleString()}.
+  * Step 4: The estimated ${termName} is ${finalAnswer}.
+- In the hint: First round ${a.toLocaleString()} and ${b.toLocaleString()} to the ${pvName}, then calculate the ${termName}!`;
+
+      if (isMCQ) {
+        const d1 = exactRes.toLocaleString();
+        const d2 = (res + pvUnit).toLocaleString();
+        const d3 = (res - pvUnit).toLocaleString();
+        options = [finalAnswer, d1, d2, d3].sort(() => Math.random() - 0.5);
+        defectMap = {
+          [d1]: "EXACT_CALCULATION_INSTEAD_OF_ESTIMATE",
+          [d2]: "ROUNDED_IN_WRONG_DIRECTION",
+          [d3]: "ROUNDED_IN_WRONG_DIRECTION"
+        };
       }
-      options = Array.from(set).sort(() => Math.random() - 0.5);
-      defectMap = {
-        [d1]: "EXACT_SUM_INSTEAD_OF_ESTIMATE",
-        [d2]: "OFF_BY_THOUSAND",
-        [d3]: "OFF_BY_THOUSAND"
-      };
+    } else if (archetype === 'missing_rounded_term') {
+      const missFirst = Math.random() < 0.5;
+      const targetVal = missFirst ? ra : rb;
+      const targetRaw = missFirst ? a : b;
+      finalAnswer = targetVal.toLocaleString();
+      acceptedAnswers = [
+        targetVal.toLocaleString(),
+        targetVal.toString(),
+        targetVal.toLocaleString().replace(/,/g, ' ')
+      ];
+
+      const chainDisplay = missFirst
+        ? `${a.toLocaleString()} ${op} ${b.toLocaleString()} ≈ [ _____ ] ${op} ${rb.toLocaleString()} = ${res.toLocaleString()}`
+        : `${a.toLocaleString()} ${op} ${b.toLocaleString()} ≈ ${ra.toLocaleString()} ${op} [ _____ ] = ${res.toLocaleString()}`;
+
+      const stem = `Complete the estimation sentence by rounding each number to the ${pvName}:\\n${chainDisplay}\\nWhat number belongs in the blank?`;
+
+      promptInstruction = `- Question stem: EXACTLY "${stem}"
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  * Step 1: Identify that the blank represents ${targetRaw.toLocaleString()} rounded to the ${pvName}.
+  * Step 2: Round ${targetRaw.toLocaleString()} to the ${pvName} to get ${targetVal.toLocaleString()}.
+  * Step 3: Verify the estimation sentence: ${ra.toLocaleString()} ${op} ${rb.toLocaleString()} = ${res.toLocaleString()}.
+  * Step 4: Conclude that the number in the blank is ${finalAnswer}.
+- In the hint: Round ${targetRaw.toLocaleString()} to the ${pvName} to fill in the missing value!`;
+
+      if (isMCQ) {
+        const d1 = (targetVal + pvUnit).toLocaleString();
+        const d2 = (targetVal - pvUnit).toLocaleString();
+        const d3Candidate = pvUnit === 1000
+          ? Math.round(targetRaw / 100) * 100
+          : targetVal + (2 * pvUnit);
+        const d3 = (d3Candidate === targetVal ? targetVal + (2 * pvUnit) : d3Candidate).toLocaleString();
+
+        const optSet = new Set([finalAnswer, d1, d2, d3]);
+        while (optSet.size < 4) {
+          optSet.add((targetVal + optSet.size * pvUnit).toLocaleString());
+        }
+        options = Array.from(optSet).sort(() => Math.random() - 0.5);
+        defectMap = {};
+        options.forEach(opt => {
+          if (opt !== finalAnswer) {
+            defectMap[opt] = "MISCALCULATED_ROUNDED_TERM";
+          }
+        });
+      }
+    } else {
+      // missing_expression
+      const exprCorrect = `${ra.toLocaleString()} ${op} ${rb.toLocaleString()}`;
+      const exprD1 = `${(ra + pvUnit).toLocaleString()} ${op} ${rb.toLocaleString()}`;
+      const exprD2 = `${ra.toLocaleString()} ${op} ${(rb + pvUnit).toLocaleString()}`;
+      const exprD3 = `${(ra - pvUnit).toLocaleString()} ${op} ${rb.toLocaleString()}`;
+
+      const stem = `In the estimation chain below, each number is rounded to the ${pvName}:\\n${a.toLocaleString()} ${op} ${b.toLocaleString()} ≈ [ _____ ] = ${res.toLocaleString()}\\nWhich expression belongs in the blank?`;
+
+      if (isMCQ) {
+        finalAnswer = exprCorrect;
+        options = [exprCorrect, exprD1, exprD2, exprD3].sort(() => Math.random() - 0.5);
+        defectMap = {
+          [exprD1]: "ROUNDED_IN_WRONG_DIRECTION",
+          [exprD2]: "ROUNDED_IN_WRONG_DIRECTION",
+          [exprD3]: "ROUNDED_IN_WRONG_DIRECTION"
+        };
+
+        promptInstruction = `- Question stem: EXACTLY "${stem}"
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  * Step 1: Round ${a.toLocaleString()} to the ${pvName} to get ${ra.toLocaleString()}.
+  * Step 2: Round ${b.toLocaleString()} to the ${pvName} to get ${rb.toLocaleString()}.
+  * Step 3: Combine them using '${op}': ${ra.toLocaleString()} ${op} ${rb.toLocaleString()}.
+  * Step 4: Conclude that the correct expression is ${finalAnswer}.
+- In the hint: Round each number to the ${pvName} to find the matching expression!`;
+      } else {
+        // Short question with Option A, B, C, D
+        const rawChoices = [
+          { text: exprCorrect, isCorrect: true },
+          { text: exprD1, isCorrect: false },
+          { text: exprD2, isCorrect: false },
+          { text: exprD3, isCorrect: false }
+        ].sort(() => Math.random() - 0.5);
+
+        const labels = ["Option A", "Option B", "Option C", "Option D"];
+        const labeled = rawChoices.map((c, idx) => ({
+          label: labels[idx],
+          text: c.text,
+          isCorrect: c.isCorrect
+        }));
+        const correctChoice = labeled.find(c => c.isCorrect);
+        finalAnswer = correctChoice.label;
+        const letter = correctChoice.label.replace("Option ", "");
+
+        acceptedAnswers = [
+          correctChoice.label,
+          correctChoice.label.toLowerCase(),
+          letter,
+          letter.toLowerCase(),
+          exprCorrect
+        ];
+
+        const choicesBlock = labeled.map(c => `${c.label}: ${c.text}`).join("\\n");
+        promptInstruction = `- Question stem: EXACTLY "${stem}\\n${choicesBlock}\\nWrite Option A, Option B, Option C, or Option D."
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  * Step 1: Round ${a.toLocaleString()} to the ${pvName} to get ${ra.toLocaleString()}.
+  * Step 2: Round ${b.toLocaleString()} to the ${pvName} to get ${rb.toLocaleString()}.
+  * Step 3: Form the expression: ${ra.toLocaleString()} ${op} ${rb.toLocaleString()}.
+  * Step 4: Conclude that ${finalAnswer} is the correct option.
+- In the hint: Round both numbers to the ${pvName} and look for the option with the matching expression!`;
+      }
     }
   }
 
