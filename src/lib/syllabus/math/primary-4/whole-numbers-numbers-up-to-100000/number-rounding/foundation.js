@@ -3,7 +3,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
   let finalAnswer = "";
   let options = [];
   let defectMap = {};
-  let visualEngineStr = `{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }`;
+  const visualEngineStr = `{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }`;
 
   if (!activeVariant || activeVariant === 'foundation_default' || activeVariant === 'default') {
     const defaultVariants = [
@@ -23,11 +23,8 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const num = tensBase + ones;
     const min = tensBase;
     const max = tensBase + 10;
-    const mid = tensBase + 5;
     const correctRound = ones >= 5 ? max : min;
     finalAnswer = correctRound.toString();
-
-    visualEngineStr = `{\n    "componentToRender": "NUMBER_LINE",\n    "componentData": {\n      "min": ${min},\n      "max": ${max},\n      "midValue": ${mid},\n      "markedValue": ${num},\n      "minLabel": "${min.toLocaleString()}",\n      "maxLabel": "${max.toLocaleString()}",\n      "midLabel": "${mid.toLocaleString()}",\n      "markedLabel": "${num.toLocaleString()}"\n    }\n  }`;
 
     promptInstruction = `- Question stem: "Round ${num.toLocaleString()} to the nearest ten."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
@@ -39,12 +36,17 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       while (set.size < 4) {
         set.add((correctRound + (Math.floor(Math.random() * 4 + 2) * 10)).toString());
       }
-      options = Array.from(set).sort(() => Math.random() - 0.5);
+      options = Array.from(set).slice(0, 4).sort(() => Math.random() - 0.5);
       defectMap = {
         [d1]: ones >= 5 ? "ROUNDED_DOWN_INSTEAD_OF_UP" : "ROUNDED_UP_INSTEAD_OF_DOWN",
         [d2]: "OFF_BY_TEN",
         [d3]: "OFF_BY_TEN"
       };
+      options.forEach(opt => {
+        if (opt !== finalAnswer && !defectMap[opt]) {
+          defectMap[opt] = "INCORRECT_ROUNDING";
+        }
+      });
     }
   } else if (activeVariant === 'foundation_round_nearest_100') {
     const hundredsBase = Math.floor(Math.random() * 890 + 100) * 100;
@@ -52,11 +54,8 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const num = hundredsBase + offset;
     const min = hundredsBase;
     const max = hundredsBase + 100;
-    const mid = hundredsBase + 50;
     const correctRound = offset >= 50 ? max : min;
     finalAnswer = correctRound.toString();
-
-    visualEngineStr = `{\n    "componentToRender": "NUMBER_LINE",\n    "componentData": {\n      "min": ${min},\n      "max": ${max},\n      "midValue": ${mid},\n      "markedValue": ${num},\n      "minLabel": "${min.toLocaleString()}",\n      "maxLabel": "${max.toLocaleString()}",\n      "midLabel": "${mid.toLocaleString()}",\n      "markedLabel": "${num.toLocaleString()}"\n    }\n  }`;
 
     promptInstruction = `- Question stem: "Round ${num.toLocaleString()} to the nearest hundred."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
@@ -68,12 +67,17 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       while (set.size < 4) {
         set.add((correctRound + (Math.floor(Math.random() * 4 + 2) * 100)).toString());
       }
-      options = Array.from(set).sort(() => Math.random() - 0.5);
+      options = Array.from(set).slice(0, 4).sort(() => Math.random() - 0.5);
       defectMap = {
         [d1]: offset >= 50 ? "ROUNDED_DOWN_INSTEAD_OF_UP" : "ROUNDED_UP_INSTEAD_OF_DOWN",
         [d2]: "OFF_BY_HUNDRED",
         [d3]: "OFF_BY_HUNDRED"
       };
+      options.forEach(opt => {
+        if (opt !== finalAnswer && !defectMap[opt]) {
+          defectMap[opt] = "INCORRECT_ROUNDING";
+        }
+      });
     }
   } else if (activeVariant === 'foundation_round_nearest_1000') {
     const thousandsBase = Math.floor(Math.random() * 89 + 10) * 1000;
@@ -81,11 +85,8 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const num = thousandsBase + offset;
     const min = thousandsBase;
     const max = thousandsBase + 1000;
-    const mid = thousandsBase + 500;
     const correctRound = offset >= 500 ? max : min;
     finalAnswer = correctRound.toString();
-
-    visualEngineStr = `{\n    "componentToRender": "NUMBER_LINE",\n    "componentData": {\n      "min": ${min},\n      "max": ${max},\n      "midValue": ${mid},\n      "markedValue": ${num},\n      "minLabel": "${min.toLocaleString()}",\n      "maxLabel": "${max.toLocaleString()}",\n      "midLabel": "${mid.toLocaleString()}",\n      "markedLabel": "${num.toLocaleString()}"\n    }\n  }`;
 
     promptInstruction = `- Question stem: "Round ${num.toLocaleString()} to the nearest thousand."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
@@ -97,12 +98,17 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       while (set.size < 4) {
         set.add((correctRound + (Math.floor(Math.random() * 4 + 2) * 1000)).toString());
       }
-      options = Array.from(set).sort(() => Math.random() - 0.5);
+      options = Array.from(set).slice(0, 4).sort(() => Math.random() - 0.5);
       defectMap = {
         [d1]: offset >= 500 ? "ROUNDED_DOWN_INSTEAD_OF_UP" : "ROUNDED_UP_INSTEAD_OF_DOWN",
         [d2]: "OFF_BY_THOUSAND",
         [d3]: "OFF_BY_THOUSAND"
       };
+      options.forEach(opt => {
+        if (opt !== finalAnswer && !defectMap[opt]) {
+          defectMap[opt] = "INCORRECT_ROUNDING";
+        }
+      });
     }
   } else if (activeVariant === 'foundation_midpoint_rule') {
     // Tests exact halfway mark (5, 50, 500) rounding up
@@ -112,39 +118,48 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       const num = base + 5;
       finalAnswer = (base + 10).toString();
       promptInstruction = `- Question stem: "Round ${num.toLocaleString()} to the nearest ten."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
-      visualEngineStr = `{\n    "componentToRender": "NUMBER_LINE",\n    "componentData": {\n      "min": ${base},\n      "max": ${base + 10},\n      "midValue": ${num},\n      "markedValue": ${num},\n      "minLabel": "${base.toLocaleString()}",\n      "maxLabel": "${(base + 10).toLocaleString()}",\n      "midLabel": "${num.toLocaleString()}",\n      "markedLabel": "${num.toLocaleString()}"\n    }\n  }`;
       if (isMCQ) {
         const d1 = base.toString();
         const d2 = (base + 20).toString();
         const d3 = (base - 10).toString();
         options = [finalAnswer, d1, d2, d3].sort(() => Math.random() - 0.5);
-        defectMap = { [d1]: "FAILED_HALFWAY_ROUND_UP_RULE" };
+        defectMap = {
+          [d1]: "FAILED_HALFWAY_ROUND_UP_RULE",
+          [d2]: "OFF_BY_TEN",
+          [d3]: "OFF_BY_TEN"
+        };
       }
     } else if (typeChoice === 1) {
       const base = Math.floor(Math.random() * 890 + 100) * 100;
       const num = base + 50;
       finalAnswer = (base + 100).toString();
       promptInstruction = `- Question stem: "Round ${num.toLocaleString()} to the nearest hundred."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
-      visualEngineStr = `{\n    "componentToRender": "NUMBER_LINE",\n    "componentData": {\n      "min": ${base},\n      "max": ${base + 100},\n      "midValue": ${num},\n      "markedValue": ${num},\n      "minLabel": "${base.toLocaleString()}",\n      "maxLabel": "${(base + 100).toLocaleString()}",\n      "midLabel": "${num.toLocaleString()}",\n      "markedLabel": "${num.toLocaleString()}"\n    }\n  }`;
       if (isMCQ) {
         const d1 = base.toString();
         const d2 = (base + 200).toString();
         const d3 = (base - 100).toString();
         options = [finalAnswer, d1, d2, d3].sort(() => Math.random() - 0.5);
-        defectMap = { [d1]: "FAILED_HALFWAY_ROUND_UP_RULE" };
+        defectMap = {
+          [d1]: "FAILED_HALFWAY_ROUND_UP_RULE",
+          [d2]: "OFF_BY_HUNDRED",
+          [d3]: "OFF_BY_HUNDRED"
+        };
       }
     } else {
       const base = Math.floor(Math.random() * 89 + 10) * 1000;
       const num = base + 500;
       finalAnswer = (base + 1000).toString();
       promptInstruction = `- Question stem: "Round ${num.toLocaleString()} to the nearest thousand."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
-      visualEngineStr = `{\n    "componentToRender": "NUMBER_LINE",\n    "componentData": {\n      "min": ${base},\n      "max": ${base + 1000},\n      "midValue": ${num},\n      "markedValue": ${num},\n      "minLabel": "${base.toLocaleString()}",\n      "maxLabel": "${(base + 1000).toLocaleString()}",\n      "midLabel": "${num.toLocaleString()}",\n      "markedLabel": "${num.toLocaleString()}"\n    }\n  }`;
       if (isMCQ) {
         const d1 = base.toString();
         const d2 = (base + 2000).toString();
         const d3 = (base - 1000).toString();
         options = [finalAnswer, d1, d2, d3].sort(() => Math.random() - 0.5);
-        defectMap = { [d1]: "FAILED_HALFWAY_ROUND_UP_RULE" };
+        defectMap = {
+          [d1]: "FAILED_HALFWAY_ROUND_UP_RULE",
+          [d2]: "OFF_BY_THOUSAND",
+          [d3]: "OFF_BY_THOUSAND"
+        };
       }
     }
   } else {

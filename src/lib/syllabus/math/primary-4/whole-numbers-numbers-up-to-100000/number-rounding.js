@@ -6,7 +6,7 @@ export const p4NumberRoundingBlueprint = {
   id: 'p4-number-rounding',
   title: 'Number Rounding',
   strand: 'Number and Algebra',
-  visualType: 'NUMBER_LINE',
+  visualType: 'NONE',
 
   difficultyLevels: {
     foundation: {
@@ -28,10 +28,10 @@ export const p4NumberRoundingBlueprint = {
 
   variants: {
     foundation_round_nearest_10: 'Round 4-digit or 5-digit number to the nearest ten.',
-    foundation_round_nearest_100: 'Round 4-digit or 5-digit number to the nearest hundred.',
-    foundation_round_nearest_1000: 'Round 4-digit or 5-digit number to the nearest thousand.',
-    foundation_midpoint_rule: 'Apply the halfway rule (5, 50, 500) rounding up.',
-    foundation_identify_rounding_digit: 'Identify the decision digit used to round up or down.',
+    //    foundation_round_nearest_100: 'Round 4-digit or 5-digit number to the nearest hundred.',
+    //    foundation_round_nearest_1000: 'Round 4-digit or 5-digit number to the nearest thousand.',
+    //    foundation_midpoint_rule: 'Apply the halfway rule (5, 50, 500) rounding up.',
+    //    foundation_identify_rounding_digit: 'Identify the decision digit used to round up or down.',
 
     standard_cascade_nine: 'Rounding causing cascading carry-overs across 9s.',
     standard_which_numbers_round_to: 'Identify which number falls within a target rounding range.',
