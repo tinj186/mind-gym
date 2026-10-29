@@ -78,18 +78,12 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
   } else if (activeVariant === 'advanced_digits_card_rounding') {
     // Form the greatest / smallest number from 5 distinct digit cards that rounds to target
-    // e.g. Cards: 5, 8, 2, 7, 4. Round to nearest ten-thousand is 50 000.
-    // Let's create 5 distinct non-zero digits
-    const digits = [3, 4, 5, 7, 8].sort(() => Math.random() - 0.5);
-    const targetTenThousand = 50000;
+    const targetDigit = Math.floor(Math.random() * 5) + 3; // 3 to 7
+    const targetTenThousand = targetDigit * 10000;
+    const pool = [1, 2, 3, 4, 5, 6, 7, 8, 9].filter(d => d !== targetDigit && d !== (targetDigit - 1));
+    pool.sort(() => Math.random() - 0.5);
+    const digits = [targetDigit, targetDigit - 1, pool[0], pool[1], pool[2]].sort(() => Math.random() - 0.5);
 
-    // To round to 50 000:
-    // Ten-thousands digit can be 4 (if thousands digit >= 5) or 5 (if thousands digit < 5).
-    // Valid combinations:
-    // With 4 as first digit: remaining [3, 5, 7, 8], thousands digit can be 5, 7, 8.
-    // With 5 as first digit: remaining [3, 4, 7, 8], thousands digit must be 3 or 4 (< 5).
-    // Greatest possible: 5 as first digit, 4 as second digit, then remaining [8, 7, 3] sorted desc -> 54 873!
-    // Let's compute systematically:
     const allPerms = [];
     function permute(arr, memo = []) {
       if (arr.length === 0) {
@@ -111,7 +105,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     finalAnswer = ansNum.toString();
 
     const boundWord = isGreatest ? "greatest" : "smallest";
-    promptInstruction = `- Question stem: "Using each of the digits ${digits.join(', ')} exactly once, what is the ${boundWord} 5-digit number that becomes 50 000 when rounded to the nearest ten thousand?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    promptInstruction = `- Question stem: "Using each of the digits ${digits.join(', ')} exactly once, what is the ${boundWord} 5-digit number that becomes ${targetTenThousand.toLocaleString()} when rounded to the nearest ten thousand?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
     if (isMCQ) {
       const d1 = (isGreatest ? sortedValid[0] : sortedValid[sortedValid.length - 1]).toString();
@@ -157,19 +151,52 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
   } else {
     // advanced_interval_count
-    // "How many whole numbers become 74 000 when rounded to the nearest thousand?" (1000)
-    // Or "How many 5-digit whole numbers become 74 000 when rounded to the nearest hundred?" (100)
-    const isThousand = Math.random() < 0.5;
-    const target = Math.floor(Math.random() * 60 + 20) * 1000;
-    const unitWord = isThousand ? "thousand" : "hundred";
-    finalAnswer = isThousand ? "1000" : "100";
+    // "How many whole numbers give [target] when rounded to the nearest [ten / hundred / thousand]?"
+    const placeTypes = [
+      { unit: "ten", count: 10, half: 5 },
+      { unit: "hundred", count: 100, half: 50 },
+      { unit: "thousand", count: 1000, half: 500 }
+    ];
+    const pickedType = placeTypes[Math.floor(Math.random() * placeTypes.length)];
+    const unitWord = pickedType.unit;
+    const count = pickedType.count;
+    const half = pickedType.half;
 
-    promptInstruction = `- Question stem: "How many whole numbers give ${target.toLocaleString()} when rounded to the nearest ${unitWord}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    let target;
+    if (unitWord === "thousand") {
+      // Pick a 5-digit number ending in 000 from 12,000 to 95,000
+      const thousands = Math.floor(Math.random() * 84) + 12; // 12 to 95
+      target = thousands * 1000;
+    } else if (unitWord === "hundred") {
+      // Pick a 5-digit number ending in 00 with non-zero hundreds digit (e.g. 100 to 900) so it is a true hundreds target
+      const thousands = Math.floor(Math.random() * 85) + 10; // 10 to 94
+      const hundreds = Math.floor(Math.random() * 9) + 1; // 1 to 9
+      target = (thousands * 1000) + (hundreds * 100);
+    } else {
+      // unitWord === "ten"
+      // Pick a 5-digit number ending in 0 with non-zero tens digit (e.g. 10 to 90) so it is a true tens target
+      const hundredsPrefix = Math.floor(Math.random() * 850) + 100; // 100 to 949
+      const tens = Math.floor(Math.random() * 9) + 1; // 1 to 9
+      target = (hundredsPrefix * 100) + (tens * 10);
+    }
+
+    const lowerBound = target - half;
+    const upperBound = target + (half - 1);
+    finalAnswer = count.toString();
+
+    promptInstruction = `- Question stem: EXACTLY "How many whole numbers give ${target.toLocaleString()} when rounded to the nearest ${unitWord}?"
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  * Step 1: Identify lower bound: the smallest whole number that rounds up to ${target.toLocaleString()} when rounded to the nearest ${unitWord} is ${lowerBound.toLocaleString()}.
+  * Step 2: Identify upper bound: the largest whole number that rounds down to ${target.toLocaleString()} when rounded to the nearest ${unitWord} is ${upperBound.toLocaleString()}.
+  * Step 3: State the inclusive counting range [${lowerBound.toLocaleString()}, ${upperBound.toLocaleString()}].
+  * Step 4: Use the inclusive counting formula: (${upperBound.toLocaleString()} - ${lowerBound.toLocaleString()}) + 1 = ${finalAnswer}.
+- In the hint: Remind the student that when counting whole numbers in an inclusive range from lower bound to upper bound, calculate (Upper Bound - Lower Bound) + 1.`;
 
     if (isMCQ) {
-      const d1 = isThousand ? "999" : "99";
-      const d2 = isThousand ? "1001" : "101";
-      const d3 = isThousand ? "500" : "50";
+      const d1 = (count - 1).toString();
+      const d2 = (count + 1).toString();
+      const d3 = half.toString();
       options = [finalAnswer, d1, d2, d3].sort(() => Math.random() - 0.5);
       defectMap = {
         [d1]: "MISSED_INCLUSIVE_INTERVAL_COUNT",
