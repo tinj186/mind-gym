@@ -291,22 +291,207 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
   } else if (activeVariant === 'standard_error_analysis') {
     const studentName = getRandomNames(1)[0];
-    const num = Math.floor(Math.random() * 60 + 20) * 1000 + Math.floor(Math.random() * 400 + 550); // rounds up
-    const rounded = Math.round(num / 1000) * 1000;
-    finalAnswer = "He should use the '≈' symbol instead of the '=' symbol.";
+    const errorTypes = ['symbol_equal_for_approx', 'symbol_approx_for_exact', 'wrong_direction', 'wrong_place_value'];
+    const errorType = errorTypes[Math.floor(Math.random() * errorTypes.length)];
 
-    promptInstruction = `- Question stem: "${studentName} wrote the mathematical sentence: ${num.toLocaleString()} = ${rounded.toLocaleString()} (to the nearest thousand). What mistake did ${studentName} make?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    let baseStem = "";
+    let correctDesc = "";
+    let d1Desc = "";
+    let d2Desc = "";
+    let d3Desc = "";
+    let d1Defect = "";
+    let d2Defect = "";
+    let d3Defect = "";
+    let solSteps = "";
+    let hintText = "";
+    const shortQuestionType = Math.random() < 0.5 ? 'letter' : 'direct';
+
+    let directAnswer = "";
+    let directAccepted = [];
+    let directQuestionStem = "";
+    let directSolSteps = "";
+    let directHint = "";
+
+    if (errorType === 'symbol_equal_for_approx') {
+      const placeValues = [
+        { name: "nearest thousand", unit: 1000 },
+        { name: "nearest hundred", unit: 100 }
+      ];
+      const pv = placeValues[Math.floor(Math.random() * placeValues.length)];
+      const num = Math.floor(Math.random() * 60 + 20) * 1000 + Math.floor(Math.random() * 800 + 100);
+      const rounded = Math.round(num / pv.unit) * pv.unit;
+
+      baseStem = `${studentName} wrote the mathematical sentence: ${num.toLocaleString()} = ${rounded.toLocaleString()} (to the ${pv.name}). What mistake did ${studentName} make?`;
+      correctDesc = "Used the '=' symbol instead of the '≈' symbol for an approximation.";
+      d1Desc = "Rounded in the wrong direction.";
+      d1Defect = "WRONG_ROUNDING_DIRECTION";
+      d2Desc = "Rounded to the wrong place value.";
+      d2Defect = "WRONG_PLACE_VALUE";
+      d3Desc = "There is no mistake in the mathematical sentence.";
+      d3Defect = "FAILED_TO_IDENTIFY_EQUAL_SIGN_ERROR";
+
+      solSteps = `* Step 1: Check the rounding: ${num.toLocaleString()} rounded to the ${pv.name} is indeed ${rounded.toLocaleString()}.\\n  * Step 2: Notice the symbol used is '=', which indicates exact equality.\\n  * Step 3: Since ${num.toLocaleString()} is not equal to ${rounded.toLocaleString()}, the approximation symbol '≈' should be used instead.\\n  * Step 4: Conclude that ${studentName} made the mistake of using '=' instead of '≈'.`;
+      hintText = `Look closely at the symbol between ${num.toLocaleString()} and ${rounded.toLocaleString()}. Is ${num.toLocaleString()} exactly equal to ${rounded.toLocaleString()}, or is it an approximation?`;
+
+      directQuestionStem = `${studentName} wrote: ${num.toLocaleString()} [ ? ] ${rounded.toLocaleString()} (to the ${pv.name}).\\nWhich symbol (= or ≈) should replace [ ? ] to make the mathematical sentence correct?`;
+      directAnswer = "≈";
+      directAccepted = ["≈", "approx", "approximately", "approximate", "~"];
+      directSolSteps = `* Step 1: ${num.toLocaleString()} rounded to the ${pv.name} is ${rounded.toLocaleString()}.\\n  * Step 2: Since ${num.toLocaleString()} is an estimate rather than exact equality, use the approximation symbol '≈'.`;
+      directHint = `Recall that '=' means exactly equal, while '≈' means approximately equal!`;
+
+    } else if (errorType === 'symbol_approx_for_exact') {
+      const a = Math.floor(Math.random() * 40 + 10) * 1000;
+      const b = Math.floor(Math.random() * 30 + 10) * 1000;
+      const sum = a + b;
+
+      baseStem = `${studentName} calculated the exact sum: ${a.toLocaleString()} + ${b.toLocaleString()} ≈ ${sum.toLocaleString()}. What mistake did ${studentName} make?`;
+      correctDesc = "Used the '≈' symbol instead of the '=' symbol for an exact calculation.";
+      d1Desc = "Calculated the sum incorrectly.";
+      d1Defect = "CALCULATION_MISCONCEPTION";
+      d2Desc = "Should have rounded both numbers to the nearest thousand first.";
+      d2Defect = "CONFUSED_ESTIMATION_CONVENTION";
+      d3Desc = "There is no mistake in the mathematical sentence.";
+      d3Defect = "FAILED_TO_IDENTIFY_APPROX_SIGN_ERROR";
+
+      solSteps = `* Step 1: Calculate the exact sum: ${a.toLocaleString()} + ${b.toLocaleString()} = ${sum.toLocaleString()}.\\n  * Step 2: Observe that the calculation is exact, not an estimate.\\n  * Step 3: The symbol '≈' should only be used for approximations, while '=' must be used for exact equality.\\n  * Step 4: Conclude that ${studentName} should have used '=' instead of '≈'.`;
+      hintText = `Calculate ${a.toLocaleString()} + ${b.toLocaleString()}. Is the result exactly ${sum.toLocaleString()} or an estimate?`;
+
+      directQuestionStem = `${studentName} calculated: ${a.toLocaleString()} + ${b.toLocaleString()} [ ? ] ${sum.toLocaleString()}.\\nWhich symbol (= or ≈) should replace [ ? ] to make the exact sentence correct?`;
+      directAnswer = "=";
+      directAccepted = ["=", "equal", "equals", "equal sign", "is equal to"];
+      directSolSteps = `* Step 1: Calculate the exact sum: ${a.toLocaleString()} + ${b.toLocaleString()} = ${sum.toLocaleString()}.\\n  * Step 2: Since the two sides are exactly equal, the correct symbol is '='.`;
+      directHint = `Check if the left side equals the right side exactly!`;
+
+    } else if (errorType === 'wrong_direction') {
+      const thousands = Math.floor(Math.random() * 60 + 20);
+      const shouldRoundUp = Math.random() < 0.5;
+      let num, wrongRounded, correctRounded;
+
+      if (shouldRoundUp) {
+        const offset = Math.floor(Math.random() * 400 + 550);
+        num = (thousands * 1000) + offset;
+        correctRounded = (thousands + 1) * 1000;
+        wrongRounded = thousands * 1000;
+        correctDesc = `Rounded down to ${wrongRounded.toLocaleString()} instead of rounding up to ${correctRounded.toLocaleString()}.`;
+      } else {
+        const offset = Math.floor(Math.random() * 350 + 100);
+        num = (thousands * 1000) + offset;
+        correctRounded = thousands * 1000;
+        wrongRounded = (thousands + 1) * 1000;
+        correctDesc = `Rounded up to ${wrongRounded.toLocaleString()} instead of rounding down to ${correctRounded.toLocaleString()}.`;
+      }
+
+      d1Desc = "Used the '≈' symbol instead of the '=' symbol.";
+      d1Defect = "CONFUSED_SYMBOL_WITH_CALCULATION";
+      d2Desc = "Rounded to the nearest hundred instead of the nearest thousand.";
+      d2Defect = "WRONG_PLACE_VALUE";
+      d3Desc = "There is no mistake in the approximation sentence.";
+      d3Defect = "FAILED_TO_IDENTIFY_ROUNDING_ERROR";
+
+      baseStem = `${studentName} wrote: ${num.toLocaleString()} ≈ ${wrongRounded.toLocaleString()} (to the nearest thousand). What mistake did ${studentName} make?`;
+      solSteps = `* Step 1: Look at the digit in the hundreds place of ${num.toLocaleString()}: it is ${Math.floor((num % 1000) / 100)}.\\n  * Step 2: According to the rounding rule, since this digit is ${shouldRoundUp ? "5 or greater, we round up" : "less than 5, we round down"}.\\n  * Step 3: ${num.toLocaleString()} rounded to the nearest thousand should be ${correctRounded.toLocaleString()}.\\n  * Step 4: Conclude that ${studentName} ${shouldRoundUp ? "rounded down instead of rounding up" : "rounded up instead of rounding down"}.`;
+      hintText = `Look at the digit in the hundreds place of ${num.toLocaleString()}. Should the number be rounded up or rounded down?`;
+
+      directQuestionStem = `${studentName} made a rounding error in the statement: ${num.toLocaleString()} ≈ ${wrongRounded.toLocaleString()} (to the nearest thousand).\\nWhat is the correct value when ${num.toLocaleString()} is rounded to the nearest thousand?`;
+      directAnswer = correctRounded.toLocaleString();
+      directAccepted = [
+        correctRounded.toLocaleString(),
+        correctRounded.toString(),
+        correctRounded.toLocaleString().replace(/,/g, ' ')
+      ];
+      directSolSteps = `* Step 1: Look at the hundreds digit of ${num.toLocaleString()}.\\n  * Step 2: Since it is ${shouldRoundUp ? "5 or greater, round up" : "less than 5, round down"} to ${correctRounded.toLocaleString()}.`;
+      directHint = `Identify the hundreds digit of ${num.toLocaleString()} and apply the rounding rule to round to the nearest thousand!`;
+
+    } else {
+      // wrong_place_value
+      const thousands = Math.floor(Math.random() * 60 + 20);
+      const hundredsDigit = Math.floor(Math.random() * 4 + 6);
+      const tensOnes = Math.floor(Math.random() * 40 + 10);
+      const num = (thousands * 1000) + (hundredsDigit * 100) + tensOnes;
+      const wrongRounded = (thousands * 1000) + (hundredsDigit * 100);
+      const correctRounded = (thousands + 1) * 1000;
+
+      baseStem = `${studentName} wrote: ${num.toLocaleString()} ≈ ${wrongRounded.toLocaleString()} (to the nearest thousand). What mistake did ${studentName} make?`;
+      correctDesc = "Rounded to the nearest hundred instead of the nearest thousand.";
+      d1Desc = "Used the '≈' symbol instead of the '=' symbol.";
+      d1Defect = "CONFUSED_SYMBOL_WITH_PLACE_VALUE";
+      d2Desc = `The number should round down to ${(thousands * 1000).toLocaleString()}.`;
+      d2Defect = "WRONG_ROUNDING_DIRECTION";
+      d3Desc = "There is no mistake in the mathematical statement.";
+      d3Defect = "FAILED_TO_IDENTIFY_PLACE_VALUE_ERROR";
+
+      solSteps = `* Step 1: Observe that the rounded value ${wrongRounded.toLocaleString()} has only the tens and ones digits as zeros, which means it was rounded to the nearest hundred.\\n  * Step 2: The question specifies rounding to the nearest thousand, which requires looking at the hundreds place (${hundredsDigit}).\\n  * Step 3: Since ${hundredsDigit} is 5 or greater, ${num.toLocaleString()} rounded to the nearest thousand is ${correctRounded.toLocaleString()}.\\n  * Step 4: Conclude that ${studentName} rounded to the nearest hundred instead of the nearest thousand.`;
+      hintText = `Count how many zeros are at the end of ${wrongRounded.toLocaleString()}. Was it rounded to the nearest thousand or another place value?`;
+
+      directQuestionStem = `${studentName} wrote: ${num.toLocaleString()} ≈ ${wrongRounded.toLocaleString()} (to the nearest thousand).\\nWhat is the correct value of ${num.toLocaleString()} rounded to the nearest thousand?`;
+      directAnswer = correctRounded.toLocaleString();
+      directAccepted = [
+        correctRounded.toLocaleString(),
+        correctRounded.toString(),
+        correctRounded.toLocaleString().replace(/,/g, ' ')
+      ];
+      directSolSteps = `* Step 1: Look at the hundreds digit of ${num.toLocaleString()} (${hundredsDigit}).\\n  * Step 2: Since it is 5 or greater, round up to ${correctRounded.toLocaleString()}.`;
+      directHint = `To round to the nearest thousand, look at the hundreds digit and round up or down!`;
+    }
 
     if (isMCQ) {
-      const d1 = `The number should round down to ${(rounded - 1000).toLocaleString()}.`;
-      const d2 = `The number should round to ${Math.round(num / 100) * 100}.`;
-      const d3 = "There is no error in the mathematical sentence.";
-      options = [finalAnswer, d1, d2, d3].sort(() => Math.random() - 0.5);
+      finalAnswer = correctDesc;
+      options = [correctDesc, d1Desc, d2Desc, d3Desc].sort(() => Math.random() - 0.5);
       defectMap = {
-        [d1]: "WRONG_ROUNDING_DIRECTION",
-        [d2]: "WRONG_PLACE_VALUE",
-        [d3]: "FAILED_TO_IDENTIFY_EQUAL_SIGN_ERROR"
+        [d1Desc]: d1Defect,
+        [d2Desc]: d2Defect,
+        [d3Desc]: d3Defect
       };
+
+      promptInstruction = `- Question stem: EXACTLY "${baseStem}"
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  ${solSteps}
+- In the hint: ${hintText}`;
+    } else {
+      if (shortQuestionType === 'direct') {
+        finalAnswer = directAnswer;
+        acceptedAnswers = directAccepted;
+        promptInstruction = `- Question stem: EXACTLY "${directQuestionStem}"
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  ${directSolSteps}
+- In the hint: ${directHint}`;
+      } else {
+        // letter choice format
+        const rawChoices = [
+          { text: correctDesc, isCorrect: true },
+          { text: d1Desc, isCorrect: false },
+          { text: d2Desc, isCorrect: false },
+          { text: d3Desc, isCorrect: false }
+        ].sort(() => Math.random() - 0.5);
+
+        const labels = ["Option A", "Option B", "Option C", "Option D"];
+        const labeled = rawChoices.map((c, idx) => ({
+          label: labels[idx],
+          text: c.text,
+          isCorrect: c.isCorrect
+        }));
+        const correctChoice = labeled.find(c => c.isCorrect);
+        finalAnswer = correctChoice.label;
+        const letter = correctChoice.label.replace("Option ", "");
+
+        acceptedAnswers = [
+          correctChoice.label,
+          correctChoice.label.toLowerCase(),
+          letter,
+          letter.toLowerCase(),
+          correctDesc
+        ];
+
+        const choicesBlock = labeled.map(c => `${c.label}: ${c.text}`).join("\\n");
+        promptInstruction = `- Question stem: EXACTLY "${baseStem}\\n${choicesBlock}\\nWrite Option A, Option B, Option C, or Option D."
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  ${solSteps}
+  * Conclude that ${finalAnswer} is the correct choice.
+- In the hint: ${hintText}`;
+      }
     }
   } else {
     // standard_estimation_chain
