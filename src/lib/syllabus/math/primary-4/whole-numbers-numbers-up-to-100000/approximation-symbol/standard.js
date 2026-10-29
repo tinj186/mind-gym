@@ -5,6 +5,7 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   let finalAnswer = "";
   let options = [];
   let defectMap = {};
+  let acceptedAnswers = [];
   const visualEngineStr = `{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }`;
 
   if (!activeVariant || activeVariant === 'standard_default' || activeVariant === 'default') {
@@ -52,24 +53,108 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       };
     }
   } else if (activeVariant === 'standard_approx_degree_identification') {
-    // Tests a number like 49 998 ≈ 50 000 where it rounds to 50 000 to nearest 10, 100, and 1000!
-    const prefix = Math.floor(Math.random() * 8) + 1; // 1 to 8
-    const num = (prefix * 10000) + 9996; // e.g. 39 996
-    const rounded = (prefix + 1) * 10000; // 40 000
-    finalAnswer = "nearest ten, nearest hundred, and nearest thousand";
+    // Tests multi-digit numbers that round to the same value across 1, 2, or 3 place values
+    const degreeCases = ['all_three', 'hundred_thousand', 'thousand_only'];
+    const pickedCase = degreeCases[Math.floor(Math.random() * degreeCases.length)];
+    const baseThousands = Math.floor(Math.random() * 70 + 20); // 20 to 89
+    const R = baseThousands * 1000;
+    let num, matchedDesc, count;
 
-    promptInstruction = `- Question stem: "Consider the approximation statement: ${num.toLocaleString()} ≈ ${rounded.toLocaleString()}. To which place value(s) can ${num.toLocaleString()} be rounded to produce this result?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    if (pickedCase === 'all_three') {
+      const isBelow = Math.random() < 0.5;
+      const offset = Math.floor(Math.random() * 4) + 1; // 1 to 4 -> rounds to R for 10, 100, 1000
+      num = isBelow ? R - offset : R + offset;
+      matchedDesc = "nearest ten, nearest hundred, and nearest thousand";
+      count = 3;
+    } else if (pickedCase === 'hundred_thousand') {
+      const isBelow = Math.random() < 0.5;
+      const offset = Math.floor(Math.random() * 40) + 8; // 8 to 47 -> inside [R-50, R+49], outside [R-5, R+4]
+      num = isBelow ? R - offset : R + offset;
+      matchedDesc = "nearest hundred and nearest thousand only";
+      count = 2;
+    } else {
+      const isBelow = Math.random() < 0.5;
+      const offset = Math.floor(Math.random() * 380) + 65; // 65 to 445 -> inside [R-500, R+499], outside [R-50, R+49]
+      num = isBelow ? R - offset : R + offset;
+      matchedDesc = "nearest thousand only";
+      count = 1;
+    }
+
+    const r10 = Math.round(num / 10) * 10;
+    const r100 = Math.round(num / 100) * 100;
+    const r1000 = Math.round(num / 1000) * 1000;
 
     if (isMCQ) {
-      const d1 = "only nearest ten";
-      const d2 = "only nearest hundred";
-      const d3 = "only nearest thousand";
-      options = [finalAnswer, d1, d2, d3].sort(() => Math.random() - 0.5);
-      defectMap = {
-        [d1]: "FAILED_TO_RECOGNIZE_MULTIPLE_ROUNDING_CASES",
-        [d2]: "FAILED_TO_RECOGNIZE_MULTIPLE_ROUNDING_CASES",
-        [d3]: "FAILED_TO_RECOGNIZE_MULTIPLE_ROUNDING_CASES"
-      };
+      finalAnswer = matchedDesc;
+      const allPossible = [
+        "nearest ten, nearest hundred, and nearest thousand",
+        "nearest hundred and nearest thousand only",
+        "nearest thousand only",
+        "nearest ten only"
+      ];
+      options = allPossible.sort(() => Math.random() - 0.5);
+      defectMap = {};
+      options.forEach(opt => {
+        if (opt !== finalAnswer) {
+          defectMap[opt] = "MISIDENTIFIED_MATCHING_ROUNDING_SCALE";
+        }
+      });
+
+      promptInstruction = `- Question stem: EXACTLY "Consider the approximation statement: ${num.toLocaleString()} ≈ ${R.toLocaleString()}. To which place value(s) can ${num.toLocaleString()} be rounded to produce this result?"
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  * Step 1: Round ${num.toLocaleString()} to the nearest ten: ${r10.toLocaleString()} (${r10 === R ? "equals" : "does not equal"} ${R.toLocaleString()}).
+  * Step 2: Round ${num.toLocaleString()} to the nearest hundred: ${r100.toLocaleString()} (${r100 === R ? "equals" : "does not equal"} ${R.toLocaleString()}).
+  * Step 3: Round ${num.toLocaleString()} to the nearest thousand: ${r1000.toLocaleString()} (${r1000 === R ? "equals" : "does not equal"} ${R.toLocaleString()}).
+  * Step 4: Conclude that ${num.toLocaleString()} produces ${R.toLocaleString()} when rounded to the ${matchedDesc}.
+- In the hint: Test rounding ${num.toLocaleString()} to each place value (ten, hundred, and thousand) individually to see which ones equal ${R.toLocaleString()}!`;
+    } else {
+      // Short question: provide two varied, concise subtypes
+      const isCountQuestion = Math.random() < 0.5;
+      if (isCountQuestion) {
+        finalAnswer = count.toString();
+        acceptedAnswers = [
+          count.toString(),
+          count === 3 ? "three" : count === 2 ? "two" : "one"
+        ];
+        if (count === 3) acceptedAnswers.push("all three", "all 3");
+
+        promptInstruction = `- Question stem: EXACTLY "Consider the approximation statement: ${num.toLocaleString()} ≈ ${R.toLocaleString()}.\\nHow many of the following place values (nearest ten, nearest hundred, nearest thousand) give ${R.toLocaleString()} when ${num.toLocaleString()} is rounded?\\nAnswer with 1, 2, or 3."
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  * Step 1: Round ${num.toLocaleString()} to the nearest ten: ${r10.toLocaleString()} (${r10 === R ? "matches" : "does not match"}).
+  * Step 2: Round ${num.toLocaleString()} to the nearest hundred: ${r100.toLocaleString()} (${r100 === R ? "matches" : "does not match"}).
+  * Step 3: Round ${num.toLocaleString()} to the nearest thousand: ${r1000.toLocaleString()} (${r1000 === R ? "matches" : "does not match"}).
+  * Step 4: Count the matching place values: exactly ${count} (${matchedDesc}).
+- In the hint: Check each of the three place values one by one and count how many equal ${R.toLocaleString()}!`;
+      } else {
+        // Multiple-choice letter style in short question
+        const choices = [
+          { label: "Option A", text: "nearest ten, nearest hundred, and nearest thousand" },
+          { label: "Option B", text: "nearest hundred and nearest thousand only" },
+          { label: "Option C", text: "nearest thousand only" },
+          { label: "Option D", text: "nearest ten only" }
+        ];
+        const correctChoice = choices.find(c => c.text === matchedDesc);
+        finalAnswer = correctChoice.label;
+        const letter = correctChoice.label.replace("Option ", "");
+        acceptedAnswers = [
+          correctChoice.label,
+          correctChoice.label.toLowerCase(),
+          letter,
+          letter.toLowerCase(),
+          matchedDesc
+        ];
+
+        const choicesText = choices.map(c => `${c.label}: ${c.text}`).join("\\n");
+        promptInstruction = `- Question stem: EXACTLY "Consider the approximation statement: ${num.toLocaleString()} ≈ ${R.toLocaleString()}.\\nTo which place value(s) can ${num.toLocaleString()} be rounded to produce this result?\\n${choicesText}\\nWrite Option A, Option B, Option C, or Option D."
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  * Step 1: Round ${num.toLocaleString()} to nearest ten (${r10.toLocaleString()}), nearest hundred (${r100.toLocaleString()}), and nearest thousand (${r1000.toLocaleString()}).
+  * Step 2: Identify which ones match ${R.toLocaleString()} (${matchedDesc}).
+  * Step 3: Conclude that ${finalAnswer} (${matchedDesc}) is the correct choice.
+- In the hint: Test each place value to determine which option lists all the matching ones!`;
+      }
     }
   } else if (activeVariant === 'standard_find_original_from_approx') {
     const target = Math.floor(Math.random() * 60 + 20) * 1000; // e.g. 48 000
@@ -136,7 +221,12 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
   }
 
-  const inputRequirementStr = isStructure ? `{\n    "inputType": "MULTI_STEP_INPUT"\n  }` : null;
+  let inputRequirementStr = null;
+  if (isStructure) {
+    inputRequirementStr = `{\n    "inputType": "MULTI_STEP_INPUT"\n  }`;
+  } else if (isShort && acceptedAnswers.length > 0) {
+    inputRequirementStr = JSON.stringify({ inputType: "STANDARD_TEXT", acceptedAnswers }, null, 2);
+  }
   const mcqInstruction = isMCQ ? `- Generate EXACTLY 4 options: ${JSON.stringify(options)}.\\n- Set defectMap to: ${JSON.stringify(defectMap)}.` : "";
 
   const aiPrompt = `You are an expert Singapore Primary 4 Math educator.
