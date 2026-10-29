@@ -337,23 +337,89 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     }
   } else {
     // foundation_true_false_statement
-    const tth = Math.floor(Math.random() * 50 + 20) * 1000; // e.g. 35 000
-    const num = tth + Math.floor(Math.random() * 300 + 50); // e.g. 35 180
-    // Nearest thousand is tth
-    finalAnswer = `${num.toLocaleString()} ≈ ${tth.toLocaleString()} (nearest thousand)`;
-    const d1 = `${num.toLocaleString()} = ${tth.toLocaleString()}`;
-    const d2 = `${num.toLocaleString()} ≈ ${(tth + 1000).toLocaleString()} (nearest thousand)`;
-    const d3 = `${num.toLocaleString()} ≈ ${(tth - 1000).toLocaleString()} (nearest thousand)`;
-
-    promptInstruction = `- Question stem: "Which of the following statements is mathematically correct?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    const placeTypes = [
+      { name: "ten", unit: 10, round: (n) => Math.round(n / 10) * 10, digitChecked: "ones" },
+      { name: "hundred", unit: 100, round: (n) => Math.round(n / 100) * 100, digitChecked: "tens" },
+      { name: "thousand", unit: 1000, round: (n) => Math.round(n / 1000) * 1000, digitChecked: "hundreds" }
+    ];
+    const place = placeTypes[Math.floor(Math.random() * placeTypes.length)];
+    const thousands = Math.floor(Math.random() * 70 + 15);
+    const offset = Math.floor(Math.random() * 850 + 50);
+    const num = (thousands * 1000) + offset;
+    const correctRounded = place.round(num);
 
     if (isMCQ) {
+      finalAnswer = `${num.toLocaleString()} ≈ ${correctRounded.toLocaleString()} (rounded to the nearest ${place.name})`;
+      const d1 = `${num.toLocaleString()} = ${correctRounded.toLocaleString()}`;
+      const wrongRound = (num % place.unit < place.unit / 2) ? correctRounded + place.unit : correctRounded - place.unit;
+      const d2 = `${num.toLocaleString()} ≈ ${wrongRound.toLocaleString()} (rounded to the nearest ${place.name})`;
+      const d3 = `${num.toLocaleString()} ≈ ${(correctRounded + (place.unit * 2)).toLocaleString()} (rounded to the nearest ${place.name})`;
+
+      promptInstruction = `- Question stem: EXACTLY "Which of the following statements is mathematically correct?"
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  * Step 1: Check rounding rule for ${num.toLocaleString()} rounded to the nearest ${place.name}.
+  * Step 2: Note that the decision digit (${place.digitChecked}) indicates ${correctRounded.toLocaleString()}.
+  * Step 3: Explain why the symbol '≈' must be used instead of '='.
+  * Step 4: Conclude that "${finalAnswer}" is the correct statement.
+- In the hint: Remember that '=' means strictly equal, while '≈' is required for rounded numbers!`;
+
       options = [finalAnswer, d1, d2, d3].sort(() => Math.random() - 0.5);
       defectMap = {
         [d1]: "USED_EQUAL_INSTEAD_OF_APPROXIMATION",
         [d2]: "ROUNDED_INCORRECTLY",
         [d3]: "ROUNDED_INCORRECTLY"
       };
+    } else {
+      // Short question: provide statements directly in the stem and ask for concise answer
+      const isCompare = Math.random() < 0.5;
+      if (isCompare) {
+        const correctStmt = `${num.toLocaleString()} ≈ ${correctRounded.toLocaleString()} (rounded to the nearest ${place.name})`;
+        const wrongStmt = Math.random() < 0.5
+          ? `${num.toLocaleString()} = ${correctRounded.toLocaleString()}`
+          : `${num.toLocaleString()} ≈ ${((num % place.unit < place.unit / 2) ? correctRounded + place.unit : correctRounded - place.unit).toLocaleString()} (rounded to the nearest ${place.name})`;
+        const correctIsA = Math.random() < 0.5;
+        const stmtA = correctIsA ? correctStmt : wrongStmt;
+        const stmtB = correctIsA ? wrongStmt : correctStmt;
+        finalAnswer = correctIsA ? "Statement A" : "Statement B";
+        acceptedAnswers = correctIsA ? ["Statement A", "Statement a", "A", "a"] : ["Statement B", "Statement b", "B", "b"];
+
+        promptInstruction = `- Question stem: EXACTLY "Which of the following statements is mathematically correct?\\nStatement A: ${stmtA}\\nStatement B: ${stmtB}\\nWrite Statement A or Statement B."
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  * Step 1: Examine Statement A ("${stmtA}") and determine its mathematical validity.
+  * Step 2: Examine Statement B ("${stmtB}") and determine its mathematical validity.
+  * Step 3: Conclude that ${finalAnswer} is the correct statement.
+- In the hint: Look closely at whether the '=' or '≈' symbol was used correctly, and whether the rounding calculation is accurate.`;
+      } else {
+        const isTrue = Math.random() < 0.5;
+        let stmt, explanation;
+        if (isTrue) {
+          stmt = `${num.toLocaleString()} ≈ ${correctRounded.toLocaleString()} (rounded to the nearest ${place.name})`;
+          explanation = `${num.toLocaleString()} rounded to the nearest ${place.name} is indeed ${correctRounded.toLocaleString()}, and the approximation symbol '≈' is used correctly.`;
+        } else {
+          const flaw = Math.random() < 0.5;
+          if (flaw) {
+            stmt = `${num.toLocaleString()} = ${correctRounded.toLocaleString()} (rounded to the nearest ${place.name})`;
+            explanation = `${num.toLocaleString()} is not strictly equal to ${correctRounded.toLocaleString()}; the approximation symbol '≈' must be used instead of '='.`;
+          } else {
+            const wrong = (num % place.unit < place.unit / 2) ? correctRounded + place.unit : correctRounded - place.unit;
+            stmt = `${num.toLocaleString()} ≈ ${wrong.toLocaleString()} (rounded to the nearest ${place.name})`;
+            explanation = `${num.toLocaleString()} rounded to the nearest ${place.name} is ${correctRounded.toLocaleString()}, not ${wrong.toLocaleString()}.`;
+          }
+        }
+        finalAnswer = isTrue ? "True" : "False";
+        acceptedAnswers = isTrue ? ["True", "true", "T", "t"] : ["False", "false", "F", "f"];
+
+        promptInstruction = `- Question stem: EXACTLY "State whether the following mathematical statement is True or False:\\n'${stmt}'\\nWrite True or False."
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  * Step 1: Check whether the rounding calculation is correct (${num.toLocaleString()} to nearest ${place.name}).
+  * Step 2: Check whether '=' or '≈' was used appropriately.
+  * Step 3: ${explanation}
+  * Step 4: Conclude that the statement is ${finalAnswer}.
+- In the hint: Check both the rounded number and the symbol (= vs ≈) carefully!`;
+      }
     }
   }
 
