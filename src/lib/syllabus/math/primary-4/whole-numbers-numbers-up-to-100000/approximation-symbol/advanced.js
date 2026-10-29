@@ -5,6 +5,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   let finalAnswer = "";
   let options = [];
   let defectMap = {};
+  let acceptedAnswers = [];
   const visualEngineStr = `{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }`;
 
   if (!activeVariant || activeVariant === 'advanced_default' || activeVariant === 'default') {
@@ -19,65 +20,241 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   }
 
   if (activeVariant === 'advanced_symbol_chain_conventions') {
-    // Tests strict Singapore MOE convention: A + B ≈ Round(A) + Round(B) = Total
-    const a = 24820;
-    const b = 18190;
-    const ra = 25000;
-    const rb = 18000;
-    const sum = 43000;
+    // Tests strict Singapore MOE convention: A [op] B ≈ Round(A) [op] Round(B) = Total
+    const isSubtraction = Math.random() < 0.5;
+    const op = isSubtraction ? "-" : "+";
 
-    finalAnswer = `${a.toLocaleString()} + ${b.toLocaleString()} ≈ ${ra.toLocaleString()} + ${rb.toLocaleString()} = ${sum.toLocaleString()}`;
-    const d1 = `${a.toLocaleString()} + ${b.toLocaleString()} = ${ra.toLocaleString()} + ${rb.toLocaleString()} = ${sum.toLocaleString()}`;
-    const d2 = `${a.toLocaleString()} + ${b.toLocaleString()} ≈ ${ra.toLocaleString()} + ${rb.toLocaleString()} ≈ ${sum.toLocaleString()}`;
-    const d3 = `${a.toLocaleString()} + ${b.toLocaleString()} = ${sum.toLocaleString()}`;
+    const isHundred = Math.random() < 0.3;
+    const pvUnit = isHundred ? 100 : 1000;
+    const pvName = isHundred ? "nearest hundred" : "nearest thousand";
 
-    promptInstruction = `- Question stem: "Which of the following mathematical sentences is written strictly correctly using the symbols '=' and '≈'?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    const aThousands = Math.floor(Math.random() * 40 + 30);
+    const bThousands = Math.floor(Math.random() * 20 + 10);
 
-    if (isMCQ) {
-      options = [finalAnswer, d1, d2, d3].sort(() => Math.random() - 0.5);
-      defectMap = {
-        [d1]: "USED_EQUAL_FOR_ROUNDED_TERMS",
-        [d2]: "USED_APPROX_FOR_EXACT_ADDITION",
-        [d3]: "EQUATED_UNROUNDED_SUM_TO_ROUNDED_RESULT"
-      };
+    let a = aThousands * 1000 + Math.floor(Math.random() * 800 + 100);
+    let b = bThousands * 1000 + Math.floor(Math.random() * 800 + 100);
+
+    if (isSubtraction && a <= b + 8000) {
+      a = b + 12000 + Math.floor(Math.random() * 5000);
+    }
+
+    const ra = Math.round(a / pvUnit) * pvUnit;
+    const rb = Math.round(b / pvUnit) * pvUnit;
+    const result = isSubtraction ? ra - rb : ra + rb;
+
+    const correctSentence = `${a.toLocaleString()} ${op} ${b.toLocaleString()} ≈ ${ra.toLocaleString()} ${op} ${rb.toLocaleString()} = ${result.toLocaleString()}`;
+    const d1Sentence = `${a.toLocaleString()} ${op} ${b.toLocaleString()} = ${ra.toLocaleString()} ${op} ${rb.toLocaleString()} = ${result.toLocaleString()}`;
+    const d2Sentence = `${a.toLocaleString()} ${op} ${b.toLocaleString()} ≈ ${ra.toLocaleString()} ${op} ${rb.toLocaleString()} ≈ ${result.toLocaleString()}`;
+    const d3Sentence = `${a.toLocaleString()} ${op} ${b.toLocaleString()} = ${result.toLocaleString()}`;
+
+    const isSymbolPairQuestion = Math.random() < 0.5;
+
+    if (isSymbolPairQuestion) {
+      const stem = `In the estimation sentence below, which symbols should replace [ 1 ] and [ 2 ] to follow strict Singapore mathematical conventions?\\n${a.toLocaleString()} ${op} ${b.toLocaleString()} [ 1 ] ${ra.toLocaleString()} ${op} ${rb.toLocaleString()} [ 2 ] ${result.toLocaleString()}`;
+
+      const pairChoices = [
+        { text: "[ 1 ] is ≈ and [ 2 ] is =", isCorrect: true, defect: null },
+        { text: "[ 1 ] is = and [ 2 ] is =", isCorrect: false, defect: "USED_EQUAL_FOR_ROUNDED_TERMS" },
+        { text: "[ 1 ] is ≈ and [ 2 ] is ≈", isCorrect: false, defect: "USED_APPROX_FOR_EXACT_CALCULATION" },
+        { text: "[ 1 ] is = and [ 2 ] is ≈", isCorrect: false, defect: "REVERSED_SYMBOL_CONVENTIONS" }
+      ].sort(() => Math.random() - 0.5);
+
+      if (isMCQ) {
+        finalAnswer = "[ 1 ] is ≈ and [ 2 ] is =";
+        options = pairChoices.map(c => c.text);
+        defectMap = {};
+        pairChoices.forEach(c => {
+          if (!c.isCorrect) defectMap[c.text] = c.defect;
+        });
+
+        promptInstruction = `- Question stem: EXACTLY "${stem}"
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  * Step 1: Note that ${a.toLocaleString()} ${op} ${b.toLocaleString()} is replaced by rounded values (${ra.toLocaleString()} ${op} ${rb.toLocaleString()}), so [ 1 ] must be the approximation symbol '≈'.
+  * Step 2: Note that ${ra.toLocaleString()} ${op} ${rb.toLocaleString()} is exactly equal to ${result.toLocaleString()}, so [ 2 ] must be the equal sign '='.
+  * Step 3: Conclude that [ 1 ] is ≈ and [ 2 ] is =.
+- In the hint: Use '≈' when original numbers are replaced by approximations, and '=' when two expressions are strictly equal!`;
+      } else {
+        const labels = ["Option A", "Option B", "Option C", "Option D"];
+        const labeled = pairChoices.map((c, idx) => ({
+          label: labels[idx],
+          text: c.text,
+          isCorrect: c.isCorrect
+        }));
+        const correctChoice = labeled.find(c => c.isCorrect);
+        finalAnswer = correctChoice.label;
+        const letter = correctChoice.label.replace("Option ", "");
+
+        acceptedAnswers = [
+          correctChoice.label,
+          correctChoice.label.toLowerCase(),
+          letter,
+          letter.toLowerCase(),
+          "≈ and =",
+          "≈, =",
+          "[ 1 ] is ≈ and [ 2 ] is ="
+        ];
+
+        const choicesBlock = labeled.map(c => `${c.label}: ${c.text}`).join("\\n");
+        promptInstruction = `- Question stem: EXACTLY "${stem}\\n${choicesBlock}\\nWrite Option A, Option B, Option C, or Option D."
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  * Step 1: Between original numbers and rounded numbers, use '≈' because it is an approximation.
+  * Step 2: Between rounded numbers and the calculated result, use '=' because the arithmetic is exact.
+  * Step 3: Conclude that ${finalAnswer} is the correct option.
+- In the hint: Look for '≈' in the first blank and '=' in the second blank!`;
+      }
+    } else {
+      const stem = `Which of the following mathematical sentences is written strictly correctly using the symbols '=' and '≈'?`;
+      const rawSentences = [
+        { text: correctSentence, isCorrect: true, defect: null },
+        { text: d1Sentence, isCorrect: false, defect: "USED_EQUAL_FOR_ROUNDED_TERMS" },
+        { text: d2Sentence, isCorrect: false, defect: "USED_APPROX_FOR_EXACT_CALCULATION" },
+        { text: d3Sentence, isCorrect: false, defect: "EQUATED_UNROUNDED_TO_ROUNDED_RESULT" }
+      ].sort(() => Math.random() - 0.5);
+
+      if (isMCQ) {
+        finalAnswer = correctSentence;
+        options = rawSentences.map(c => c.text);
+        defectMap = {};
+        rawSentences.forEach(c => {
+          if (!c.isCorrect) defectMap[c.text] = c.defect;
+        });
+
+        promptInstruction = `- Question stem: EXACTLY "${stem}"
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  * Step 1: Identify that ${a.toLocaleString()} and ${b.toLocaleString()} are rounded to ${ra.toLocaleString()} and ${rb.toLocaleString()} (to the ${pvName}), so the first relation must use '≈'.
+  * Step 2: Identify that ${ra.toLocaleString()} ${op} ${rb.toLocaleString()} equals ${result.toLocaleString()} exactly, so the second relation must use '='.
+  * Step 3: Conclude that "${finalAnswer}" follows strict Singapore MOE conventions.
+- In the hint: Look for the statement that uses '≈' between original and rounded numbers, and '=' before the final exact sum/difference!`;
+      } else {
+        const labels = ["Option A", "Option B", "Option C", "Option D"];
+        const labeled = rawSentences.map((c, idx) => ({
+          label: labels[idx],
+          text: c.text,
+          isCorrect: c.isCorrect
+        }));
+        const correctChoice = labeled.find(c => c.isCorrect);
+        finalAnswer = correctChoice.label;
+        const letter = correctChoice.label.replace("Option ", "");
+
+        acceptedAnswers = [
+          correctChoice.label,
+          correctChoice.label.toLowerCase(),
+          letter,
+          letter.toLowerCase(),
+          correctSentence
+        ];
+
+        const choicesBlock = labeled.map(c => `${c.label}: ${c.text}`).join("\\n");
+        promptInstruction = `- Question stem: EXACTLY "${stem}\\n${choicesBlock}\\nWrite Option A, Option B, Option C, or Option D."
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  * Step 1: Original numbers to rounded numbers requires '≈'.
+  * Step 2: Rounded arithmetic to final total requires '='.
+  * Step 3: Conclude that ${finalAnswer} (${correctSentence}) is strictly correct.
+- In the hint: Find the option that correctly combines '≈' for estimation and '=' for exact calculation!`;
+      }
     }
   } else if (activeVariant === 'advanced_dual_statement_validity') {
-    // Statement 1: 54 499 ≈ 54 000 (to nearest thousand) -> True
-    // Statement 2: 54 499 ≈ 54 500 (to nearest hundred) -> True
-    const tth = Math.floor(Math.random() * 40 + 20) * 1000; // e.g. 30 000
-    const num = tth + 499; // e.g. 30 499
-    const s1Correct = true; // num to nearest 1000 is tth
-    const s2Correct = true; // num to nearest 100 is tth + 500
+    const tth = Math.floor(Math.random() * 40 + 20) * 1000;
+    const num = tth + Math.floor(Math.random() * 900 + 50);
+    const actualThousand = Math.round(num / 1000) * 1000;
+    const actualHundred = Math.round(num / 100) * 100;
 
-    finalAnswer = "Both Statement 1 and Statement 2 are true";
-    const d1 = "Only Statement 1 is true";
-    const d2 = "Only Statement 2 is true";
-    const d3 = "Neither Statement is true";
+    const s1Correct = Math.random() < 0.5;
+    const s2Correct = Math.random() < 0.5;
 
-    promptInstruction = `- Question stem: "Consider the two statements about the number ${num.toLocaleString()}:\\nStatement 1: ${num.toLocaleString()} ≈ ${tth.toLocaleString()} (rounded to the nearest thousand)\\nStatement 2: ${num.toLocaleString()} ≈ ${(tth + 500).toLocaleString()} (rounded to the nearest hundred)\\nWhich statement(s) are mathematically true?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    const claim1 = s1Correct ? actualThousand : actualThousand + (num > actualThousand ? -1000 : 1000);
+    const claim2 = s2Correct ? actualHundred : actualHundred + (num > actualHundred ? -100 : 100);
+
+    if (s1Correct && s2Correct) {
+      finalAnswer = "Both Statement 1 and Statement 2 are true";
+    } else if (s1Correct && !s2Correct) {
+      finalAnswer = "Only Statement 1 is true";
+    } else if (!s1Correct && s2Correct) {
+      finalAnswer = "Only Statement 2 is true";
+    } else {
+      finalAnswer = "Neither Statement is true";
+    }
+
+    const allStatements = [
+      "Both Statement 1 and Statement 2 are true",
+      "Only Statement 1 is true",
+      "Only Statement 2 is true",
+      "Neither Statement is true"
+    ];
+
+    const stem = `Consider the two statements about the number ${num.toLocaleString()}:\\nStatement 1: ${num.toLocaleString()} ≈ ${claim1.toLocaleString()} (rounded to the nearest thousand)\\nStatement 2: ${num.toLocaleString()} ≈ ${claim2.toLocaleString()} (rounded to the nearest hundred)\\nWhich statement(s) are mathematically true?`;
 
     if (isMCQ) {
-      options = [finalAnswer, d1, d2, d3].sort(() => Math.random() - 0.5);
-      defectMap = {
-        [d1]: "MISUNDERSTOOD_HUNDRED_ROUNDING",
-        [d2]: "MISUNDERSTOOD_THOUSAND_ROUNDING",
-        [d3]: "MISUNDERSTOOD_BOTH_ROUNDING_RULES"
-      };
+      options = allStatements.sort(() => Math.random() - 0.5);
+      defectMap = {};
+      options.forEach(opt => {
+        if (opt !== finalAnswer) defectMap[opt] = "MISIDENTIFIED_STATEMENT_TRUTH_VALUE";
+      });
+
+      promptInstruction = `- Question stem: EXACTLY "${stem}"
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  * Step 1: Evaluate Statement 1: ${num.toLocaleString()} rounded to the nearest thousand is ${actualThousand.toLocaleString()} (Statement 1 is ${s1Correct ? "true" : "false"}).
+  * Step 2: Evaluate Statement 2: ${num.toLocaleString()} rounded to the nearest hundred is ${actualHundred.toLocaleString()} (Statement 2 is ${s2Correct ? "true" : "false"}).
+  * Step 3: Conclude that ${finalAnswer}.
+- In the hint: Test Statement 1 and Statement 2 independently by rounding ${num.toLocaleString()} to the nearest thousand and nearest hundred!`;
+    } else {
+      const labels = ["Option A", "Option B", "Option C", "Option D"];
+      const rawChoices = allStatements.map(text => ({ text, isCorrect: text === finalAnswer })).sort(() => Math.random() - 0.5);
+      const labeled = rawChoices.map((c, idx) => ({
+        label: labels[idx],
+        text: c.text,
+        isCorrect: c.isCorrect
+      }));
+      const correctChoice = labeled.find(c => c.isCorrect);
+      finalAnswer = correctChoice.label;
+      const letter = correctChoice.label.replace("Option ", "");
+
+      acceptedAnswers = [
+        correctChoice.label,
+        correctChoice.label.toLowerCase(),
+        letter,
+        letter.toLowerCase(),
+        correctChoice.text
+      ];
+
+      const choicesBlock = labeled.map(c => `${c.label}: ${c.text}`).join("\\n");
+      promptInstruction = `- Question stem: EXACTLY "${stem}\\n${choicesBlock}\\nWrite Option A, Option B, Option C, or Option D."
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  * Step 1: Round ${num.toLocaleString()} to nearest thousand (${actualThousand.toLocaleString()}) -> Statement 1 is ${s1Correct ? "true" : "false"}.
+  * Step 2: Round ${num.toLocaleString()} to nearest hundred (${actualHundred.toLocaleString()}) -> Statement 2 is ${s2Correct ? "true" : "false"}.
+  * Step 3: Conclude that ${finalAnswer} (${correctChoice.text}) is correct.
+- In the hint: Check each statement individually against the rounding rules!`;
     }
   } else if (activeVariant === 'advanced_range_of_approx_expression') {
-    // "If P ≈ 40 000 and Q ≈ 25 000 (both rounded to nearest thousand), what is the greatest possible value of P - Q?"
-    const pThousands = Math.floor(Math.random() * 30 + 40) * 1000; // 40 000 to 69 000
-    const qThousands = Math.floor(Math.random() * 15 + 10) * 1000; // 10 000 to 24 000
+    const pThousands = Math.floor(Math.random() * 30 + 40) * 1000;
+    const qThousands = Math.floor(Math.random() * 15 + 10) * 1000;
     const maxP = pThousands + 499;
     const minQ = qThousands - 500;
     const maxDiff = maxP - minQ;
     finalAnswer = maxDiff.toString();
+    acceptedAnswers = [
+      finalAnswer,
+      maxDiff.toLocaleString(),
+      maxDiff.toLocaleString().replace(/,/g, ' ')
+    ];
 
-    promptInstruction = `- Question stem: "If P ≈ ${pThousands.toLocaleString()} and Q ≈ ${qThousands.toLocaleString()} (where both numbers are rounded to the nearest thousand), what is the greatest possible value of P - Q?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    promptInstruction = `- Question stem: EXACTLY "If P ≈ ${pThousands.toLocaleString()} and Q ≈ ${qThousands.toLocaleString()} (where both numbers are rounded to the nearest thousand), what is the greatest possible value of P - Q?"
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  * Step 1: Find the greatest possible value of P: ${pThousands.toLocaleString()} + 499 = ${maxP.toLocaleString()}.
+  * Step 2: Find the smallest possible value of Q: ${qThousands.toLocaleString()} - 500 = ${minQ.toLocaleString()}.
+  * Step 3: Compute the greatest difference: ${maxP.toLocaleString()} - ${minQ.toLocaleString()} = ${maxDiff.toLocaleString()}.
+- In the hint: To make P - Q as large as possible, choose the maximum possible P and the minimum possible Q!`;
 
     if (isMCQ) {
-      const d1 = (pThousands - qThousands).toString(); // simple difference of rounded values
-      const d2 = (maxP - (qThousands + 499)).toString(); // minimum difference
+      const d1 = (pThousands - qThousands).toString();
+      const d2 = (maxP - (qThousands + 499)).toString();
       const d3 = (maxDiff - 1).toString();
       const set = new Set([finalAnswer, d1, d2, d3]);
       let offset = 1000;
@@ -93,19 +270,27 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       };
     }
   } else if (activeVariant === 'advanced_approx_inequality_heuristic') {
-    // "A 5-digit number N satisfies: N ≈ 70 000 (nearest thousand) and N ≈ 69 700 (nearest hundred). What is the greatest (or smallest) possible value of N?"
-    const tth = Math.floor(Math.random() * 60 + 20); // 20 to 79
-    const thousandTarget = (tth + 1) * 1000; // e.g. 70 000
-    const hundredTarget = (tth * 1000) + 700; // e.g. 69 700
-    // Nearest hundred: [hundredTarget - 50, hundredTarget + 49] -> [69 650, 69 749]
-    // Nearest thousand: [thousandTarget - 500, thousandTarget + 499] -> [69 500, 70 499]
-    // Intersection: [hundredTarget - 50, hundredTarget + 49]
+    const tth = Math.floor(Math.random() * 60 + 20);
+    const thousandTarget = (tth + 1) * 1000;
+    const hundredTarget = (tth * 1000) + 700;
     const isGreatest = Math.random() < 0.5;
     const ansNum = isGreatest ? hundredTarget + 49 : hundredTarget - 50;
     finalAnswer = ansNum.toString();
+    acceptedAnswers = [
+      finalAnswer,
+      ansNum.toLocaleString(),
+      ansNum.toLocaleString().replace(/,/g, ' ')
+    ];
 
     const boundWord = isGreatest ? "greatest" : "smallest";
-    promptInstruction = `- Question stem: "A 5-digit number N satisfies both of the following approximation statements:\\n- N ≈ ${thousandTarget.toLocaleString()} (rounded to the nearest thousand)\\n- N ≈ ${hundredTarget.toLocaleString()} (rounded to the nearest hundred)\\nWhat is the ${boundWord} possible value of N?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    promptInstruction = `- Question stem: EXACTLY "A 5-digit number N satisfies both of the following approximation statements:\\n- N ≈ ${thousandTarget.toLocaleString()} (rounded to the nearest thousand)\\n- N ≈ ${hundredTarget.toLocaleString()} (rounded to the nearest hundred)\\nWhat is the ${boundWord} possible value of N?"
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  * Step 1: For N to round to ${hundredTarget.toLocaleString()} (nearest hundred), N must be in [${(hundredTarget - 50).toLocaleString()}, ${(hundredTarget + 49).toLocaleString()}].
+  * Step 2: For N to round to ${thousandTarget.toLocaleString()} (nearest thousand), N must be in [${(thousandTarget - 500).toLocaleString()}, ${(thousandTarget + 499).toLocaleString()}].
+  * Step 3: The intersection range is [${(hundredTarget - 50).toLocaleString()}, ${(hundredTarget + 49).toLocaleString()}].
+  * Step 4: The ${boundWord} possible value of N is ${finalAnswer}.
+- In the hint: Write out the valid rounding ranges for both conditions and find the overlap!`;
 
     if (isMCQ) {
       const d1 = (isGreatest ? hundredTarget - 50 : hundredTarget + 49).toString();
@@ -130,11 +315,25 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const r3 = Math.round(n3 / 1000) * 1000;
     const totalEst = r1 + r2 + r3;
     finalAnswer = totalEst.toString();
+    acceptedAnswers = [
+      finalAnswer,
+      totalEst.toLocaleString(),
+      totalEst.toLocaleString().replace(/,/g, ' ')
+    ];
 
-    promptInstruction = `- Question stem: "By rounding each number to the nearest thousand, find the estimated value of the sum:\\n${n1.toLocaleString()} + ${n2.toLocaleString()} + ${n3.toLocaleString()} ≈ ________"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    promptInstruction = `- Question stem: EXACTLY "By rounding each number to the nearest thousand, find the estimated value of the sum:\\n${n1.toLocaleString()} + ${n2.toLocaleString()} + ${n3.toLocaleString()} ≈ ________"
+- The finalAnswer must be strictly "${finalAnswer}".
+- In the solutionSteps:
+  * Step 1: Round each number to the nearest thousand:
+    - ${n1.toLocaleString()} rounds to ${r1.toLocaleString()}.
+    - ${n2.toLocaleString()} rounds to ${r2.toLocaleString()}.
+    - ${n3.toLocaleString()} rounds to ${r3.toLocaleString()}.
+  * Step 2: Add the rounded numbers: ${r1.toLocaleString()} + ${r2.toLocaleString()} + ${r3.toLocaleString()} = ${totalEst.toLocaleString()}.
+  * Step 3: Conclude that the estimated sum is ${finalAnswer}.
+- In the hint: Round each number to the nearest thousand first, then sum the three rounded numbers!`;
 
     if (isMCQ) {
-      const d1 = (n1 + n2 + n3).toString(); // exact without rounding
+      const d1 = (n1 + n2 + n3).toString();
       const d2 = (totalEst + 1000).toString();
       const d3 = (totalEst - 1000).toString();
       const set = new Set([finalAnswer, d1, d2, d3]);
@@ -152,7 +351,12 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
   }
 
-  const inputRequirementStr = isStructure ? `{\n    "inputType": "MULTI_STEP_INPUT"\n  }` : null;
+  let inputRequirementStr = null;
+  if (isStructure) {
+    inputRequirementStr = `{\n    "inputType": "MULTI_STEP_INPUT"\n  }`;
+  } else if (isShort && acceptedAnswers.length > 0) {
+    inputRequirementStr = JSON.stringify({ inputType: "STANDARD_TEXT", acceptedAnswers }, null, 2);
+  }
   const mcqInstruction = isMCQ ? `- Generate EXACTLY 4 options: ${JSON.stringify(options)}.\\n- Set defectMap to: ${JSON.stringify(defectMap)}.` : "";
 
   const aiPrompt = `You are an expert Singapore Primary 4 Math educator.
