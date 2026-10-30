@@ -63,9 +63,9 @@ export const shapesBlueprint = {
 
   generate: (difficulty = 'foundation', variant = 'foundation_identify_shape', type = 'MCQ') => {
     const safeType = String(type).toLowerCase();
-    const isShort = safeType.includes('short');
-    const isStructure = safeType.includes('structure') || safeType.includes('structured');
     const isMCQ = safeType.includes('mcq');
+    const isStructure = safeType.includes('structure') || safeType.includes('structured');
+    const isShort = safeType.includes('short') || safeType.includes('standard') || (!isMCQ && !isStructure);
 
     let finalDifficulty = difficulty;
     let finalVariant = variant;

@@ -144,3 +144,128 @@ export const getRandom3DObject = () => {
   return objects[Math.floor(Math.random() * objects.length)];
 };
 
+export const REAL_WORLD_2D_SHAPE_OBJECTS = [
+  {
+    name: "cheese wedge",
+    shape: "Triangle",
+    emoji: "🧀",
+    straightSides: 3,
+    is3D: true,
+    faceRef: "front triangular face of this cheese wedge",
+    faceName: "front face",
+    shapeClue: "Look at the front face of the cheese wedge: it has 3 straight sides meeting at 3 pointy corners.",
+    sidesClue: "Run your finger along the 3 straight lines of the front face.",
+    shapeExplanation: "The front face of the cheese wedge has 3 straight sides, so its 2D shape is a triangle.",
+    sidesExplanation: "The front triangular face of the cheese wedge has 3 straight sides."
+  },
+  {
+    name: "chocolate bar",
+    shape: "Rectangle",
+    emoji: "🍫",
+    straightSides: 4,
+    is3D: true,
+    faceRef: "flat top face of this chocolate bar",
+    faceName: "flat top face",
+    shapeClue: "Look at the flat top face: it has 2 long straight sides and 2 short straight sides.",
+    sidesClue: "Count the 4 straight edges around the top face of the chocolate bar.",
+    shapeExplanation: "The flat top face of the chocolate bar has 4 straight sides (2 long and 2 short), so it is a rectangle.",
+    sidesExplanation: "The flat top face of the chocolate bar has 4 straight sides."
+  },
+  {
+    name: "coin",
+    shape: "Circle",
+    emoji: "🪙",
+    straightSides: 0,
+    is3D: true,
+    faceRef: "flat circular face of this coin",
+    faceName: "flat face",
+    shapeClue: "Look at the flat face of the coin: it is completely round with no straight edges or corners.",
+    sidesClue: "A circle is completely round and has 0 straight sides.",
+    shapeExplanation: "The flat face of the coin is completely round with no straight edges, so it is a circle.",
+    sidesExplanation: "The circular flat face of the coin has 0 straight sides."
+  },
+  {
+    name: "doughnut",
+    shape: "Circle",
+    emoji: "🍩",
+    straightSides: 0,
+    is3D: true,
+    faceRef: "round top view of this doughnut",
+    faceName: "top view outline",
+    shapeClue: "Looking down from above, the doughnut has a completely round outline.",
+    sidesClue: "A round circle has 0 straight sides.",
+    shapeExplanation: "The round outline of a doughnut has no straight sides, so it is a circle.",
+    sidesExplanation: "The round outline of the doughnut has 0 straight sides."
+  },
+  {
+    name: "bowl",
+    shape: "Half Circle",
+    emoji: "🥣",
+    straightSides: 1,
+    is3D: true,
+    faceRef: "side view profile of this bowl",
+    faceName: "side view profile",
+    shapeClue: "The side view of the bowl has 1 flat straight rim on top and 1 curved edge at the bottom.",
+    sidesClue: "Count only the straight line across the top rim of the bowl.",
+    shapeExplanation: "The side profile shows 1 straight side and 1 curved edge, which forms a half circle.",
+    sidesExplanation: "The side profile of the bowl has 1 straight side across its top rim."
+  },
+  {
+    name: "clock face",
+    shape: "Circle",
+    emoji: "⏰",
+    straightSides: 0,
+    is3D: true,
+    faceRef: "round dial on the front of this clock",
+    faceName: "front dial",
+    shapeClue: "The front dial of the clock is completely round.",
+    sidesClue: "A circle has 0 straight sides.",
+    shapeExplanation: "The round dial on the front of the clock is a circle.",
+    sidesExplanation: "The round dial on the clock has 0 straight sides."
+  },
+  {
+    name: "envelope",
+    shape: "Rectangle",
+    emoji: "✉️",
+    straightSides: 4,
+    is3D: false,
+    faceRef: "flat front face of this envelope",
+    faceName: "front face",
+    shapeClue: "It has 2 long straight sides and 2 short straight sides.",
+    sidesClue: "Count the 4 straight edges around the envelope.",
+    shapeExplanation: "An envelope has 4 straight sides (2 long and 2 short), so it is a rectangle.",
+    sidesExplanation: "An envelope has 4 straight sides."
+  },
+  {
+    name: "window pane",
+    shape: "Square",
+    emoji: "🪟",
+    straightSides: 4,
+    is3D: false,
+    faceRef: "square frame of this window pane",
+    faceName: "square frame",
+    shapeClue: "It has 4 straight sides that are all equal in length.",
+    sidesClue: "Count the 4 straight sides of the window pane.",
+    shapeExplanation: "All 4 straight sides are equal in length, making it a square.",
+    sidesExplanation: "A square window pane has 4 straight sides."
+  },
+  {
+    name: "pizza slice",
+    shape: "Triangle",
+    emoji: "🍕",
+    straightSides: 3,
+    is3D: false,
+    faceRef: "flat triangular slice of pizza",
+    faceName: "flat slice",
+    shapeClue: "It has 3 straight sides that come to a pointy tip.",
+    sidesClue: "Count the 3 straight sides outlining the slice.",
+    shapeExplanation: "A slice of pizza has 3 straight sides, so it is a triangle.",
+    sidesExplanation: "A triangular slice of pizza has 3 straight sides."
+  }
+];
+
+export const getRandomRealWorld2DObject = () => {
+  return REAL_WORLD_2D_SHAPE_OBJECTS[Math.floor(Math.random() * REAL_WORLD_2D_SHAPE_OBJECTS.length)];
+};
+
+

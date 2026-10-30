@@ -1,5 +1,5 @@
 import { getRandomContext } from '@/lib/utils/localization';
-import { getRandomShapes, getRandomColors, getRandomNames, SHAPES_POOL, COLORS_POOL } from '@/lib/utils/variable-bank';
+import { getRandomShapes, getRandomColors, getRandomNames, SHAPES_POOL, COLORS_POOL, getRandomRealWorld2DObject } from '@/lib/utils/variable-bank';
 
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const getShuffledOptions = (correct, distractors) => {
@@ -232,56 +232,121 @@ export const foundationVariants = {
   },
 
   foundation_match_real_object: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const realWorldObjects = [
-      { name: "coin", shape: "Circle", emoji: "🪙", clue: "It is perfectly round metal money with no straight edges." },
-      { name: "doughnut", shape: "Circle", emoji: "🍩", clue: "It is perfectly round with a hole in the middle." },
-      { name: "envelope", shape: "Rectangle", emoji: "✉️", clue: "It has 2 long straight sides and 2 short straight sides." },
-      { name: "chocolate bar", shape: "Rectangle", emoji: "🍫", clue: "It is a long sweet treat with straight sides." },
-      { name: "window pane", shape: "Square", emoji: "🪟", clue: "It has 4 straight sides that are exactly the same length." },
-      { name: "cheese wedge", shape: "Triangle", emoji: "🧀", clue: "It has 3 straight sides and pointy corners." },
-      { name: "pizza slice", shape: "Triangle", emoji: "🍕", clue: "It has 3 straight sides and comes to a sharp point." },
-      { name: "bowl", shape: "Half Circle", emoji: "🥣", clue: "It has 1 straight side across the top and 1 curved side at the bottom." }
-    ];
-
-    const target = realWorldObjects[Math.floor(Math.random() * realWorldObjects.length)];
+    const target = getRandomRealWorld2DObject();
     const componentData = { layout: "EMOJI", emoji: target.emoji, name: target.name };
-    const answer = target.shape;
 
-    const questionTextTemplate = getQText(`A ${target.name} looks like a...`, `What shape is a ${target.name}?`);
-    const storyInstruction = isShort ? "STRICT: Return the JSON template EXACTLY as provided. DO NOT modify a single character, word, or number in 'questionText', 'visualEngine', 'componentData', 'solutionSteps', 'hint', or 'finalAnswer'. THIS IS A SHORT QUESTION SO THERE IS NO STORY. Just output the exact JSON structure with the provided values. IGNORE any logic instructions or examples." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers/shapes MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
+    // 50% ask for 2D shape, 50% ask for straight sides
+    const askSides = Math.random() < 0.5;
 
-    let options = ["Circle", "Triangle", "Square", "Rectangle", "Half Circle", "Quarter Circle"];
+    let askText = "";
+    let answer = "";
+    let hintText = "";
+    let solutionStepsText = "";
+    let options = [];
+    let acceptedAnswers = [];
+
+    if (askSides) {
+      if (target.is3D) {
+        askText = isShort
+          ? `Straight sides of the ${target.faceRef} = ?`
+          : `Look at the ${target.faceRef}. How many straight sides does it have?`;
+      } else {
+        askText = isShort
+          ? `Straight sides of this ${target.name} = ?`
+          : `Look at this ${target.name}. How many straight sides does it have?`;
+      }
+      answer = String(target.straightSides);
+      hintText = target.sidesClue;
+      solutionStepsText = target.sidesExplanation;
+
+      const numberWords = ["zero", "one", "two", "three", "four", "five"];
+      const wordAns = numberWords[target.straightSides] || answer;
+      acceptedAnswers = [
+        answer,
+        `${answer} sides`,
+        `${answer} straight sides`,
+        wordAns,
+        `${wordAns} sides`,
+        `${wordAns} straight sides`
+      ];
+
+      const sideDistractors = ["0", "1", "2", "3", "4", "5"].filter(x => x !== answer);
+      const shuffledDistractors = sideDistractors.sort(() => Math.random() - 0.5).slice(0, 3);
+      options = [answer, ...shuffledDistractors].sort(() => Math.random() - 0.5);
+    } else {
+      // Asking for the 2D shape
+      if (target.is3D) {
+        askText = isShort
+          ? `2D shape of the ${target.faceRef} = ?`
+          : `Look at the ${target.faceRef}. What 2D shape is it?`;
+      } else {
+        askText = isShort
+          ? `2D shape of this ${target.name} = ?`
+          : `Look at this ${target.name}. What 2D shape is it?`;
+      }
+      answer = target.shape;
+      hintText = target.shapeClue;
+      solutionStepsText = target.shapeExplanation;
+
+      acceptedAnswers = [
+        answer,
+        answer.toLowerCase(),
+        `a ${answer.toLowerCase()}`,
+        `an ${answer.toLowerCase()}`
+      ];
+
+      const shapeDistractors = ["Circle", "Triangle", "Square", "Rectangle", "Half Circle", "Quarter Circle"].filter(s => s !== answer);
+      const shuffledDistractors = shapeDistractors.sort(() => Math.random() - 0.5).slice(0, 3);
+      options = [answer, ...shuffledDistractors].sort(() => Math.random() - 0.5);
+    }
+
     let mcqOptions = 'null';
     let defectMapStr = 'null';
     if (type === 'MCQ') {
-      options = options.sort(() => Math.random() - 0.5);
       mcqOptions = JSON.stringify(options);
       let defectMapObj = {};
-      options.forEach(opt => { if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR"; });
+      options.forEach(opt => {
+        if (opt !== answer) defectMapObj[opt] = "CONCEPTUAL_ERROR";
+      });
       defectMapStr = JSON.stringify(defectMapObj);
     }
+
+    const sysSolutionSteps = JSON.stringify(solutionStepsText);
 
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
-      ${storyInstruction}
+      
+      CRITICAL INSTRUCTION: You MUST construct the "content" object using the EXACT strings provided below:
+      - For content.questionText, use: "${askText}"
+      - For content.finalAnswer, use: "${answer}"
+      - For content.hint, use: "${hintText}"
+      - For content.solutionSteps, use: ${sysSolutionSteps}
+      ${type === 'MCQ' ? `Generate EXACTLY 4 options:
+      - "${options[0]}"
+      - "${options[1]}"
+      - "${options[2]}"
+      - "${options[3]}"` : ''}
 
       OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):
       {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
-          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "questionText": "${askText}",
           "options": ${mcqOptions},
           "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(target.clue, `Think of the shape's outline.`))},
+          "hint": "${hintText}",
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`Most ${target.name}s have the outline of a ${target.shape.toLowerCase()}.`, `It is a ${target.shape.toLowerCase()}.`))}
+          "solutionSteps": ${sysSolutionSteps}
         },
         "visualEngine": {
           "componentToRender": "SHAPE_DISPLAY",
           "componentData": ${JSON.stringify(componentData)}
         },
-        "inputRequirement": { "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": { 
+          "inputType": "${type === 'MCQ' ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}",
+          "acceptedAnswers": ${JSON.stringify(acceptedAnswers)}
+        }
       }`,
       metadata: { difficulty: 'foundation', steps: 1, logic: "match_real_object", hideVisual: false }
     };
