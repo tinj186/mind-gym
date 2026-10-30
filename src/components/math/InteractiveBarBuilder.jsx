@@ -1,9 +1,153 @@
-"use client";
-
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, AlertCircle, ArrowRight, Layers, Scale, RefreshCw, HelpCircle, Sparkles } from 'lucide-react';
+import { CheckCircle2, AlertCircle, ArrowRight, Layers, Scale, RefreshCw, HelpCircle, Sparkles, ChevronDown, Eye } from 'lucide-react';
 import MathInput from '@/components/math/MathInput';
+
+/**
+ * Miniature Preview Diagrams for each Bar Model Archetype
+ */
+function ComparisonPreview() {
+  return (
+    <div className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 sm:p-5 space-y-4">
+      <div className="flex items-center justify-between text-xs font-black text-slate-500 uppercase tracking-wider">
+        <span>Parallel Comparison Bars</span>
+        <span className="text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">
+          Aligned Baseline
+        </span>
+      </div>
+
+      <div className="space-y-3 max-w-lg mx-auto py-2">
+        {/* Entity A */}
+        <div className="space-y-1">
+          <div className="flex justify-between text-xs font-bold text-slate-600">
+            <span>Entity A</span>
+            <span className="text-slate-400 font-mono">Base Value</span>
+          </div>
+          <div className="h-9 bg-indigo-500 rounded-xl w-3/5 flex items-center justify-center text-white text-xs font-black shadow-sm">
+            Base Quantity
+          </div>
+        </div>
+
+        {/* Entity B */}
+        <div className="space-y-1">
+          <div className="flex justify-between text-xs font-bold text-slate-600">
+            <span>Entity B</span>
+            <span className="text-emerald-600 font-bold font-mono">+ Difference</span>
+          </div>
+          <div className="flex items-center h-9 gap-1.5">
+            <div className="h-full bg-indigo-500 rounded-xl w-3/5 flex items-center justify-center text-white text-xs font-black shadow-sm">
+              Same as A
+            </div>
+            <div className="h-full bg-emerald-500 rounded-xl flex-1 flex items-center justify-center text-white text-xs font-black shadow-sm border border-emerald-400 border-dashed">
+              + More
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="pt-2 border-t border-slate-200 text-center">
+        <p className="text-xs font-bold text-slate-600">
+          Compares distinct quantities side-by-side using parallel bars aligned to a common baseline, highlighting differences.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function PartWholePreview() {
+  return (
+    <div className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 sm:p-5 space-y-4">
+      <div className="flex items-center justify-between text-xs font-black text-slate-500 uppercase tracking-wider">
+        <span>Single Partitioned Bar</span>
+        <span className="text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
+          Parts of a Whole
+        </span>
+      </div>
+
+      <div className="space-y-3 max-w-lg mx-auto py-2">
+        {/* Whole Bracket */}
+        <div className="text-center">
+          <span className="text-xs font-black text-slate-700 bg-white px-3 py-1 rounded-full border border-slate-200 shadow-xs">
+            Total / Whole
+          </span>
+          <div className="w-full h-2.5 border-x-2 border-t-2 border-slate-400 rounded-t-lg mt-1" />
+        </div>
+
+        {/* Single bar divided into parts */}
+        <div className="flex h-10 w-full rounded-xl overflow-hidden border-2 border-slate-300 shadow-sm">
+          <div className="w-2/5 bg-blue-500 flex items-center justify-center text-white text-xs font-black border-r-2 border-white">
+            Part 1
+          </div>
+          <div className="w-3/5 bg-amber-500 flex items-center justify-center text-white text-xs font-black">
+            Part 2
+          </div>
+        </div>
+      </div>
+
+      <div className="pt-2 border-t border-slate-200 text-center">
+        <p className="text-xs font-bold text-slate-600">
+          Divides a single whole amount into two or more parts to find unknown parts or the combined total.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function BeforeAfterPreview() {
+  return (
+    <div className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 sm:p-5 space-y-4">
+      <div className="flex items-center justify-between text-xs font-black text-slate-500 uppercase tracking-wider">
+        <span>Two Time States</span>
+        <span className="text-amber-600 font-bold bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+          Transfer / Change
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg mx-auto py-1">
+        {/* BEFORE */}
+        <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-2 shadow-xs">
+          <div className="text-[10px] font-black uppercase text-slate-400">1. Before State</div>
+          <div className="space-y-1.5">
+            <div className="h-6 bg-indigo-400 rounded-lg w-4/5 text-[10px] font-black text-white flex items-center px-2">A (Initial)</div>
+            <div className="h-6 bg-slate-400 rounded-lg w-2/5 text-[10px] font-black text-white flex items-center px-2">B (Initial)</div>
+          </div>
+        </div>
+
+        {/* AFTER */}
+        <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-2 shadow-xs">
+          <div className="text-[10px] font-black uppercase text-emerald-600 flex items-center justify-between">
+            <span>2. After Transfer</span>
+            <span className="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 rounded font-black">Change</span>
+          </div>
+          <div className="space-y-1.5">
+            <div className="h-6 bg-indigo-500 rounded-lg w-3/5 text-[10px] font-black text-white flex items-center px-2">A (New)</div>
+            <div className="h-6 bg-slate-500 rounded-lg w-3/5 text-[10px] font-black text-white flex items-center px-2">B (New)</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="pt-2 border-t border-slate-200 text-center">
+        <p className="text-xs font-bold text-slate-600">
+          Tracks internal transfers, giving/receiving, or state changes between entities across time.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function EmptyPreview() {
+  return (
+    <div className="w-full bg-slate-50/70 border-2 border-dashed border-slate-300 rounded-2xl p-8 flex flex-col items-center justify-center text-center space-y-2">
+      <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-500">
+        <Eye className="w-5 h-5" />
+      </div>
+      <h5 className="text-sm font-black text-slate-700">Model Preview Window</h5>
+      <p className="text-xs text-slate-400 max-w-xs font-medium">
+        Select a bar model archetype from the dropdown above to preview how its structure works.
+      </p>
+    </div>
+  );
+}
 
 /**
  * InteractiveBarBuilder
@@ -43,24 +187,29 @@ export default function InteractiveBarBuilder({
 
   const handleSelectModel = (modelId) => {
     if (disabled) return;
+    if (!modelId) {
+      setSelectedModel(null);
+      setStage1Feedback(null);
+      return;
+    }
     setSelectedModel(modelId);
     if (modelId === correctModelType) {
       setStage1Feedback({
         type: 'success',
-        message: "Spot on! We are comparing distinct quantities across multiple individuals, so a Comparison Model is the right blueprint."
+        message: "Spot on! We are comparing distinct quantities between separate entities, so a Comparison Model is the right blueprint."
       });
     } else {
       setStage1Feedback({
         type: 'error',
         message: modelId === 'PART_WHOLE'
-          ? "Not quite. A Part-Whole model is used when a single total is split into parts. Here we have multiple distinct entities with comparison relationships!"
-          : "Not quite. A Before & After model tracks changes over time or internal transfers. Here we are comparing fixed quantities between entities!"
+          ? "A Part-Whole model partitions a single total amount into segments. But here we have 3 separate entities with comparative relations!"
+          : "A Before & After model tracks internal transfers or state changes over time. Here we have fixed comparative relations!"
       });
     }
   };
 
   const handleProceedToStage2 = () => {
-    if (selectedModel === correctModelType) {
+    if (selectedModel === correctModelType || isAdminReview) {
       setCurrentStage(2);
     }
   };
@@ -90,33 +239,27 @@ export default function InteractiveBarBuilder({
     }
   };
 
-  // Base scaling for visual bar representations
-  const maxBarValue = Math.max(
-    ...entities.map(e => (e.value || 0) + (e.diffValue || 0)), 
-    100
-  );
-
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <div className="w-full max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300">
       
       {/* 🧭 Stage Progress Header */}
-      <div className="flex items-center justify-between p-4 bg-slate-900 text-white rounded-3xl shadow-lg border-2 border-slate-800">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-slate-900 text-white rounded-2xl shadow-md border border-slate-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center font-black text-lg">
+          <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center font-black text-sm">
             {currentStage}
           </div>
           <div>
             <div className="text-[10px] font-black uppercase tracking-widest text-indigo-300">Guided Problem Solver</div>
-            <div className="text-base font-black">
-              {currentStage === 1 && "Stage 1: Choose the Model Archetype"}
-              {currentStage === 2 && "Stage 2: Inspect & Verify the Bar Blueprint"}
-              {currentStage === 3 && "Stage 3: Calculate & Solve Equations"}
+            <div className="text-sm font-black">
+              {currentStage === 1 && "Step 1: Choose the Bar Model Type"}
+              {currentStage === 2 && "Step 2: Inspect & Verify the Bar Blueprint"}
+              {currentStage === 3 && "Step 3: Calculate & Solve Equations"}
             </div>
           </div>
         </div>
 
         {/* Stage Pills */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {[1, 2, 3].map((stageNum) => (
             <button
               key={stageNum}
@@ -131,8 +274,8 @@ export default function InteractiveBarBuilder({
                 currentStage === stageNum
                   ? 'bg-indigo-500 text-white shadow-md scale-105'
                   : isAdminReview || (selectedModel === correctModelType && currentStage > stageNum)
-                  ? 'bg-emerald-950 text-emerald-300 border border-emerald-600/70 hover:bg-emerald-900 cursor-pointer'
-                  : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                  ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 cursor-pointer border border-slate-700'
+                  : 'bg-slate-900/50 text-slate-600 cursor-not-allowed'
               }`}
             >
               {stageNum === 1 ? "1. Archetype" : stageNum === 2 ? "2. Blueprint" : "3. Equations"}
@@ -142,105 +285,96 @@ export default function InteractiveBarBuilder({
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          STAGE 1: MODEL TYPE SELECTION
+          STAGE 1: MODEL TYPE SELECTION (SIMPLIFIED WITH DROPDOWN & PREVIEW)
          ══════════════════════════════════════════════════════════════════════ */}
       {currentStage === 1 && (
         <motion.div 
-          initial={{ opacity: 0, y: 15 }} 
+          initial={{ opacity: 0, y: 10 }} 
           animate={{ opacity: 1, y: 0 }} 
-          className="space-y-6"
+          className="space-y-4"
         >
-          <div className="bg-indigo-50 border-2 border-indigo-200 p-6 rounded-3xl text-indigo-950 space-y-2">
-            <h4 className="text-lg font-black flex items-center gap-2">
-              <HelpCircle className="w-5 h-5 text-indigo-600" />
-              Which Bar Model archetype fits this problem best?
-            </h4>
-            <p className="text-sm font-semibold text-indigo-800">
-              Select the model structure that accurately represents the relationship between the entities in the question.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {modelOptions.map((opt) => {
-              const isSelected = selectedModel === opt.id;
-              const isCorrectChoice = opt.id === correctModelType;
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
+          <div className="bg-white border-2 border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
+            
+            {/* Dropdown Selector */}
+            <div className="space-y-2">
+              <label htmlFor="bar-model-select" className="block text-sm font-black text-slate-800">
+                Select the type of Bar Model to use:
+              </label>
+              <div className="relative max-w-xl">
+                <select
+                  id="bar-model-select"
                   disabled={disabled}
-                  onClick={() => handleSelectModel(opt.id)}
-                  className={`p-6 rounded-3xl border-4 text-left flex flex-col justify-between transition-all duration-200 active:scale-95 ${
-                    isSelected
-                      ? isCorrectChoice
-                        ? 'border-emerald-500 bg-emerald-50/70 shadow-lg ring-4 ring-emerald-200 scale-[1.02]'
-                        : 'border-rose-400 bg-rose-50/70 shadow-md ring-4 ring-rose-100'
-                      : 'border-slate-200 bg-white hover:border-slate-400 hover:bg-slate-50'
-                  }`}
+                  value={selectedModel || ""}
+                  onChange={(e) => handleSelectModel(e.target.value)}
+                  className="w-full appearance-none bg-slate-50 border-2 border-slate-300 hover:border-indigo-500 focus:border-indigo-600 focus:bg-white focus:ring-4 focus:ring-indigo-100 rounded-2xl px-4 py-3 text-base font-bold text-slate-900 transition-all cursor-pointer shadow-xs pr-10"
                 >
-                  <div className="space-y-3">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center">
-                      {opt.id === 'COMPARISON' && <Scale className="w-6 h-6 text-indigo-600" />}
-                      {opt.id === 'PART_WHOLE' && <Layers className="w-6 h-6 text-blue-600" />}
-                      {opt.id === 'BEFORE_AFTER' && <RefreshCw className="w-6 h-6 text-amber-600" />}
-                    </div>
-                    <div>
-                      <h5 className="text-lg font-black text-slate-900">{opt.label}</h5>
-                      <p className="text-xs font-semibold text-slate-500 mt-1 leading-relaxed">
-                        {opt.description}
-                      </p>
-                    </div>
-                  </div>
+                  <option value="" disabled>-- Choose a Bar Model archetype --</option>
+                  {modelOptions.map((opt) => (
+                    <option key={opt.id} value={opt.id}>
+                      {opt.label} ({opt.id === 'COMPARISON' ? 'Compare distinct entities' : opt.id === 'PART_WHOLE' ? 'Divide a total into parts' : 'Track transfers / change over time'})
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                  <ChevronDown className="w-5 h-5" />
+                </div>
+              </div>
+            </div>
 
-                  <div className="mt-6 flex items-center justify-between pt-4 border-t border-slate-100">
-                    <span className="text-xs font-black uppercase tracking-wider text-slate-400">
-                      {isSelected ? (isCorrectChoice ? "Correct" : "Try Again") : "Select"}
-                    </span>
-                    {isSelected && (
-                      isCorrectChoice ? (
-                        <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                      ) : (
-                        <AlertCircle className="w-5 h-5 text-rose-500" />
-                      )
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Feedback & Proceed Button */}
-          {stage1Feedback && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className={`p-6 rounded-3xl border-2 flex flex-col sm:flex-row items-center justify-between gap-4 ${
-                stage1Feedback.type === 'success'
-                  ? 'bg-emerald-50 border-emerald-300 text-emerald-950'
-                  : 'bg-rose-50 border-rose-300 text-rose-950'
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                {stage1Feedback.type === 'success' ? (
-                  <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0 mt-0.5" />
-                ) : (
-                  <AlertCircle className="w-6 h-6 text-rose-600 shrink-0 mt-0.5" />
+            {/* Dedicated Model Preview Window */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <Eye className="w-3.5 h-3.5 text-indigo-500" />
+                  Model Preview Window
+                </span>
+                {selectedModel && (
+                  <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200">
+                    {modelOptions.find(o => o.id === selectedModel)?.label}
+                  </span>
                 )}
-                <p className="text-sm font-bold leading-relaxed">{stage1Feedback.message}</p>
               </div>
 
-              {stage1Feedback.type === 'success' && (
-                <button
-                  type="button"
-                  onClick={handleProceedToStage2}
-                  className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md shrink-0"
-                >
-                  Inspect Blueprint
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              )}
-            </motion.div>
-          )}
+              {selectedModel === 'COMPARISON' && <ComparisonPreview />}
+              {selectedModel === 'PART_WHOLE' && <PartWholePreview />}
+              {selectedModel === 'BEFORE_AFTER' && <BeforeAfterPreview />}
+              {!selectedModel && <EmptyPreview />}
+            </div>
+
+            {/* Feedback and Proceed Button */}
+            {stage1Feedback && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className={`p-4 rounded-2xl border-2 flex flex-col sm:flex-row items-center justify-between gap-3 ${
+                  stage1Feedback.type === 'success'
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-950'
+                    : 'bg-amber-50 border-amber-300 text-amber-950'
+                }`}
+              >
+                <div className="flex items-start gap-2.5 text-xs font-bold leading-relaxed">
+                  {stage1Feedback.type === 'success' ? (
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                  ) : (
+                    <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                  )}
+                  <span>{stage1Feedback.message}</span>
+                </div>
+
+                {stage1Feedback.type === 'success' && (
+                  <button
+                    type="button"
+                    onClick={handleProceedToStage2}
+                    className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md shrink-0"
+                  >
+                    Confirm & Build Blueprint
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                )}
+              </motion.div>
+            )}
+
+          </div>
         </motion.div>
       )}
 

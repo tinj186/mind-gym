@@ -33,11 +33,11 @@ export const p4NumberRoundingBlueprint = {
     foundation_midpoint_rule: 'Apply the halfway rule (5, 50, 500) rounding up.',
     foundation_identify_rounding_digit: 'Identify the decision digit used to round up or down.',
 
-    //    standard_cascade_nine: 'Rounding causing cascading carry-overs across 9s.',
+    standard_cascade_nine: 'Rounding causing cascading carry-overs across 9s.',
     standard_which_numbers_round_to: 'Identify which number falls within a target rounding range.',
-    //    standard_find_smallest_largest_bound: 'Find the smallest or greatest whole number that rounds to a given value.',
-    //    standard_estimation_sum_difference: 'Estimate sum or difference by rounding each number first.',
-    //    standard_round_same_number_multiple_ways: 'Round the same number to multiple place values and compare.',
+    standard_find_smallest_largest_bound: 'Find the smallest or greatest whole number that rounds to a given value.',
+    standard_estimation_sum_difference: 'Estimate sum or difference by rounding each number first.',
+    standard_round_same_number_multiple_ways: 'Round the same number to multiple place values and compare.',
 
     advanced_dual_rounding_mystery: 'Find mystery number satisfying two simultaneous rounding conditions.',
     advanced_difference_between_bounds: 'Find difference between maximum and minimum bounds of rounded numbers.',

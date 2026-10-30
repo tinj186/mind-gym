@@ -81,27 +81,27 @@ export default function ReviewCard({
           {/* Interactive Bar Model Builder for Structured Bar Questions */}
           {isInteractiveBar && (
             <div className="pt-2">
-              <div className="p-4 sm:p-6 bg-slate-900 text-white rounded-3xl shadow-xl border-2 border-indigo-500/40 space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-800">
+              <div className="p-4 sm:p-6 bg-slate-50 rounded-3xl border-2 border-indigo-200 shadow-xs space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-200">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-black uppercase tracking-widest text-indigo-400 flex items-center gap-1.5">
-                      🧱 Interactive Bar Model Solver Preview
+                    <span className="text-xs font-black uppercase tracking-widest text-indigo-700 flex items-center gap-1.5">
+                      🧱 Interactive Bar Model Solver
                     </span>
-                    <span className="text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full font-bold">
-                      Admin Live Preview
+                    <span className="text-[10px] bg-indigo-100 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-full font-bold">
+                      Interactive Preview
                     </span>
                   </div>
-                  <span className="text-[11px] text-slate-400 font-semibold">
-                    Use stage pills to inspect Blueprint or test Archetype & Equations
+                  <span className="text-[11px] text-slate-500 font-semibold">
+                    Select a model type from the dropdown to preview its diagram, or click stage pills
                   </span>
                 </div>
                 <InteractiveBarBuilder
                   config={normalizedQuestion.inputRequirement?.barBuilderConfig}
                   steps={normalizedQuestion.inputRequirement?.steps}
-                  onSubmit={(ans) => alert(`[Admin Preview Mode] Answer captured:\n${JSON.stringify(ans, null, 2)}`)}
+                  onSubmit={(ans) => alert(`[Preview Mode] Answer captured:\n${JSON.stringify(ans, null, 2)}`)}
                   disabled={false}
                   level={q.level}
-                  initialStage={2}
+                  initialStage={1}
                   isAdminReview={true}
                 />
               </div>
