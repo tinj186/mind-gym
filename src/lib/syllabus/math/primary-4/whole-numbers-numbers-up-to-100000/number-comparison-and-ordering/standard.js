@@ -1313,9 +1313,19 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
       if (isStructure) {
         visualEngineStr = JSON.stringify({
-          componentToRender: "NONE",
-          componentData: { hideVisual: true }
-        });
+          componentToRender: "BAR_MODEL_COMPARISON",
+          componentData: {
+            hideVisual: true,
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: valA, layoutSize: valA, displayValue: valA.toLocaleString(), difference: { displayValue: `+${y.toLocaleString()}` } },
+              { name: nameB, value: "", layoutSize: valB, displayValue: "" },
+              { name: nameC, value: "", layoutSize: valC, displayValue: "", difference: { displayValue: `-${z.toLocaleString()}` } }
+            ],
+            difference: { displayValue: "" },
+            whole: "?"
+          }
+        }, null, 2);
 
         const steps = [
           { label: `Find ${nameB}'s amount:`, expectedAnswer: `${valA} + ${y} = ${valB}`, acceptedAnswers: [valB.toString(), `${valA}+${y}=${valB}`] },
@@ -1370,9 +1380,18 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
       if (isStructure) {
         visualEngineStr = JSON.stringify({
-          componentToRender: "NONE",
-          componentData: { hideVisual: true }
-        });
+          componentToRender: "BAR_MODEL_COMPARISON",
+          componentData: {
+            hideVisual: true,
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: valA, layoutSize: valA, displayValue: valA.toLocaleString(), difference: { displayValue: `+${y.toLocaleString()}` } },
+              { name: nameB, value: "", layoutSize: valB, displayValue: "" },
+              { name: nameC, value: "?", layoutSize: valC, displayValue: "?", difference: { displayValue: `-${z.toLocaleString()}` } }
+            ],
+            difference: { displayValue: "" }
+          }
+        }, null, 2);
 
         const steps = [
           { label: `Find ${nameB}'s amount:`, expectedAnswer: `${valA} + ${y} = ${valB}`, acceptedAnswers: [valB.toString(), `${valA}+${y}=${valB}`] },

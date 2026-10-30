@@ -18,11 +18,17 @@ export default function InteractiveBarBuilder({
   steps = [], 
   onSubmit, 
   disabled = false, 
-  level 
+  level,
+  initialStage = 1,
+  isAdminReview = false
 }) {
-  const [currentStage, setCurrentStage] = useState(1);
-  const [selectedModel, setSelectedModel] = useState(null);
-  const [stage1Feedback, setStage1Feedback] = useState(null);
+  const correctModelType = config.correctModelType || "COMPARISON";
+  const [currentStage, setCurrentStage] = useState(initialStage);
+  const [selectedModel, setSelectedModel] = useState(isAdminReview ? correctModelType : null);
+  const [stage1Feedback, setStage1Feedback] = useState(isAdminReview ? {
+    type: 'success',
+    message: "Admin Mode: Comparison Model selected by default."
+  } : null);
   const [answers, setAnswers] = useState({});
   const [showModelMiniView, setShowModelMiniView] = useState(true);
 
@@ -31,8 +37,6 @@ export default function InteractiveBarBuilder({
     { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole quantity into parts" },
     { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfers or changes across time states" }
   ];
-
-  const correctModelType = config.correctModelType || "COMPARISON";
   const entities = config.entities || [];
   const target = config.target || { type: "TOTAL", label: "Total" };
   const calculationSteps = steps.length > 0 ? steps : (config.steps || []);
@@ -112,23 +116,22 @@ export default function InteractiveBarBuilder({
         </div>
 
         {/* Stage Pills */}
-        <div className="hidden sm:flex items-center gap-2">
+        <div className="flex items-center gap-2">
           {[1, 2, 3].map((stageNum) => (
             <button
               key={stageNum}
               type="button"
               onClick={() => {
-                // Only allow jumping back or forward if stage 1 was completed
-                if (selectedModel === correctModelType) {
+                if (isAdminReview || selectedModel === correctModelType) {
                   setCurrentStage(stageNum);
                 }
               }}
-              disabled={selectedModel !== correctModelType && stageNum > 1}
+              disabled={!isAdminReview && selectedModel !== correctModelType && stageNum > 1}
               className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all ${
                 currentStage === stageNum
                   ? 'bg-indigo-500 text-white shadow-md scale-105'
-                  : selectedModel === correctModelType && currentStage > stageNum
-                  ? 'bg-emerald-900/60 text-emerald-300 border border-emerald-600'
+                  : isAdminReview || (selectedModel === correctModelType && currentStage > stageNum)
+                  ? 'bg-emerald-950 text-emerald-300 border border-emerald-600/70 hover:bg-emerald-900 cursor-pointer'
                   : 'bg-slate-800 text-slate-500 cursor-not-allowed'
               }`}
             >

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import VisualRenderer from '@/components/math/VisualRenderer';
+import InteractiveBarBuilder from '@/components/math/InteractiveBarBuilder';
 import { toggleArchiveQuestionAction } from '@/app/actions/workoutActions';
 import { normalizeQuestionData, deriveVisualProps } from '@/lib/intelligence/workout-utils';
 
@@ -43,6 +44,7 @@ export default function ReviewCard({
   const normalizedQuestion = normalizeQuestionData(q);
   const visualProps = deriveVisualProps(normalizedQuestion);
   const visualType = normalizedQuestion.visualEngine?.componentToRender; // Raw type from normalized question
+  const isInteractiveBar = normalizedQuestion.inputRequirement?.inputType === 'INTERACTIVE_BAR_BUILDER';
 
   // Define visual categories
   const isQuestionVisual = !!visualType && visualType !== 'NONE' && !normalizedQuestion.modelData?.hideVisual;
@@ -61,17 +63,53 @@ export default function ReviewCard({
               <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">The Question</span>
               <p className="text-xl font-bold text-slate-900 leading-tight whitespace-pre-line">{String(q.question || '').replace(/<br\s*\/?>/gi, '\n')}</p>
             </div>
-            {visualType && (
+            {isInteractiveBar ? (
+              <div className="px-3.5 py-1.5 bg-indigo-600 text-white rounded-xl shrink-0 shadow-sm flex items-center gap-1.5 border border-indigo-500">
+                <span className="text-[10px] font-black uppercase tracking-wider">
+                  🧱 Interactive Bar Model
+                </span>
+              </div>
+            ) : visualType ? (
               <div className="px-3 py-1 bg-indigo-50 border border-indigo-100 rounded-lg shrink-0">
                 <span className="text-[9px] font-black text-indigo-600 uppercase tracking-tighter">
                   {visualType.replace('_', ' ')}
                 </span>
               </div>
-            )}
+            ) : null}
           </div>
 
+          {/* Interactive Bar Model Builder for Structured Bar Questions */}
+          {isInteractiveBar && (
+            <div className="pt-2">
+              <div className="p-4 sm:p-6 bg-slate-900 text-white rounded-3xl shadow-xl border-2 border-indigo-500/40 space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black uppercase tracking-widest text-indigo-400 flex items-center gap-1.5">
+                      🧱 Interactive Bar Model Solver Preview
+                    </span>
+                    <span className="text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full font-bold">
+                      Admin Live Preview
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-400 font-semibold">
+                    Use stage pills to inspect Blueprint or test Archetype & Equations
+                  </span>
+                </div>
+                <InteractiveBarBuilder
+                  config={normalizedQuestion.inputRequirement?.barBuilderConfig}
+                  steps={normalizedQuestion.inputRequirement?.steps}
+                  onSubmit={(ans) => alert(`[Admin Preview Mode] Answer captured:\n${JSON.stringify(ans, null, 2)}`)}
+                  disabled={false}
+                  level={q.level}
+                  initialStage={2}
+                  isAdminReview={true}
+                />
+              </div>
+            </div>
+          )}
+
           {/* Question-level Visuals (Concrete) */}
-          {isQuestionVisual && (
+          {!isInteractiveBar && isQuestionVisual && (
             <div className="pt-4">
               <div className="p-6 bg-slate-50 border-2 border-slate-200 rounded-2xl flex justify-center items-center">
                 <VisualRenderer
@@ -266,9 +304,13 @@ export default function ReviewCard({
             href={`/math?previewId=${q.id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl text-[10px] font-black uppercase transition-all inline-flex items-center gap-1"
+            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all inline-flex items-center gap-1 ${
+              isInteractiveBar 
+                ? 'bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white border border-indigo-200' 
+                : 'bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white'
+            }`}
           >
-            👁️ Test Visual Canvas
+            {isInteractiveBar ? '🧱 Launch Student Simulator' : '👁️ Test Visual Canvas'}
           </a>
           <button
             onClick={() => handleRegenerate(q)}
