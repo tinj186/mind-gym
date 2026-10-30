@@ -58,7 +58,10 @@ export const foundationLogic = (activeVariant, difficulty, type, isMCQ, isShort,
         ]
       });
     } else if (!isMCQ) {
-      inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
+      inputRequirementStr = JSON.stringify({
+        inputType: "STANDARD_TEXT",
+        acceptedAnswers: [`${area}`, `${area} ${unit}²`, `${area}${unit}²`, `${area} ${unit}2`, `${area}${unit}2`, `${area} \\text{${unit}}^2`]
+      });
     }
 
     systemPrompt = `
@@ -132,7 +135,10 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     }
 
     if (!isStructure && !isMCQ) {
-      inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
+      inputRequirementStr = JSON.stringify({
+        inputType: "STANDARD_TEXT",
+        acceptedAnswers: [`${totalArea}`, `${totalArea} ${unit}²`, `${totalArea}${unit}²`, `${totalArea} ${unit}2`, `${totalArea}${unit}2`, `${totalArea} \\text{${unit}}^2`]
+      });
     }
 
     systemPrompt = `
@@ -230,7 +236,11 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     }
 
     if (!isStructure && !isMCQ) {
-      inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
+      const targetAreaVal = isAddition ? totalArea : areaB;
+      inputRequirementStr = JSON.stringify({
+        inputType: "STANDARD_TEXT",
+        acceptedAnswers: [`${targetAreaVal}`, `${targetAreaVal} ${unit}²`, `${targetAreaVal}${unit}²`, `${targetAreaVal} ${unit}2`, `${targetAreaVal}${unit}2`, `${targetAreaVal} \\text{${unit}}^2`]
+      });
     }
 
     systemPrompt = `
@@ -324,7 +334,11 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     }
 
     if (!isStructure && !isMCQ) {
-      inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
+      const targetAreaVal = isFindingDiff ? diff : areaB;
+      inputRequirementStr = JSON.stringify({
+        inputType: "STANDARD_TEXT",
+        acceptedAnswers: [`${targetAreaVal}`, `${targetAreaVal} ${unit}²`, `${targetAreaVal}${unit}²`, `${targetAreaVal} ${unit}2`, `${targetAreaVal}${unit}2`, `${targetAreaVal} \\text{${unit}}^2`]
+      });
     }
 
     systemPrompt = `
@@ -392,7 +406,10 @@ ${isMCQ ? `Generate EXACTLY 4 options:
     }
 
     if (!isStructure && !isMCQ) {
-      inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
+      inputRequirementStr = JSON.stringify({
+        inputType: "STANDARD_TEXT",
+        acceptedAnswers: [`${missingArea}`, `${missingArea} squares`, `${missingArea} square`]
+      });
     }
 
     systemPrompt = `

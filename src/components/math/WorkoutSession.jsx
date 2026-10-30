@@ -216,7 +216,15 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
           return int ? `${int} ${num}/${den}` : `${num}/${den}`;
         }) // Convert MathLive fractions (frac, dfrac, tfrac), including mixed numbers and single-token fractions
         .replace(/\\operatorname\{\\mathrm\{([^}]*)\}\}/g, '$1') // MathLive text wrappers
-        .replace(/\\mathrm\{([^}]*)\}/g, '$1') // MathLive text wrappers
+        .replace(/\\operatorname\{([^}]*)\}/g, '$1')
+        .replace(/\\mathrm\{([^}]*)\}/g, '$1')
+        .replace(/\\text(?:bf|it)?\{([^}]*)\}/g, '$1') // MathLive text wrappers (e.g. \text{cm})
+        .replace(/\\mathbf\{([^}]*)\}/g, '$1')
+        .replace(/\\mathit\{([^}]*)\}/g, '$1')
+        .replace(/\^\{\\circ\}|\^\\circ|\\circ/g, '°') // Degrees
+        .replace(/\^\{?2\}?/g, '²') // Powers of 2 (e.g. ^2, ^{2})
+        .replace(/\^\{?3\}?/g, '³') // Powers of 3 (e.g. ^3, ^{3})
+        .replace(/[{}]/g, '') // Strip remaining LaTeX grouping braces
         .replace(/\\times/g, '*') // Normalize multiplication
         .replace(/×/g, '*') // Normalize unicode cross
         .replace(/\\div/g, '/') // Normalize division
@@ -241,6 +249,37 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
       s = s.replace(/\bcents?\b/g, 'c');
       s = s.replace(/¢/g, 'c');
       s = s.replace(/(\d+)\s*\$/g, '$$$1'); // e.g. 2$ -> $2
+
+      // Area & Volume Unit Normalization
+      s = s.replace(/\b(?:sq\.?\s*cm|square\s*(?:cm|centimet(?:er|re)s?))\b/g, 'cm²');
+      s = s.replace(/cm\s*2\b/g, 'cm²');
+      s = s.replace(/cm2\b/g, 'cm²');
+      s = s.replace(/cm\s*²/g, 'cm²');
+
+      s = s.replace(/\b(?:sq\.?\s*m|square\s*(?:m|met(?:er|re)s?))\b/g, 'm²');
+      s = s.replace(/m\s*2\b/g, 'm²');
+      s = s.replace(/m2\b/g, 'm²');
+      s = s.replace(/m\s*²/g, 'm²');
+
+      s = s.replace(/\b(?:sq\.?\s*km|square\s*(?:km|kilomet(?:er|re)s?))\b/g, 'km²');
+      s = s.replace(/km\s*2\b/g, 'km²');
+      s = s.replace(/km2\b/g, 'km²');
+      s = s.replace(/km\s*²/g, 'km²');
+
+      s = s.replace(/\b(?:sq\.?\s*mm|square\s*(?:mm|millimet(?:er|re)s?))\b/g, 'mm²');
+      s = s.replace(/mm\s*2\b/g, 'mm²');
+      s = s.replace(/mm2\b/g, 'mm²');
+      s = s.replace(/mm\s*²/g, 'mm²');
+
+      s = s.replace(/\b(?:cu\.?\s*cm|cubic\s*(?:cm|centimet(?:er|re)s?))\b/g, 'cm³');
+      s = s.replace(/cm\s*3\b/g, 'cm³');
+      s = s.replace(/cm3\b/g, 'cm³');
+      s = s.replace(/cm\s*³/g, 'cm³');
+
+      s = s.replace(/\b(?:cu\.?\s*m|cubic\s*(?:m|met(?:er|re)s?))\b/g, 'm³');
+      s = s.replace(/m\s*3\b/g, 'm³');
+      s = s.replace(/m3\b/g, 'm³');
+      s = s.replace(/m\s*³/g, 'm³');
 
       // 2. Map English word numbers to digits for robust grading (e.g. fourth -> 4th)
       const wordMap = {
@@ -346,6 +385,20 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
       
       isCorrect = studentAns === realAns || accepted.includes(studentAns);
       
+      // Resilient unit matching: If student entered only the number (e.g. 34 instead of 34cm²), or vice versa
+      if (!isCorrect) {
+        const unitRegex = /(?:cm²|m²|km²|mm²|cm³|m³|cm|m|km|g|kg|ml|l|°|\$|¢|c)$/;
+        const studentBare = studentAns.replace(unitRegex, '');
+        const realBare = realAns.replace(unitRegex, '');
+        if (studentBare === realBare && studentBare !== '' && /^\d+(?:\.\d+)?$/.test(studentBare)) {
+          const studentUnit = studentAns.slice(studentBare.length);
+          const realUnit = realAns.slice(realBare.length);
+          if (!studentUnit || !realUnit || studentUnit === realUnit) {
+            isCorrect = true;
+          }
+        }
+      }
+
       // Legacy fallback for old questions where the LLM generated the letter "x" for multiplication
       if (!isCorrect && ((realAns === 'x' && studentAns === '*') || (realAns === '*' && studentAns === 'x'))) {
         isCorrect = true;
