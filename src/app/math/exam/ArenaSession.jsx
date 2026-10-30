@@ -12,6 +12,7 @@ import MathInput from '@/components/math/MathInput';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import GroupingWorkspace from '@/components/tools/GroupingWorkspace';
 import BarModelWorkspace from '@/components/tools/BarModelWorkspace';
+import InteractiveBarBuilder from '@/components/math/InteractiveBarBuilder';
 import ScratchpadDrawer from '@/components/math/ScratchpadDrawer';
 
 export default function ArenaSession({ studentId, level, examPaper, durationMinutes }) {
@@ -302,7 +303,7 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
                   .trim();
       };
 
-      if (inputType === 'MULTI_STEP_INPUT') {
+      if (inputType === 'MULTI_STEP_INPUT' || inputType === 'INTERACTIVE_BAR_BUILDER') {
         const steps = q.inputRequirement?.steps || [];
         const studentObj = typeof rawAns === 'object' && rawAns !== null ? rawAns : {};
         
@@ -311,7 +312,8 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
         for (let i = 0; i < steps.length; i++) {
           let sAns = cleanString(studentObj[i]);
           let rAns = cleanString(steps[i].expectedAnswer);
-          if (sAns !== rAns) {
+          const accepted = (steps[i].acceptedAnswers || []).map(a => cleanString(a));
+          if (sAns !== rAns && !accepted.includes(sAns)) {
             isCorrect = false;
             break;
           }
@@ -619,6 +621,17 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
                         );
                       })}
                     </div>
+                  ) : normalizedQuestion?.inputRequirement?.inputType === 'INTERACTIVE_BAR_BUILDER' ? (
+                    <InteractiveBarBuilder
+                      key={activeQuestion.id}
+                      config={normalizedQuestion.inputRequirement?.barBuilderConfig}
+                      steps={normalizedQuestion.inputRequirement?.steps}
+                      onSubmit={(ans) => {
+                        handleSelectAnswer(activeQuestion.id, ans);
+                        handleNextQuestion();
+                      }}
+                      level={level}
+                    />
                   ) : normalizedQuestion?.inputRequirement?.inputType === 'INTERACTIVE_GRID' ? null : (
                     <div>
                       <label className="block text-[10px] font-black mb-2 uppercase text-slate-400 tracking-tighter">Student Workspace Input Response</label>

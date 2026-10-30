@@ -1312,14 +1312,40 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       promptInstruction = `- Question stem: "${nameA} has ${valA.toLocaleString()} ${item}. ${nameB} has ${y.toLocaleString()} more ${item} than ${nameA}. ${nameC} has ${z.toLocaleString()} fewer ${item} than ${nameB}. How many ${item} do the three of them have altogether?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "NONE",
+          componentData: { hideVisual: true }
+        });
+
+        const steps = [
+          { label: `Find ${nameB}'s amount:`, expectedAnswer: `${valA} + ${y} = ${valB}`, acceptedAnswers: [valB.toString(), `${valA}+${y}=${valB}`] },
+          { label: `Find ${nameC}'s amount:`, expectedAnswer: `${valB} - ${z} = ${valC}`, acceptedAnswers: [valC.toString(), `${valB}-${z}=${valC}`] },
+          { label: `Find the total amount:`, expectedAnswer: `${valA} + ${valB} + ${valC} = ${total}`, acceptedAnswers: [total.toString(), `${valA}+${valB}+${valC}=${total}`] },
+          { label: "Final Answer:", expectedAnswer: finalAnswer, acceptedAnswers: [finalAnswer, `${finalAnswer} ${item}`] }
+        ];
+
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${valA} + ${y} = ${valB}` },
-            { label: `Write the working equation to find ${nameC}'s amount:`, expectedAnswer: `${valB} - ${z} = ${valC}` },
-            { label: `Write the working equation to find the total amount:`, expectedAnswer: `${valA} + ${valB} + ${valC} = ${total}` },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
-          ]
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "CHAIN_COMPARISON",
+            targetType: "TOTAL",
+            targetName: "Total",
+            itemName: item,
+            correctModelType: "COMPARISON",
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities of distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfer or change over time" }
+            ],
+            entities: [
+              { id: "A", name: nameA, value: valA, displayValue: valA.toLocaleString(), relation: "BASE" },
+              { id: "B", name: nameB, relativeTo: nameA, relation: "MORE", diffValue: y, displayDiff: `+${y.toLocaleString()}` },
+              { id: "C", name: nameC, relativeTo: nameB, relation: "FEWER", diffValue: z, displayDiff: `-${z.toLocaleString()}` }
+            ],
+            target: { type: "TOTAL", label: "Total of all three" },
+            steps: steps
+          }
         }, null, 2);
       }
 
@@ -1343,13 +1369,39 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       promptInstruction = `- Question stem: "${nameA} has ${valA.toLocaleString()} ${item}. ${nameB} has ${y.toLocaleString()} more ${item} than ${nameA}. ${nameC} has ${z.toLocaleString()} fewer ${item} than ${nameB}. How many ${item} does ${nameC} have?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "NONE",
+          componentData: { hideVisual: true }
+        });
+
+        const steps = [
+          { label: `Find ${nameB}'s amount:`, expectedAnswer: `${valA} + ${y} = ${valB}`, acceptedAnswers: [valB.toString(), `${valA}+${y}=${valB}`] },
+          { label: `Find ${nameC}'s amount:`, expectedAnswer: `${valB} - ${z} = ${valC}`, acceptedAnswers: [valC.toString(), `${valB}-${z}=${valC}`] },
+          { label: "Final Answer:", expectedAnswer: finalAnswer, acceptedAnswers: [finalAnswer, `${finalAnswer} ${item}`] }
+        ];
+
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${valA} + ${y} = ${valB}` },
-            { label: `Write the working equation to find ${nameC}'s amount:`, expectedAnswer: `${valB} - ${z} = ${valC}` },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
-          ]
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "CHAIN_COMPARISON",
+            targetType: "ENTITY_C",
+            targetName: nameC,
+            itemName: item,
+            correctModelType: "COMPARISON",
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities of distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfer or change over time" }
+            ],
+            entities: [
+              { id: "A", name: nameA, value: valA, displayValue: valA.toLocaleString(), relation: "BASE" },
+              { id: "B", name: nameB, relativeTo: nameA, relation: "MORE", diffValue: y, displayDiff: `+${y.toLocaleString()}` },
+              { id: "C", name: nameC, relativeTo: nameB, relation: "FEWER", diffValue: z, displayDiff: `-${z.toLocaleString()}` }
+            ],
+            target: { type: "BAR", targetEntity: "C", label: `${nameC}'s amount` },
+            steps: steps
+          }
         }, null, 2);
       }
 

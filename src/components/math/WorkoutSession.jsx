@@ -9,6 +9,7 @@ import VisualRenderer, { ESSENTIAL_VISUALS } from '@/components/math/VisualRende
 import GroupingWorkspace from '@/components/tools/GroupingWorkspace'; // Import the interactive tool
 import BarModelWorkspace from '@/components/tools/BarModelWorkspace';
 import MultiStepInput from '@/components/math/MultiStepInput'; // Multi-Step Input
+import InteractiveBarBuilder from '@/components/math/InteractiveBarBuilder'; // Interactive Bar Builder
 import MathInput from '@/components/math/MathInput'; // Advanced Math Input
 import confetti from 'canvas-confetti';
 
@@ -646,7 +647,16 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
           )}
 
           {feedback !== 'solution_revealed' ? (
-            normalizedQuestion.inputRequirement?.inputType === 'MULTI_STEP_INPUT' && normalizedQuestion.inputRequirement?.steps ? (
+            normalizedQuestion.inputRequirement?.inputType === 'INTERACTIVE_BAR_BUILDER' ? (
+              <InteractiveBarBuilder
+                key={`bar-builder-${currentIndex}`}
+                config={normalizedQuestion.inputRequirement?.barBuilderConfig}
+                steps={normalizedQuestion.inputRequirement?.steps}
+                onSubmit={handleAnswer}
+                disabled={feedback === 'correct'}
+                level={level}
+              />
+            ) : normalizedQuestion.inputRequirement?.inputType === 'MULTI_STEP_INPUT' && normalizedQuestion.inputRequirement?.steps ? (
               <MultiStepInput 
                 key={`multi-${currentIndex}`}
                 steps={normalizedQuestion.inputRequirement.steps} 
