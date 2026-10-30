@@ -108,9 +108,11 @@ export default function ReviewCard({
                   <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">
                     {MAP_KEY(key)}
                   </p>
-                  {key === 'inputRequirement' && typeof val === 'object' && val?.inputType === 'MULTI_STEP_INPUT' && val?.steps ? (
+                  {key === 'inputRequirement' && typeof val === 'object' && (val?.inputType === 'MULTI_STEP_INPUT' || val?.inputType === 'INTERACTIVE_BAR_BUILDER') && val?.steps ? (
                     <div className="text-xs font-bold text-slate-700 space-y-1 mt-2">
-                      <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-[10px] uppercase">Multi-Step</span>
+                      <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-[10px] uppercase font-black">
+                        {val.inputType === 'INTERACTIVE_BAR_BUILDER' ? 'Interactive Bar Model' : 'Multi-Step'}
+                      </span>
                       {val.steps.map((step, idx) => (
                         <div key={idx} className="flex justify-between border-b border-slate-200 border-dashed pb-1">
                           <span className="text-slate-500">{step.label}</span>
