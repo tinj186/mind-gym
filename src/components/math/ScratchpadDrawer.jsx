@@ -39,16 +39,9 @@ export default function ScratchpadDrawer({
     return () => window.removeEventListener('pointerdown', handlePointerDown);
   }, [autoOpenOnPencil, isOpen]);
 
-  // Keyboard shortcut: Press 'S' or 'Alt+S' to toggle scratchpad (for laptop/desktop users)
+  // Handle keyboard: Allow Escape key to close the scratchpad drawer if open
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Don't trigger if user is actively typing in an input or textarea
-      if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
-      if (e.key === 's' || e.key === 'S') {
-        if (!e.metaKey && !e.ctrlKey) {
-          setIsOpen((prev) => !prev);
-        }
-      }
       if (e.key === 'Escape' && isOpen) {
         setIsOpen(false);
       }
@@ -86,7 +79,7 @@ export default function ScratchpadDrawer({
             e.stopPropagation();
             setIsOpen((prev) => !prev);
           }}
-          title={isOpen ? "Close Scratchpad" : "Open Math Scratchpad (Press 'S')"}
+          title={isOpen ? "Close Scratchpad" : "Open Math Scratchpad"}
           style={{ pointerEvents: 'auto' }}
           className="absolute -left-11 top-1/2 -translate-y-1/2 z-50 bg-slate-900 hover:bg-indigo-600 text-white py-4 px-2.5 rounded-l-2xl shadow-[-6px_4px_16px_rgba(0,0,0,0.25)] border-l-2 border-t-2 border-b-2 border-slate-700 hover:border-indigo-400 flex flex-col items-center gap-2 group cursor-pointer transition-colors"
         >

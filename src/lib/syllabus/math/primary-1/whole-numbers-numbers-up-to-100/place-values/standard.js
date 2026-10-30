@@ -235,6 +235,7 @@ export const standardVariants = {
 
     const askGreater = Math.random() > 0.5;
     const targetWord = askGreater ? "greater" : "smaller";
+    const targetNum = (askGreater ? num1 > num2 : num1 < num2) ? num1 : num2;
     const answer = (askGreater ? num1 > num2 : num1 < num2) ? `${n1_tens} tens ${n1_ones} ones` : `${n2_tens} tens ${n2_ones} ones`;
     const distractors = [
       answer === `${n1_tens} tens ${n1_ones} ones` ? `${n2_tens} tens ${n2_ones} ones` : `${n1_tens} tens ${n1_ones} ones`,
@@ -282,7 +283,15 @@ export const standardVariants = {
           "solutionSteps": "${n1_tens} tens ${n1_ones} ones is ${num1}. ${n2_tens} tens ${n2_ones} ones is ${num2}. Since ${num1 > num2 ? num1 : num2} is bigger than ${num1 < num2 ? num1 : num2}, the ${targetWord} value is ${answer}."
         },
         "visualEngine": { "componentToRender": "NONE", "componentData": {} },
-        "inputRequirement": { "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}" }
+        "inputRequirement": {
+          "inputType": "${isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT'}",
+          "acceptedAnswers": ${JSON.stringify([
+            answer,
+            String(targetNum),
+            answer.replace(' tens ', ' tens and '),
+            `${targetNum} ones`
+          ])}
+        }
       }`,
       metadata: { difficulty: 'standard', steps: 2, logic: "compare_place_value", hideVisual: true }
     };

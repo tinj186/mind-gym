@@ -233,7 +233,9 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
         // 1. Protect and standardize place values, money, and conjunctions first
         s = s.replace(/\band\b/g, '');
         s = s.replace(/,/g, '');
+        s = s.replace(/(\d)\s*ten(?=[^a-z]|$)/gi, '$1tens');
         s = s.replace(/\bten\b/g, 'tens');
+        s = s.replace(/(\d)\s*one(?=[^a-z]|$)/gi, '$1ones');
         s = s.replace(/\bone\b/g, 'ones');
         
         // Money normalization
@@ -391,6 +393,47 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
             const realUnit = realAns.slice(realBare.length);
             if (!studentUnit || !realUnit || studentUnit === realUnit) {
               isCorrect = true;
+            }
+          }
+        }
+
+        // Place value numerical equivalence fallback (e.g. "3 tens 3 ones" <=> 33)
+        if (!isCorrect) {
+          const parsePlaceValue = (str) => {
+            if (!str || typeof str !== 'string') return null;
+            const valStr = str.replace(/[{}\\]/g, '').replace(/,/g, '').trim().toLowerCase();
+            const hasPlaceWords = /\b(?:thousands?|hundreds?|tens?|ones?)\b/.test(valStr) || /(?:thousands?|hundreds?|tens?|ones?)/.test(valStr);
+            const isPureNumber = /^\d+$/.test(valStr);
+            if (!hasPlaceWords && !isPureNumber) return null;
+            if (isPureNumber) return parseInt(valStr, 10);
+
+            const m = valStr.match(/^(?:(\d+)\s*thousands?)?\s*(?:(\d+)\s*hundreds?)?\s*(?:(\d+)\s*tens?)?\s*(?:and\s*)?(?:(\d+)\s*ones?)?$/);
+            if (m && (m[1] !== undefined || m[2] !== undefined || m[3] !== undefined || m[4] !== undefined)) {
+              const thousands = m[1] ? parseInt(m[1], 10) : 0;
+              const hundreds = m[2] ? parseInt(m[2], 10) : 0;
+              const tens = m[3] ? parseInt(m[3], 10) : 0;
+              const ones = m[4] ? parseInt(m[4], 10) : 0;
+              return thousands * 1000 + hundreds * 100 + tens * 10 + ones;
+            }
+            return null;
+          };
+
+          const studentHasWords = /\b(?:thousands?|hundreds?|tens?|ones?)\b/i.test(rawAns || '') || /(?:thousands?|hundreds?|tens?|ones?)/i.test(studentAns || '');
+          const realHasWords = /\b(?:thousands?|hundreds?|tens?|ones?)\b/i.test(q.finalAnswer || '') || /(?:thousands?|hundreds?|tens?|ones?)/i.test(realAns || '');
+          if (studentHasWords || realHasWords) {
+            const studentVal = parsePlaceValue(rawAns) ?? parsePlaceValue(studentAns);
+            const realVal = parsePlaceValue(q.finalAnswer) ?? parsePlaceValue(realAns);
+            if (studentVal !== null && realVal !== null && studentVal === realVal) {
+              isCorrect = true;
+            } else if (studentVal !== null) {
+              const acceptedList = q.inputRequirement?.acceptedAnswers || q.acceptedAnswers || [];
+              for (const acc of acceptedList) {
+                const accVal = parsePlaceValue(acc) ?? parsePlaceValue(cleanString(acc));
+                if (accVal !== null && studentVal === accVal) {
+                  isCorrect = true;
+                  break;
+                }
+              }
             }
           }
         }
