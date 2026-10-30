@@ -169,10 +169,7 @@ export default function InteractiveBarBuilder({
   const correctModelType = config.correctModelType || "COMPARISON";
   const [currentStage, setCurrentStage] = useState(initialStage);
   const [selectedModel, setSelectedModel] = useState(isAdminReview ? correctModelType : null);
-  const [stage1Feedback, setStage1Feedback] = useState(isAdminReview ? {
-    type: 'success',
-    message: "Admin Mode: Comparison Model selected by default."
-  } : null);
+  const [confirmationStatus, setConfirmationStatus] = useState('idle'); // 'idle' | 'correct' | 'incorrect'
   const [answers, setAnswers] = useState({});
   const [showModelMiniView, setShowModelMiniView] = useState(true);
 
@@ -187,24 +184,20 @@ export default function InteractiveBarBuilder({
 
   const handleSelectModel = (modelId) => {
     if (disabled) return;
-    if (!modelId) {
-      setSelectedModel(null);
-      setStage1Feedback(null);
+    setSelectedModel(modelId || null);
+    setConfirmationStatus('idle'); // User can freely consider options without immediate verification
+  };
+
+  const handleConfirmModel = () => {
+    if (disabled || !selectedModel) return;
+    if (confirmationStatus === 'correct') {
+      handleProceedToStage2();
       return;
     }
-    setSelectedModel(modelId);
-    if (modelId === correctModelType) {
-      setStage1Feedback({
-        type: 'success',
-        message: "Spot on! We are comparing distinct quantities between separate entities, so a Comparison Model is the right blueprint."
-      });
+    if (selectedModel === correctModelType) {
+      setConfirmationStatus('correct');
     } else {
-      setStage1Feedback({
-        type: 'error',
-        message: modelId === 'PART_WHOLE'
-          ? "A Part-Whole model partitions a single total amount into segments. But here we have 3 separate entities with comparative relations!"
-          : "A Before & After model tracks internal transfers or state changes over time. Here we have fixed comparative relations!"
-      });
+      setConfirmationStatus('incorrect');
     }
   };
 
@@ -242,19 +235,16 @@ export default function InteractiveBarBuilder({
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300">
       
-      {/* 🧭 Stage Progress Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-slate-900 text-white rounded-2xl shadow-md border border-slate-800">
+      {/* 🧭 Stage Progress Header (Single-line) */}
+      <div className="flex items-center justify-between gap-3 px-4 py-3 bg-slate-900 text-white rounded-2xl shadow-md border border-slate-800">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center font-black text-sm">
+          <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center font-black text-sm shrink-0">
             {currentStage}
           </div>
-          <div>
-            <div className="text-[10px] font-black uppercase tracking-widest text-indigo-300">Guided Problem Solver</div>
-            <div className="text-sm font-black">
-              {currentStage === 1 && "Step 1: Choose the Bar Model Type"}
-              {currentStage === 2 && "Step 2: Inspect & Verify the Bar Blueprint"}
-              {currentStage === 3 && "Step 3: Calculate & Solve Equations"}
-            </div>
+          <div className="text-sm font-black tracking-tight">
+            {currentStage === 1 && "Step 1: Choose the Bar Model Type"}
+            {currentStage === 2 && "Step 2: Inspect & Verify the Bar Blueprint"}
+            {currentStage === 3 && "Step 3: Calculate & Solve Equations"}
           </div>
         </div>
 
@@ -321,18 +311,13 @@ export default function InteractiveBarBuilder({
               </div>
             </div>
 
-            {/* Dedicated Model Preview Window */}
+            {/* Dedicated Model Preview Window (Clean header without redundant label) */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center">
                 <span className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                   <Eye className="w-3.5 h-3.5 text-indigo-500" />
                   Model Preview Window
                 </span>
-                {selectedModel && (
-                  <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200">
-                    {modelOptions.find(o => o.id === selectedModel)?.label}
-                  </span>
-                )}
               </div>
 
               {selectedModel === 'COMPARISON' && <ComparisonPreview />}
@@ -341,38 +326,52 @@ export default function InteractiveBarBuilder({
               {!selectedModel && <EmptyPreview />}
             </div>
 
-            {/* Feedback and Proceed Button */}
-            {stage1Feedback && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className={`p-4 rounded-2xl border-2 flex flex-col sm:flex-row items-center justify-between gap-3 ${
-                  stage1Feedback.type === 'success'
-                    ? 'bg-emerald-50 border-emerald-300 text-emerald-950'
-                    : 'bg-amber-50 border-amber-300 text-amber-950'
-                }`}
-              >
-                <div className="flex items-start gap-2.5 text-xs font-bold leading-relaxed">
-                  {stage1Feedback.type === 'success' ? (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                  ) : (
-                    <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                  )}
-                  <span>{stage1Feedback.message}</span>
-                </div>
-
-                {stage1Feedback.type === 'success' && (
-                  <button
-                    type="button"
-                    onClick={handleProceedToStage2}
-                    className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md shrink-0"
-                  >
-                    Confirm & Build Blueprint
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                )}
-              </motion.div>
-            )}
+            {/* Bottom Confirmation Bar */}
+            <div className="pt-2">
+              {!selectedModel ? (
+                <button
+                  type="button"
+                  disabled
+                  className="w-full py-3.5 px-6 rounded-2xl font-black text-xs uppercase tracking-wider bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  Select a Bar Model to Confirm
+                </button>
+              ) : confirmationStatus === 'correct' ? (
+                <motion.button
+                  type="button"
+                  initial={{ scale: 0.99 }}
+                  animate={{ scale: 1 }}
+                  onClick={handleProceedToStage2}
+                  className="w-full py-3.5 px-6 rounded-2xl font-black text-xs uppercase tracking-wider bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer transition-all active:scale-[0.99] shadow-md ring-4 ring-emerald-100 flex items-center justify-center gap-2"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  Confirm & Build Blueprint
+                  <ArrowRight className="w-4 h-4" />
+                </motion.button>
+              ) : confirmationStatus === 'incorrect' ? (
+                <motion.button
+                  type="button"
+                  initial={{ x: -4 }}
+                  animate={{ x: [-4, 4, -4, 4, 0] }}
+                  transition={{ duration: 0.3 }}
+                  onClick={handleConfirmModel}
+                  className="w-full py-3.5 px-6 rounded-2xl font-black text-xs uppercase tracking-wider bg-rose-500 hover:bg-rose-600 text-white cursor-pointer transition-all active:scale-[0.99] shadow-sm flex items-center justify-center gap-2"
+                >
+                  <AlertCircle className="w-4 h-4" />
+                  Incorrect Model — Try Another Type
+                </motion.button>
+              ) : (
+                <button
+                  type="button"
+                  disabled={disabled}
+                  onClick={handleConfirmModel}
+                  className="w-full py-3.5 px-6 rounded-2xl font-black text-xs uppercase tracking-wider bg-slate-900 hover:bg-slate-800 text-white cursor-pointer transition-all active:scale-[0.99] shadow-sm flex items-center justify-center gap-2"
+                >
+                  Confirm Model Selection
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              )}
+            </div>
 
           </div>
         </motion.div>
