@@ -45,7 +45,8 @@ export const primary4Syllabus = [
         "name": "Number Comparison and Ordering",
         "allowedTypes": [
           QUESTION_TYPES.SHORT_QUESTION.label,
-          QUESTION_TYPES.MCQ.label
+          QUESTION_TYPES.MCQ.label,
+          QUESTION_TYPES.STRUCTURED.label
         ],
         "blueprint": "Focus on number comparison and ordering in accordance with Singapore MOE syllabus learning outcomes.",
         "visualType": "NUMBER_CARDS",
