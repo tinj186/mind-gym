@@ -77,12 +77,21 @@ export const UniversalQuestionSchema = z.object({
 
   // 4. INPUT REQUIREMENT: How the student answers
   inputRequirement: z.object({
-    inputType: z.enum(['STANDARD_TEXT', 'MCQ_BUTTONS', 'MATH_KEYBOARD', 'FRACTION_PAD', 'MULTI_STEP_INPUT', 'INTERACTIVE_GRID']).default('STANDARD_TEXT'),
+    inputType: z.enum([
+      'STANDARD_TEXT',
+      'MCQ_BUTTONS',
+      'MATH_KEYBOARD',
+      'FRACTION_PAD',
+      'MULTI_STEP_INPUT',
+      'INTERACTIVE_GRID',
+      'INTERACTIVE_BAR_BUILDER'
+    ]).default('STANDARD_TEXT'),
     steps: z.array(z.object({
       label: z.string(),
       expectedAnswer: z.string(),
       acceptedAnswers: z.array(z.string()).optional(),
       defectMap: z.record(z.string()).optional().nullable()
-    })).optional()
-  }).nullable().optional()
+    })).optional(),
+    barBuilderConfig: z.record(z.any()).optional()
+  }).passthrough().nullable().optional()
 });
