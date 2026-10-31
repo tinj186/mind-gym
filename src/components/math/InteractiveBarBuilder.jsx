@@ -278,9 +278,9 @@ export default function InteractiveBarBuilder({
   const handleAutoFillBars = () => {
     if (!entities || entities.length === 0) {
       setUserBars([
-        { id: 'bar-1', name: 'Entity A', length: 50, value: '10,000', hasDifference: false, diffType: 'MORE', diffLength: 20, diffValue: '', isTarget: false },
-        { id: 'bar-2', name: 'Entity B', length: 50, value: 'Same as A', hasDifference: true, diffType: 'MORE', diffLength: 20, diffValue: '+ 5,000', isTarget: false },
-        { id: 'bar-3', name: 'Entity C', length: 50, value: 'Same as B', hasDifference: true, diffType: 'FEWER', diffLength: 20, diffValue: '- 5,000', isTarget: true }
+        { id: 'bar-1', name: 'Entity A', length: 50, value: '10,000', hasDifference: false, diffType: 'MORE', diffLength: 20, diffValue: '', isTarget: false, isCollapsed: true },
+        { id: 'bar-2', name: 'Entity B', length: 50, value: 'Same as A', hasDifference: true, diffType: 'MORE', diffLength: 20, diffValue: '+ 5,000', isTarget: false, isCollapsed: true },
+        { id: 'bar-3', name: 'Entity C', length: 50, value: 'Same as B', hasDifference: true, diffType: 'FEWER', diffLength: 20, diffValue: '- 5,000', isTarget: true, isCollapsed: true }
       ]);
       setStage2Status('idle');
       return;
@@ -294,7 +294,8 @@ export default function InteractiveBarBuilder({
       diffType: e.relation === 'FEWER' ? 'FEWER' : 'MORE',
       diffLength: 20,
       diffValue: e.displayDiff || (e.diffValue ? `${e.relation === 'FEWER' ? '-' : '+'}${e.diffValue}` : ''),
-      isTarget: target?.type === 'BAR' && target?.targetEntity === e.id
+      isTarget: target?.type === 'BAR' && target?.targetEntity === e.id,
+      isCollapsed: true // Default to tightly collapsed bar model view
     }));
     setUserBars(filled);
     setStage2Status('idle');
@@ -611,64 +612,13 @@ export default function InteractiveBarBuilder({
                 </button>
               </div>
             ) : (
-              <div className="space-y-4">
+              /* Unified Comparative Bar Canvas: Bars stack tightly on a shared baseline */
+              <div className="p-4 sm:p-5 bg-slate-50/70 border-2 border-slate-200 rounded-2xl space-y-2.5">
                 {userBars.map((bar, idx) => (
-                  <div key={bar.id} className="p-4 bg-slate-50/70 border-2 border-slate-200 rounded-2xl space-y-3 hover:border-slate-300 transition-all">
-                    {/* Bar Header */}
-                    <div className="flex items-center justify-between text-xs font-black">
-                      <div className="flex items-center gap-2">
-                        <span className="w-5 h-5 rounded-md bg-indigo-600 text-white flex items-center justify-center text-[10px] font-black">
-                          {idx + 1}
-                        </span>
-                        <span className="uppercase tracking-wider text-slate-800 font-black">
-                          {bar.name || `Bar ${idx + 1}`}
-                        </span>
-                        {bar.isTarget && (
-                          <span className="px-2 py-0.5 bg-amber-100 text-amber-800 border border-amber-300 rounded-full text-[10px] font-bold">
-                            Target (?)
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-1.5">
-                        {/* Collapse / Expand Parameters Button */}
-                        <button
-                          type="button"
-                          onClick={() => handleToggleCollapseBar(bar.id)}
-                          className={`px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
-                            bar.isCollapsed
-                              ? 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 shadow-xs'
-                              : 'bg-slate-200/70 text-slate-600 hover:bg-slate-200'
-                          }`}
-                          title={bar.isCollapsed ? "Expand parameters to edit" : "Collapse parameters to view bar model only"}
-                        >
-                          {bar.isCollapsed ? (
-                            <>
-                              <ChevronDown className="w-3.5 h-3.5 text-indigo-600" />
-                              <span className="text-[11px]">Edit Bar</span>
-                            </>
-                          ) : (
-                            <>
-                              <ChevronUp className="w-3.5 h-3.5" />
-                              <span className="text-[11px]">Collapse</span>
-                            </>
-                          )}
-                        </button>
-
-                        {/* Delete Bar */}
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteBar(bar.id)}
-                          className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-1.5 rounded-lg transition-all cursor-pointer"
-                          title="Delete Bar"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Visual Bar on Baseline (Entity Name on Left of Starting Line) */}
-                    <div className="flex items-center gap-2 sm:gap-3 py-1">
+                  <div key={bar.id} className="transition-all duration-200">
+                    
+                    {/* ══ The Single-Line Bar Row (Matches the exact height of the bar!) ══ */}
+                    <div className="flex items-center gap-2 sm:gap-3">
                       {/* Left of Starting Line: Entity Label */}
                       <div className="w-20 sm:w-24 text-right shrink-0">
                         <span className="text-xs font-black uppercase tracking-wider text-slate-800 truncate block">
@@ -682,66 +632,100 @@ export default function InteractiveBarBuilder({
                       </div>
 
                       {/* Vertical Starting Line & Bar Track */}
-                      <div className="flex-1 pl-3 border-l-4 border-indigo-500 border-dashed py-1">
-                        <div className="flex items-center h-12 bg-white rounded-xl border border-slate-200 p-1 shadow-xs overflow-visible relative">
-                          {/* Base Solid Segment */}
-                          <div
-                            style={{ width: `${bar.length}%` }}
-                            className={`h-full rounded-lg flex items-center justify-center text-xs font-black text-white shadow-xs transition-all duration-150 px-2 truncate shrink-0 ${
-                              idx === 0 ? 'bg-indigo-600' : idx === 1 ? 'bg-indigo-500' : 'bg-indigo-400'
-                            }`}
-                          >
-                            {bar.value || bar.name || "Base"}
+                      <div className="flex-1 pl-3 border-l-4 border-indigo-500 border-dashed py-0.5">
+                        <div className="flex items-center gap-2">
+                          {/* The Bar Track */}
+                          <div className="flex-1 flex items-center h-11 bg-white rounded-xl border border-slate-200 p-1 shadow-xs overflow-visible relative">
+                            {/* Base Solid Segment */}
+                            <div
+                              style={{ width: `${bar.length}%` }}
+                              className={`h-full rounded-lg flex items-center justify-center text-xs font-black text-white shadow-xs transition-all duration-150 px-2 truncate shrink-0 ${
+                                idx === 0 ? 'bg-indigo-600' : idx === 1 ? 'bg-indigo-500' : 'bg-indigo-400'
+                              }`}
+                            >
+                              {bar.value || bar.name || "Base"}
+                            </div>
+
+                            {/* Difference Segment / Bracket */}
+                            {bar.hasDifference && (
+                              bar.diffType === 'FEWER' ? (
+                                /* WHEN LESS / FEWER: Shorter bar followed by dashed difference bracket with dotted ending line */
+                                <div
+                                  style={{ width: `${bar.diffLength}%` }}
+                                  className="relative h-full ml-1.5 rounded-lg border-2 border-dashed border-rose-400 bg-rose-50/70 flex items-center justify-center px-2 transition-all duration-150 overflow-visible select-none shrink-0"
+                                  title="Difference bracket showing how much less than the reference"
+                                >
+                                  {/* Label inside the bracket */}
+                                  <div className="flex items-center gap-1 text-[11px] font-black text-rose-700 truncate">
+                                    <span>{bar.diffValue || "- Fewer"}</span>
+                                  </div>
+
+                                  {/* Vertical dotted ending line with reference indicator */}
+                                  <div className="absolute -top-3 -bottom-3 right-0 w-0 border-r-2 border-dotted border-rose-500 pointer-events-none">
+                                    <span className="absolute -top-1 -right-1 w-2 h-0.5 bg-rose-500 rounded-full" />
+                                    <span className="absolute -bottom-1 -right-1 w-2 h-0.5 bg-rose-500 rounded-full" />
+                                  </div>
+
+                                  {/* Difference Tag */}
+                                  <span className="absolute -top-3.5 right-1/2 translate-x-1/2 text-[9px] font-black uppercase tracking-wider text-rose-600 bg-white px-1.5 py-0.2 rounded border border-rose-200 shadow-xs whitespace-nowrap">
+                                    Difference
+                                  </span>
+                                </div>
+                              ) : (
+                                /* WHEN MORE: Solid green protruding extra difference section */
+                                <div
+                                  style={{ width: `${bar.diffLength}%` }}
+                                  className="h-full rounded-lg ml-1 px-2 flex items-center justify-center text-xs font-black text-white shadow-xs border border-emerald-400 border-dashed bg-emerald-500 transition-all duration-150 truncate shrink-0"
+                                  title="Extra difference amount protruding beyond the base"
+                                >
+                                  {bar.diffValue || "+ More"}
+                                </div>
+                              )
+                            )}
                           </div>
 
-                          {/* Difference Segment / Bracket */}
-                          {bar.hasDifference && (
-                            bar.diffType === 'FEWER' ? (
-                              /* WHEN LESS / FEWER: Shorter bar followed by dashed difference bracket with dotted ending line */
-                              <div
-                                style={{ width: `${bar.diffLength}%` }}
-                                className="relative h-full ml-1.5 rounded-lg border-2 border-dashed border-rose-400 bg-rose-50/70 flex items-center justify-center px-2 transition-all duration-150 overflow-visible select-none shrink-0"
-                                title="Difference bracket showing how much less than the reference"
-                              >
-                                {/* Label inside the bracket */}
-                                <div className="flex items-center gap-1 text-[11px] font-black text-rose-700 truncate">
-                                  <span>{bar.diffValue || "- Fewer"}</span>
-                                </div>
-
-                                {/* Vertical dotted ending line with reference indicator */}
-                                <div className="absolute -top-3 -bottom-3 right-0 w-0 border-r-2 border-dotted border-rose-500 pointer-events-none">
-                                  <span className="absolute -top-1 -right-1 w-2 h-0.5 bg-rose-500 rounded-full" />
-                                  <span className="absolute -bottom-1 -right-1 w-2 h-0.5 bg-rose-500 rounded-full" />
-                                </div>
-
-                                {/* Difference Tag */}
-                                <span className="absolute -top-3.5 right-1/2 translate-x-1/2 text-[9px] font-black uppercase tracking-wider text-rose-600 bg-white px-1.5 py-0.2 rounded border border-rose-200 shadow-xs whitespace-nowrap">
-                                  Difference
-                                </span>
-                              </div>
+                          {/* Collapse/Expand Arrow Tag right at the end of the bar */}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleCollapseBar(bar.id)}
+                            className={`h-9 px-2 rounded-lg flex items-center justify-center transition-all cursor-pointer shrink-0 ${
+                              bar.isCollapsed
+                                ? 'bg-white hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200'
+                                : 'bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-xs'
+                            }`}
+                            title={bar.isCollapsed ? "Edit bar parameters" : "Collapse into bar height"}
+                          >
+                            {bar.isCollapsed ? (
+                              <ChevronDown className="w-4 h-4 text-slate-500" />
                             ) : (
-                              /* WHEN MORE: Solid green protruding extra difference section */
-                              <div
-                                style={{ width: `${bar.diffLength}%` }}
-                                className="h-full rounded-lg ml-1 px-2 flex items-center justify-center text-xs font-black text-white shadow-xs border border-emerald-400 border-dashed bg-emerald-500 transition-all duration-150 truncate shrink-0"
-                                title="Extra difference amount protruding beyond the base"
-                              >
-                                {bar.diffValue || "+ More"}
-                              </div>
-                            )
-                          )}
+                              <ChevronUp className="w-4 h-4 text-indigo-600" />
+                            )}
+                          </button>
                         </div>
                       </div>
                     </div>
 
-                    {/* Collapsible Bar Parameters (Hidden when isCollapsed is true, leaving ONLY the bar model) */}
+                    {/* ══ Collapsible Parameters Panel (Only visible when NOT collapsed) ══ */}
                     {!bar.isCollapsed && (
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="space-y-3 pt-2 border-t border-slate-200/70"
+                        className="ml-24 sm:ml-28 mt-2 p-4 bg-white border-2 border-indigo-100 rounded-2xl shadow-sm space-y-3"
                       >
+                        {/* Section Header */}
+                        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                          <span className="text-xs font-black text-indigo-950 uppercase tracking-wider flex items-center gap-1.5">
+                            <span className="w-4 h-4 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">
+                              {idx + 1}
+                            </span>
+                            Editing {bar.name || `Bar ${idx + 1}`} Parameters
+                          </span>
+                          <span className="text-[11px] text-slate-400 font-semibold">
+                            Adjust length, labels & difference
+                          </span>
+                        </div>
+
                         {/* Primary Inputs Row */}
                         <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
                           {/* Name input */}
@@ -824,7 +808,7 @@ export default function InteractiveBarBuilder({
                           <motion.div
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
-                            className="pt-2 border-t border-slate-200/50 grid grid-cols-1 sm:grid-cols-12 gap-3 items-center bg-white/70 p-2.5 rounded-xl border border-slate-200"
+                            className="pt-2 border-t border-slate-200/50 grid grid-cols-1 sm:grid-cols-12 gap-3 items-center bg-slate-50/70 p-2.5 rounded-xl border border-slate-200"
                           >
                             {/* Diff Type */}
                             <div className="sm:col-span-4 flex items-center gap-1.5">
@@ -881,6 +865,28 @@ export default function InteractiveBarBuilder({
                             </div>
                           </motion.div>
                         )}
+
+                        {/* Bottom Actions Row: Delete Button + Done / Collapse Button */}
+                        <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteBar(bar.id)}
+                            className="text-xs font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-200 flex items-center gap-1.5 transition-all cursor-pointer"
+                            title="Delete this bar"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            Delete Bar
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleToggleCollapseBar(bar.id)}
+                            className="text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3.5 py-1.5 rounded-xl flex items-center gap-1 transition-all cursor-pointer"
+                          >
+                            <ChevronUp className="w-3.5 h-3.5" />
+                            Done / Collapse
+                          </button>
+                        </div>
                       </motion.div>
                     )}
                   </div>
