@@ -235,28 +235,81 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     if (subType === 0) {
       // Find difference z given x and y
       finalAnswer = diff.toString();
-      visualEngineStr = JSON.stringify({
-        componentToRender: "BAR_MODEL",
-        componentData: {
-          modelType: "BAR_MODEL_COMPARISON",
-          bars: [
-            { name: nameA, value: larger, layoutSize: larger, displayValue: larger.toLocaleString() },
-            { name: nameB, value: smaller, layoutSize: smaller, displayValue: smaller.toLocaleString() }
-          ],
-          difference: { displayValue: "?" },
-          hiddenValues: ["difference"]
-        }
-      }, null, 2);
-
       promptInstruction = `- Question stem: "${nameA} has ${larger.toLocaleString()} ${randomItem}. ${nameB} has ${smaller.toLocaleString()} ${randomItem}. What is the difference between the number of ${randomItem} they have?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL_COMPARISON",
+          hideVisual: true,
+          componentData: {
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: larger, layoutSize: larger, displayValue: larger.toLocaleString() },
+              { name: nameB, value: smaller, layoutSize: smaller, displayValue: smaller.toLocaleString() }
+            ],
+            difference: { displayValue: "?" },
+            hiddenValues: ["difference"]
+          }
+        }, null, 2);
+
+        const steps = [
+          {
+            label: "Write the working equation to find the difference:",
+            expectedAnswer: `${larger} - ${smaller} = ${diff}`,
+            acceptedAnswers: [
+              diff.toString(),
+              Number(diff).toLocaleString(),
+              `${larger}-${smaller}=${diff}`,
+              `${larger} - ${smaller} = ${diff}`,
+              `${larger}-${smaller}`,
+              `${larger} - ${smaller}`
+            ]
+          },
+          {
+            label: "Final Answer:",
+            expectedAnswer: finalAnswer,
+            acceptedAnswers: [
+              finalAnswer,
+              Number(finalAnswer).toLocaleString(),
+              `${finalAnswer} ${randomItem}`,
+              `${Number(finalAnswer).toLocaleString()} ${randomItem}`
+            ]
+          }
+        ];
+
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: "Write the working equation to find the difference:", expectedAnswer: `${larger} - ${smaller} = ${diff}` },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
-          ]
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "DIFFERENCE_DEDUCTION",
+            targetType: "DIFFERENCE",
+            itemName: randomItem,
+            correctModelType: "COMPARISON",
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities of distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfer or change over time" }
+            ],
+            entities: [
+              { id: "B", name: nameB, value: smaller, displayValue: smaller.toLocaleString(), relation: "BASE" },
+              { id: "A", name: nameA, value: larger, displayValue: larger.toLocaleString(), relativeTo: nameB, relation: "MORE", diffValue: "?", displayDiff: "?" }
+            ],
+            target: { type: "DIFFERENCE", label: "Difference" },
+            steps: steps
+          }
+        }, null, 2);
+      } else {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL",
+          componentData: {
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: larger, layoutSize: larger, displayValue: larger.toLocaleString() },
+              { name: nameB, value: smaller, layoutSize: smaller, displayValue: smaller.toLocaleString() }
+            ],
+            difference: { displayValue: "?" },
+            hiddenValues: ["difference"]
+          }
         }, null, 2);
       }
 
@@ -278,29 +331,84 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
 
     } else if (subType === 1) {
       // Given smaller and difference, find larger
-      finalAnswer = larger.toString();
-      visualEngineStr = JSON.stringify({
-        componentToRender: "BAR_MODEL",
-        componentData: {
-          modelType: "BAR_MODEL_COMPARISON",
-          bars: [
-            { name: nameA, value: "?", layoutSize: larger, displayValue: "?" },
-            { name: nameB, value: smaller, layoutSize: smaller, displayValue: smaller.toLocaleString() }
-          ],
-          difference: { displayValue: diff.toLocaleString() },
-          hiddenValues: [nameA]
-        }
-      }, null, 2);
-
       promptInstruction = `- Question stem: "${nameB} has ${smaller.toLocaleString()} ${randomItem}. ${nameA} has ${diff.toLocaleString()} more ${randomItem} than ${nameB}. How many ${randomItem} does ${nameA} have?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL_COMPARISON",
+          hideVisual: true,
+          componentData: {
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: "?", layoutSize: larger, displayValue: "?" },
+              { name: nameB, value: smaller, layoutSize: smaller, displayValue: smaller.toLocaleString() }
+            ],
+            difference: { displayValue: diff.toLocaleString() },
+            hiddenValues: [nameA]
+          }
+        }, null, 2);
+
+        const steps = [
+          {
+            label: `Write the working equation to find ${nameA}'s amount:`,
+            expectedAnswer: `${smaller} + ${diff} = ${larger}`,
+            acceptedAnswers: [
+              larger.toString(),
+              Number(larger).toLocaleString(),
+              `${smaller}+${diff}=${larger}`,
+              `${smaller} + ${diff} = ${larger}`,
+              `${smaller}+${diff}`,
+              `${smaller} + ${diff}`,
+              `${diff}+${smaller}=${larger}`,
+              `${diff} + ${smaller} = ${larger}`
+            ]
+          },
+          {
+            label: "Final Answer:",
+            expectedAnswer: finalAnswer,
+            acceptedAnswers: [
+              finalAnswer,
+              Number(finalAnswer).toLocaleString(),
+              `${finalAnswer} ${randomItem}`,
+              `${Number(finalAnswer).toLocaleString()} ${randomItem}`
+            ]
+          }
+        ];
+
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: `Write the working equation to find ${nameA}'s amount:`, expectedAnswer: `${smaller} + ${diff} = ${larger}` },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
-          ]
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "DIFFERENCE_DEDUCTION",
+            targetType: "BAR",
+            targetName: nameA,
+            itemName: randomItem,
+            correctModelType: "COMPARISON",
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities of distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfer or change over time" }
+            ],
+            entities: [
+              { id: "B", name: nameB, value: smaller, displayValue: smaller.toLocaleString(), relation: "BASE" },
+              { id: "A", name: nameA, value: "?", displayValue: "?", relativeTo: nameB, relation: "MORE", diffValue: diff, displayDiff: `+${diff.toLocaleString()}` }
+            ],
+            target: { type: "BAR", targetEntity: "A", label: nameA },
+            steps: steps
+          }
+        }, null, 2);
+      } else {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL",
+          componentData: {
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: "?", layoutSize: larger, displayValue: "?" },
+              { name: nameB, value: smaller, layoutSize: smaller, displayValue: smaller.toLocaleString() }
+            ],
+            difference: { displayValue: diff.toLocaleString() },
+            hiddenValues: [nameA]
+          }
         }, null, 2);
       }
 
@@ -322,29 +430,82 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
 
     } else {
       // Given larger and difference, find smaller
-      finalAnswer = smaller.toString();
-      visualEngineStr = JSON.stringify({
-        componentToRender: "BAR_MODEL",
-        componentData: {
-          modelType: "BAR_MODEL_COMPARISON",
-          bars: [
-            { name: nameA, value: larger, layoutSize: larger, displayValue: larger.toLocaleString() },
-            { name: nameB, value: "?", layoutSize: smaller, displayValue: "?" }
-          ],
-          difference: { displayValue: diff.toLocaleString() },
-          hiddenValues: [nameB]
-        }
-      }, null, 2);
-
       promptInstruction = `- Question stem: "${nameA} has ${larger.toLocaleString()} ${randomItem}. ${nameB} has ${diff.toLocaleString()} fewer ${randomItem} than ${nameA}. How many ${randomItem} does ${nameB} have?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL_COMPARISON",
+          hideVisual: true,
+          componentData: {
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: larger, layoutSize: larger, displayValue: larger.toLocaleString() },
+              { name: nameB, value: "?", layoutSize: smaller, displayValue: "?" }
+            ],
+            difference: { displayValue: diff.toLocaleString() },
+            hiddenValues: [nameB]
+          }
+        }, null, 2);
+
+        const steps = [
+          {
+            label: `Write the working equation to find ${nameB}'s amount:`,
+            expectedAnswer: `${larger} - ${diff} = ${smaller}`,
+            acceptedAnswers: [
+              smaller.toString(),
+              Number(smaller).toLocaleString(),
+              `${larger}-${diff}=${smaller}`,
+              `${larger} - ${diff} = ${smaller}`,
+              `${larger}-${diff}`,
+              `${larger} - ${diff}`
+            ]
+          },
+          {
+            label: "Final Answer:",
+            expectedAnswer: finalAnswer,
+            acceptedAnswers: [
+              finalAnswer,
+              Number(finalAnswer).toLocaleString(),
+              `${finalAnswer} ${randomItem}`,
+              `${Number(finalAnswer).toLocaleString()} ${randomItem}`
+            ]
+          }
+        ];
+
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${larger} - ${diff} = ${smaller}` },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
-          ]
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "DIFFERENCE_DEDUCTION",
+            targetType: "BAR",
+            targetName: nameB,
+            itemName: randomItem,
+            correctModelType: "COMPARISON",
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities of distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfer or change over time" }
+            ],
+            entities: [
+              { id: "A", name: nameA, value: larger, displayValue: larger.toLocaleString(), relation: "BASE" },
+              { id: "B", name: nameB, value: "?", displayValue: "?", relativeTo: nameA, relation: "FEWER", diffValue: diff, displayDiff: `-${diff.toLocaleString()}` }
+            ],
+            target: { type: "BAR", targetEntity: "B", label: nameB },
+            steps: steps
+          }
+        }, null, 2);
+      } else {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL",
+          componentData: {
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: larger, layoutSize: larger, displayValue: larger.toLocaleString() },
+              { name: nameB, value: "?", layoutSize: smaller, displayValue: "?" }
+            ],
+            difference: { displayValue: diff.toLocaleString() },
+            hiddenValues: [nameB]
+          }
         }, null, 2);
       }
 

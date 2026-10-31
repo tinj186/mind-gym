@@ -374,7 +374,28 @@ export function checkBarModelParameters(userBars = [], config = {}, totalState =
   }
 
   // 3. Validate Base Entity
-  const expectedBase = expectedEntities.find(e => e.relation === 'BASE') || expectedEntities[0];
+  let expectedBase = expectedEntities.find(e => e.relation === 'BASE') || expectedEntities[0];
+  let compEntities = expectedEntities.filter(e => e.relation === 'MORE' || e.relation === 'FEWER');
+
+  // Flexible baseline for 2-entity difference deduction: either entity can serve as base reference!
+  if (config?.target?.type === 'DIFFERENCE' && expectedEntities.length === 2) {
+    const barWithoutDiff = rawBars.find(b => !b.hasDifference);
+    if (barWithoutDiff) {
+      const matchedEntity = expectedEntities.find(e => normalizeName(e.name) === normalizeName(barWithoutDiff.name));
+      if (matchedEntity && matchedEntity.id !== expectedBase.id) {
+        const otherEntity = expectedEntities.find(e => e.id !== matchedEntity.id);
+        const isOtherLarger = Number(otherEntity.value) >= Number(matchedEntity.value);
+        expectedBase = { ...matchedEntity, relation: 'BASE' };
+        compEntities = [{
+          ...otherEntity,
+          relation: isOtherLarger ? 'MORE' : 'FEWER',
+          diffValue: '?',
+          displayDiff: '?'
+        }];
+      }
+    }
+  }
+
   const baseBar = rawBars.find(b => normalizeName(b.name) === normalizeName(expectedBase.name));
   if (baseBar) {
     if (baseBar.hasDifference) {
@@ -422,7 +443,6 @@ export function checkBarModelParameters(userBars = [], config = {}, totalState =
   }
 
   // 4. Validate Comparative Entities (MORE / FEWER)
-  const compEntities = expectedEntities.filter(e => e.relation === 'MORE' || e.relation === 'FEWER');
   for (const comp of compEntities) {
     const compBar = rawBars.find(b => normalizeName(b.name) === normalizeName(comp.name));
     if (!compBar) continue;
