@@ -288,8 +288,8 @@ export default function InteractiveBarBuilder({
     if (!entities || entities.length === 0) {
       setUserBars([
         { id: 'bar-1', name: 'Entity A', length: 50, value: '10,000', hasDifference: false, diffType: 'MORE', diffLength: 20, diffValue: '', isTarget: false, isCollapsed: true },
-        { id: 'bar-2', name: 'Entity B', length: 50, value: 'Same as A', hasDifference: true, diffType: 'MORE', diffLength: 20, diffValue: '5,000', isTarget: false, isCollapsed: true },
-        { id: 'bar-3', name: 'Entity C', length: 50, value: 'Same as B', hasDifference: true, diffType: 'FEWER', diffLength: 20, diffValue: '5,000', bracketPosition: 'bottom', isTarget: true, isCollapsed: true }
+        { id: 'bar-2', name: 'Entity B', length: 50, value: '', hasDifference: true, diffType: 'MORE', diffLength: 20, diffValue: '5,000', isTarget: false, isCollapsed: true },
+        { id: 'bar-3', name: 'Entity C', length: 50, value: '', hasDifference: true, diffType: 'FEWER', diffLength: 20, diffValue: '5,000', bracketPosition: 'bottom', isTarget: true, isCollapsed: true }
       ]);
       setStage2Status('idle');
       return;
@@ -301,7 +301,7 @@ export default function InteractiveBarBuilder({
         id: `bar-${idx + 1}`,
         name: e.name,
         length: 50,
-        value: e.relation === 'BASE' ? (e.displayValue || `${e.value}`) : 'Same as base',
+        value: e.relation === 'BASE' ? (e.displayValue || `${e.value}`) : '',
         hasDifference: e.relation === 'MORE' || e.relation === 'FEWER',
         diffType: e.relation === 'FEWER' ? 'FEWER' : 'MORE',
         diffLength: 20,
@@ -638,11 +638,6 @@ export default function InteractiveBarBuilder({
                         <span className="text-xs font-black uppercase tracking-wider text-slate-800 truncate block">
                           {bar.name || `Bar ${idx + 1}`}
                         </span>
-                        {bar.value && (
-                          <span className="text-[10px] font-bold text-slate-400 font-mono block truncate">
-                            {bar.value}
-                          </span>
-                        )}
                       </div>
 
                       {/* Vertical Starting Line & Bar Track */}
@@ -650,14 +645,14 @@ export default function InteractiveBarBuilder({
                         <div className="flex items-center gap-2">
                           {/* The Bar Track */}
                           <div className="flex-1 flex items-center h-11 bg-white rounded-xl border border-slate-200 p-1 shadow-xs overflow-visible relative">
-                            {/* Base Solid Segment */}
+                            {/* Base Solid Segment: Internally empty if value is not filled */}
                             <div
                               style={{ width: `${bar.length}%` }}
                               className={`h-full rounded-lg flex items-center justify-center text-xs font-black text-white shadow-xs transition-all duration-150 px-2 truncate shrink-0 ${
                                 idx === 0 ? 'bg-indigo-600' : idx === 1 ? 'bg-indigo-500' : 'bg-indigo-400'
                               }`}
                             >
-                              {bar.value || bar.name || "Base"}
+                              {bar.value || ""}
                             </div>
 
                             {/* Difference Segment / Bracket */}
