@@ -9,7 +9,7 @@ import VisualRenderer, { ESSENTIAL_VISUALS } from '@/components/math/VisualRende
 import GroupingWorkspace from '@/components/tools/GroupingWorkspace'; // Import the interactive tool
 import BarModelWorkspace from '@/components/tools/BarModelWorkspace';
 import MultiStepInput from '@/components/math/MultiStepInput'; // Multi-Step Input
-import InteractiveBarBuilder from '@/components/math/InteractiveBarBuilder'; // Interactive Bar Builder
+import InteractiveBarBuilder, { ModelSolutionBarModel } from '@/components/math/InteractiveBarBuilder'; // Interactive Bar Builder
 import MathInput from '@/components/math/MathInput'; // Advanced Math Input
 import confetti from 'canvas-confetti';
 
@@ -653,6 +653,9 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
                 config={normalizedQuestion.inputRequirement?.barBuilderConfig}
                 steps={normalizedQuestion.inputRequirement?.steps}
                 onSubmit={handleAnswer}
+                onDefect={(defectRecord) => {
+                  console.warn(`[BarBuilder Defect Logged]: ${defectRecord.defect} - ${defectRecord.errorMsg}`, defectRecord);
+                }}
                 disabled={feedback === 'correct'}
                 level={level}
               />
@@ -723,12 +726,17 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
           )}
 
           {feedback === 'solution_revealed' && (
-            <div className="p-6 bg-rose-50 rounded-2xl border-2 border-rose-200 animate-in zoom-in-95">
-              <p className="text-rose-900 font-black text-xs uppercase tracking-widest mb-2">Form Check: Let's see the steps</p>
-              <div 
-                className="text-slate-700 text-sm italic leading-relaxed whitespace-pre-wrap font-mono"
-                dangerouslySetInnerHTML={{ __html: normalizedQuestion.solution }}
-              />
+            <div className="space-y-4">
+              {normalizedQuestion.inputRequirement?.inputType === 'INTERACTIVE_BAR_BUILDER' && normalizedQuestion.inputRequirement?.barBuilderConfig && (
+                <ModelSolutionBarModel config={normalizedQuestion.inputRequirement.barBuilderConfig} />
+              )}
+              <div className="p-6 bg-rose-50 rounded-2xl border-2 border-rose-200 animate-in zoom-in-95">
+                <p className="text-rose-900 font-black text-xs uppercase tracking-widest mb-2">Form Check: Let's see the steps</p>
+                <div 
+                  className="text-slate-700 text-sm italic leading-relaxed whitespace-pre-wrap font-mono"
+                  dangerouslySetInnerHTML={{ __html: normalizedQuestion.solution }}
+                />
+              </div>
             </div>
           )}
         </motion.div>

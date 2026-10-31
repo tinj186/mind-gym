@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, AlertCircle, ArrowRight, Layers, Scale, RefreshCw, HelpCircle, Sparkles, ChevronDown, ChevronUp, Eye, Plus, Trash2, Zap, RotateCcw } from 'lucide-react';
-import MathInput from '@/components/math/MathInput';
+import MultiStepInput from '@/components/math/MultiStepInput';
 
 /**
  * Miniature Preview Diagrams for each Bar Model Archetype
@@ -150,17 +150,421 @@ function EmptyPreview() {
 }
 
 /**
+ * Normalization helper for entity names (lowercased, alphanumeric only)
+ */
+function normalizeName(str) {
+  return (str || '').toString().toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+/**
+ * Normalization helper for numbers (strips commas, currency symbols, signs, spaces)
+ */
+function normalizeNumber(val) {
+  if (val === null || val === undefined) return '';
+  return val.toString().replace(/[,+\-\s$]/g, '').trim();
+}
+
+/**
+ * Comprehensive Parameter Check for Student Bar Model Drawing
+ * Validates the student's structured bar state against problem config entities.
+ * Returns defect classification for rich learning analytics and targeted feedback.
+ */
+export function checkBarModelParameters(userBars = [], config = {}) {
+  if (!userBars || userBars.length === 0) {
+    return {
+      isValid: false,
+      defect: 'NO_BARS_BUILT',
+      errorMsg: "Click '+ Build Bar' to add your first entity bar!",
+      details: null
+    };
+  }
+
+  const blankBar = userBars.find(b => !b.name || !b.name.trim());
+  if (blankBar) {
+    return {
+      isValid: false,
+      defect: 'MISSING_ENTITY_LABEL',
+      errorMsg: "Please enter a name label for all your bars.",
+      details: null
+    };
+  }
+
+  const expectedEntities = config?.entities || [];
+  if (expectedEntities.length === 0) {
+    return { isValid: true, defect: null, errorMsg: null, details: null };
+  }
+
+  // 1. Check bar count
+  if (userBars.length < expectedEntities.length) {
+    const entityNames = expectedEntities.map(e => e.name).join(', ');
+    return {
+      isValid: false,
+      defect: 'INSUFFICIENT_BARS',
+      errorMsg: `This problem requires ${expectedEntities.length} bars (${entityNames}). You have only built ${userBars.length} bar(s).`,
+      details: { expectedCount: expectedEntities.length, actualCount: userBars.length }
+    };
+  }
+
+  if (userBars.length > expectedEntities.length) {
+    return {
+      isValid: false,
+      defect: 'TOO_MANY_BARS',
+      errorMsg: `This problem only compares ${expectedEntities.length} entities. Please remove unnecessary extra bars.`,
+      details: { expectedCount: expectedEntities.length, actualCount: userBars.length }
+    };
+  }
+
+  // 2. Check each expected entity is represented
+  for (const expEntity of expectedEntities) {
+    const matched = userBars.find(b => normalizeName(b.name) === normalizeName(expEntity.name));
+    if (!matched) {
+      return {
+        isValid: false,
+        defect: `MISSING_ENTITY_${expEntity.id || expEntity.name}`,
+        errorMsg: `Missing bar for "${expEntity.name}". Please ensure "${expEntity.name}" is represented in your model.`,
+        details: { missingEntity: expEntity.name }
+      };
+    }
+  }
+
+  // 3. Validate Base Entity
+  const expectedBase = expectedEntities.find(e => e.relation === 'BASE') || expectedEntities[0];
+  const baseBar = userBars.find(b => normalizeName(b.name) === normalizeName(expectedBase.name));
+  if (baseBar) {
+    if (baseBar.hasDifference) {
+      return {
+        isValid: false,
+        defect: 'BASE_ENTITY_HAS_DIFF',
+        errorMsg: `"${expectedBase.name}" is the base reference quantity and should not have a difference segment attached.`,
+        details: { entity: expectedBase.name }
+      };
+    }
+
+    if (expectedBase.value !== undefined && expectedBase.value !== null) {
+      const expVal = normalizeNumber(expectedBase.value);
+      const actVal = normalizeNumber(baseBar.value);
+      if (!actVal) {
+        return {
+          isValid: false,
+          defect: 'MISSING_BASE_VALUE',
+          errorMsg: `Please enter the base value (${expectedBase.displayValue || Number(expectedBase.value).toLocaleString()}) inside "${expectedBase.name}"'s bar.`,
+          details: { entity: expectedBase.name, expectedValue: expectedBase.displayValue || expectedBase.value }
+        };
+      }
+      if (actVal !== expVal) {
+        return {
+          isValid: false,
+          defect: 'INCORRECT_BASE_VALUE',
+          errorMsg: `The value for "${expectedBase.name}" should be ${expectedBase.displayValue || Number(expectedBase.value).toLocaleString()}, but got "${baseBar.value}".`,
+          details: { entity: expectedBase.name, expected: expVal, actual: actVal }
+        };
+      }
+    }
+  }
+
+  // 4. Validate Comparative Entities (MORE / FEWER)
+  const compEntities = expectedEntities.filter(e => e.relation === 'MORE' || e.relation === 'FEWER');
+  for (const comp of compEntities) {
+    const compBar = userBars.find(b => normalizeName(b.name) === normalizeName(comp.name));
+    if (!compBar) continue;
+
+    if (!compBar.hasDifference) {
+      return {
+        isValid: false,
+        defect: `MISSING_DIFFERENCE_${comp.relation}`,
+        errorMsg: `"${comp.name}" differs from ${comp.relativeTo || 'the base'}. Click "+ Diff" on "${comp.name}"'s bar to add the comparison.`,
+        details: { entity: comp.name, expectedRelation: comp.relation }
+      };
+    }
+
+    if (comp.relation === 'MORE' && compBar.diffType !== 'MORE') {
+      return {
+        isValid: false,
+        defect: 'INVERTED_RELATION_MORE',
+        errorMsg: `"${comp.name}" should have MORE (+ difference), but is marked as fewer.`,
+        details: { entity: comp.name, expectedDiffType: 'MORE', actualDiffType: compBar.diffType }
+      };
+    }
+
+    if (comp.relation === 'FEWER' && compBar.diffType !== 'FEWER') {
+      return {
+        isValid: false,
+        defect: 'INVERTED_RELATION_FEWER',
+        errorMsg: `"${comp.name}" should have FEWER (- shortage bracket), but is marked as more.`,
+        details: { entity: comp.name, expectedDiffType: 'FEWER', actualDiffType: compBar.diffType }
+      };
+    }
+
+    if (comp.diffValue !== undefined && comp.diffValue !== null) {
+      const expDiff = normalizeNumber(comp.diffValue);
+      const actDiff = normalizeNumber(compBar.diffValue);
+      if (!actDiff) {
+        return {
+          isValid: false,
+          defect: 'MISSING_DIFF_VALUE',
+          errorMsg: `Please enter the difference value for "${comp.name}" (${comp.displayDiff || Number(comp.diffValue).toLocaleString()}).`,
+          details: { entity: comp.name, expectedDiff: comp.displayDiff || comp.diffValue }
+        };
+      }
+      if (actDiff !== expDiff) {
+        return {
+          isValid: false,
+          defect: 'INCORRECT_DIFF_VALUE',
+          errorMsg: `The difference amount for "${comp.name}" should be ${Number(comp.diffValue).toLocaleString()}, but got "${compBar.diffValue}".`,
+          details: { entity: comp.name, expected: expDiff, actual: actDiff }
+        };
+      }
+    }
+  }
+
+  return { isValid: true, defect: null, errorMsg: null, details: null };
+}
+
+/**
+ * Model Solution Bar Model
+ * Renders the reference pictorial blueprint for students to inspect
+ * when an error occurs or when the solution is revealed.
+ */
+export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Bar Model Blueprint" }) {
+  const entities = config?.entities || [];
+  const target = config?.target || { type: 'TOTAL', label: 'Total' };
+  const itemName = config?.itemName || 'units';
+
+  if (!entities || entities.length === 0) return null;
+
+  return (
+    <div className="bg-emerald-50/70 border-2 border-emerald-300 rounded-3xl p-5 sm:p-6 space-y-4 shadow-sm animate-in fade-in duration-200">
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-emerald-200">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+            <Layers className="w-4 h-4" />
+          </div>
+          <div>
+            <h4 className="text-xs font-black uppercase tracking-wider text-emerald-950">
+              {title}
+            </h4>
+            <span className="text-[10px] text-emerald-700 font-bold">
+              Comparative Bar Model Aligned to Common Baseline
+            </span>
+          </div>
+        </div>
+        <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full border border-emerald-300">
+          Ideal Reference
+        </span>
+      </div>
+
+      {/* Unified Comparative Bar Canvas */}
+      <div className="p-4 sm:p-5 bg-white border-2 border-emerald-100 rounded-2xl space-y-3 shadow-xs">
+        {entities.map((e, idx) => {
+          const isBase = e.relation === 'BASE';
+          const isMore = e.relation === 'MORE';
+          const isFewer = e.relation === 'FEWER';
+          const cleanDiffNum = e.diffValue ? Number(e.diffValue).toLocaleString() : (e.displayDiff || '').replace(/[+\-]/g, '').trim();
+
+          return (
+            <div key={e.id || idx} className="flex items-center gap-2 sm:gap-3">
+              {/* Entity Name */}
+              <div className="w-20 sm:w-24 text-right shrink-0">
+                <span className="text-xs font-black uppercase tracking-wider text-slate-800 truncate block">
+                  {e.name}
+                </span>
+              </div>
+
+              {/* Vertical Starting Line & Bar Track */}
+              <div className="flex-1 pl-3 border-l-4 border-indigo-500 border-dashed py-0.5">
+                <div className="flex items-center h-11 bg-slate-50/80 rounded-xl border border-slate-200 p-1 shadow-xs relative overflow-visible">
+                  {/* Solid Base Segment */}
+                  <div
+                    style={{ width: isFewer ? '38%' : '50%' }}
+                    className={`h-full rounded-lg flex items-center justify-center text-xs font-black text-white shadow-xs px-2 truncate shrink-0 ${
+                      idx === 0 ? 'bg-indigo-600' : idx === 1 ? 'bg-indigo-500' : 'bg-indigo-400'
+                    }`}
+                  >
+                    {isBase ? (e.displayValue || (e.value ? Number(e.value).toLocaleString() : "")) : ""}
+                  </div>
+
+                  {/* MORE: Solid green segment protruding */}
+                  {isMore && (
+                    <div
+                      style={{ width: '22%' }}
+                      className="h-full rounded-lg ml-1 px-2 flex items-center justify-center text-xs font-black text-white shadow-xs border border-emerald-400 border-dashed bg-emerald-500 truncate shrink-0"
+                    >
+                      +{cleanDiffNum || "Diff"}
+                    </div>
+                  )}
+
+                  {/* FEWER: Shortage gap with bottom bracket and unsigned diff */}
+                  {isFewer && (
+                    <div
+                      style={{ width: '16%' }}
+                      className="relative h-full ml-1 flex flex-col justify-between items-center py-1 px-1 overflow-visible select-none shrink-0"
+                    >
+                      {/* Vertical dotted reference line from bar above */}
+                      <div className="absolute right-0 -top-6 bottom-0 w-0 border-r-2 border-dotted border-rose-400 pointer-events-none z-10">
+                        <span className="absolute -top-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                        <span className="absolute -bottom-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                      </div>
+
+                      {/* Guide floor */}
+                      <div className="absolute inset-0 bg-rose-50/20 border-b border-dashed border-rose-200 rounded-lg pointer-events-none" />
+
+                      {/* Unsigned Number */}
+                      <div className="relative z-10 flex-1 flex items-center justify-center">
+                        <span className="text-[11px] font-black text-rose-700 font-mono tracking-tight px-1.5 py-0.2 bg-white rounded border border-rose-200 shadow-2xs truncate">
+                          {cleanDiffNum}
+                        </span>
+                      </div>
+
+                      {/* Bottom Bracket */}
+                      <div className="relative z-10 w-full h-2 border-x-2 border-b-2 border-rose-500 rounded-b-md">
+                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0 border-x-3 border-x-transparent border-t-3 border-t-rose-500" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Grand Total Bracket */}
+      {target?.type === 'TOTAL' && (
+        <div className="flex items-center justify-between bg-amber-50 p-3.5 rounded-2xl border border-amber-200">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-amber-600" />
+            <span className="text-xs font-black text-amber-950 uppercase tracking-wider">
+              Grand Total Across All Entities
+            </span>
+          </div>
+          <div className="px-3 py-1 bg-amber-400 text-slate-900 font-black rounded-xl text-xs shadow-xs">
+            ? {itemName}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Compact Bar Canvas
+ * Read-only display of the student's verified model during calculation
+ */
+export function CompactBarCanvas({ bars = [], target = {}, itemName = "units", onEdit }) {
+  if (!bars || bars.length === 0) return null;
+
+  return (
+    <div className="bg-slate-50 border-2 border-slate-200 rounded-3xl p-5 space-y-3 shadow-xs">
+      <div className="flex items-center justify-between pb-2 border-b border-slate-200/80">
+        <div className="flex items-center gap-2">
+          <Layers className="w-4 h-4 text-indigo-600" />
+          <span className="text-xs font-black uppercase tracking-wider text-slate-700">
+            Verified Bar Model Reference
+          </span>
+        </div>
+        {onEdit && (
+          <button
+            type="button"
+            onClick={onEdit}
+            className="text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 px-2.5 py-1 rounded-xl transition-all cursor-pointer"
+          >
+            Edit Blueprint ✎
+          </button>
+        )}
+      </div>
+
+      {/* Bars Stack */}
+      <div className="p-3 bg-white rounded-2xl border border-slate-200 space-y-2">
+        {bars.map((bar, idx) => {
+          const isBottom = (bar.bracketPosition || 'bottom') === 'bottom';
+          const cleanDiff = (bar.diffValue || "").replace(/[+\-]/g, '').trim();
+
+          return (
+            <div key={bar.id || idx} className="flex items-center gap-2">
+              <div className="w-20 text-right shrink-0">
+                <span className="text-xs font-black uppercase text-slate-800 truncate block">
+                  {bar.name || `Bar ${idx + 1}`}
+                </span>
+              </div>
+              <div className="flex-1 pl-2.5 border-l-4 border-indigo-500 border-dashed py-0.5">
+                <div className="flex items-center h-9 bg-slate-50 rounded-lg border border-slate-200 p-0.5 overflow-visible relative">
+                  <div
+                    style={{ width: `${bar.length || 50}%` }}
+                    className={`h-full rounded-md flex items-center justify-center text-xs font-black text-white px-2 truncate shrink-0 ${
+                      idx === 0 ? 'bg-indigo-600' : idx === 1 ? 'bg-indigo-500' : 'bg-indigo-400'
+                    }`}
+                  >
+                    {bar.value || ""}
+                  </div>
+
+                  {bar.hasDifference && (
+                    bar.diffType === 'FEWER' ? (
+                      <div
+                        style={{ width: `${bar.diffLength || 20}%` }}
+                        className="relative h-full ml-1 flex flex-col justify-between items-center py-0.5 px-1 overflow-visible select-none shrink-0"
+                      >
+                        <div className={`absolute right-0 w-0 border-r-2 border-dotted border-rose-400 pointer-events-none z-10 ${
+                          isBottom ? '-top-5 bottom-0' : 'top-0 -bottom-5'
+                        }`} />
+                        {isBottom ? (
+                          <>
+                            <div className="relative z-10 flex-1 flex items-center justify-center">
+                              <span className="text-[10px] font-black text-rose-700 font-mono tracking-tight px-1 py-0.2 bg-white rounded border border-rose-200">
+                                {cleanDiff}
+                              </span>
+                            </div>
+                            <div className="relative z-10 w-full h-1.5 border-x-2 border-b-2 border-rose-500 rounded-b-sm" />
+                          </>
+                        ) : (
+                          <>
+                            <div className="relative z-10 w-full h-1.5 border-x-2 border-t-2 border-rose-500 rounded-t-sm" />
+                            <div className="relative z-10 flex-1 flex items-center justify-center">
+                              <span className="text-[10px] font-black text-rose-700 font-mono tracking-tight px-1 py-0.2 bg-white rounded border border-rose-200">
+                                {cleanDiff}
+                              </span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      <div
+                        style={{ width: `${bar.diffLength || 20}%` }}
+                        className="h-full rounded-md ml-1 px-2 flex items-center justify-center text-xs font-black text-white border border-emerald-400 border-dashed bg-emerald-500 truncate shrink-0"
+                      >
+                        {bar.diffValue || "+ More"}
+                      </div>
+                    )
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {target?.type === 'TOTAL' && (
+        <div className="flex items-center justify-between bg-amber-50 px-3 py-2 rounded-xl border border-amber-200 text-xs">
+          <span className="font-bold text-amber-950">Target: Grand Total</span>
+          <span className="font-black text-amber-800 bg-amber-200 px-2 py-0.5 rounded-lg">? {itemName}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
  * InteractiveBarBuilder
  * 
  * An interactive 3-stage bar model solver designed for structured problem sums.
  * Stage 1: Model Type Selection (Metacognition)
- * Stage 2: Model Inspection & Variable Assignment (Pictorial Blueprint)
- * Stage 3: Step-by-Step Equation Solving (Abstract Calculation)
+ * Stage 2: Model Inspection & Variable Assignment (Pictorial Blueprint with Parameter Checking)
+ * Stage 3: Step-by-Step Multi-Step Calculations (Abstract Calculation with Verified Model)
  */
 export default function InteractiveBarBuilder({ 
   config = {}, 
   steps = [], 
   onSubmit, 
+  onDefect,
   disabled = false, 
   level,
   initialStage = 1,
@@ -170,13 +574,13 @@ export default function InteractiveBarBuilder({
   const [currentStage, setCurrentStage] = useState(initialStage);
   const [selectedModel, setSelectedModel] = useState(isAdminReview ? correctModelType : null);
   const [confirmationStatus, setConfirmationStatus] = useState('idle'); // 'idle' | 'correct' | 'incorrect'
-  const [answers, setAnswers] = useState({});
-  const [showModelMiniView, setShowModelMiniView] = useState(true);
 
-  // Stage 2: Interactive Bar Builder State
+  // Stage 2: Interactive Bar Builder State & Defect Tracking
   const [userBars, setUserBars] = useState([]);
   const [stage2Status, setStage2Status] = useState('idle'); // 'idle' | 'correct' | 'incorrect'
   const [stage2ErrorMsg, setStage2ErrorMsg] = useState(null);
+  const [showModelSolution, setShowModelSolution] = useState(false);
+  const [defectHistory, setDefectHistory] = useState([]);
 
   const modelOptions = config.modelOptions || [
     { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities across distinct entities" },
@@ -329,53 +733,40 @@ export default function InteractiveBarBuilder({
       return;
     }
 
-    if (userBars.length === 0) {
+    const checkRes = checkBarModelParameters(userBars, config);
+    if (!checkRes.isValid) {
       setStage2Status('incorrect');
-      setStage2ErrorMsg("Click '+ Build Bar' to add your first entity bar!");
-      return;
-    }
-
-    const missingName = userBars.some(b => !b.name || !b.name.trim());
-    if (missingName) {
-      setStage2Status('incorrect');
-      setStage2ErrorMsg("Please enter a name label for all your bars.");
-      return;
-    }
-
-    const expectedCount = entities.length > 0 ? entities.length : 2;
-    if (userBars.length < expectedCount && !isAdminReview) {
-      setStage2Status('incorrect');
-      setStage2ErrorMsg(`Word problem has ${expectedCount} entities. Build all ${expectedCount} bars to complete the model!`);
+      setStage2ErrorMsg(checkRes.errorMsg);
+      const defectEntry = {
+        defect: checkRes.defect,
+        errorMsg: checkRes.errorMsg,
+        details: checkRes.details,
+        attempt: defectHistory.length + 1,
+        time: Date.now(),
+        barsSnapshot: userBars.map(b => ({
+          name: b.name,
+          value: b.value,
+          hasDifference: b.hasDifference,
+          diffType: b.diffType,
+          diffValue: b.diffValue,
+          length: b.length,
+          diffLength: b.diffLength
+        }))
+      };
+      setDefectHistory(prev => [...prev, defectEntry]);
+      if (onDefect) {
+        try { onDefect(defectEntry); } catch(e) {}
+      }
       return;
     }
 
     setStage2Status('correct');
     setStage2ErrorMsg(null);
+    setShowModelSolution(false);
   };
 
   const handleProceedToStage3 = () => {
     setCurrentStage(3);
-  };
-
-  const handleAnswerChange = (index, value) => {
-    setAnswers(prev => ({ ...prev, [index]: value }));
-  };
-
-  const handleStepEnter = (e, index) => {
-    if (index === calculationSteps.length - 1) {
-      handleSubmitAll();
-    } else {
-      setTimeout(() => {
-        const nextInput = document.getElementById(`builder-step-${index + 1}`);
-        if (nextInput) nextInput.focus();
-      }, 50);
-    }
-  };
-
-  const handleSubmitAll = () => {
-    if (onSubmit) {
-      onSubmit(answers);
-    }
   };
 
   return (
@@ -1012,17 +1403,48 @@ export default function InteractiveBarBuilder({
                   <ArrowRight className="w-4 h-4" />
                 </motion.button>
               ) : stage2Status === 'incorrect' ? (
-                <motion.button
-                  type="button"
-                  initial={{ x: -4 }}
-                  animate={{ x: [-4, 4, -4, 4, 0] }}
-                  transition={{ duration: 0.3 }}
-                  onClick={handleVerifyStage2}
-                  className="w-full py-3.5 px-6 rounded-2xl font-black text-xs uppercase tracking-wider bg-rose-500 hover:bg-rose-600 text-white cursor-pointer transition-all active:scale-[0.99] shadow-sm flex items-center justify-center gap-2"
-                >
-                  <AlertCircle className="w-4 h-4" />
-                  {stage2ErrorMsg || "Incomplete Model — Build all entity bars and labels"}
-                </motion.button>
+                <div className="space-y-3">
+                  <div className="p-4 bg-rose-50 rounded-2xl border-2 border-rose-200 flex flex-wrap items-center justify-between gap-3 animate-in fade-in">
+                    <div className="flex items-start gap-2.5 max-w-lg">
+                      <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                      <div>
+                        <div className="text-xs font-black text-rose-950 uppercase tracking-wide">
+                          Model Blueprint Error
+                        </div>
+                        <p className="text-xs text-rose-800 font-semibold mt-0.5">
+                          {stage2ErrorMsg || "Incomplete Model — Build all entity bars and labels."}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowModelSolution(prev => !prev)}
+                      className="px-3.5 py-1.5 bg-white hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-black border border-rose-300 transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                    >
+                      <span>💡</span>
+                      <span>{showModelSolution ? "Hide Model Solution" : "View Model Solution"}</span>
+                    </button>
+                  </div>
+
+                  {/* Expandable Model Solution Bar Model */}
+                  {showModelSolution && (
+                    <div className="animate-in fade-in slide-in-from-top-2">
+                      <ModelSolutionBarModel config={config} />
+                    </div>
+                  )}
+
+                  {/* Re-verify Button */}
+                  <button
+                    type="button"
+                    disabled={disabled}
+                    onClick={handleVerifyStage2}
+                    className="w-full py-3.5 px-6 rounded-2xl font-black text-xs uppercase tracking-wider bg-rose-600 hover:bg-rose-700 text-white cursor-pointer transition-all active:scale-[0.99] shadow-sm flex items-center justify-center gap-2"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Check & Verify Again
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
               ) : (
                 <button
                   type="button"
@@ -1041,7 +1463,7 @@ export default function InteractiveBarBuilder({
       )}
 
       {/* ══════════════════════════════════════════════════════════════════════
-          STAGE 3: STEP-BY-STEP CALCULATION WORKSPACE
+          STAGE 3: STEP-BY-STEP CALCULATION WORKSPACE (MultiStepInput)
          ══════════════════════════════════════════════════════════════════════ */}
       {currentStage === 3 && (
         <motion.div 
@@ -1049,78 +1471,35 @@ export default function InteractiveBarBuilder({
           animate={{ opacity: 1, y: 0 }} 
           className="space-y-6"
         >
-          {/* Mini-Model Drawer / Collapsible Reference */}
-          <div className="bg-slate-100 rounded-3xl border-2 border-slate-200 overflow-hidden">
-            <button
-              type="button"
-              onClick={() => setShowModelMiniView(prev => !prev)}
-              className="w-full p-4 flex items-center justify-between text-left text-xs font-black uppercase text-slate-700 tracking-wider hover:bg-slate-200 transition-colors"
-            >
-              <div className="flex items-center gap-2">
-                <Scale className="w-4 h-4 text-indigo-600" />
-                <span>Model Reference Diagram</span>
-              </div>
-              <span>{showModelMiniView ? "Hide ▲" : "Show ▼"}</span>
-            </button>
+          {/* Visual Bar Model Reference (Student's verified model) */}
+          {userBars.length > 0 ? (
+            <CompactBarCanvas 
+              bars={userBars} 
+              target={target} 
+              itemName={config.itemName || "Total"} 
+              onEdit={() => setCurrentStage(2)} 
+            />
+          ) : (
+            <ModelSolutionBarModel config={config} title="Reference Bar Model Blueprint" />
+          )}
 
-            {showModelMiniView && (
-              <div className="p-6 pt-2 bg-white border-t border-slate-200 space-y-3">
-                {entities.map(e => (
-                  <div key={e.id} className="flex items-center gap-3 text-xs font-bold text-slate-600">
-                    <span className="w-24 text-right font-black text-slate-800">{e.name}:</span>
-                    <div className="h-6 flex-1 bg-slate-100 rounded-lg flex items-center px-2 gap-2 border border-slate-200">
-                      <span className="text-indigo-600 font-black">{e.displayValue || "Base"}</span>
-                      {e.displayDiff && (
-                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-black ${
-                          e.relation === 'MORE' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
-                        }`}>
-                          {e.displayDiff}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                {target.type === 'TOTAL' && (
-                  <div className="text-right text-xs font-black text-amber-700 pt-1">
-                    🎯 Target: Total of all 3 entities (?)
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+          {/* Canonical Structured MultiStepInput */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-500">
+                Solve Multi-Step Equations
+              </span>
+              <span className="text-xs text-slate-400 font-semibold">
+                Use your verified bar model diagram above to solve each step
+              </span>
+            </div>
 
-          {/* Sequential Step Inputs */}
-          <div className="space-y-4">
-            {calculationSteps.map((step, idx) => (
-              <div 
-                key={idx} 
-                className="bg-white p-6 rounded-3xl border-4 border-slate-100 shadow-sm space-y-3"
-              >
-                <label className="block text-sm font-black text-slate-700 uppercase tracking-wider">
-                  {step.label}
-                </label>
-                <div className="w-full">
-                  <MathInput
-                    id={`builder-step-${idx}`}
-                    value={answers[idx] || ''}
-                    onChange={(val) => handleAnswerChange(idx, val)}
-                    onEnter={(e) => handleStepEnter(e, idx)}
-                    disabled={disabled}
-                    autoFocus={idx === 0}
-                    level={level}
-                  />
-                </div>
-              </div>
-            ))}
-
-            <button
-              type="button"
+            <MultiStepInput
+              steps={calculationSteps}
+              onSubmit={onSubmit}
               disabled={disabled}
-              onClick={handleSubmitAll}
-              className="w-full py-6 mt-6 bg-blue-600 hover:bg-blue-700 text-white rounded-3xl font-black text-xl transition-all active:scale-95 shadow-xl disabled:opacity-50"
-            >
-              SUBMIT FINAL SOLUTION
-            </button>
+              level={level}
+            />
           </div>
         </motion.div>
       )}
