@@ -31,11 +31,13 @@ export default function MathDashboardClient({ studentId, syllabus, masteryData, 
     router.push(`/math/workout?mode=isolation&subtopic=${encodeURIComponent(targetSubtopic)}&difficulty=${tier.toLowerCase()}&level=${encodeURIComponent(currentLevel)}`);
   };
 
+  const hasBarModelZone = currentLevel === 'Primary 4';
+
   return (
     <div className="space-y-16">
-      {/* Hero Section: Three Training Zones */}
-      <div className="hidden border-teal-700 bg-cyan-50 border-cyan-200 text-cyan-900 bg-cyan-500 border-cyan-600 shadow-[0_20px_50px_-12px_rgba(6,182,212,0.5)] from-emerald-500 to-teal-500 text-teal-500 bg-teal-50 border-teal-200 text-teal-900 hover:border-teal-400 hover:bg-teal-100 hover:border-cyan-400 hover:bg-cyan-100 shadow-[0_20px_50px_-12px_rgba(20,184,166,0.5)]"></div>
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-12">
+      {/* Hero Section: Training Zones */}
+      <div className="hidden border-teal-700 bg-cyan-50 border-cyan-200 text-cyan-900 bg-cyan-500 border-cyan-600 shadow-[0_20px_50px_-12px_rgba(6,182,212,0.5)] from-emerald-500 to-teal-500 text-teal-500 bg-teal-50 border-teal-200 text-teal-900 hover:border-teal-400 hover:bg-teal-100 hover:border-cyan-400 hover:bg-cyan-100 shadow-[0_20px_50px_-12px_rgba(20,184,166,0.5)] bg-indigo-50 border-indigo-200 text-indigo-900 bg-indigo-500 border-indigo-600 text-indigo-500 shadow-[0_20px_50px_-12px_rgba(99,102,241,0.5)] hover:border-indigo-400 hover:bg-indigo-100"></div>
+      <section className={`grid grid-cols-1 ${hasBarModelZone ? 'sm:grid-cols-2 lg:grid-cols-4 gap-8' : 'md:grid-cols-3 gap-12'}`}>
         <ZoneCard 
           title="Daily Practice"
           description={`Target: ${dailyTarget} reps`}
@@ -58,6 +60,19 @@ export default function MathDashboardClient({ studentId, syllabus, masteryData, 
           resumeProgress={activeWorkout?.mode === 'isolation' ? activeWorkout.progress : null}
           isLocked={activeWorkout && activeWorkout.mode !== 'isolation'}
         />
+        {hasBarModelZone && (
+          <ZoneCard 
+            title="Bar Model Practice"
+            description="Interactive Word Problems"
+            href={activeWorkout && activeWorkout.mode !== 'bar_model' ? undefined : `/math/workout?mode=bar_model&level=${encodeURIComponent(currentLevel)}`}
+            icon="📊"
+            variant="indigo"
+            isPrimary={true}
+            themeVariants={theme.zoneVariants}
+            resumeProgress={activeWorkout?.mode === 'bar_model' ? activeWorkout.progress : null}
+            isLocked={activeWorkout && activeWorkout.mode !== 'bar_model'}
+          />
+        )}
         <ZoneCard 
           title="Mock Exam"
           description="Full Syllabus Simulation"

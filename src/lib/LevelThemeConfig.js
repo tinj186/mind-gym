@@ -17,6 +17,10 @@ export const LEVEL_THEMES = {
       slate: "bg-rose-50 border-rose-200 text-rose-900 hover:border-rose-400 hover:bg-rose-100",
       slatePrimary: "bg-rose-500 border-rose-600 text-white shadow-[0_20px_50px_-12px_rgba(244,63,94,0.5)] hover:-translate-y-2",
       slateIcon: "bg-rose-50 text-rose-500",
+      indigo: "bg-indigo-50 border-indigo-200 text-indigo-900 hover:border-indigo-400 hover:bg-indigo-100",
+      indigoPrimary: "bg-indigo-500 border-indigo-600 text-white shadow-[0_20px_50px_-12px_rgba(99,102,241,0.5)] hover:-translate-y-2",
+      indigoIcon: "bg-indigo-50 text-indigo-500",
+      indigoActive: "ring-[6px] ring-indigo-400 ring-offset-4 border-indigo-400 bg-white !text-slate-900 shadow-md",
     }
   },
   // Primary 2: Vibrant Nature (Greens & Teals)
@@ -37,6 +41,10 @@ export const LEVEL_THEMES = {
       slate: "bg-cyan-50 border-cyan-200 text-cyan-900 hover:border-cyan-400 hover:bg-cyan-100",
       slatePrimary: "bg-cyan-500 border-cyan-600 text-white shadow-[0_20px_50px_-12px_rgba(6,182,212,0.5)] hover:-translate-y-2",
       slateIcon: "bg-cyan-50 text-cyan-500",
+      indigo: "bg-indigo-50 border-indigo-200 text-indigo-900 hover:border-indigo-400 hover:bg-indigo-100",
+      indigoPrimary: "bg-indigo-600 border-indigo-700 text-white shadow-[0_20px_50px_-12px_rgba(79,70,229,0.5)] hover:-translate-y-2",
+      indigoIcon: "bg-indigo-50 text-indigo-600",
+      indigoActive: "ring-[6px] ring-indigo-400 ring-offset-4 border-indigo-400 bg-white !text-slate-900 shadow-md",
     }
   },
   // Primary 3: Electric Neon (Purples & Fuchsia)
@@ -57,6 +65,10 @@ export const LEVEL_THEMES = {
       slate: "bg-indigo-50 border-indigo-200 text-indigo-900 hover:border-indigo-400 hover:bg-indigo-100",
       slatePrimary: "bg-indigo-500 border-indigo-600 text-white shadow-[0_20px_50px_-12px_rgba(99,102,241,0.5)] hover:-translate-y-2",
       slateIcon: "bg-indigo-50 text-indigo-500",
+      indigo: "bg-violet-50 border-violet-200 text-violet-900 hover:border-violet-400 hover:bg-violet-100",
+      indigoPrimary: "bg-violet-600 border-violet-700 text-white shadow-[0_20px_50px_-12px_rgba(124,58,237,0.5)] hover:-translate-y-2",
+      indigoIcon: "bg-violet-50 text-violet-600",
+      indigoActive: "ring-[6px] ring-violet-400 ring-offset-4 border-violet-400 bg-white !text-slate-900 shadow-md",
     }
   },
   // Primary 4: Sunset (Orange & Red)
@@ -77,6 +89,10 @@ export const LEVEL_THEMES = {
       slate: "bg-rose-50 border-rose-200 text-rose-900 hover:border-rose-400 hover:bg-rose-100",
       slatePrimary: "bg-rose-600 border-rose-700 text-white shadow-[0_20px_50px_-12px_rgba(225,29,72,0.5)] hover:-translate-y-2",
       slateIcon: "bg-rose-50 text-rose-600",
+      indigo: "bg-indigo-50 border-indigo-200 text-indigo-900 hover:border-indigo-400 hover:bg-indigo-100",
+      indigoPrimary: "bg-indigo-500 border-indigo-600 text-white shadow-[0_20px_50px_-12px_rgba(99,102,241,0.5)] hover:-translate-y-2",
+      indigoIcon: "bg-indigo-50 text-indigo-500",
+      indigoActive: "ring-[6px] ring-indigo-400 ring-offset-4 border-indigo-400 bg-white !text-slate-900 shadow-md",
     }
   },
   // Primary 5: Deep Ocean (Blues)
@@ -97,6 +113,10 @@ export const LEVEL_THEMES = {
       slate: "bg-violet-50 border-violet-200 text-violet-900 hover:border-violet-400 hover:bg-violet-100",
       slatePrimary: "bg-violet-600 border-violet-700 text-white shadow-[0_20px_50px_-12px_rgba(124,58,237,0.5)] hover:-translate-y-2",
       slateIcon: "bg-violet-50 text-violet-600",
+      indigo: "bg-indigo-50 border-indigo-200 text-indigo-900 hover:border-indigo-400 hover:bg-indigo-100",
+      indigoPrimary: "bg-indigo-500 border-indigo-600 text-white shadow-[0_20px_50px_-12px_rgba(99,102,241,0.5)] hover:-translate-y-2",
+      indigoIcon: "bg-indigo-50 text-indigo-500",
+      indigoActive: "ring-[6px] ring-indigo-400 ring-offset-4 border-indigo-400 bg-white !text-slate-900 shadow-md",
     }
   },
   // Primary 6: Sharp, sophisticated charcoal/gold
@@ -117,6 +137,10 @@ export const LEVEL_THEMES = {
       slate: "bg-slate-800 border-slate-700 text-slate-100 hover:border-neutral-500 hover:bg-slate-700",
       slatePrimary: "bg-neutral-900 border-neutral-700 text-amber-600 shadow-[0_20px_50px_-12px_rgba(245,158,11,0.3)] hover:-translate-y-2",
       slateIcon: "bg-neutral-900 text-amber-600",
+      indigo: "bg-slate-800 border-slate-700 text-slate-100 hover:border-indigo-500 hover:bg-slate-700",
+      indigoPrimary: "bg-indigo-950 border-indigo-600 text-indigo-300 shadow-[0_20px_50px_-12px_rgba(99,102,241,0.3)] hover:-translate-y-2",
+      indigoIcon: "bg-slate-800 text-indigo-400",
+      indigoActive: "ring-[6px] ring-indigo-500 ring-offset-4 border-indigo-500 bg-slate-900 !text-indigo-400",
     }
   }
 };

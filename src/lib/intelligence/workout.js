@@ -78,6 +78,9 @@ export async function getDailyWorkout(studentId, primaryLevel, options = { mode:
                 console.log(`[Trainer] Discarding legacy locked session because it appears to be an isolation session, but daily was requested`);
                 sessionMatchesRequest = false;
               }
+            } else if (requestedMode === 'bar_model') {
+              console.log(`[Trainer] Discarding legacy locked session for bar_model request`);
+              sessionMatchesRequest = false;
             }
           }
 
@@ -133,6 +136,81 @@ export async function getDailyWorkout(studentId, primaryLevel, options = { mode:
       }
       
       const selectedIds = allIds.slice(0, 10).map(item => item.id);
+      const questions = await prisma.questionBank.findMany({
+        where: { id: { in: selectedIds } }
+      });
+      const ordered = selectedIds.map(id => questions.find(q => q.id === id)).filter(Boolean);
+      workout.push(...ordered);
+    }
+  } else if (options?.mode === 'bar_model') {
+    // BAR MODEL PRACTICE: Curate 10 questions specifically using interactive bar models
+    // 1. First priority: questions with INTERACTIVE_BAR_BUILDER
+    const interactiveQuestions = await prisma.questionBank.findMany({
+      where: {
+        level: primaryLevel,
+        isApproved: true,
+        isArchived: false,
+        modelData: {
+          path: ['inputRequirement', 'inputType'],
+          equals: 'INTERACTIVE_BAR_BUILDER'
+        }
+      },
+      select: { id: true }
+    });
+
+    const candidateIds = [...interactiveQuestions.map(q => q.id)];
+
+    // 2. Second priority: questions with BAR_MODEL_COMPARISON visual engine
+    if (candidateIds.length < totalQuestions) {
+      const visualBarQuestions = await prisma.questionBank.findMany({
+        where: {
+          level: primaryLevel,
+          isApproved: true,
+          isArchived: false,
+          id: { notIn: candidateIds },
+          modelData: {
+            path: ['visualEngine', 'componentToRender'],
+            equals: 'BAR_MODEL_COMPARISON'
+          }
+        },
+        select: { id: true }
+      });
+      candidateIds.push(...visualBarQuestions.map(q => q.id));
+    }
+
+    // 3. Fallback: structured questions or questions with heuristic 'BAR_MODEL'
+    if (candidateIds.length < totalQuestions) {
+      const fallbackBarQuestions = await prisma.questionBank.findMany({
+        where: {
+          level: primaryLevel,
+          isApproved: true,
+          isArchived: false,
+          id: { notIn: candidateIds },
+          OR: [
+            { heuristic: 'BAR_MODEL' },
+            { type: 'Structured' }
+          ]
+        },
+        select: { id: true }
+      });
+      candidateIds.push(...fallbackBarQuestions.map(q => q.id));
+    }
+
+    if (candidateIds.length > 0) {
+      // Fisher-Yates shuffle
+      for (let i = candidateIds.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [candidateIds[i], candidateIds[j]] = [candidateIds[j], candidateIds[i]];
+      }
+
+      // Keep interactive questions prioritized at the front of the session
+      const interactiveSet = new Set(interactiveQuestions.map(q => q.id));
+      const prioritized = [
+        ...candidateIds.filter(id => interactiveSet.has(id)),
+        ...candidateIds.filter(id => !interactiveSet.has(id))
+      ];
+
+      const selectedIds = prioritized.slice(0, totalQuestions);
       const questions = await prisma.questionBank.findMany({
         where: { id: { in: selectedIds } }
       });
@@ -217,8 +295,8 @@ export async function getDailyWorkout(studentId, primaryLevel, options = { mode:
   }
 
   // 5. Fallback logic: If we don't have enough specific questions, fill with random ones for that level
-  // ONLY for daily mode! Isolation mode should never mix in random topics.
-  if (options?.mode !== 'isolation' && workout.length < totalQuestions) {
+  // ONLY for daily mode! Isolation and bar model modes should never mix in random topics.
+  if (options?.mode !== 'isolation' && options?.mode !== 'bar_model' && workout.length < totalQuestions) {
     const remaining = totalQuestions - workout.length;
     const fallbackWhere = { level: primaryLevel, isApproved: true, isArchived: false, id: { notIn: workout.map(q => q.id) } };
     

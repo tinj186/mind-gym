@@ -58,7 +58,7 @@ export default async function DailyWorkoutPage({ searchParams }) {
         initialQuestions={workoutSet}
         initialIndex={activeWorkout.currentIndex || 0}
         initialLog={activeWorkout.answersLog || []}
-        title={mode === 'isolation' ? "Hyper-Focused Isolation Reps" : "Daily Training Sequence"}
+        title={mode === 'bar_model' ? "Bar Model Problem Sums" : mode === 'isolation' ? "Hyper-Focused Isolation Reps" : "Daily Training Sequence"}
         mode={mode}
         subtopicId={subtopicId}
       />

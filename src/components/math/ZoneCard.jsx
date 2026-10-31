@@ -5,14 +5,15 @@ export default function ZoneCard({ title, description, href, icon, variant = 'bl
   const defaultVariants = {
     blue: "bg-sky-50 border-sky-100 text-sky-900 hover:border-sky-400 hover:bg-sky-100",
     amber: "bg-yellow-50 border-yellow-200 text-yellow-900 hover:border-yellow-400 hover:bg-yellow-100",
-    slate: "bg-red-50 border-red-200 text-red-900 hover:border-red-400 hover:bg-red-100"
+    slate: "bg-red-50 border-red-200 text-red-900 hover:border-red-400 hover:bg-red-100",
+    indigo: "bg-indigo-50 border-indigo-200 text-indigo-900 hover:border-indigo-400 hover:bg-indigo-100"
   };
 
   const variants = themeVariants || defaultVariants;
 
   const content = (
     <div className={`
-      group relative p-12 rounded-[2.5rem] border transition-all duration-300 active:scale-[0.98] h-full flex flex-col items-center justify-start text-center font-sans
+      group relative p-8 lg:p-10 xl:p-12 rounded-[2.5rem] border transition-all duration-300 active:scale-[0.98] h-full flex flex-col items-center justify-start text-center font-sans
       ${isLocked 
         ? 'bg-slate-50 border-slate-200 text-slate-400 grayscale opacity-70 cursor-not-allowed'
         : `cursor-pointer ${isPrimary ? variants[`${variant}Primary`] || 'bg-sky-400 border-sky-500 text-white shadow-[0_20px_50px_-12px_rgba(56,189,248,0.5)] hover:-translate-y-2' : `${variants[variant] || variants.blue} shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] hover:-translate-y-1`}`
