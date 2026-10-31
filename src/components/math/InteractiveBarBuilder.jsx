@@ -1,7 +1,16 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, AlertCircle, ArrowRight, Layers, Scale, RefreshCw, HelpCircle, Sparkles, ChevronDown, ChevronUp, Eye, Plus, Trash2, Zap, RotateCcw } from 'lucide-react';
+import { CheckCircle2, AlertCircle, ArrowRight, Layers, Scale, RefreshCw, HelpCircle, Sparkles, ChevronDown, ChevronUp, Eye, Plus, Trash2, Zap, RotateCcw, X } from 'lucide-react';
 import MultiStepInput from '@/components/math/MultiStepInput';
+
+/**
+ * Vertical Curly Bracket SVG for Comparative Bar Models
+ */
+const CurlyBracket = () => (
+  <svg width="100%" height="100%" viewBox="0 0 30 100" preserveAspectRatio="none" className="text-slate-400">
+    <path d="M 5 0 C 15 0, 15 5, 15 15 L 15 40 C 15 45, 20 50, 25 50 C 20 50, 15 55, 15 60 L 15 85 C 15 95, 15 100, 5 100" fill="none" stroke="currentColor" strokeWidth="3" vectorEffect="non-scaling-stroke" strokeLinecap="round"/>
+  </svg>
+);
 
 /**
  * Miniature Preview Diagrams for each Bar Model Archetype
@@ -296,14 +305,18 @@ export function checkPartWholeParameters(userParts = [], userWhole = '', config 
  * Validates the student's structured bar state against problem config entities.
  * Returns defect classification for rich learning analytics and targeted feedback.
  */
-export function checkBarModelParameters(userBars = [], config = {}) {
+export function checkBarModelParameters(userBars = [], config = {}, totalState = {}) {
   if (config?.correctModelType === 'PART_WHOLE') {
     const parts = Array.isArray(userBars) ? userBars : (userBars.parts || []);
     const whole = userBars.whole || '';
     return checkPartWholeParameters(parts, whole, config);
   }
 
-  if (!userBars || userBars.length === 0) {
+  const rawBars = Array.isArray(userBars) ? userBars : (userBars.bars || []);
+  const hasTotal = totalState.hasCombinedTotal ?? userBars.hasCombinedTotal ?? false;
+  const totalVal = totalState.combinedTotalValue ?? userBars.combinedTotalValue ?? '';
+
+  if (!rawBars || rawBars.length === 0) {
     return {
       isValid: false,
       defect: 'NO_BARS_BUILT',
@@ -312,7 +325,7 @@ export function checkBarModelParameters(userBars = [], config = {}) {
     };
   }
 
-  const blankBar = userBars.find(b => !b.name || !b.name.trim());
+  const blankBar = rawBars.find(b => !b.name || !b.name.trim());
   if (blankBar) {
     return {
       isValid: false,
@@ -328,28 +341,28 @@ export function checkBarModelParameters(userBars = [], config = {}) {
   }
 
   // 1. Check bar count
-  if (userBars.length < expectedEntities.length) {
+  if (rawBars.length < expectedEntities.length) {
     const entityNames = expectedEntities.map(e => e.name).join(', ');
     return {
       isValid: false,
       defect: 'INSUFFICIENT_BARS',
-      errorMsg: `This problem requires ${expectedEntities.length} bars (${entityNames}). You have only built ${userBars.length} bar(s).`,
-      details: { expectedCount: expectedEntities.length, actualCount: userBars.length }
+      errorMsg: `This problem requires ${expectedEntities.length} bars (${entityNames}). You have only built ${rawBars.length} bar(s).`,
+      details: { expectedCount: expectedEntities.length, actualCount: rawBars.length }
     };
   }
 
-  if (userBars.length > expectedEntities.length) {
+  if (rawBars.length > expectedEntities.length) {
     return {
       isValid: false,
       defect: 'TOO_MANY_BARS',
       errorMsg: `This problem only compares ${expectedEntities.length} entities. Please remove unnecessary extra bars.`,
-      details: { expectedCount: expectedEntities.length, actualCount: userBars.length }
+      details: { expectedCount: expectedEntities.length, actualCount: rawBars.length }
     };
   }
 
   // 2. Check each expected entity is represented
   for (const expEntity of expectedEntities) {
-    const matched = userBars.find(b => normalizeName(b.name) === normalizeName(expEntity.name));
+    const matched = rawBars.find(b => normalizeName(b.name) === normalizeName(expEntity.name));
     if (!matched) {
       return {
         isValid: false,
@@ -362,7 +375,7 @@ export function checkBarModelParameters(userBars = [], config = {}) {
 
   // 3. Validate Base Entity
   const expectedBase = expectedEntities.find(e => e.relation === 'BASE') || expectedEntities[0];
-  const baseBar = userBars.find(b => normalizeName(b.name) === normalizeName(expectedBase.name));
+  const baseBar = rawBars.find(b => normalizeName(b.name) === normalizeName(expectedBase.name));
   if (baseBar) {
     if (baseBar.hasDifference) {
       return {
@@ -411,7 +424,7 @@ export function checkBarModelParameters(userBars = [], config = {}) {
   // 4. Validate Comparative Entities (MORE / FEWER)
   const compEntities = expectedEntities.filter(e => e.relation === 'MORE' || e.relation === 'FEWER');
   for (const comp of compEntities) {
-    const compBar = userBars.find(b => normalizeName(b.name) === normalizeName(comp.name));
+    const compBar = rawBars.find(b => normalizeName(b.name) === normalizeName(comp.name));
     if (!compBar) continue;
 
     if (!compBar.hasDifference) {
@@ -473,6 +486,64 @@ export function checkBarModelParameters(userBars = [], config = {}) {
           };
         }
       }
+    }
+  }
+
+  // 5. Validate Combined Total Bracket
+  const expectsTotal = Boolean(config?.total || config?.target?.type === 'TOTAL');
+  if (expectsTotal) {
+    if (!hasTotal) {
+      return {
+        isValid: false,
+        defect: 'MISSING_COMBINED_TOTAL',
+        errorMsg: "This problem involves a combined total. Click '+ Combined Total' to add the total bracket to your model.",
+        details: null
+      };
+    }
+
+    const expTotalVal = config?.total?.value;
+    const isTargetTotal = config?.total?.isTarget || config?.target?.type === 'TOTAL';
+
+    if (!isTargetTotal && expTotalVal !== undefined && expTotalVal !== null && expTotalVal !== '') {
+      const expNorm = normalizeNumber(expTotalVal);
+      const actNorm = normalizeNumber(totalVal);
+      const displayTotal = config?.total?.displayValue || Number(expTotalVal).toLocaleString();
+
+      if (!actNorm) {
+        return {
+          isValid: false,
+          defect: 'MISSING_TOTAL_VALUE',
+          errorMsg: `Please enter the combined total (${displayTotal}) in the total bracket.`,
+          details: { expected: displayTotal }
+        };
+      }
+      if (actNorm !== expNorm) {
+        return {
+          isValid: false,
+          defect: 'INCORRECT_TOTAL_VALUE',
+          errorMsg: `The combined total should be ${displayTotal}, but got "${totalVal}".`,
+          details: { expected: expNorm, actual: actNorm }
+        };
+      }
+    } else if (isTargetTotal) {
+      const actNorm = normalizeNumber(totalVal);
+      if (actNorm && actNorm !== '?' && expTotalVal !== undefined && actNorm !== normalizeNumber(expTotalVal)) {
+        return {
+          isValid: false,
+          defect: 'INCORRECT_TOTAL_VALUE',
+          errorMsg: `The combined total is unknown. Mark it with "?" or leave it blank.`,
+          details: { expected: '?', actual: actNorm }
+        };
+      }
+    }
+  } else {
+    if (hasTotal) {
+      return {
+        isValid: false,
+        defect: 'UNEXPECTED_COMBINED_TOTAL',
+        errorMsg: "This problem compares entities directly and does not have a combined total. Please remove the total bracket.",
+        details: null
+      };
     }
   }
 
@@ -583,94 +654,102 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
       </div>
 
       {/* Unified Comparative Bar Canvas */}
-      <div className="p-4 sm:p-5 bg-white border-2 border-emerald-100 rounded-2xl space-y-3 shadow-xs">
-        {entities.map((e, idx) => {
-          const isBase = e.relation === 'BASE';
-          const isMore = e.relation === 'MORE';
-          const isFewer = e.relation === 'FEWER';
-          const cleanDiffNum = e.diffValue ? Number(e.diffValue).toLocaleString() : (e.displayDiff || '').replace(/[+\-]/g, '').trim();
+      <div className="p-4 sm:p-5 bg-white border-2 border-emerald-100 rounded-2xl shadow-xs overflow-x-auto">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-max">
+          <div className="flex-1 space-y-3 min-w-[260px]">
+            {entities.map((e, idx) => {
+              const isBase = e.relation === 'BASE';
+              const isMore = e.relation === 'MORE';
+              const isFewer = e.relation === 'FEWER';
+              const cleanDiffNum = e.diffValue ? Number(e.diffValue).toLocaleString() : (e.displayDiff || '').replace(/[+\-]/g, '').trim();
 
-          return (
-            <div key={e.id || idx} className="flex items-center gap-2 sm:gap-3">
-              {/* Entity Name */}
-              <div className="w-20 sm:w-24 text-right shrink-0">
-                <span className="text-xs font-black uppercase tracking-wider text-slate-800 truncate block">
-                  {e.name}
-                </span>
-              </div>
-
-              {/* Vertical Starting Line & Bar Track */}
-              <div className="flex-1 pl-3 border-l-4 border-indigo-500 border-dashed py-0.5">
-                <div className="flex items-center h-11 bg-slate-50/80 rounded-xl border border-slate-200 p-1 shadow-xs relative overflow-visible">
-                  {/* Solid Base Segment */}
-                  <div
-                    style={{ width: isFewer ? '38%' : '50%' }}
-                    className={`h-full rounded-lg flex items-center justify-center text-xs font-black text-white shadow-xs px-2 truncate shrink-0 ${
-                      idx === 0 ? 'bg-indigo-600' : idx === 1 ? 'bg-indigo-500' : 'bg-indigo-400'
-                    }`}
-                  >
-                    {isBase ? (e.displayValue || (e.value ? Number(e.value).toLocaleString() : "")) : ""}
+              return (
+                <div key={e.id || idx} className="flex items-center gap-2 sm:gap-3">
+                  {/* Entity Name */}
+                  <div className="w-20 sm:w-24 text-right shrink-0">
+                    <span className="text-xs font-black uppercase tracking-wider text-slate-800 truncate block">
+                      {e.name}
+                    </span>
                   </div>
 
-                  {/* MORE: Solid green segment protruding */}
-                  {isMore && (
-                    <div
-                      style={{ width: '22%' }}
-                      className="h-full rounded-lg ml-1 px-2 flex items-center justify-center text-xs font-black text-white shadow-xs border border-emerald-400 border-dashed bg-emerald-500 truncate shrink-0"
-                    >
-                      +{cleanDiffNum || "Diff"}
+                  {/* Vertical Starting Line & Bar Track */}
+                  <div className="flex-1 pl-3 border-l-4 border-indigo-500 border-dashed py-0.5">
+                    <div className="flex items-center h-11 bg-slate-50/80 rounded-xl border border-slate-200 p-1 shadow-xs relative overflow-visible">
+                      {/* Solid Base Segment */}
+                      <div
+                        style={{ width: isFewer ? '38%' : '50%' }}
+                        className={`h-full rounded-lg flex items-center justify-center text-xs font-black text-white shadow-xs px-2 truncate shrink-0 ${
+                          idx === 0 ? 'bg-indigo-600' : idx === 1 ? 'bg-indigo-500' : 'bg-indigo-400'
+                        }`}
+                      >
+                        {isBase ? (e.displayValue || (e.value ? Number(e.value).toLocaleString() : "")) : ""}
+                      </div>
+
+                      {/* MORE: Solid green segment protruding */}
+                      {isMore && (
+                        <div
+                          style={{ width: '22%' }}
+                          className="h-full rounded-lg ml-1 px-2 flex items-center justify-center text-xs font-black text-white shadow-xs border border-emerald-400 border-dashed bg-emerald-500 truncate shrink-0"
+                        >
+                          +{cleanDiffNum || "Diff"}
+                        </div>
+                      )}
+
+                      {/* FEWER: Shortage gap with bottom bracket and unsigned diff */}
+                      {isFewer && (
+                        <div
+                          style={{ width: '16%' }}
+                          className="relative h-full ml-1 flex flex-col justify-between items-center py-1 px-1 overflow-visible select-none shrink-0"
+                        >
+                          {/* Vertical dotted reference line from bar above */}
+                          <div className="absolute right-0 -top-6 bottom-0 w-0 border-r-2 border-dotted border-rose-400 pointer-events-none z-10">
+                            <span className="absolute -top-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                            <span className="absolute -bottom-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                          </div>
+
+                          {/* Guide floor */}
+                          <div className="absolute inset-0 bg-rose-50/20 border-b border-dashed border-rose-200 rounded-lg pointer-events-none" />
+
+                          {/* Unsigned Number */}
+                          <div className="relative z-10 flex-1 flex items-center justify-center">
+                            <span className="text-[11px] font-black text-rose-700 font-mono tracking-tight px-1.5 py-0.2 bg-white rounded border border-rose-200 shadow-2xs truncate">
+                              {cleanDiffNum}
+                            </span>
+                          </div>
+
+                          {/* Bottom Bracket */}
+                          <div className="relative z-10 w-full h-2 border-x-2 border-b-2 border-rose-500 rounded-b-md">
+                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0 border-x-3 border-x-transparent border-t-3 border-t-rose-500" />
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
-
-                  {/* FEWER: Shortage gap with bottom bracket and unsigned diff */}
-                  {isFewer && (
-                    <div
-                      style={{ width: '16%' }}
-                      className="relative h-full ml-1 flex flex-col justify-between items-center py-1 px-1 overflow-visible select-none shrink-0"
-                    >
-                      {/* Vertical dotted reference line from bar above */}
-                      <div className="absolute right-0 -top-6 bottom-0 w-0 border-r-2 border-dotted border-rose-400 pointer-events-none z-10">
-                        <span className="absolute -top-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
-                        <span className="absolute -bottom-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
-                      </div>
-
-                      {/* Guide floor */}
-                      <div className="absolute inset-0 bg-rose-50/20 border-b border-dashed border-rose-200 rounded-lg pointer-events-none" />
-
-                      {/* Unsigned Number */}
-                      <div className="relative z-10 flex-1 flex items-center justify-center">
-                        <span className="text-[11px] font-black text-rose-700 font-mono tracking-tight px-1.5 py-0.2 bg-white rounded border border-rose-200 shadow-2xs truncate">
-                          {cleanDiffNum}
-                        </span>
-                      </div>
-
-                      {/* Bottom Bracket */}
-                      <div className="relative z-10 w-full h-2 border-x-2 border-b-2 border-rose-500 rounded-b-md">
-                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0 border-x-3 border-x-transparent border-t-3 border-t-rose-500" />
-                      </div>
-                    </div>
-                  )}
+                  </div>
                 </div>
+              );
+            })}
+          </div>
+
+          {/* Right-side Total Bracket */}
+          {(target?.type === 'TOTAL' || config?.total) && (
+            <div className="flex items-center gap-1.5 shrink-0 pl-1 py-1">
+              <div className="w-7 sm:w-8 h-24 max-h-full py-1 text-slate-400 shrink-0">
+                <CurlyBracket />
+              </div>
+              <div className="flex flex-col items-start gap-0.5 px-3 py-1.5 bg-emerald-50 rounded-2xl border-2 border-emerald-300 shadow-2xs shrink-0">
+                <span className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">
+                  {config?.total?.label || "Total"}
+                </span>
+                <span className="text-xs font-black font-mono text-emerald-800">
+                  {config?.total?.isTarget || target?.type === 'TOTAL' 
+                    ? `? ${itemName}` 
+                    : `${config?.total?.displayValue || (config?.total?.value !== undefined ? Number(config?.total?.value).toLocaleString() : '?')} ${itemName}`}
+                </span>
               </div>
             </div>
-          );
-        })}
-      </div>
-
-      {/* Combined Total Bracket */}
-      {(target?.type === 'TOTAL' || config?.total) && (
-        <div className="flex items-center justify-between bg-amber-50 p-3.5 rounded-2xl border border-amber-200">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-amber-600" />
-            <span className="text-xs font-black text-amber-950 uppercase tracking-wider">
-              {config?.total?.label || "Combined Total"}
-            </span>
-          </div>
-          <div className="px-3 py-1 bg-amber-400 text-slate-900 font-black rounded-xl text-xs shadow-xs">
-            {config?.total?.isTarget || target?.type === 'TOTAL' ? `? ${itemName}` : `${config?.total?.displayValue || (config?.total?.value !== undefined ? Number(config?.total?.value).toLocaleString() : '?')} ${itemName}`}
-          </div>
+          )}
         </div>
-      )}
+      </div>
       {target?.type === 'BAR' && (
         <div className="flex items-center justify-between bg-indigo-50 p-3 rounded-2xl border border-indigo-200 text-xs">
           <span className="font-bold text-indigo-950">Target to Solve:</span>
@@ -795,83 +874,96 @@ export function CompactBarCanvas({
       </div>
 
       {/* Bars Stack */}
-      <div className="p-3 bg-white rounded-2xl border border-slate-200 space-y-2">
-        {bars.map((bar, idx) => {
-          const isBottom = (bar.bracketPosition || 'bottom') === 'bottom';
-          const cleanDiff = (bar.diffValue || "").replace(/[+\-]/g, '').trim();
+      <div className="p-3 bg-white rounded-2xl border border-slate-200 overflow-x-auto">
+        <div className="flex items-center gap-2 min-w-max">
+          <div className="flex-1 space-y-2 min-w-[240px]">
+            {bars.map((bar, idx) => {
+              const isBottom = (bar.bracketPosition || 'bottom') === 'bottom';
+              const cleanDiff = (bar.diffValue || "").replace(/[+\-]/g, '').trim();
 
-          return (
-            <div key={bar.id || idx} className="flex items-center gap-2">
-              <div className="w-20 text-right shrink-0">
-                <span className="text-xs font-black uppercase text-slate-800 truncate block">
-                  {bar.name || `Bar ${idx + 1}`}
+              return (
+                <div key={bar.id || idx} className="flex items-center gap-2">
+                  <div className="w-20 text-right shrink-0">
+                    <span className="text-xs font-black uppercase text-slate-800 truncate block">
+                      {bar.name || `Bar ${idx + 1}`}
+                    </span>
+                  </div>
+                  <div className="flex-1 pl-2.5 border-l-4 border-indigo-500 border-dashed py-0.5">
+                    <div className="flex items-center h-9 bg-slate-50 rounded-lg border border-slate-200 p-0.5 overflow-visible relative">
+                      <div
+                        style={{ width: `${bar.length || 50}%` }}
+                        className={`h-full rounded-md flex items-center justify-center text-xs font-black text-white px-2 truncate shrink-0 ${
+                          idx === 0 ? 'bg-indigo-600' : idx === 1 ? 'bg-indigo-500' : 'bg-indigo-400'
+                        }`}
+                      >
+                        {bar.value || ""}
+                      </div>
+
+                      {bar.hasDifference && (
+                        bar.diffType === 'FEWER' ? (
+                          <div
+                            style={{ width: `${bar.diffLength || 20}%` }}
+                            className="relative h-full ml-1 flex flex-col justify-between items-center py-0.5 px-1 overflow-visible select-none shrink-0"
+                          >
+                            <div className={`absolute right-0 w-0 border-r-2 border-dotted border-rose-400 pointer-events-none z-10 ${
+                              isBottom ? '-top-5 bottom-0' : 'top-0 -bottom-5'
+                            }`} />
+                            {isBottom ? (
+                              <>
+                                <div className="relative z-10 flex-1 flex items-center justify-center">
+                                  <span className="text-[10px] font-black text-rose-700 font-mono tracking-tight px-1 py-0.2 bg-white rounded border border-rose-200">
+                                    {cleanDiff}
+                                  </span>
+                                </div>
+                                <div className="relative z-10 w-full h-1.5 border-x-2 border-b-2 border-rose-500 rounded-b-sm" />
+                              </>
+                            ) : (
+                              <>
+                                <div className="relative z-10 w-full h-1.5 border-x-2 border-t-2 border-rose-500 rounded-t-sm" />
+                                <div className="relative z-10 flex-1 flex items-center justify-center">
+                                  <span className="text-[10px] font-black text-rose-700 font-mono tracking-tight px-1 py-0.2 bg-white rounded border border-rose-200">
+                                    {cleanDiff}
+                                  </span>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        ) : (
+                          <div
+                            style={{ width: `${bar.diffLength || 20}%` }}
+                            className="h-full rounded-md ml-1 px-2 flex items-center justify-center text-xs font-black text-white border border-emerald-400 border-dashed bg-emerald-500 truncate shrink-0"
+                          >
+                            {bar.diffValue || "+ More"}
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Right-side Total Bracket */}
+          {(target?.type === 'TOTAL' || total) && (
+            <div className="flex items-center gap-1 shrink-0 pl-1 py-1">
+              <div className="w-6 sm:w-7 h-20 max-h-full py-0.5 text-slate-400 shrink-0">
+                <CurlyBracket />
+              </div>
+              <div className="flex flex-col items-start gap-0.5 px-2.5 py-1 bg-amber-50 rounded-xl border border-amber-300 shadow-2xs shrink-0">
+                <span className="text-[9px] font-black text-amber-950 uppercase tracking-widest">
+                  {total?.label || "Total"}
+                </span>
+                <span className="text-xs font-black font-mono text-amber-900">
+                  {total?.isTarget || target?.type === 'TOTAL' 
+                    ? `? ${itemName}` 
+                    : `${total?.displayValue || (total?.value !== undefined ? Number(total?.value).toLocaleString() : '?')} ${itemName}`}
                 </span>
               </div>
-              <div className="flex-1 pl-2.5 border-l-4 border-indigo-500 border-dashed py-0.5">
-                <div className="flex items-center h-9 bg-slate-50 rounded-lg border border-slate-200 p-0.5 overflow-visible relative">
-                  <div
-                    style={{ width: `${bar.length || 50}%` }}
-                    className={`h-full rounded-md flex items-center justify-center text-xs font-black text-white px-2 truncate shrink-0 ${
-                      idx === 0 ? 'bg-indigo-600' : idx === 1 ? 'bg-indigo-500' : 'bg-indigo-400'
-                    }`}
-                  >
-                    {bar.value || ""}
-                  </div>
-
-                  {bar.hasDifference && (
-                    bar.diffType === 'FEWER' ? (
-                      <div
-                        style={{ width: `${bar.diffLength || 20}%` }}
-                        className="relative h-full ml-1 flex flex-col justify-between items-center py-0.5 px-1 overflow-visible select-none shrink-0"
-                      >
-                        <div className={`absolute right-0 w-0 border-r-2 border-dotted border-rose-400 pointer-events-none z-10 ${
-                          isBottom ? '-top-5 bottom-0' : 'top-0 -bottom-5'
-                        }`} />
-                        {isBottom ? (
-                          <>
-                            <div className="relative z-10 flex-1 flex items-center justify-center">
-                              <span className="text-[10px] font-black text-rose-700 font-mono tracking-tight px-1 py-0.2 bg-white rounded border border-rose-200">
-                                {cleanDiff}
-                              </span>
-                            </div>
-                            <div className="relative z-10 w-full h-1.5 border-x-2 border-b-2 border-rose-500 rounded-b-sm" />
-                          </>
-                        ) : (
-                          <>
-                            <div className="relative z-10 w-full h-1.5 border-x-2 border-t-2 border-rose-500 rounded-t-sm" />
-                            <div className="relative z-10 flex-1 flex items-center justify-center">
-                              <span className="text-[10px] font-black text-rose-700 font-mono tracking-tight px-1 py-0.2 bg-white rounded border border-rose-200">
-                                {cleanDiff}
-                              </span>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    ) : (
-                      <div
-                        style={{ width: `${bar.diffLength || 20}%` }}
-                        className="h-full rounded-md ml-1 px-2 flex items-center justify-center text-xs font-black text-white border border-emerald-400 border-dashed bg-emerald-500 truncate shrink-0"
-                      >
-                        {bar.diffValue || "+ More"}
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
             </div>
-          );
-        })}
-      </div>
-
-      {/* Combined Total Bracket */}
-      {(target?.type === 'TOTAL' || total) && (
-        <div className="flex items-center justify-between bg-amber-50 px-3 py-2 rounded-xl border border-amber-200 text-xs">
-          <span className="font-bold text-amber-950">{total?.label || "Combined Total"}</span>
-          <span className="font-black text-amber-800 bg-amber-200 px-2 py-0.5 rounded-lg">
-            {total?.isTarget || target?.type === 'TOTAL' ? `? ${itemName}` : `${total?.displayValue || (total?.value !== undefined ? Number(total?.value).toLocaleString() : '?')} ${itemName}`}
-          </span>
+          )}
         </div>
-      )}
+      </div>
       {target?.type === 'BAR' && (
         <div className="flex items-center justify-between bg-indigo-50 px-3 py-2 rounded-xl border border-indigo-200 text-xs">
           <span className="font-bold text-indigo-950">Target to Solve:</span>
@@ -918,6 +1010,8 @@ export default function InteractiveBarBuilder({
 
   // Stage 2: Interactive Bar Builder State & Defect Tracking
   const [userBars, setUserBars] = useState([]);
+  const [hasCombinedTotal, setHasCombinedTotal] = useState(false);
+  const [combinedTotalValue, setCombinedTotalValue] = useState('');
   const [userParts, setUserParts] = useState([]);
   const [userWhole, setUserWhole] = useState('');
   const [stage2Status, setStage2Status] = useState('idle'); // 'idle' | 'correct' | 'incorrect'
@@ -1124,12 +1218,21 @@ export default function InteractiveBarBuilder({
       };
     });
     setUserBars(filled);
+    if (config.total || target?.type === 'TOTAL') {
+      setHasCombinedTotal(true);
+      setCombinedTotalValue(config.total?.isTarget || target?.type === 'TOTAL' ? '?' : (config.total?.displayValue || (config.total?.value !== undefined ? Number(config.total.value).toLocaleString() : '')));
+    } else {
+      setHasCombinedTotal(false);
+      setCombinedTotalValue('');
+    }
     setStage2Status('idle');
     setStage2ErrorMsg(null);
   };
 
   const handleClearBars = () => {
     setUserBars([]);
+    setHasCombinedTotal(false);
+    setCombinedTotalValue('');
     setStage2Status('idle');
     setStage2ErrorMsg(null);
   };
@@ -1143,7 +1246,7 @@ export default function InteractiveBarBuilder({
 
     const checkRes = isPartWhole 
       ? checkPartWholeParameters(userParts, userWhole, config)
-      : checkBarModelParameters(userBars, config);
+      : checkBarModelParameters(userBars, config, { hasCombinedTotal, combinedTotalValue });
 
     if (!checkRes.isValid) {
       setStage2Status('incorrect');
@@ -1154,7 +1257,7 @@ export default function InteractiveBarBuilder({
         details: checkRes.details,
         attempt: defectHistory.length + 1,
         time: Date.now(),
-        snapshot: isPartWhole ? { parts: userParts, whole: userWhole } : { bars: userBars }
+        snapshot: isPartWhole ? { parts: userParts, whole: userWhole } : { bars: userBars, hasCombinedTotal, combinedTotalValue }
       };
       setDefectHistory(prev => [...prev, defectEntry]);
       if (onDefect) {
@@ -1595,19 +1698,33 @@ export default function InteractiveBarBuilder({
                 {userBars.length > 0 && (
                   <button
                     type="button"
-                    onClick={handleToggleCollapseAll}
-                    className="px-2.5 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 transition-all flex items-center gap-1 cursor-pointer"
-                    title={userBars.some(b => !b.isCollapsed) ? "Collapse all parameters to show only bar models" : "Expand all parameters"}
+                    onClick={() => {
+                      const next = !hasCombinedTotal;
+                      setHasCombinedTotal(next);
+                      if (!next) {
+                        setCombinedTotalValue('');
+                      } else if (config.total?.isTarget || target?.type === 'TOTAL') {
+                        setCombinedTotalValue('?');
+                      }
+                      setStage2Status('idle');
+                      setStage2ErrorMsg(null);
+                    }}
+                    className={`px-3 py-1.5 text-xs font-black uppercase tracking-wider rounded-xl border transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer ${
+                      hasCombinedTotal 
+                        ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100' 
+                        : 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200'
+                    }`}
+                    title={hasCombinedTotal ? "Remove combined total bracket" : "Add combined total bracket connecting all bars"}
                   >
-                    {userBars.some(b => !b.isCollapsed) ? (
+                    {hasCombinedTotal ? (
                       <>
-                        <ChevronUp className="w-3.5 h-3.5" />
-                        <span>Collapse All</span>
+                        <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                        <span>Remove Total</span>
                       </>
                     ) : (
                       <>
-                        <ChevronDown className="w-3.5 h-3.5" />
-                        <span>Expand All</span>
+                        <Plus className="w-3.5 h-3.5 text-amber-700" />
+                        <span>+ Combined Total</span>
                       </>
                     )}
                   </button>
@@ -1672,7 +1789,9 @@ export default function InteractiveBarBuilder({
               </div>
             ) : (
               /* Unified Comparative Bar Canvas: Bars stack tightly on a shared baseline */
-              <div className="p-4 sm:p-5 bg-slate-50/70 border-2 border-slate-200 rounded-2xl space-y-2.5">
+              <div className="p-4 sm:p-5 bg-slate-50/70 border-2 border-slate-200 rounded-2xl overflow-x-auto">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-max">
+                  <div className="flex-1 space-y-2.5 min-w-[280px]">
                 {userBars.map((bar, idx) => (
                   <div key={bar.id} className="transition-all duration-200">
                     
@@ -2038,20 +2157,52 @@ export default function InteractiveBarBuilder({
                     )}
                   </div>
                 ))}
-              </div>
-            )}
+                  </div>
 
-            {/* Combined Total Bracket */}
-            {(target.type === 'TOTAL' || config?.total) && userBars.length > 0 && (
-              <div className="pt-4 border-t-2 border-dashed border-slate-200 flex items-center justify-between bg-amber-50/70 p-4 rounded-2xl border border-amber-200">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-amber-600" />
-                  <span className="text-xs font-black text-amber-950 uppercase tracking-wider">
-                    {config?.total?.label || "Combined Total"}
-                  </span>
-                </div>
-                <div className="px-3.5 py-1.5 bg-amber-400 text-slate-900 font-black rounded-xl text-xs shadow-xs animate-pulse">
-                  {config?.total?.isTarget || target.type === 'TOTAL' ? `? ${config.itemName || "Total"}` : `${config?.total?.displayValue || (config?.total?.value !== undefined ? Number(config?.total?.value).toLocaleString() : '?')} ${config.itemName || "units"}`}
+                  {/* Right-side Combined Total Bracket (added by student!) */}
+                  {hasCombinedTotal && (
+                    <div className="flex items-center gap-1.5 shrink-0 pl-1 py-1 animate-in fade-in duration-150">
+                      <div className="w-7 sm:w-8 h-28 max-h-full py-1 text-slate-400 shrink-0">
+                        <CurlyBracket />
+                      </div>
+                      <div className="flex flex-col items-start gap-1 p-2.5 bg-white rounded-2xl border-2 border-amber-300 shadow-sm shrink-0">
+                        <div className="flex items-center justify-between w-full gap-2">
+                          <span className="text-[10px] font-black text-amber-900 uppercase tracking-widest">
+                            {config.total?.label || "Total"}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setHasCombinedTotal(false);
+                              setCombinedTotalValue('');
+                              setStage2Status('idle');
+                              setStage2ErrorMsg(null);
+                            }}
+                            className="text-slate-400 hover:text-rose-600 transition-colors p-0.5 rounded-full cursor-pointer"
+                            title="Remove Total Bracket"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          value={combinedTotalValue}
+                          onChange={(e) => {
+                            setCombinedTotalValue(e.target.value);
+                            setStage2Status('idle');
+                            setStage2ErrorMsg(null);
+                          }}
+                          placeholder={config.total?.isTarget || target?.type === 'TOTAL' ? '?' : 'Enter total'}
+                          className="w-24 sm:w-28 text-xs font-black font-mono text-indigo-700 bg-amber-50/50 border border-amber-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        />
+                        {config?.itemName && (
+                          <span className="text-[9px] font-bold text-slate-400 uppercase truncate max-w-[100px]">
+                            {config.itemName}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -2183,7 +2334,7 @@ export default function InteractiveBarBuilder({
                 bars={userBars} 
                 target={target} 
                 itemName={config.itemName || "Total"} 
-                total={config.total}
+                total={hasCombinedTotal ? { label: config.total?.label || 'Total', value: combinedTotalValue, displayValue: combinedTotalValue } : null}
                 onEdit={() => setCurrentStage(2)} 
               />
             ) : (
