@@ -985,6 +985,257 @@ export function CompactBarCanvas({
 }
 
 /**
+ * BarParametersEditor
+ * Clean, full-width responsive parameter editor card for individual bars in the Comparison model.
+ */
+function BarParametersEditor({
+  bar,
+  barIndex,
+  entities = [],
+  onUpdate,
+  onToggleDiff,
+  onDelete,
+  onCollapse
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 4 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="w-full p-4 sm:p-5 bg-white border-2 border-indigo-100 rounded-2xl shadow-sm space-y-4"
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+        <span className="text-xs font-black text-indigo-950 uppercase tracking-wider flex items-center gap-1.5">
+          <span className="w-4 h-4 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">
+            {barIndex + 1}
+          </span>
+          Editing {bar.name || `Bar ${barIndex + 1}`} Parameters
+        </span>
+        <button
+          type="button"
+          onClick={onCollapse}
+          className="text-xs font-bold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-3 py-1 rounded-xl flex items-center gap-1 cursor-pointer transition-all"
+        >
+          <ChevronUp className="w-3.5 h-3.5" />
+          Done
+        </button>
+      </div>
+
+      {/* Row 1: Name, Value, Length (Aligned 5 / 3 / 4 columns) */}
+      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start">
+        {/* Name input */}
+        <div className="sm:col-span-5 space-y-1">
+          <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
+            Bar Label / Name
+          </label>
+          <input
+            type="text"
+            value={bar.name}
+            onChange={(e) => onUpdate(bar.id, 'name', e.target.value)}
+            placeholder="e.g. Zhi Xuan"
+            className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-indigo-500 shadow-2xs"
+          />
+          {entities.length > 0 && (
+            <div className="flex flex-wrap gap-1 pt-0.5">
+              {entities.map(ent => (
+                <button
+                  key={ent.name}
+                  type="button"
+                  onClick={() => onUpdate(bar.id, 'name', ent.name)}
+                  className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 hover:bg-indigo-100 hover:text-indigo-700 text-slate-700 transition-all cursor-pointer border border-slate-200/60"
+                >
+                  +{ent.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Value Label */}
+        <div className="sm:col-span-3 space-y-1">
+          <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
+            Value Label
+          </label>
+          <input
+            type="text"
+            value={bar.value}
+            onChange={(e) => onUpdate(bar.id, 'value', e.target.value)}
+            placeholder="e.g. 13,400"
+            className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-indigo-500 shadow-2xs"
+          />
+        </div>
+
+        {/* Bar Length Slider */}
+        <div className="sm:col-span-4 space-y-1">
+          <div className="flex justify-between text-[10px] font-black uppercase tracking-wider text-slate-500">
+            <span>Bar Length</span>
+            <span className="font-mono text-indigo-600">{bar.length}%</span>
+          </div>
+          <input
+            type="range"
+            min="20"
+            max="80"
+            value={bar.length}
+            onChange={(e) => onUpdate(bar.id, 'length', Number(e.target.value))}
+            className="w-full accent-indigo-600 cursor-pointer"
+          />
+        </div>
+      </div>
+
+      {/* Row 2: Difference Segment Parameters (Matching 5 / 3 / 4 columns) */}
+      <div className="pt-3 border-t border-slate-100">
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start">
+          {/* Difference Type */}
+          <div className="sm:col-span-5 space-y-1">
+            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
+              Difference Type
+            </label>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => onToggleDiff(bar.id)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-black tracking-wide border transition-all cursor-pointer shrink-0 ${
+                  bar.hasDifference
+                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                    : 'bg-white border-slate-300 text-slate-600 hover:border-indigo-400 hover:text-indigo-600'
+                }`}
+              >
+                {bar.hasDifference ? "✓ Has Diff" : "+ Diff"}
+              </button>
+
+              {bar.hasDifference && (
+                <>
+                  <div className="flex items-center gap-0.5 bg-slate-100 p-0.5 rounded-xl border border-slate-200 shrink-0 shadow-2xs">
+                    <button
+                      type="button"
+                      onClick={() => onUpdate(bar.id, 'diffType', 'MORE')}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
+                        bar.diffType === 'MORE'
+                          ? 'bg-emerald-600 text-white shadow-xs'
+                          : 'text-slate-600 hover:bg-white'
+                      }`}
+                    >
+                      + More
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onUpdate(bar.id, 'diffType', 'FEWER')}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
+                        bar.diffType === 'FEWER'
+                          ? 'bg-rose-600 text-white shadow-xs'
+                          : 'text-slate-600 hover:bg-white'
+                      }`}
+                    >
+                      - Fewer
+                    </button>
+                  </div>
+
+                  {bar.diffType === 'FEWER' && (
+                    <div className="flex items-center gap-0.5 bg-rose-50 p-0.5 rounded-xl border border-rose-200 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => onUpdate(bar.id, 'bracketPosition', 'bottom')}
+                        className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer ${
+                          (bar.bracketPosition || 'bottom') === 'bottom'
+                            ? 'bg-rose-600 text-white shadow-2xs'
+                            : 'text-rose-700 hover:bg-rose-100'
+                        }`}
+                      >
+                        Bottom ⤓
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onUpdate(bar.id, 'bracketPosition', 'top')}
+                        className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer ${
+                          bar.bracketPosition === 'top'
+                            ? 'bg-rose-600 text-white shadow-2xs'
+                            : 'text-rose-700 hover:bg-rose-100'
+                        }`}
+                      >
+                        Top ⤒
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+            {!bar.hasDifference && (
+              <p className="text-[10px] text-slate-400 font-medium pt-0.5">
+                No difference attached. Click "+ Diff" to add.
+              </p>
+            )}
+          </div>
+
+          {/* Diff Value */}
+          <div className="sm:col-span-3 space-y-1">
+            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
+              Diff Value
+            </label>
+            <input
+              type="text"
+              disabled={!bar.hasDifference}
+              value={bar.diffValue}
+              onChange={(e) => onUpdate(bar.id, 'diffValue', e.target.value)}
+              placeholder={bar.hasDifference ? (bar.diffType === 'FEWER' ? "e.g. 5,000" : "e.g. 4,200") : "—"}
+              className={`w-full border rounded-xl px-3 py-1.5 text-xs font-bold focus:outline-none transition-all ${
+                bar.hasDifference
+                  ? 'bg-white border-slate-300 text-slate-900 focus:border-indigo-500 shadow-2xs'
+                  : 'bg-slate-50 border-slate-200 text-slate-300 cursor-not-allowed'
+              }`}
+            />
+          </div>
+
+          {/* Diff Width Slider */}
+          <div className="sm:col-span-4 space-y-1">
+            <div className="flex justify-between text-[10px] font-black uppercase tracking-wider text-slate-500">
+              <span>Diff Width</span>
+              <span className="font-mono text-indigo-600">
+                {bar.hasDifference ? `${bar.diffLength}%` : "—"}
+              </span>
+            </div>
+            <input
+              type="range"
+              min="10"
+              max="40"
+              disabled={!bar.hasDifference}
+              value={bar.diffLength}
+              onChange={(e) => onUpdate(bar.id, 'diffLength', Number(e.target.value))}
+              className={`w-full cursor-pointer ${
+                bar.hasDifference
+                  ? bar.diffType === 'FEWER' ? 'accent-rose-600' : 'accent-emerald-600'
+                  : 'accent-slate-300 cursor-not-allowed'
+              }`}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Footer: Delete Bar & Done */}
+      <div className="pt-2 flex items-center justify-between border-t border-slate-100">
+        <button
+          type="button"
+          onClick={() => onDelete(bar.id)}
+          className="text-xs font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-200 flex items-center gap-1.5 transition-all cursor-pointer"
+          title="Delete this bar"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+          Delete Bar
+        </button>
+
+        <button
+          type="button"
+          onClick={onCollapse}
+          className="text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3.5 py-1.5 rounded-xl flex items-center gap-1 transition-all cursor-pointer"
+        >
+          <ChevronUp className="w-3.5 h-3.5" />
+          Done / Collapse
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+/**
  * InteractiveBarBuilder
  * 
  * An interactive 3-stage bar model solver designed for structured problem sums.
@@ -1788,10 +2039,11 @@ export default function InteractiveBarBuilder({
                 </button>
               </div>
             ) : (
-              /* Unified Comparative Bar Canvas: Bars stack tightly on a shared baseline */
-              <div className="p-4 sm:p-5 bg-slate-50/70 border-2 border-slate-200 rounded-2xl overflow-x-auto">
-                <div className="flex items-center gap-2 sm:gap-3 min-w-max">
-                  <div className="flex-1 space-y-2.5 min-w-[280px]">
+              /* Unified Comparative Bar Canvas: Compact live model on top, full-width parameter editor below */
+              <div className="p-4 sm:p-5 bg-slate-50/70 border-2 border-slate-200 rounded-2xl space-y-4 w-full">
+                {/* ══ 1. The Live Visual Bars Stack with Side Total Bracket ══ */}
+                <div className="flex items-center gap-2 sm:gap-3 w-full">
+                  <div className="flex-1 space-y-2">
                 {userBars.map((bar, idx) => (
                   <div key={bar.id} className="transition-all duration-200">
                     
@@ -1913,253 +2165,11 @@ export default function InteractiveBarBuilder({
                       </div>
                     </div>
 
-                    {/* ══ Collapsible Parameters Panel (Only visible when NOT collapsed) ══ */}
-                    {!bar.isCollapsed && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="ml-24 sm:ml-28 mt-2 p-4 bg-white border-2 border-indigo-100 rounded-2xl shadow-sm space-y-3"
-                      >
-                        {/* Section Header */}
-                        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                          <span className="text-xs font-black text-indigo-950 uppercase tracking-wider flex items-center gap-1.5">
-                            <span className="w-4 h-4 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">
-                              {idx + 1}
-                            </span>
-                            Editing {bar.name || `Bar ${idx + 1}`} Parameters
-                          </span>
-                          <span className="text-[11px] text-slate-400 font-semibold">
-                            Adjust length, labels & difference
-                          </span>
-                        </div>
-
-                        {/* Primary Inputs Row: Base Bar Parameters */}
-                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start">
-                          {/* Name input */}
-                          <div className="sm:col-span-5 space-y-1">
-                            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
-                              Bar Label / Name
-                            </label>
-                            <input
-                              type="text"
-                              value={bar.name}
-                              onChange={(e) => handleUpdateBar(bar.id, 'name', e.target.value)}
-                              placeholder="e.g. Arjun"
-                              className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-indigo-500 shadow-2xs"
-                            />
-                            {/* Quick Suggestion Chips from Problem Entities */}
-                            {entities.length > 0 && (
-                              <div className="flex flex-wrap gap-1 pt-0.5">
-                                {entities.map(ent => (
-                                  <button
-                                    key={ent.name}
-                                    type="button"
-                                    onClick={() => handleUpdateBar(bar.id, 'name', ent.name)}
-                                    className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 hover:bg-indigo-100 hover:text-indigo-700 text-slate-700 transition-all cursor-pointer border border-slate-200/60"
-                                  >
-                                    +{ent.name}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Value label */}
-                          <div className="sm:col-span-3 space-y-1">
-                            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
-                              Value Label
-                            </label>
-                            <input
-                              type="text"
-                              value={bar.value}
-                              onChange={(e) => handleUpdateBar(bar.id, 'value', e.target.value)}
-                              placeholder="e.g. 13,400"
-                              className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-indigo-500 shadow-2xs"
-                            />
-                          </div>
-
-                          {/* Bar Length Slider */}
-                          <div className="sm:col-span-4 space-y-1">
-                            <div className="flex justify-between text-[10px] font-black uppercase tracking-wider text-slate-500">
-                              <span>Bar Length</span>
-                              <span className="font-mono text-indigo-600">{bar.length}%</span>
-                            </div>
-                            <input
-                              type="range"
-                              min="20"
-                              max="80"
-                              value={bar.length}
-                              onChange={(e) => handleUpdateBar(bar.id, 'length', Number(e.target.value))}
-                              className="w-full accent-indigo-600 cursor-pointer"
-                            />
-                          </div>
-                        </div>
-
-                        {/* Line 2: Difference Segment Parameters (Exact same column widths & alignment) */}
-                        <div className="pt-3 border-t border-slate-100">
-                          <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start">
-                            {/* Column 1: Difference Type Buttons (sm:col-span-5, matching Bar Label / Name) */}
-                            <div className="sm:col-span-5 space-y-1">
-                              <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
-                                Difference Type
-                              </label>
-                              <div className="flex flex-wrap items-center gap-1.5">
-                                {/* Has Diff Button */}
-                                <button
-                                  type="button"
-                                  onClick={() => handleToggleDifference(bar.id)}
-                                  className={`px-3 py-1.5 rounded-xl text-xs font-black tracking-wide border transition-all cursor-pointer shrink-0 ${
-                                    bar.hasDifference
-                                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
-                                      : 'bg-white border-slate-300 text-slate-600 hover:border-indigo-400 hover:text-indigo-600'
-                                  }`}
-                                >
-                                  {bar.hasDifference ? "✓ Has Diff" : "+ Diff"}
-                                </button>
-
-                                {bar.hasDifference && (
-                                  <>
-                                    {/* Type (+ More / - Fewer) */}
-                                    <div className="flex items-center gap-0.5 bg-slate-100 p-0.5 rounded-xl border border-slate-200 shrink-0 shadow-2xs">
-                                      <button
-                                        type="button"
-                                        onClick={() => handleUpdateBar(bar.id, 'diffType', 'MORE')}
-                                        className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
-                                          bar.diffType === 'MORE'
-                                            ? 'bg-emerald-600 text-white shadow-xs'
-                                            : 'text-slate-600 hover:bg-white'
-                                        }`}
-                                      >
-                                        + More
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => handleUpdateBar(bar.id, 'diffType', 'FEWER')}
-                                        className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
-                                          bar.diffType === 'FEWER'
-                                            ? 'bg-rose-600 text-white shadow-xs'
-                                            : 'text-slate-600 hover:bg-white'
-                                        }`}
-                                      >
-                                        - Fewer
-                                      </button>
-                                    </div>
-
-                                    {/* Bracket Position Toggle (for negative difference / FEWER) */}
-                                    {bar.diffType === 'FEWER' && (
-                                      <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200 shrink-0 shadow-2xs">
-                                        <span className="text-[10px] font-black uppercase text-slate-400 pl-1.5 shrink-0">
-                                          Bracket:
-                                        </span>
-                                        <button
-                                          type="button"
-                                          onClick={() => handleUpdateBar(bar.id, 'bracketPosition', 'bottom')}
-                                          className={`px-2 py-0.5 rounded-lg text-[10px] font-black flex items-center gap-1 transition-all cursor-pointer ${
-                                            (bar.bracketPosition || (idx > 0 ? 'bottom' : 'top')) === 'bottom'
-                                              ? 'bg-indigo-600 text-white shadow-xs'
-                                              : 'text-slate-600 hover:bg-white'
-                                          }`}
-                                          title="Render bottom bracket"
-                                        >
-                                          <span>⎵</span>
-                                          <span>Bottom</span>
-                                        </button>
-                                        <button
-                                          type="button"
-                                          onClick={() => handleUpdateBar(bar.id, 'bracketPosition', 'top')}
-                                          className={`px-2 py-0.5 rounded-lg text-[10px] font-black flex items-center gap-1 transition-all cursor-pointer ${
-                                            (bar.bracketPosition || (idx > 0 ? 'bottom' : 'top')) === 'top'
-                                              ? 'bg-indigo-600 text-white shadow-xs'
-                                              : 'text-slate-600 hover:bg-white'
-                                          }`}
-                                          title="Render top bracket"
-                                        >
-                                          <span>⎴</span>
-                                          <span>Top</span>
-                                        </button>
                                       </div>
-                                    )}
-                                  </>
-                                )}
-                              </div>
-                              {!bar.hasDifference && (
-                                <p className="text-[10px] text-slate-400 font-medium pt-0.5">
-                                  No difference attached. Click "+ Diff" to add.
-                                </p>
-                              )}
-                            </div>
-
-                            {/* Column 2: Diff Value Input (sm:col-span-3, matching Value Label) */}
-                            <div className="sm:col-span-3 space-y-1">
-                              <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
-                                Diff Value
-                              </label>
-                              <input
-                                type="text"
-                                disabled={!bar.hasDifference}
-                                value={bar.diffValue}
-                                onChange={(e) => handleUpdateBar(bar.id, 'diffValue', e.target.value)}
-                                placeholder={bar.hasDifference ? "e.g. 5,000" : "—"}
-                                className={`w-full border rounded-xl px-3 py-1.5 text-xs font-bold focus:outline-none transition-all ${
-                                  bar.hasDifference
-                                    ? 'bg-white border-slate-300 text-slate-900 focus:border-indigo-500 shadow-2xs'
-                                    : 'bg-slate-50 border-slate-200 text-slate-300 cursor-not-allowed'
-                                }`}
-                              />
-                            </div>
-
-                            {/* Column 3: Diff Width Slider (sm:col-span-4, matching Bar Length) */}
-                            <div className="sm:col-span-4 space-y-1">
-                              <div className="flex justify-between text-[10px] font-black uppercase tracking-wider text-slate-500">
-                                <span>Diff Width</span>
-                                <span className="font-mono text-indigo-600">
-                                  {bar.hasDifference ? `${bar.diffLength}%` : "—"}
-                                </span>
-                              </div>
-                              <input
-                                type="range"
-                                min="10"
-                                max="40"
-                                disabled={!bar.hasDifference}
-                                value={bar.diffLength}
-                                onChange={(e) => handleUpdateBar(bar.id, 'diffLength', Number(e.target.value))}
-                                className={`w-full accent-indigo-600 transition-opacity ${
-                                  bar.hasDifference ? 'cursor-pointer opacity-100' : 'cursor-not-allowed opacity-30'
-                                }`}
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Bottom Actions Row: Delete Button + Done / Collapse Button */}
-                        <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteBar(bar.id)}
-                            className="text-xs font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-200 flex items-center gap-1.5 transition-all cursor-pointer"
-                            title="Delete this bar"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            Delete Bar
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => handleToggleCollapseBar(bar.id)}
-                            className="text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3.5 py-1.5 rounded-xl flex items-center gap-1 transition-all cursor-pointer"
-                          >
-                            <ChevronUp className="w-3.5 h-3.5" />
-                            Done / Collapse
-                          </button>
-                        </div>
-                      </motion.div>
-                    )}
-                  </div>
                 ))}
-                  </div>
+              </div>
 
-                  {/* Right-side Combined Total Bracket (added by student!) */}
+              {/* Right-side Combined Total Bracket (added by student!) */}
                   {hasCombinedTotal && (
                     <div className="flex items-center gap-1.5 shrink-0 pl-1 py-1 animate-in fade-in duration-150">
                       <div className="w-7 sm:w-8 h-28 max-h-full py-1 text-slate-400 shrink-0">
@@ -2204,6 +2214,24 @@ export default function InteractiveBarBuilder({
                     </div>
                   )}
                 </div>
+
+            {/* ══ 2. Full-Width Responsive Parameter Editors for Expanded Bars ══ */}
+            {userBars.some(b => !b.isCollapsed) && (
+              <div className="space-y-3 pt-3 border-t-2 border-dashed border-slate-200 w-full">
+                {userBars.filter(b => !b.isCollapsed).map((bar) => (
+                  <BarParametersEditor
+                    key={bar.id}
+                    bar={bar}
+                    barIndex={userBars.findIndex(b => b.id === bar.id)}
+                    entities={entities}
+                    onUpdate={handleUpdateBar}
+                    onToggleDiff={handleToggleDifference}
+                    onDelete={handleDeleteBar}
+                    onCollapse={() => handleToggleCollapseBar(bar.id)}
+                  />
+                ))}
+              </div>
+            )}
               </div>
             )}
             {target.type === 'BAR' && userBars.length > 0 && (
