@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, AlertCircle, ArrowRight, Layers, Scale, RefreshCw, HelpCircle, Sparkles, ChevronDown, Eye } from 'lucide-react';
+import { CheckCircle2, AlertCircle, ArrowRight, Layers, Scale, RefreshCw, HelpCircle, Sparkles, ChevronDown, Eye, Plus, Trash2, Zap, RotateCcw } from 'lucide-react';
 import MathInput from '@/components/math/MathInput';
 
 /**
@@ -173,6 +173,11 @@ export default function InteractiveBarBuilder({
   const [answers, setAnswers] = useState({});
   const [showModelMiniView, setShowModelMiniView] = useState(true);
 
+  // Stage 2: Interactive Bar Builder State
+  const [userBars, setUserBars] = useState([]);
+  const [stage2Status, setStage2Status] = useState('idle'); // 'idle' | 'correct' | 'incorrect'
+  const [stage2ErrorMsg, setStage2ErrorMsg] = useState(null);
+
   const modelOptions = config.modelOptions || [
     { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities across distinct entities" },
     { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole quantity into parts" },
@@ -205,6 +210,119 @@ export default function InteractiveBarBuilder({
     if (selectedModel === correctModelType || isAdminReview) {
       setCurrentStage(2);
     }
+  };
+
+  // Stage 2 Bar Construction Handlers
+  const handleAddBar = () => {
+    if (disabled) return;
+    const newBar = {
+      id: `bar-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      name: "",
+      length: 50,
+      value: "",
+      hasDifference: false,
+      diffType: 'MORE',
+      diffLength: 20,
+      diffValue: "",
+      isTarget: false
+    };
+    setUserBars(prev => [...prev, newBar]);
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleUpdateBar = (id, field, val) => {
+    setUserBars(prev => prev.map(bar => {
+      if (bar.id !== id) return bar;
+      return { ...bar, [field]: val };
+    }));
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleDeleteBar = (id) => {
+    setUserBars(prev => prev.filter(bar => bar.id !== id));
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleToggleDifference = (id) => {
+    setUserBars(prev => prev.map(bar => {
+      if (bar.id !== id) return bar;
+      const willHave = !bar.hasDifference;
+      return { 
+        ...bar, 
+        hasDifference: willHave,
+        diffType: bar.diffType || 'MORE',
+        diffLength: bar.diffLength || 20,
+        diffValue: willHave ? (bar.diffValue || '+ More') : ''
+      };
+    }));
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleAutoFillBars = () => {
+    if (!entities || entities.length === 0) {
+      setUserBars([
+        { id: 'bar-1', name: 'Entity A', length: 50, value: '10,000', hasDifference: false, diffType: 'MORE', diffLength: 20, diffValue: '', isTarget: false },
+        { id: 'bar-2', name: 'Entity B', length: 50, value: 'Same as A', hasDifference: true, diffType: 'MORE', diffLength: 20, diffValue: '+ 5,000', isTarget: false },
+        { id: 'bar-3', name: 'Entity C', length: 50, value: 'Same as B', hasDifference: true, diffType: 'FEWER', diffLength: 20, diffValue: '- 5,000', isTarget: true }
+      ]);
+      setStage2Status('idle');
+      return;
+    }
+    const filled = entities.map((e, idx) => ({
+      id: `bar-${idx + 1}`,
+      name: e.name,
+      length: 50,
+      value: e.relation === 'BASE' ? (e.displayValue || `${e.value}`) : 'Same as base',
+      hasDifference: e.relation === 'MORE' || e.relation === 'FEWER',
+      diffType: e.relation === 'FEWER' ? 'FEWER' : 'MORE',
+      diffLength: 20,
+      diffValue: e.displayDiff || (e.diffValue ? `${e.relation === 'FEWER' ? '-' : '+'}${e.diffValue}` : ''),
+      isTarget: target?.type === 'BAR' && target?.targetEntity === e.id
+    }));
+    setUserBars(filled);
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleClearBars = () => {
+    setUserBars([]);
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleVerifyStage2 = () => {
+    if (disabled) return;
+    if (stage2Status === 'correct') {
+      handleProceedToStage3();
+      return;
+    }
+
+    if (userBars.length === 0) {
+      setStage2Status('incorrect');
+      setStage2ErrorMsg("Click '+ Build Bar' to add your first entity bar!");
+      return;
+    }
+
+    const missingName = userBars.some(b => !b.name || !b.name.trim());
+    if (missingName) {
+      setStage2Status('incorrect');
+      setStage2ErrorMsg("Please enter a name label for all your bars.");
+      return;
+    }
+
+    const expectedCount = entities.length > 0 ? entities.length : 2;
+    if (userBars.length < expectedCount && !isAdminReview) {
+      setStage2Status('incorrect');
+      setStage2ErrorMsg(`Word problem has ${expectedCount} entities. Build all ${expectedCount} bars to complete the model!`);
+      return;
+    }
+
+    setStage2Status('correct');
+    setStage2ErrorMsg(null);
   };
 
   const handleProceedToStage3 = () => {
@@ -243,7 +361,7 @@ export default function InteractiveBarBuilder({
           </div>
           <div className="text-sm font-black tracking-tight">
             {currentStage === 1 && "Step 1: Choose the Bar Model Type"}
-            {currentStage === 2 && "Step 2: Inspect & Verify the Bar Blueprint"}
+            {currentStage === 2 && "Step 2: Build the Bar Model Blueprint"}
             {currentStage === 3 && "Step 3: Calculate & Solve Equations"}
           </div>
         </div>
@@ -378,109 +496,350 @@ export default function InteractiveBarBuilder({
       )}
 
       {/* ══════════════════════════════════════════════════════════════════════
-          STAGE 2: VISUAL BLUEPRINT & VARIABLE VERIFICATION
+          STAGE 2: BAR-BY-BAR MODEL BUILDER (INTERACTIVE)
          ══════════════════════════════════════════════════════════════════════ */}
       {currentStage === 2 && (
         <motion.div 
           initial={{ opacity: 0, y: 15 }} 
           animate={{ opacity: 1, y: 0 }} 
-          className="space-y-6"
+          className="space-y-4"
         >
-          <div className="bg-slate-900 text-white p-6 rounded-3xl flex items-center justify-between">
-            <div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Blueprint Verified</span>
-              <h4 className="text-xl font-black">Comparative Bar Model Construction</h4>
-              <p className="text-xs text-slate-300 font-semibold mt-1">
-                Notice how the differences align relative to each entity's baseline bar.
-              </p>
+          <div className="bg-white border-2 border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
+            
+            {/* Top Toolbar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                  <Layers className="w-4 h-4 text-indigo-600" />
+                  Comparative Bar Model Canvas
+                </span>
+                <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200">
+                  Aligned Baseline
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {isAdminReview && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleAutoFillBars}
+                      className="px-2.5 py-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-xl border border-indigo-200 transition-all flex items-center gap-1 cursor-pointer"
+                      title="Auto-fill bars with problem data for rapid review"
+                    >
+                      <Zap className="w-3.5 h-3.5 text-indigo-600" />
+                      Auto-Fill
+                    </button>
+                    {userBars.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleClearBars}
+                        className="px-2.5 py-1.5 text-xs font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl border border-slate-200 transition-all flex items-center gap-1 cursor-pointer"
+                        title="Clear all bars"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        Clear
+                      </button>
+                    )}
+                  </>
+                )}
+                <button
+                  type="button"
+                  onClick={handleAddBar}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-sm transition-all active:scale-95 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  Build Bar
+                </button>
+              </div>
             </div>
-            <span className="px-3 py-1.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-black">
-              Comparison Model
-            </span>
-          </div>
 
-          {/* The Visual Bar Model Canvas */}
-          <div className="p-8 bg-slate-50 border-4 border-slate-200 rounded-[2.5rem] shadow-inner space-y-8">
-            <div className="space-y-6 max-w-2xl mx-auto">
-              {entities.map((entity, idx) => {
-                const isBase = entity.relation === 'BASE';
-                const isMore = entity.relation === 'MORE';
-                const isFewer = entity.relation === 'FEWER';
-                const isTargetEntity = target.type === 'BAR' && target.targetEntity === entity.id;
+            {/* Empty Canvas State */}
+            {userBars.length === 0 ? (
+              <div className="py-12 flex flex-col items-center justify-center text-center space-y-3 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-xs">
+                  <Layers className="w-6 h-6" />
+                </div>
+                <div>
+                  <h5 className="text-sm font-black text-slate-800">Your Bar Model Canvas is Empty</h5>
+                  <p className="text-xs text-slate-500 font-semibold max-w-sm mt-0.5">
+                    Click "+ Build Bar" above to start constructing your model bar by bar.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddBar}
+                  className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-sm transition-all active:scale-95 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  Build First Bar
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-5">
+                {userBars.map((bar, idx) => (
+                  <div key={bar.id} className="p-4 bg-slate-50/70 border-2 border-slate-200 rounded-2xl space-y-3 hover:border-slate-300 transition-all">
+                    {/* Bar Header */}
+                    <div className="flex items-center justify-between text-xs font-black">
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-md bg-indigo-600 text-white flex items-center justify-center text-[10px] font-black">
+                          {idx + 1}
+                        </span>
+                        <span className="uppercase tracking-wider text-slate-800 font-black">
+                          {bar.name || `Bar ${idx + 1}`}
+                        </span>
+                        {bar.isTarget && (
+                          <span className="px-2 py-0.5 bg-amber-100 text-amber-800 border border-amber-300 rounded-full text-[10px] font-bold">
+                            Target (?)
+                          </span>
+                        )}
+                      </div>
 
-                return (
-                  <div key={entity.id} className="space-y-2">
-                    <div className="flex items-center justify-between text-xs font-black uppercase text-slate-600 tracking-wider">
-                      <span>{entity.name}</span>
-                      {entity.displayValue && (
-                        <span className="text-slate-500 font-bold">{entity.displayValue} {config.itemName}</span>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteBar(bar.id)}
+                        className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-1.5 rounded-lg transition-all cursor-pointer"
+                        title="Delete Bar"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
 
-                    <div className="relative flex items-center gap-3">
-                      {/* Bar Row */}
-                      <div className="flex-1 flex items-center h-12 bg-white rounded-2xl border-2 border-slate-300 p-1 shadow-sm overflow-hidden">
+                    {/* Visual Bar on Baseline */}
+                    <div className="pl-3 border-l-4 border-indigo-400 border-dashed py-1">
+                      <div className="flex items-center h-12 bg-white rounded-xl border border-slate-200 p-1 shadow-xs overflow-hidden">
                         {/* Base Segment */}
-                        <div 
-                          className={`h-full rounded-xl flex items-center justify-center text-xs font-black text-white shadow-sm transition-all ${
-                            idx === 0 ? 'bg-indigo-600 w-3/5' : idx === 1 ? 'bg-indigo-500 w-3/5' : 'bg-indigo-400 w-3/5'
+                        <div
+                          style={{ width: `${bar.length}%` }}
+                          className={`h-full rounded-lg flex items-center justify-center text-xs font-black text-white shadow-xs transition-all duration-150 px-2 truncate ${
+                            idx === 0 ? 'bg-indigo-600' : idx === 1 ? 'bg-indigo-500' : 'bg-indigo-400'
                           }`}
                         >
-                          {isBase && entity.displayValue}
+                          {bar.value || bar.name || "Base"}
                         </div>
 
-                        {/* Extended or Reduced Difference Segment */}
-                        {isMore && (
-                          <div className="h-full bg-emerald-500 rounded-xl ml-1 px-3 flex items-center justify-center text-xs font-black text-white shadow-sm border border-emerald-400 animate-in fade-in">
-                            {entity.displayDiff || `+${entity.diffValue}`}
-                          </div>
-                        )}
-
-                        {isFewer && (
-                          <div className="h-full bg-rose-500 rounded-xl ml-1 px-3 flex items-center justify-center text-xs font-black text-white shadow-sm border border-rose-400 animate-in fade-in">
-                            {entity.displayDiff || `-${entity.diffValue}`}
-                          </div>
-                        )}
-
-                        {/* Target Marker Pill if Target is this bar */}
-                        {isTargetEntity && (
-                          <div className="ml-auto mr-2 px-3 py-1 rounded-lg bg-amber-400 text-slate-900 font-black text-xs flex items-center gap-1 shadow-md animate-bounce">
-                            <span>?</span>
-                            <span className="hidden sm:inline">Target</span>
+                        {/* Difference Segment */}
+                        {bar.hasDifference && (
+                          <div
+                            style={{ width: `${bar.diffLength}%` }}
+                            className={`h-full rounded-lg ml-1 px-2 flex items-center justify-center text-xs font-black text-white shadow-xs border transition-all duration-150 truncate ${
+                              bar.diffType === 'FEWER'
+                                ? 'bg-rose-500 border-rose-400 border-dashed'
+                                : 'bg-emerald-500 border-emerald-400 border-dashed'
+                            }`}
+                          >
+                            {bar.diffValue || (bar.diffType === 'FEWER' ? '- Fewer' : '+ More')}
                           </div>
                         )}
                       </div>
                     </div>
-                  </div>
-                );
-              })}
 
-              {/* Total Bracket if Finding Total */}
-              {target.type === 'TOTAL' && (
-                <div className="mt-8 pt-6 border-t-2 border-dashed border-slate-300 flex items-center justify-between bg-amber-50/80 p-4 rounded-2xl border-amber-300">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-amber-600" />
-                    <span className="text-sm font-black text-amber-950 uppercase tracking-wider">
-                      Grand Total Across All 3
-                    </span>
+                    {/* Controls Row */}
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-2 border-t border-slate-200/70 items-center">
+                      {/* Name input */}
+                      <div className="sm:col-span-4 space-y-1">
+                        <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
+                          Bar Label / Name
+                        </label>
+                        <input
+                          type="text"
+                          value={bar.name}
+                          onChange={(e) => handleUpdateBar(bar.id, 'name', e.target.value)}
+                          placeholder="e.g. Arjun"
+                          className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-indigo-500"
+                        />
+                        {/* Quick Suggestion Chips from Problem Entities */}
+                        {entities.length > 0 && (
+                          <div className="flex flex-wrap gap-1 pt-0.5">
+                            {entities.map(ent => (
+                              <button
+                                key={ent.name}
+                                type="button"
+                                onClick={() => handleUpdateBar(bar.id, 'name', ent.name)}
+                                className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-200/70 hover:bg-indigo-100 hover:text-indigo-700 text-slate-700 transition-all cursor-pointer"
+                              >
+                                +{ent.name}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Value label */}
+                      <div className="sm:col-span-3 space-y-1">
+                        <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
+                          Value Label
+                        </label>
+                        <input
+                          type="text"
+                          value={bar.value}
+                          onChange={(e) => handleUpdateBar(bar.id, 'value', e.target.value)}
+                          placeholder="e.g. 13,400"
+                          className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-indigo-500"
+                        />
+                      </div>
+
+                      {/* Bar Length Slider */}
+                      <div className="sm:col-span-3 space-y-1">
+                        <div className="flex justify-between text-[10px] font-black uppercase tracking-wider text-slate-500">
+                          <span>Bar Length</span>
+                          <span className="font-mono text-indigo-600">{bar.length}%</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="20"
+                          max="80"
+                          value={bar.length}
+                          onChange={(e) => handleUpdateBar(bar.id, 'length', Number(e.target.value))}
+                          className="w-full accent-indigo-600 cursor-pointer"
+                        />
+                      </div>
+
+                      {/* Difference Segment Toggle */}
+                      <div className="sm:col-span-2 pt-3 sm:pt-0 flex items-center justify-end">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleDifference(bar.id)}
+                          className={`w-full py-2 px-2 rounded-xl text-[11px] font-black tracking-wide border transition-all cursor-pointer text-center ${
+                            bar.hasDifference
+                              ? 'bg-emerald-50 border-emerald-300 text-emerald-800 hover:bg-emerald-100'
+                              : 'bg-white border-slate-300 text-slate-600 hover:border-indigo-400 hover:text-indigo-600'
+                          }`}
+                        >
+                          {bar.hasDifference ? "✓ Has Diff" : "+ Diff"}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Extended Difference Controls (when hasDifference is true) */}
+                    {bar.hasDifference && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="pt-2 border-t border-slate-200/50 grid grid-cols-1 sm:grid-cols-12 gap-3 items-center bg-white/70 p-2.5 rounded-xl border border-slate-200"
+                      >
+                        {/* Diff Type */}
+                        <div className="sm:col-span-4 flex items-center gap-1.5">
+                          <span className="text-[10px] font-black uppercase text-slate-500 shrink-0">Type:</span>
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateBar(bar.id, 'diffType', 'MORE')}
+                            className={`flex-1 py-1 rounded-lg text-[10px] font-black transition-all cursor-pointer ${
+                              bar.diffType === 'MORE'
+                                ? 'bg-emerald-600 text-white shadow-xs'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                            }`}
+                          >
+                            + More
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateBar(bar.id, 'diffType', 'FEWER')}
+                            className={`flex-1 py-1 rounded-lg text-[10px] font-black transition-all cursor-pointer ${
+                              bar.diffType === 'FEWER'
+                                ? 'bg-rose-600 text-white shadow-xs'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                            }`}
+                          >
+                            - Fewer
+                          </button>
+                        </div>
+
+                        {/* Diff Value */}
+                        <div className="sm:col-span-4">
+                          <input
+                            type="text"
+                            value={bar.diffValue}
+                            onChange={(e) => handleUpdateBar(bar.id, 'diffValue', e.target.value)}
+                            placeholder="Diff Label (e.g. +5,000)"
+                            className="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1 text-xs font-bold text-slate-900 focus:outline-none focus:border-indigo-500"
+                          />
+                        </div>
+
+                        {/* Diff Width Slider */}
+                        <div className="sm:col-span-4 space-y-0.5">
+                          <div className="flex justify-between text-[9px] font-black uppercase text-slate-500">
+                            <span>Diff Width</span>
+                            <span className="font-mono text-indigo-600">{bar.diffLength}%</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="10"
+                            max="40"
+                            value={bar.diffLength}
+                            onChange={(e) => handleUpdateBar(bar.id, 'diffLength', Number(e.target.value))}
+                            className="w-full accent-indigo-600 cursor-pointer"
+                          />
+                        </div>
+                      </motion.div>
+                    )}
                   </div>
-                  <div className="px-4 py-2 bg-amber-400 text-slate-900 font-black rounded-xl text-lg shadow-md animate-pulse">
-                    ? {config.itemName}
-                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Total Bracket if Finding Total */}
+            {target.type === 'TOTAL' && userBars.length > 0 && (
+              <div className="pt-4 border-t-2 border-dashed border-slate-200 flex items-center justify-between bg-amber-50/70 p-4 rounded-2xl border border-amber-200">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-amber-600" />
+                  <span className="text-xs font-black text-amber-950 uppercase tracking-wider">
+                    Grand Total Across All Entities
+                  </span>
                 </div>
+                <div className="px-3.5 py-1.5 bg-amber-400 text-slate-900 font-black rounded-xl text-xs shadow-xs animate-pulse">
+                  ? {config.itemName || "Total"}
+                </div>
+              </div>
+            )}
+
+            {/* Bottom Confirmation Bar */}
+            <div className="pt-2">
+              {userBars.length === 0 ? (
+                <button
+                  type="button"
+                  disabled
+                  className="w-full py-3.5 px-6 rounded-2xl font-black text-xs uppercase tracking-wider bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  Build at least one bar to check
+                </button>
+              ) : stage2Status === 'correct' ? (
+                <motion.button
+                  type="button"
+                  initial={{ scale: 0.99 }}
+                  animate={{ scale: 1 }}
+                  onClick={handleProceedToStage3}
+                  className="w-full py-3.5 px-6 rounded-2xl font-black text-xs uppercase tracking-wider bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer transition-all active:scale-[0.99] shadow-md ring-4 ring-emerald-100 flex items-center justify-center gap-2"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  Bar Model Verified — Solve Equations
+                  <ArrowRight className="w-4 h-4" />
+                </motion.button>
+              ) : stage2Status === 'incorrect' ? (
+                <motion.button
+                  type="button"
+                  initial={{ x: -4 }}
+                  animate={{ x: [-4, 4, -4, 4, 0] }}
+                  transition={{ duration: 0.3 }}
+                  onClick={handleVerifyStage2}
+                  className="w-full py-3.5 px-6 rounded-2xl font-black text-xs uppercase tracking-wider bg-rose-500 hover:bg-rose-600 text-white cursor-pointer transition-all active:scale-[0.99] shadow-sm flex items-center justify-center gap-2"
+                >
+                  <AlertCircle className="w-4 h-4" />
+                  {stage2ErrorMsg || "Incomplete Model — Build all entity bars and labels"}
+                </motion.button>
+              ) : (
+                <button
+                  type="button"
+                  disabled={disabled}
+                  onClick={handleVerifyStage2}
+                  className="w-full py-3.5 px-6 rounded-2xl font-black text-xs uppercase tracking-wider bg-slate-900 hover:bg-slate-800 text-white cursor-pointer transition-all active:scale-[0.99] shadow-sm flex items-center justify-center gap-2"
+                >
+                  Check & Verify Bar Model
+                  <ArrowRight className="w-4 h-4" />
+                </button>
               )}
             </div>
 
-            <div className="pt-4 flex justify-end">
-              <button
-                type="button"
-                onClick={handleProceedToStage3}
-                className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-base flex items-center gap-3 transition-all active:scale-95 shadow-lg"
-              >
-                Model Understood! Solve Equations
-                <ArrowRight className="w-5 h-5" />
-              </button>
-            </div>
           </div>
         </motion.div>
       )}
