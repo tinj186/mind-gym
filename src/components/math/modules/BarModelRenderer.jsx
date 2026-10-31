@@ -39,7 +39,7 @@ function UnitSegments({ value, segments }) {
   );
 }
 
-export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }) {
+export default function BarModelRenderer({ data, toolState = {} }) {
   if (!data) return null;
   const model = typeof data === 'string' ? JSON.parse(data) : data;
 
@@ -357,18 +357,8 @@ export default function BarModelRenderer({ data, setIsToolOpen, toolState = {} }
   if (!content) return null;
 
   return (
-    <div className="flex flex-col items-center gap-6 w-full">
-      <div className="w-full max-w-4xl mx-auto">
-        {content}
-      </div>
-      {setIsToolOpen && !modelsToRender.some(m => m.isStatic) && (
-        <button 
-          onClick={() => setIsToolOpen(true)}
-          className="px-8 py-3 bg-indigo-600 text-white text-sm font-black uppercase rounded-full shadow-[0_4px_0_0_rgba(67,56,202,1)] hover:translate-y-1 hover:shadow-[0_2px_0_0_rgba(67,56,202,1)] active:translate-y-2 active:shadow-none transition-all"
-        >
-          ✨ Open Bar Model Tool
-        </button>
-      )}
+    <div className="w-full max-w-4xl mx-auto">
+      {content}
     </div>
   );
 }

@@ -500,7 +500,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
         if (isP1) setShowBarModel(true);
         
         // Automatically open the grouping tool for relevant question types
-        if (!hasAutoOpened && ['COUNTING_OBJECTS', 'EQUAL_GROUPS', 'GROUPING_WORKSPACE', 'BAR_MODEL'].includes(currentVisual)) {
+        if (!hasAutoOpened && ['COUNTING_OBJECTS', 'EQUAL_GROUPS', 'GROUPING_WORKSPACE'].includes(currentVisual)) {
           setIsToolOpen(true);
           setHasAutoOpened(true);
         }
