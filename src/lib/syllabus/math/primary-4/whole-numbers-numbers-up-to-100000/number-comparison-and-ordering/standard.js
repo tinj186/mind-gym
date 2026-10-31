@@ -729,13 +729,53 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       promptInstruction = `- Question stem: "${nameA} collected ${valA.toLocaleString()} ${item} and ${nameB} collected ${valB.toLocaleString()} ${item}. Their target is to collect ${target.toLocaleString()} ${item} altogether. How many more ${item} do they need to reach their target?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL_COMPARISON",
+          componentData: {
+            hideVisual: true,
+            modelType: "PART_WHOLE",
+            totalLabel: "TARGET",
+            whole: target.toLocaleString(),
+            parts: [
+              { name: nameA, value: valA, layoutSize: valA, displayValue: valA.toLocaleString(), bgClass: "bg-blue-500 text-white" },
+              { name: nameB, value: valB, layoutSize: valB, displayValue: valB.toLocaleString(), bgClass: "bg-amber-500 text-white" },
+              { name: "Shortfall", value: "?", layoutSize: shortfall, displayValue: "?", isShortfall: true, bgClass: "bg-slate-200 text-slate-700 border-2 border-dashed border-slate-400" }
+            ]
+          }
+        }, null, 2);
+
+        const steps = [
+          { label: `Write the working equation to find the total ${item} collected so far:`, expectedAnswer: `${valA} + ${valB} = ${currentTotal}`, acceptedAnswers: [currentTotal.toString(), `${valA}+${valB}=${currentTotal}`, `${valB}+${valA}=${currentTotal}`] },
+          { label: "Write the working equation to find the remaining shortfall needed:", expectedAnswer: `${target} - ${currentTotal} = ${shortfall}`, acceptedAnswers: [shortfall.toString(), `${target}-${currentTotal}=${shortfall}`] },
+          { label: "Final Answer:", expectedAnswer: finalAnswer, acceptedAnswers: [finalAnswer, `${finalAnswer} ${item}`] }
+        ];
+
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: `Write the working equation to find the total ${item} collected so far:`, expectedAnswer: `${valA} + ${valB} = ${currentTotal}` },
-            { label: "Write the working equation to find the remaining shortfall needed:", expectedAnswer: `${target} - ${currentTotal} = ${shortfall}` },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
-          ]
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "TARGET_SHORTFALL",
+            correctModelType: "PART_WHOLE",
+            targetType: "SHORTFALL",
+            targetName: "Shortfall",
+            itemName: item,
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities across distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole quantity into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfers or changes across time states" }
+            ],
+            whole: {
+              label: "Target",
+              value: target,
+              displayValue: target.toLocaleString()
+            },
+            parts: [
+              { id: "A", name: nameA, value: valA, displayValue: valA.toLocaleString(), isShortfall: false },
+              { id: "B", name: nameB, value: valB, displayValue: valB.toLocaleString(), isShortfall: false },
+              { id: "S", name: "Shortfall", value: "?", displayValue: "?", isShortfall: true }
+            ],
+            steps: steps
+          }
         }, null, 2);
       }
 
@@ -776,13 +816,53 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       promptInstruction = `- Question stem: "${nameA} collected ${valA.toLocaleString()} ${item}. Together with ${nameB}, they need a total of ${target.toLocaleString()} ${item} to reach their target. If they still need ${shortfall.toLocaleString()} more ${item}, how many ${item} did ${nameB} collect?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL_COMPARISON",
+          componentData: {
+            hideVisual: true,
+            modelType: "PART_WHOLE",
+            totalLabel: "TARGET",
+            whole: target.toLocaleString(),
+            parts: [
+              { name: nameA, value: valA, layoutSize: valA, displayValue: valA.toLocaleString(), bgClass: "bg-blue-500 text-white" },
+              { name: nameB, value: "?", layoutSize: valB, displayValue: "?", bgClass: "bg-amber-500 text-white" },
+              { name: "Shortfall", value: shortfall, layoutSize: shortfall, displayValue: shortfall.toLocaleString(), isShortfall: true, bgClass: "bg-slate-200 text-slate-700 border-2 border-dashed border-slate-400" }
+            ]
+          }
+        }, null, 2);
+
+        const steps = [
+          { label: `Write the working equation to find the total ${item} collected so far:`, expectedAnswer: `${target} - ${shortfall} = ${currentTotal}`, acceptedAnswers: [currentTotal.toString(), `${target}-${shortfall}=${currentTotal}`] },
+          { label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${currentTotal} - ${valA} = ${valB}`, acceptedAnswers: [valB.toString(), `${currentTotal}-${valA}=${valB}`] },
+          { label: "Final Answer:", expectedAnswer: finalAnswer, acceptedAnswers: [finalAnswer, `${finalAnswer} ${item}`] }
+        ];
+
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: `Write the working equation to find the total ${item} collected so far:`, expectedAnswer: `${target} - ${shortfall} = ${currentTotal}` },
-            { label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${currentTotal} - ${valA} = ${valB}` },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
-          ]
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "TARGET_SHORTFALL",
+            correctModelType: "PART_WHOLE",
+            targetType: "ENTITY_B",
+            targetName: nameB,
+            itemName: item,
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities across distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole quantity into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfers or changes across time states" }
+            ],
+            whole: {
+              label: "Target",
+              value: target,
+              displayValue: target.toLocaleString()
+            },
+            parts: [
+              { id: "A", name: nameA, value: valA, displayValue: valA.toLocaleString(), isShortfall: false },
+              { id: "B", name: nameB, value: "?", displayValue: "?", isShortfall: false },
+              { id: "S", name: "Shortfall", value: shortfall, displayValue: shortfall.toLocaleString(), isShortfall: true }
+            ],
+            steps: steps
+          }
         }, null, 2);
       }
 
@@ -823,13 +903,53 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       promptInstruction = `- Question stem: "${nameB} collected ${valB.toLocaleString()} ${item}. Together with ${nameA}, they need a total of ${target.toLocaleString()} ${item} to reach their target. If they still need ${shortfall.toLocaleString()} more ${item}, how many ${item} did ${nameA} collect?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL_COMPARISON",
+          componentData: {
+            hideVisual: true,
+            modelType: "PART_WHOLE",
+            totalLabel: "TARGET",
+            whole: target.toLocaleString(),
+            parts: [
+              { name: nameA, value: "?", layoutSize: valA, displayValue: "?", bgClass: "bg-blue-500 text-white" },
+              { name: nameB, value: valB, layoutSize: valB, displayValue: valB.toLocaleString(), bgClass: "bg-amber-500 text-white" },
+              { name: "Shortfall", value: shortfall, layoutSize: shortfall, displayValue: shortfall.toLocaleString(), isShortfall: true, bgClass: "bg-slate-200 text-slate-700 border-2 border-dashed border-slate-400" }
+            ]
+          }
+        }, null, 2);
+
+        const steps = [
+          { label: `Write the working equation to find the total ${item} collected so far:`, expectedAnswer: `${target} - ${shortfall} = ${currentTotal}`, acceptedAnswers: [currentTotal.toString(), `${target}-${shortfall}=${currentTotal}`] },
+          { label: `Write the working equation to find ${nameA}'s amount:`, expectedAnswer: `${currentTotal} - ${valB} = ${valA}`, acceptedAnswers: [valA.toString(), `${currentTotal}-${valB}=${valA}`] },
+          { label: "Final Answer:", expectedAnswer: finalAnswer, acceptedAnswers: [finalAnswer, `${finalAnswer} ${item}`] }
+        ];
+
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: `Write the working equation to find the total ${item} collected so far:`, expectedAnswer: `${target} - ${shortfall} = ${currentTotal}` },
-            { label: `Write the working equation to find ${nameA}'s amount:`, expectedAnswer: `${currentTotal} - ${valB} = ${valA}` },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
-          ]
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "TARGET_SHORTFALL",
+            correctModelType: "PART_WHOLE",
+            targetType: "ENTITY_A",
+            targetName: nameA,
+            itemName: item,
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities across distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole quantity into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfers or changes across time states" }
+            ],
+            whole: {
+              label: "Target",
+              value: target,
+              displayValue: target.toLocaleString()
+            },
+            parts: [
+              { id: "A", name: nameA, value: "?", displayValue: "?", isShortfall: false },
+              { id: "B", name: nameB, value: valB, displayValue: valB.toLocaleString(), isShortfall: false },
+              { id: "S", name: "Shortfall", value: shortfall, displayValue: shortfall.toLocaleString(), isShortfall: true }
+            ],
+            steps: steps
+          }
         }, null, 2);
       }
 
@@ -870,13 +990,53 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       promptInstruction = `- Question stem: "${nameA} collected ${valA.toLocaleString()} ${item} and ${nameB} collected ${valB.toLocaleString()} ${item}. They still need ${shortfall.toLocaleString()} more ${item} to reach their target. What is their target number of ${item}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL_COMPARISON",
+          componentData: {
+            hideVisual: true,
+            modelType: "PART_WHOLE",
+            totalLabel: "TARGET",
+            whole: "?",
+            parts: [
+              { name: nameA, value: valA, layoutSize: valA, displayValue: valA.toLocaleString(), bgClass: "bg-blue-500 text-white" },
+              { name: nameB, value: valB, layoutSize: valB, displayValue: valB.toLocaleString(), bgClass: "bg-amber-500 text-white" },
+              { name: "Shortfall", value: shortfall, layoutSize: shortfall, displayValue: shortfall.toLocaleString(), isShortfall: true, bgClass: "bg-slate-200 text-slate-700 border-2 border-dashed border-slate-400" }
+            ]
+          }
+        }, null, 2);
+
+        const steps = [
+          { label: `Write the working equation to find the total ${item} collected by ${nameA} and ${nameB}:`, expectedAnswer: `${valA} + ${valB} = ${currentTotal}`, acceptedAnswers: [currentTotal.toString(), `${valA}+${valB}=${currentTotal}`, `${valB}+${valA}=${currentTotal}`] },
+          { label: `Write the working equation to find the overall target amount:`, expectedAnswer: `${currentTotal} + ${shortfall} = ${target}`, acceptedAnswers: [target.toString(), `${currentTotal}+${shortfall}=${target}`, `${shortfall}+${currentTotal}=${target}`] },
+          { label: "Final Answer:", expectedAnswer: finalAnswer, acceptedAnswers: [finalAnswer, `${finalAnswer} ${item}`] }
+        ];
+
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: `Write the working equation to find the total ${item} collected by ${nameA} and ${nameB}:`, expectedAnswer: `${valA} + ${valB} = ${currentTotal}` },
-            { label: `Write the working equation to find the overall target amount:`, expectedAnswer: `${currentTotal} + ${shortfall} = ${target}` },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
-          ]
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "TARGET_SHORTFALL",
+            correctModelType: "PART_WHOLE",
+            targetType: "TARGET",
+            targetName: "Target",
+            itemName: item,
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities across distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole quantity into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfers or changes across time states" }
+            ],
+            whole: {
+              label: "Target",
+              value: "?",
+              displayValue: "?"
+            },
+            parts: [
+              { id: "A", name: nameA, value: valA, displayValue: valA.toLocaleString(), isShortfall: false },
+              { id: "B", name: nameB, value: valB, displayValue: valB.toLocaleString(), isShortfall: false },
+              { id: "S", name: "Shortfall", value: shortfall, displayValue: shortfall.toLocaleString(), isShortfall: true }
+            ],
+            steps: steps
+          }
         }, null, 2);
       }
 

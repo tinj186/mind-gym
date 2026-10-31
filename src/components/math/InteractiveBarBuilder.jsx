@@ -165,11 +165,144 @@ function normalizeNumber(val) {
 }
 
 /**
+ * Parameter Check for Student Part-Whole Bar Model
+ * Validates the student's partitioned parts and whole target against problem config.
+ */
+export function checkPartWholeParameters(userParts = [], userWhole = '', config = {}) {
+  if (!userParts || userParts.length === 0) {
+    return {
+      isValid: false,
+      defect: 'NO_PARTS_BUILT',
+      errorMsg: "Click '+ Add Part to Bar' to add your first part of the whole!",
+      details: null
+    };
+  }
+
+  const expectedParts = config?.parts || [];
+  const expectedWhole = config?.whole || { label: 'Target', value: '' };
+
+  // 1. Check part count
+  if (userParts.length < expectedParts.length) {
+    const partNames = expectedParts.map(p => p.name).join(', ');
+    return {
+      isValid: false,
+      defect: 'INSUFFICIENT_PARTS',
+      errorMsg: `This problem requires ${expectedParts.length} parts in the whole bar (${partNames}). You currently have ${userParts.length} part(s).`,
+      details: { expectedCount: expectedParts.length, actualCount: userParts.length }
+    };
+  }
+
+  if (userParts.length > expectedParts.length) {
+    return {
+      isValid: false,
+      defect: 'TOO_MANY_PARTS',
+      errorMsg: `This problem only has ${expectedParts.length} parts. Please remove unnecessary extra parts.`,
+      details: { expectedCount: expectedParts.length, actualCount: userParts.length }
+    };
+  }
+
+  // 2. Check blank part names
+  const blankPart = userParts.find(p => !p.name || !p.name.trim());
+  if (blankPart) {
+    return {
+      isValid: false,
+      defect: 'MISSING_PART_LABEL',
+      errorMsg: "Please enter a name label for all parts in the bar.",
+      details: null
+    };
+  }
+
+  // 3. Check each expected part is represented
+  for (const expPart of expectedParts) {
+    const matched = userParts.find(p => normalizeName(p.name) === normalizeName(expPart.name));
+    if (!matched) {
+      return {
+        isValid: false,
+        defect: `MISSING_PART_${expPart.id || expPart.name}`,
+        errorMsg: `Missing part for "${expPart.name}". Please ensure "${expPart.name}" is included in the partitioned bar.`,
+        details: { missingPart: expPart.name }
+      };
+    }
+
+    // Check shortfall flag
+    if (expPart.isShortfall && !matched.isShortfall) {
+      return {
+        isValid: false,
+        defect: 'MISSING_SHORTFALL_FLAG',
+        errorMsg: `"${expPart.name}" is the shortfall/missing amount. Please click "Shortfall Segment" to mark it.`,
+        details: { part: expPart.name }
+      };
+    }
+
+    if (!expPart.isShortfall && matched.isShortfall) {
+      return {
+        isValid: false,
+        defect: 'UNEXPECTED_SHORTFALL_FLAG',
+        errorMsg: `"${expPart.name}" is a known collected quantity, not a shortfall segment.`,
+        details: { part: expPart.name }
+      };
+    }
+
+    // Check value if expected is not unknown '?'
+    if (expPart.value !== undefined && expPart.value !== null && expPart.value !== '?') {
+      const expVal = normalizeNumber(expPart.value);
+      const actVal = normalizeNumber(matched.value);
+      if (!actVal) {
+        return {
+          isValid: false,
+          defect: 'MISSING_PART_VALUE',
+          errorMsg: `Please enter the value (${expPart.displayValue || Number(expPart.value).toLocaleString()}) for "${expPart.name}".`,
+          details: { part: expPart.name, expectedValue: expPart.displayValue || expPart.value }
+        };
+      }
+      if (actVal !== expVal) {
+        return {
+          isValid: false,
+          defect: 'INCORRECT_PART_VALUE',
+          errorMsg: `The value for "${expPart.name}" should be ${expPart.displayValue || Number(expPart.value).toLocaleString()}, but got "${matched.value}".`,
+          details: { part: expPart.name, expected: expVal, actual: actVal }
+        };
+      }
+    }
+  }
+
+  // 4. Check whole / target value (if expected whole is not unknown '?')
+  if (expectedWhole.value !== undefined && expectedWhole.value !== null && expectedWhole.value !== '?') {
+    const expWhole = normalizeNumber(expectedWhole.value);
+    const actWhole = normalizeNumber(userWhole);
+    if (!actWhole) {
+      return {
+        isValid: false,
+        defect: 'MISSING_TARGET_VALUE',
+        errorMsg: `Please enter the target amount (${expectedWhole.displayValue || Number(expectedWhole.value).toLocaleString()}) for the Target Whole bracket.`,
+        details: { expectedTarget: expectedWhole.displayValue || expectedWhole.value }
+      };
+    }
+    if (actWhole !== expWhole) {
+      return {
+        isValid: false,
+        defect: 'INCORRECT_TARGET_VALUE',
+        errorMsg: `The target amount should be ${expectedWhole.displayValue || Number(expectedWhole.value).toLocaleString()}, but got "${userWhole}".`,
+        details: { expected: expWhole, actual: actWhole }
+      };
+    }
+  }
+
+  return { isValid: true, defect: null, errorMsg: null, details: null };
+}
+
+/**
  * Comprehensive Parameter Check for Student Bar Model Drawing
  * Validates the student's structured bar state against problem config entities.
  * Returns defect classification for rich learning analytics and targeted feedback.
  */
 export function checkBarModelParameters(userBars = [], config = {}) {
+  if (config?.correctModelType === 'PART_WHOLE') {
+    const parts = Array.isArray(userBars) ? userBars : (userBars.parts || []);
+    const whole = userBars.whole || '';
+    return checkPartWholeParameters(parts, whole, config);
+  }
+
   if (!userBars || userBars.length === 0) {
     return {
       isValid: false,
@@ -326,6 +459,76 @@ export function checkBarModelParameters(userBars = [], config = {}) {
  * when an error occurs or when the solution is revealed.
  */
 export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Bar Model Blueprint" }) {
+  if (config?.correctModelType === 'PART_WHOLE') {
+    const parts = config?.parts || [];
+    const whole = config?.whole || { label: 'Target', displayValue: '?' };
+    if (!parts || parts.length === 0) return null;
+
+    return (
+      <div className="bg-emerald-50/70 border-2 border-emerald-300 rounded-3xl p-5 sm:p-6 space-y-4 shadow-sm animate-in fade-in duration-200">
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-emerald-200">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+              <Layers className="w-4 h-4" />
+            </div>
+            <div>
+              <h4 className="text-xs font-black uppercase tracking-wider text-emerald-950">
+                {title}
+              </h4>
+              <span className="text-[10px] text-emerald-700 font-bold">
+                Part-Whole Model: Target Divided into Known Parts and Shortfall
+              </span>
+            </div>
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full border border-emerald-300">
+            Ideal Reference
+          </span>
+        </div>
+
+        {/* Unified Part-Whole Diagram Canvas */}
+        <div className="p-5 bg-white border-2 border-emerald-100 rounded-2xl space-y-4 shadow-xs">
+          {/* Top Whole Bracket */}
+          <div className="space-y-1">
+            <div className="text-center">
+              <span className="text-xs font-black text-slate-800 bg-amber-100 border border-amber-300 px-3 py-1 rounded-full shadow-2xs">
+                {whole.label || "Target"}: {whole.displayValue || (whole.value !== undefined ? (whole.value === '?' ? '?' : Number(whole.value).toLocaleString()) : "?")}
+              </span>
+            </div>
+            <div className="w-full h-3 border-x-2 border-t-2 border-slate-700 rounded-t-md mx-auto" />
+          </div>
+
+          {/* Single Partitioned Bar */}
+          <div className="flex h-12 w-full rounded-xl overflow-hidden border-2 border-slate-300 shadow-sm">
+            {parts.map((p, idx) => {
+              const isShortfall = p.isShortfall;
+              const bgClass = isShortfall 
+                ? "bg-slate-100 border-2 border-dashed border-slate-400 text-slate-700" 
+                : idx === 0 
+                  ? "bg-blue-500 text-white border-r-2 border-white" 
+                  : "bg-amber-500 text-white border-r-2 border-white";
+              const valText = p.displayValue || (p.value !== undefined ? (p.value === '?' ? '?' : Number(p.value).toLocaleString()) : '?');
+
+              return (
+                <div
+                  key={p.id || idx}
+                  style={{ flex: isShortfall ? 1.5 : 2 }}
+                  className={`flex flex-col items-center justify-center px-2 py-1 text-center font-sans ${bgClass}`}
+                >
+                  <span className="text-[11px] font-black uppercase tracking-tight truncate w-full">
+                    {p.name}
+                  </span>
+                  <span className="text-xs font-bold font-mono tracking-tight truncate w-full">
+                    {valText}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const entities = config?.entities || [];
   const target = config?.target || { type: 'TOTAL', label: 'Total' };
   const itemName = config?.itemName || 'units';
@@ -450,7 +653,82 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
  * Compact Bar Canvas
  * Read-only display of the student's verified model during calculation
  */
-export function CompactBarCanvas({ bars = [], target = {}, itemName = "units", onEdit }) {
+export function CompactBarCanvas({ 
+  bars = [], 
+  target = {}, 
+  itemName = "units", 
+  onEdit,
+  isPartWhole = false,
+  parts = [],
+  whole = {}
+}) {
+  if (isPartWhole) {
+    if (!parts || parts.length === 0) return null;
+
+    return (
+      <div className="bg-slate-50 border-2 border-slate-200 rounded-3xl p-5 space-y-3 shadow-xs">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-200/80">
+          <div className="flex items-center gap-2">
+            <Layers className="w-4 h-4 text-indigo-600" />
+            <span className="text-xs font-black uppercase tracking-wider text-slate-700">
+              Verified Part-Whole Model Reference
+            </span>
+          </div>
+          {onEdit && (
+            <button
+              type="button"
+              onClick={onEdit}
+              className="text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 px-2.5 py-1 rounded-xl transition-all cursor-pointer"
+            >
+              Edit Blueprint ✎
+            </button>
+          )}
+        </div>
+
+        {/* Partitioned Bar Canvas */}
+        <div className="p-4 bg-white rounded-2xl border border-slate-200 space-y-3">
+          {/* Top Whole Bracket */}
+          <div className="space-y-1">
+            <div className="text-center">
+              <span className="text-xs font-black text-slate-800 bg-amber-100 border border-amber-300 px-3 py-0.5 rounded-full shadow-2xs">
+                {whole.label || "Target"}: {whole.value || "?"}
+              </span>
+            </div>
+            <div className="w-full h-2.5 border-x-2 border-t-2 border-slate-600 rounded-t-sm" />
+          </div>
+
+          {/* Partitioned Bar */}
+          <div className="flex h-11 w-full rounded-xl overflow-hidden border-2 border-slate-300 shadow-sm">
+            {parts.map((p, idx) => {
+              const isShortfall = p.isShortfall;
+              const bgClass = isShortfall 
+                ? "bg-slate-100 border-2 border-dashed border-slate-400 text-slate-700" 
+                : idx === 0 
+                  ? "bg-blue-500 text-white border-r-2 border-white" 
+                  : "bg-amber-500 text-white border-r-2 border-white";
+              const valText = p.value || '?';
+
+              return (
+                <div
+                  key={p.id || idx}
+                  style={{ width: `${p.length || 33}%` }}
+                  className={`flex flex-col items-center justify-center px-2 py-1 text-center font-sans ${bgClass}`}
+                >
+                  <span className="text-[10px] font-black uppercase tracking-tight truncate w-full">
+                    {p.name}
+                  </span>
+                  <span className="text-xs font-bold font-mono tracking-tight truncate w-full">
+                    {valText}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!bars || bars.length === 0) return null;
 
   return (
@@ -571,12 +849,15 @@ export default function InteractiveBarBuilder({
   isAdminReview = false
 }) {
   const correctModelType = config.correctModelType || "COMPARISON";
+  const isPartWhole = correctModelType === "PART_WHOLE";
   const [currentStage, setCurrentStage] = useState(initialStage);
   const [selectedModel, setSelectedModel] = useState(isAdminReview ? correctModelType : null);
   const [confirmationStatus, setConfirmationStatus] = useState('idle'); // 'idle' | 'correct' | 'incorrect'
 
   // Stage 2: Interactive Bar Builder State & Defect Tracking
   const [userBars, setUserBars] = useState([]);
+  const [userParts, setUserParts] = useState([]);
+  const [userWhole, setUserWhole] = useState('');
   const [stage2Status, setStage2Status] = useState('idle'); // 'idle' | 'correct' | 'incorrect'
   const [stage2ErrorMsg, setStage2ErrorMsg] = useState(null);
   const [showModelSolution, setShowModelSolution] = useState(false);
@@ -612,8 +893,73 @@ export default function InteractiveBarBuilder({
 
   const handleProceedToStage2 = () => {
     if (selectedModel === correctModelType || isAdminReview) {
+      if (isPartWhole && userParts.length === 0) {
+        const initialParts = (config.parts || []).map((p, idx) => ({
+          id: `part-${idx + 1}`,
+          name: '',
+          value: '',
+          length: Math.round(100 / (config.parts?.length || 3)),
+          isShortfall: !!p.isShortfall
+        }));
+        setUserParts(initialParts.length > 0 ? initialParts : [
+          { id: 'part-1', name: '', value: '', length: 35, isShortfall: false },
+          { id: 'part-2', name: '', value: '', length: 35, isShortfall: false },
+          { id: 'part-3', name: '', value: '', length: 30, isShortfall: true }
+        ]);
+      }
       setCurrentStage(2);
     }
+  };
+
+  // Part-Whole Stage 2 Handlers
+  const handleAddPart = () => {
+    if (disabled) return;
+    const newPart = {
+      id: `part-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      name: "",
+      value: "",
+      length: 30,
+      isShortfall: false
+    };
+    setUserParts(prev => [...prev, newPart]);
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleUpdatePart = (id, field, val) => {
+    setUserParts(prev => prev.map(p => {
+      if (p.id !== id) return p;
+      return { ...p, [field]: val };
+    }));
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleDeletePart = (id) => {
+    setUserParts(prev => prev.filter(p => p.id !== id));
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleAutoFillParts = () => {
+    const parts = (config.parts || []).map((p, idx) => ({
+      id: `part-${idx + 1}`,
+      name: p.name,
+      value: p.displayValue || (p.value !== undefined ? `${p.value}` : ''),
+      length: Math.round(100 / (config.parts?.length || 3)),
+      isShortfall: !!p.isShortfall
+    }));
+    setUserParts(parts);
+    setUserWhole(config.whole?.displayValue || (config.whole?.value !== undefined ? `${config.whole.value}` : ''));
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleClearParts = () => {
+    setUserParts([]);
+    setUserWhole('');
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
   };
 
   // Stage 2 Bar Construction Handlers
@@ -675,8 +1021,8 @@ export default function InteractiveBarBuilder({
     setUserBars(prev => prev.map(bar => {
       if (bar.id !== id) return bar;
       const willHave = !bar.hasDifference;
-      return { 
-        ...bar, 
+      return {
+        ...bar,
         hasDifference: willHave,
         diffType: bar.diffType || 'MORE',
         diffLength: bar.diffLength || 20,
@@ -733,7 +1079,10 @@ export default function InteractiveBarBuilder({
       return;
     }
 
-    const checkRes = checkBarModelParameters(userBars, config);
+    const checkRes = isPartWhole 
+      ? checkPartWholeParameters(userParts, userWhole, config)
+      : checkBarModelParameters(userBars, config);
+
     if (!checkRes.isValid) {
       setStage2Status('incorrect');
       setStage2ErrorMsg(checkRes.errorMsg);
@@ -743,15 +1092,7 @@ export default function InteractiveBarBuilder({
         details: checkRes.details,
         attempt: defectHistory.length + 1,
         time: Date.now(),
-        barsSnapshot: userBars.map(b => ({
-          name: b.name,
-          value: b.value,
-          hasDifference: b.hasDifference,
-          diffType: b.diffType,
-          diffValue: b.diffValue,
-          length: b.length,
-          diffLength: b.diffLength
-        }))
+        snapshot: isPartWhole ? { parts: userParts, whole: userWhole } : { bars: userBars }
       };
       setDefectHistory(prev => [...prev, defectEntry]);
       if (onDefect) {
@@ -923,6 +1264,257 @@ export default function InteractiveBarBuilder({
           animate={{ opacity: 1, y: 0 }} 
           className="space-y-4"
         >
+          {isPartWhole ? (
+            <div className="bg-white border-2 border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
+              {/* Top Toolbar */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                    <Layers className="w-4 h-4 text-indigo-600" />
+                    Part-Whole Bar Model Canvas
+                  </span>
+                  <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
+                    Single Partitioned Bar
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleAutoFillParts}
+                    className="px-2.5 py-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-xl border border-indigo-200 transition-all flex items-center gap-1 cursor-pointer"
+                    title="Auto-fill parts with problem data for rapid review"
+                  >
+                    <Zap className="w-3.5 h-3.5 text-indigo-600" />
+                    Auto-Fill
+                  </button>
+                  {userParts.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleClearParts}
+                      className="px-2.5 py-1.5 text-xs font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl border border-slate-200 transition-all flex items-center gap-1 cursor-pointer"
+                      title="Clear all parts"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Live Canvas Preview */}
+              <div className="p-5 sm:p-6 bg-slate-50 border-2 border-slate-200 rounded-2xl space-y-4">
+                {/* Whole Bracket */}
+                <div className="space-y-1 max-w-xl mx-auto">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-xs font-black text-slate-700 uppercase">
+                      {config.whole?.label || "Target Whole"}:
+                    </span>
+                    <input
+                      type="text"
+                      value={userWhole}
+                      onChange={(e) => {
+                        setUserWhole(e.target.value);
+                        setStage2Status('idle');
+                        setStage2ErrorMsg(null);
+                      }}
+                      placeholder="e.g. 45,000 or ?"
+                      className="w-36 px-3 py-1 text-center font-mono font-bold text-xs bg-white border-2 border-amber-300 rounded-xl focus:ring-2 focus:ring-amber-400 focus:outline-none"
+                    />
+                  </div>
+                  <div className="w-full h-3 border-x-2 border-t-2 border-slate-700 rounded-t-md mx-auto" />
+                </div>
+
+                {/* The Partitioned Bar */}
+                {userParts.length > 0 ? (
+                  <div className="flex h-14 w-full rounded-2xl overflow-hidden border-2 border-slate-300 shadow-sm bg-white">
+                    {userParts.map((p, idx) => {
+                      const isShortfall = p.isShortfall;
+                      const bgClass = isShortfall 
+                        ? "bg-slate-100 border-2 border-dashed border-slate-400 text-slate-700" 
+                        : idx === 0 
+                          ? "bg-blue-500 text-white border-r-2 border-white" 
+                          : "bg-amber-500 text-white border-r-2 border-white";
+
+                      return (
+                        <div
+                          key={p.id}
+                          style={{ width: `${p.length || 33}%` }}
+                          className={`flex flex-col items-center justify-center px-2 py-1 text-center font-sans transition-all ${bgClass}`}
+                        >
+                          <span className="text-[11px] font-black uppercase tracking-tight truncate w-full">
+                            {p.name || `Part ${idx + 1}`}
+                          </span>
+                          <span className="text-xs font-bold font-mono tracking-tight truncate w-full">
+                            {p.value || "?"}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="p-6 text-center text-xs font-bold text-slate-400 border-2 border-dashed border-slate-300 rounded-2xl">
+                    No parts added yet. Click "+ Add Part to Bar" below to partition the whole!
+                  </div>
+                )}
+              </div>
+
+              {/* Parts Parameters Editor */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-600">
+                    Parts of the Whole ({userParts.length})
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleAddPart}
+                    className="px-3 py-1.5 text-xs font-black text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-xl border border-indigo-200 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Add Part to Bar
+                  </button>
+                </div>
+
+                {userParts.map((part, idx) => (
+                  <div key={part.id} className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                      <div className="sm:col-span-4 space-y-1">
+                        <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                          Part Name / Entity
+                        </label>
+                        <input
+                          type="text"
+                          value={part.name}
+                          onChange={(e) => handleUpdatePart(part.id, 'name', e.target.value)}
+                          placeholder={`e.g. ${idx === 0 ? 'Shanti' : idx === 1 ? 'Kumar' : 'Shortfall'}`}
+                          className="w-full px-3 py-2 text-xs font-bold text-slate-900 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="sm:col-span-3 space-y-1">
+                        <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                          Value / Quantity
+                        </label>
+                        <input
+                          type="text"
+                          value={part.value}
+                          onChange={(e) => handleUpdatePart(part.id, 'value', e.target.value)}
+                          placeholder="e.g. 15,000 or ?"
+                          className="w-full px-3 py-2 text-xs font-mono font-bold text-slate-900 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="sm:col-span-3 flex items-center gap-2 pt-4">
+                        <button
+                          type="button"
+                          onClick={() => handleUpdatePart(part.id, 'isShortfall', !part.isShortfall)}
+                          className={`px-3 py-2 rounded-xl text-xs font-black transition-all border cursor-pointer w-full flex items-center justify-center gap-1.5 ${
+                            part.isShortfall
+                              ? 'bg-rose-50 text-rose-700 border-rose-300 shadow-2xs'
+                              : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          {part.isShortfall ? '⚠ Shortfall Segment' : 'Regular Part'}
+                        </button>
+                      </div>
+
+                      <div className="sm:col-span-2 flex items-center justify-end pt-4">
+                        <button
+                          type="button"
+                          onClick={() => handleDeletePart(part.id)}
+                          className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl border border-transparent hover:border-rose-200 transition-all cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 pt-1 border-t border-slate-200/60">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase shrink-0">
+                        Segment Size: {part.length}%
+                      </span>
+                      <input
+                        type="range"
+                        min="10"
+                        max="80"
+                        value={part.length}
+                        onChange={(e) => handleUpdatePart(part.id, 'length', Number(e.target.value))}
+                        className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Status / Verify */}
+              <div className="pt-2 border-t border-slate-100">
+                {stage2Status === 'correct' ? (
+                  <motion.button
+                    type="button"
+                    initial={{ scale: 0.99 }}
+                    animate={{ scale: 1 }}
+                    onClick={handleProceedToStage3}
+                    className="w-full py-4 px-6 rounded-2xl font-black text-xs uppercase tracking-wider bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer transition-all active:scale-[0.99] shadow-md ring-4 ring-emerald-100 flex items-center justify-center gap-2"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    Part-Whole Model Verified — Solve Equations
+                    <ArrowRight className="w-4 h-4" />
+                  </motion.button>
+                ) : stage2Status === 'incorrect' ? (
+                  <div className="space-y-3">
+                    <div className="p-4 bg-rose-50 rounded-2xl border-2 border-rose-200 flex flex-wrap items-center justify-between gap-3 animate-in fade-in">
+                      <div className="flex items-start gap-2.5 max-w-lg">
+                        <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                        <div>
+                          <div className="text-xs font-black text-rose-950 uppercase tracking-wide">
+                            Model Blueprint Error
+                          </div>
+                          <p className="text-xs text-rose-800 font-semibold mt-0.5">
+                            {stage2ErrorMsg || "Incomplete Model — Build all parts and whole target."}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowModelSolution(prev => !prev)}
+                        className="px-3.5 py-1.5 bg-white hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-black border border-rose-300 transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                      >
+                        <span>💡</span>
+                        <span>{showModelSolution ? "Hide Model Solution" : "View Model Solution"}</span>
+                      </button>
+                    </div>
+
+                    {showModelSolution && (
+                      <div className="animate-in fade-in slide-in-from-top-2">
+                        <ModelSolutionBarModel config={config} />
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      disabled={disabled}
+                      onClick={handleVerifyStage2}
+                      className="w-full py-3.5 px-6 rounded-2xl font-black text-xs uppercase tracking-wider bg-rose-600 hover:bg-rose-700 text-white cursor-pointer transition-all active:scale-[0.99] shadow-sm flex items-center justify-center gap-2"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      Check & Verify Again
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={disabled}
+                    onClick={handleVerifyStage2}
+                    className="w-full py-3.5 px-6 rounded-2xl font-black text-xs uppercase tracking-wider bg-slate-900 hover:bg-slate-800 text-white cursor-pointer transition-all active:scale-[0.99] shadow-sm flex items-center justify-center gap-2"
+                  >
+                    Check & Verify Part-Whole Model
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
           <div className="bg-white border-2 border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
             
             {/* Top Toolbar */}
@@ -1481,6 +2073,7 @@ export default function InteractiveBarBuilder({
             </div>
 
           </div>
+          )}
         </motion.div>
       )}
 
@@ -1494,15 +2087,29 @@ export default function InteractiveBarBuilder({
           className="space-y-6"
         >
           {/* Visual Bar Model Reference (Student's verified model) */}
-          {userBars.length > 0 ? (
-            <CompactBarCanvas 
-              bars={userBars} 
-              target={target} 
-              itemName={config.itemName || "Total"} 
-              onEdit={() => setCurrentStage(2)} 
-            />
+          {isPartWhole ? (
+            userParts.length > 0 ? (
+              <CompactBarCanvas 
+                isPartWhole={true}
+                parts={userParts}
+                whole={{ label: config.whole?.label || 'Target', value: userWhole }}
+                itemName={config.itemName || "units"}
+                onEdit={() => setCurrentStage(2)} 
+              />
+            ) : (
+              <ModelSolutionBarModel config={config} title="Reference Part-Whole Model Blueprint" />
+            )
           ) : (
-            <ModelSolutionBarModel config={config} title="Reference Bar Model Blueprint" />
+            userBars.length > 0 ? (
+              <CompactBarCanvas 
+                bars={userBars} 
+                target={target} 
+                itemName={config.itemName || "Total"} 
+                onEdit={() => setCurrentStage(2)} 
+              />
+            ) : (
+              <ModelSolutionBarModel config={config} title="Reference Bar Model Blueprint" />
+            )
           )}
 
           {/* Canonical Structured MultiStepInput */}
