@@ -35,7 +35,7 @@ export const p4NumberComparisonAndOrderingBlueprint = {
     foundation_three_entity_extrema: 'Compare three 5-digit quantities to find extrema and calculate differences.',
 
     //    standard_order_numbers: 'Arrange 4 numbers up to 5 digits in ascending or descending order (varieties: different ten thousands, same ten thousands, or mixed 4-digit and 5-digit numbers).',
-    //    standard_total_difference_base: 'Find the unknown base quantity using the combined total and difference of two entities.',
+    standard_total_difference_base: 'Find the unknown base quantity using the combined total and difference of two entities.',
     //    standard_missing_interval_deduction: 'Deduce the missing value on a number line by calculating the unknown interval step size.',
     standard_target_shortfall_comparison: 'Calculate the shortfall needed to reach a target amount or find an unknown quantity from the shortfall.',
     //    standard_condition_digit_difference: 'Form two 5-digit numbers under specific conditions (even/odd) using 5 digit cards and calculate their difference.',

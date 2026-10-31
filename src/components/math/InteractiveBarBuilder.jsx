@@ -373,24 +373,37 @@ export function checkBarModelParameters(userBars = [], config = {}) {
       };
     }
 
-    if (expectedBase.value !== undefined && expectedBase.value !== null) {
+    if (expectedBase.value !== undefined && expectedBase.value !== null && expectedBase.value !== '') {
       const expVal = normalizeNumber(expectedBase.value);
       const actVal = normalizeNumber(baseBar.value);
-      if (!actVal) {
-        return {
-          isValid: false,
-          defect: 'MISSING_BASE_VALUE',
-          errorMsg: `Please enter the base value (${expectedBase.displayValue || Number(expectedBase.value).toLocaleString()}) inside "${expectedBase.name}"'s bar.`,
-          details: { entity: expectedBase.name, expectedValue: expectedBase.displayValue || expectedBase.value }
-        };
-      }
-      if (actVal !== expVal) {
-        return {
-          isValid: false,
-          defect: 'INCORRECT_BASE_VALUE',
-          errorMsg: `The value for "${expectedBase.name}" should be ${expectedBase.displayValue || Number(expectedBase.value).toLocaleString()}, but got "${baseBar.value}".`,
-          details: { entity: expectedBase.name, expected: expVal, actual: actVal }
-        };
+      const displayVal = expectedBase.displayValue || (expectedBase.value === '?' ? '?' : Number(expectedBase.value).toLocaleString());
+
+      if (expVal === '?') {
+        if (actVal && actVal !== '?') {
+          return {
+            isValid: false,
+            defect: 'INCORRECT_BASE_VALUE',
+            errorMsg: `"${expectedBase.name}" is an unknown quantity. Mark it with "?" or leave it as 1 unit.`,
+            details: { entity: expectedBase.name, expected: '?', actual: actVal }
+          };
+        }
+      } else {
+        if (!actVal) {
+          return {
+            isValid: false,
+            defect: 'MISSING_BASE_VALUE',
+            errorMsg: `Please enter the base value (${displayVal}) inside "${expectedBase.name}"'s bar.`,
+            details: { entity: expectedBase.name, expectedValue: displayVal }
+          };
+        }
+        if (actVal !== expVal) {
+          return {
+            isValid: false,
+            defect: 'INCORRECT_BASE_VALUE',
+            errorMsg: `The value for "${expectedBase.name}" should be ${displayVal}, but got "${baseBar.value}".`,
+            details: { entity: expectedBase.name, expected: expVal, actual: actVal }
+          };
+        }
       }
     }
   }
@@ -428,24 +441,37 @@ export function checkBarModelParameters(userBars = [], config = {}) {
       };
     }
 
-    if (comp.diffValue !== undefined && comp.diffValue !== null) {
+    if (comp.diffValue !== undefined && comp.diffValue !== null && comp.diffValue !== '') {
       const expDiff = normalizeNumber(comp.diffValue);
       const actDiff = normalizeNumber(compBar.diffValue);
-      if (!actDiff) {
-        return {
-          isValid: false,
-          defect: 'MISSING_DIFF_VALUE',
-          errorMsg: `Please enter the difference value for "${comp.name}" (${comp.displayDiff || Number(comp.diffValue).toLocaleString()}).`,
-          details: { entity: comp.name, expectedDiff: comp.displayDiff || comp.diffValue }
-        };
-      }
-      if (actDiff !== expDiff) {
-        return {
-          isValid: false,
-          defect: 'INCORRECT_DIFF_VALUE',
-          errorMsg: `The difference amount for "${comp.name}" should be ${Number(comp.diffValue).toLocaleString()}, but got "${compBar.diffValue}".`,
-          details: { entity: comp.name, expected: expDiff, actual: actDiff }
-        };
+      const displayDiff = comp.displayDiff || (comp.diffValue === '?' ? '?' : Number(comp.diffValue).toLocaleString());
+
+      if (expDiff === '?') {
+        if (actDiff && actDiff !== '?') {
+          return {
+            isValid: false,
+            defect: 'INCORRECT_DIFF_VALUE',
+            errorMsg: `The difference for "${comp.name}" is unknown. Mark it with "?" or leave it blank.`,
+            details: { entity: comp.name, expected: '?', actual: actDiff }
+          };
+        }
+      } else {
+        if (!actDiff) {
+          return {
+            isValid: false,
+            defect: 'MISSING_DIFF_VALUE',
+            errorMsg: `Please enter the difference value for "${comp.name}" (${displayDiff}).`,
+            details: { entity: comp.name, expectedDiff: displayDiff }
+          };
+        }
+        if (actDiff !== expDiff) {
+          return {
+            isValid: false,
+            defect: 'INCORRECT_DIFF_VALUE',
+            errorMsg: `The difference amount for "${comp.name}" should be ${displayDiff}, but got "${compBar.diffValue}".`,
+            details: { entity: comp.name, expected: expDiff, actual: actDiff }
+          };
+        }
       }
     }
   }
@@ -631,18 +657,34 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
         })}
       </div>
 
-      {/* Grand Total Bracket */}
-      {target?.type === 'TOTAL' && (
+      {/* Combined Total Bracket */}
+      {(target?.type === 'TOTAL' || config?.total) && (
         <div className="flex items-center justify-between bg-amber-50 p-3.5 rounded-2xl border border-amber-200">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-amber-600" />
             <span className="text-xs font-black text-amber-950 uppercase tracking-wider">
-              Grand Total Across All Entities
+              {config?.total?.label || "Combined Total"}
             </span>
           </div>
           <div className="px-3 py-1 bg-amber-400 text-slate-900 font-black rounded-xl text-xs shadow-xs">
-            ? {itemName}
+            {config?.total?.isTarget || target?.type === 'TOTAL' ? `? ${itemName}` : `${config?.total?.displayValue || (config?.total?.value !== undefined ? Number(config?.total?.value).toLocaleString() : '?')} ${itemName}`}
           </div>
+        </div>
+      )}
+      {target?.type === 'BAR' && (
+        <div className="flex items-center justify-between bg-indigo-50 p-3 rounded-2xl border border-indigo-200 text-xs">
+          <span className="font-bold text-indigo-950">Target to Solve:</span>
+          <span className="font-black text-indigo-800 bg-indigo-200 px-2.5 py-0.5 rounded-lg">
+            Find {target.label || 'Entity'}'s Amount
+          </span>
+        </div>
+      )}
+      {target?.type === 'DIFFERENCE' && (
+        <div className="flex items-center justify-between bg-rose-50 p-3 rounded-2xl border border-rose-200 text-xs">
+          <span className="font-bold text-rose-950">Target to Solve:</span>
+          <span className="font-black text-rose-800 bg-rose-200 px-2.5 py-0.5 rounded-lg">
+            Find Difference
+          </span>
         </div>
       )}
     </div>
@@ -660,7 +702,8 @@ export function CompactBarCanvas({
   onEdit,
   isPartWhole = false,
   parts = [],
-  whole = {}
+  whole = {},
+  total = null
 }) {
   if (isPartWhole) {
     if (!parts || parts.length === 0) return null;
@@ -820,10 +863,29 @@ export function CompactBarCanvas({
         })}
       </div>
 
-      {target?.type === 'TOTAL' && (
+      {/* Combined Total Bracket */}
+      {(target?.type === 'TOTAL' || total) && (
         <div className="flex items-center justify-between bg-amber-50 px-3 py-2 rounded-xl border border-amber-200 text-xs">
-          <span className="font-bold text-amber-950">Target: Grand Total</span>
-          <span className="font-black text-amber-800 bg-amber-200 px-2 py-0.5 rounded-lg">? {itemName}</span>
+          <span className="font-bold text-amber-950">{total?.label || "Combined Total"}</span>
+          <span className="font-black text-amber-800 bg-amber-200 px-2 py-0.5 rounded-lg">
+            {total?.isTarget || target?.type === 'TOTAL' ? `? ${itemName}` : `${total?.displayValue || (total?.value !== undefined ? Number(total?.value).toLocaleString() : '?')} ${itemName}`}
+          </span>
+        </div>
+      )}
+      {target?.type === 'BAR' && (
+        <div className="flex items-center justify-between bg-indigo-50 px-3 py-2 rounded-xl border border-indigo-200 text-xs">
+          <span className="font-bold text-indigo-950">Target to Solve:</span>
+          <span className="font-black text-indigo-800 bg-indigo-200 px-2.5 py-0.5 rounded-lg">
+            Find {target.label || 'Entity'}'s Amount
+          </span>
+        </div>
+      )}
+      {target?.type === 'DIFFERENCE' && (
+        <div className="flex items-center justify-between bg-rose-50 px-3 py-2 rounded-xl border border-rose-200 text-xs">
+          <span className="font-bold text-rose-950">Target to Solve:</span>
+          <span className="font-black text-rose-800 bg-rose-200 px-2.5 py-0.5 rounded-lg">
+            Find Difference
+          </span>
         </div>
       )}
     </div>
@@ -1051,7 +1113,7 @@ export default function InteractiveBarBuilder({
         id: `bar-${idx + 1}`,
         name: e.name,
         length: 50,
-        value: e.relation === 'BASE' ? (e.displayValue || `${e.value}`) : '',
+        value: e.displayValue || (e.value !== undefined && e.value !== null ? (e.value === '?' ? '?' : Number(e.value).toLocaleString()) : ''),
         hasDifference: e.relation === 'MORE' || e.relation === 'FEWER',
         diffType: e.relation === 'FEWER' ? 'FEWER' : 'MORE',
         diffLength: 20,
@@ -1979,18 +2041,34 @@ export default function InteractiveBarBuilder({
               </div>
             )}
 
-            {/* Total Bracket if Finding Total */}
-            {target.type === 'TOTAL' && userBars.length > 0 && (
+            {/* Combined Total Bracket */}
+            {(target.type === 'TOTAL' || config?.total) && userBars.length > 0 && (
               <div className="pt-4 border-t-2 border-dashed border-slate-200 flex items-center justify-between bg-amber-50/70 p-4 rounded-2xl border border-amber-200">
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-amber-600" />
                   <span className="text-xs font-black text-amber-950 uppercase tracking-wider">
-                    Grand Total Across All Entities
+                    {config?.total?.label || "Combined Total"}
                   </span>
                 </div>
                 <div className="px-3.5 py-1.5 bg-amber-400 text-slate-900 font-black rounded-xl text-xs shadow-xs animate-pulse">
-                  ? {config.itemName || "Total"}
+                  {config?.total?.isTarget || target.type === 'TOTAL' ? `? ${config.itemName || "Total"}` : `${config?.total?.displayValue || (config?.total?.value !== undefined ? Number(config?.total?.value).toLocaleString() : '?')} ${config.itemName || "units"}`}
                 </div>
+              </div>
+            )}
+            {target.type === 'BAR' && userBars.length > 0 && (
+              <div className="flex items-center justify-between bg-indigo-50/80 p-3.5 rounded-2xl border border-indigo-200 text-xs">
+                <span className="font-bold text-indigo-950">Target to Solve:</span>
+                <span className="font-black text-indigo-800 bg-indigo-200 px-3 py-1 rounded-xl">
+                  Find {target.label || 'Entity'}'s Amount
+                </span>
+              </div>
+            )}
+            {target.type === 'DIFFERENCE' && userBars.length > 0 && (
+              <div className="flex items-center justify-between bg-rose-50/80 p-3.5 rounded-2xl border border-rose-200 text-xs">
+                <span className="font-bold text-rose-950">Target to Solve:</span>
+                <span className="font-black text-rose-800 bg-rose-200 px-3 py-1 rounded-xl">
+                  Find Difference
+                </span>
               </div>
             )}
 
@@ -2105,6 +2183,7 @@ export default function InteractiveBarBuilder({
                 bars={userBars} 
                 target={target} 
                 itemName={config.itemName || "Total"} 
+                total={config.total}
                 onEdit={() => setCurrentStage(2)} 
               />
             ) : (

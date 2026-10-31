@@ -320,13 +320,53 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       promptInstruction = `- Question stem: "${nameA} and ${nameB} have a combined total of ${total.toLocaleString()} ${item}. ${nameA} has ${diff.toLocaleString()} more ${item} than ${nameB}. How many ${item} does ${nameB} have?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL_COMPARISON",
+          componentData: {
+            hideVisual: true,
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: "", layoutSize: larger, displayValue: "" },
+              { name: nameB, value: "?", layoutSize: smaller, displayValue: "?" }
+            ],
+            difference: { displayValue: diff.toLocaleString() },
+            whole: total.toLocaleString()
+          }
+        }, null, 2);
+
+        const steps = [
+          { label: "Write the working equation to remove the difference from the total:", expectedAnswer: `${total} - ${diff} = ${total - diff}`, acceptedAnswers: [(total - diff).toString(), `${total}-${diff}=${total - diff}`, `${total} - ${diff} = ${total - diff}`] },
+          { label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${total - diff} / 2 = ${smaller}`, acceptedAnswers: [smaller.toString(), `${total - diff}/2=${smaller}`, `${total - diff} / 2 = ${smaller}`, `${total - diff} ÷ 2 = ${smaller}`, `${total - diff}÷2=${smaller}`] },
+          { label: "Final Answer:", expectedAnswer: finalAnswer, acceptedAnswers: [finalAnswer, `${finalAnswer} ${item}`] }
+        ];
+
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: "Write the working equation to remove the difference from the total:", expectedAnswer: `${total} - ${diff} = ${total - diff}` },
-            { label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${total - diff} / 2 = ${smaller}` },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
-          ]
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "TOTAL_DIFFERENCE_BASE",
+            targetType: "BAR",
+            targetName: nameB,
+            itemName: item,
+            correctModelType: "COMPARISON",
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities of distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfer or change over time" }
+            ],
+            entities: [
+              { id: "B", name: nameB, value: "?", displayValue: "?", relation: "BASE" },
+              { id: "A", name: nameA, relativeTo: nameB, relation: "MORE", diffValue: diff, displayDiff: `+${diff.toLocaleString()}` }
+            ],
+            total: {
+              label: "Combined Total",
+              value: total,
+              displayValue: total.toLocaleString(),
+              isTarget: false
+            },
+            target: { type: "BAR", targetEntity: "B", label: nameB },
+            steps: steps
+          }
         }, null, 2);
       }
 
@@ -365,14 +405,54 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       promptInstruction = `- Question stem: "${nameA} and ${nameB} have a combined total of ${total.toLocaleString()} ${item}. ${nameA} has ${diff.toLocaleString()} more ${item} than ${nameB}. How many ${item} does ${nameA} have?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL_COMPARISON",
+          componentData: {
+            hideVisual: true,
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: "?", layoutSize: larger, displayValue: "?" },
+              { name: nameB, value: "", layoutSize: smaller, displayValue: "" }
+            ],
+            difference: { displayValue: diff.toLocaleString() },
+            whole: total.toLocaleString()
+          }
+        }, null, 2);
+
+        const steps = [
+          { label: "Write the working equation to remove the difference from the total:", expectedAnswer: `${total} - ${diff} = ${total - diff}`, acceptedAnswers: [(total - diff).toString(), `${total}-${diff}=${total - diff}`, `${total} - ${diff} = ${total - diff}`] },
+          { label: `Write the working equation to find 1 unit (${nameB}'s amount):`, expectedAnswer: `${total - diff} / 2 = ${smaller}`, acceptedAnswers: [smaller.toString(), `${total - diff}/2=${smaller}`, `${total - diff} / 2 = ${smaller}`, `${total - diff} ÷ 2 = ${smaller}`, `${total - diff}÷2=${smaller}`] },
+          { label: `Write the working equation to find ${nameA}'s amount:`, expectedAnswer: `${smaller} + ${diff} = ${larger}`, acceptedAnswers: [larger.toString(), `${smaller}+${diff}=${larger}`, `${smaller} + ${diff} = ${larger}`] },
+          { label: "Final Answer:", expectedAnswer: finalAnswer, acceptedAnswers: [finalAnswer, `${finalAnswer} ${item}`] }
+        ];
+
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: "Write the working equation to remove the difference from the total:", expectedAnswer: `${total} - ${diff} = ${total - diff}` },
-            { label: `Write the working equation to find 1 unit (${nameB}'s amount):`, expectedAnswer: `${total - diff} / 2 = ${smaller}` },
-            { label: `Write the working equation to find ${nameA}'s amount:`, expectedAnswer: `${smaller} + ${diff} = ${larger}` },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
-          ]
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "TOTAL_DIFFERENCE_BASE",
+            targetType: "BAR",
+            targetName: nameA,
+            itemName: item,
+            correctModelType: "COMPARISON",
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities of distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfer or change over time" }
+            ],
+            entities: [
+              { id: "B", name: nameB, value: "", displayValue: "", relation: "BASE" },
+              { id: "A", name: nameA, relativeTo: nameB, relation: "MORE", diffValue: diff, displayDiff: `+${diff.toLocaleString()}` }
+            ],
+            total: {
+              label: "Combined Total",
+              value: total,
+              displayValue: total.toLocaleString(),
+              isTarget: false
+            },
+            target: { type: "BAR", targetEntity: "A", label: nameA },
+            steps: steps
+          }
         }, null, 2);
       }
 
@@ -412,14 +492,54 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       promptInstruction = `- Question stem: "${nameA} and ${nameB} have a combined total of ${total.toLocaleString()} ${item}. ${nameA} has ${diff.toLocaleString()} more ${item} than ${nameB}. Find the number of ${item} ${nameA} has, then round your answer to the nearest hundred."\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL_COMPARISON",
+          componentData: {
+            hideVisual: true,
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: "?", layoutSize: larger, displayValue: "?" },
+              { name: nameB, value: "", layoutSize: smaller, displayValue: "" }
+            ],
+            difference: { displayValue: diff.toLocaleString() },
+            whole: total.toLocaleString()
+          }
+        }, null, 2);
+
+        const steps = [
+          { label: "Write the working equation to remove the difference from the total:", expectedAnswer: `${total} - ${diff} = ${total - diff}`, acceptedAnswers: [(total - diff).toString(), `${total}-${diff}=${total - diff}`, `${total} - ${diff} = ${total - diff}`] },
+          { label: `Write the working equation to find ${nameA}'s amount:`, expectedAnswer: `${smaller} + ${diff} = ${larger}`, acceptedAnswers: [larger.toString(), `${smaller}+${diff}=${larger}`, `${smaller} + ${diff} = ${larger}`, `${(total - diff) / 2} + ${diff} = ${larger}`, `${(total - diff) / 2}+${diff}=${larger}`] },
+          { label: `Round ${nameA}'s amount to the nearest hundred:`, expectedAnswer: finalAnswer, acceptedAnswers: [finalAnswer] },
+          { label: "Final Answer:", expectedAnswer: finalAnswer, acceptedAnswers: [finalAnswer, `${finalAnswer} ${item}`] }
+        ];
+
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: "Write the working equation to remove the difference from the total:", expectedAnswer: `${total} - ${diff} = ${total - diff}` },
-            { label: `Write the working equation to find ${nameA}'s amount:`, expectedAnswer: `${(total - diff) / 2} + ${diff} = ${larger}` },
-            { label: `Round ${nameA}'s amount to the nearest hundred:`, expectedAnswer: finalAnswer },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
-          ]
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "TOTAL_DIFFERENCE_BASE",
+            targetType: "BAR",
+            targetName: nameA,
+            itemName: item,
+            correctModelType: "COMPARISON",
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities of distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfer or change over time" }
+            ],
+            entities: [
+              { id: "B", name: nameB, value: "", displayValue: "", relation: "BASE" },
+              { id: "A", name: nameA, relativeTo: nameB, relation: "MORE", diffValue: diff, displayDiff: `+${diff.toLocaleString()}` }
+            ],
+            total: {
+              label: "Combined Total",
+              value: total,
+              displayValue: total.toLocaleString(),
+              isTarget: false
+            },
+            target: { type: "BAR", targetEntity: "A", label: `${nameA} (rounded)` },
+            steps: steps
+          }
         }, null, 2);
       }
 
@@ -458,13 +578,53 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       promptInstruction = `- Question stem: "${nameB} has ${smaller.toLocaleString()} ${item}. ${nameA} has ${diff.toLocaleString()} more ${item} than ${nameB}. How many ${item} do they have altogether?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL_COMPARISON",
+          componentData: {
+            hideVisual: true,
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: "", layoutSize: larger, displayValue: "" },
+              { name: nameB, value: smaller, layoutSize: smaller, displayValue: smaller.toLocaleString() }
+            ],
+            difference: { displayValue: diff.toLocaleString() },
+            whole: "?"
+          }
+        }, null, 2);
+
+        const steps = [
+          { label: `Write the working equation to find ${nameA}'s amount:`, expectedAnswer: `${smaller} + ${diff} = ${larger}`, acceptedAnswers: [larger.toString(), `${smaller}+${diff}=${larger}`, `${smaller} + ${diff} = ${larger}`] },
+          { label: "Write the working equation to find the total amount:", expectedAnswer: `${larger} + ${smaller} = ${total}`, acceptedAnswers: [total.toString(), `${larger}+${smaller}=${total}`, `${larger} + ${smaller} = ${total}`, `${smaller}+${larger}=${total}`, `${smaller} + ${larger} = ${total}`] },
+          { label: "Final Answer:", expectedAnswer: finalAnswer, acceptedAnswers: [finalAnswer, `${finalAnswer} ${item}`] }
+        ];
+
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: `Write the working equation to find ${nameA}'s amount:`, expectedAnswer: `${smaller} + ${diff} = ${larger}` },
-            { label: "Write the working equation to find the total amount:", expectedAnswer: `${larger} + ${smaller} = ${total}` },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
-          ]
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "TOTAL_DIFFERENCE_BASE",
+            targetType: "TOTAL",
+            targetName: "Combined Total",
+            itemName: item,
+            correctModelType: "COMPARISON",
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities of distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfer or change over time" }
+            ],
+            entities: [
+              { id: "B", name: nameB, value: smaller, displayValue: smaller.toLocaleString(), relation: "BASE" },
+              { id: "A", name: nameA, relativeTo: nameB, relation: "MORE", diffValue: diff, displayDiff: `+${diff.toLocaleString()}` }
+            ],
+            total: {
+              label: "Combined Total",
+              value: total,
+              displayValue: "?",
+              isTarget: true
+            },
+            target: { type: "TOTAL", label: "Combined Total" },
+            steps: steps
+          }
         }, null, 2);
       }
 
@@ -503,13 +663,53 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       promptInstruction = `- Question stem: "${nameA} has ${larger.toLocaleString()} ${item}. ${nameA} has ${diff.toLocaleString()} more ${item} than ${nameB}. How many ${item} do they have altogether?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL_COMPARISON",
+          componentData: {
+            hideVisual: true,
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: larger, layoutSize: larger, displayValue: larger.toLocaleString() },
+              { name: nameB, value: "", layoutSize: smaller, displayValue: "" }
+            ],
+            difference: { displayValue: diff.toLocaleString() },
+            whole: "?"
+          }
+        }, null, 2);
+
+        const steps = [
+          { label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${larger} - ${diff} = ${smaller}`, acceptedAnswers: [smaller.toString(), `${larger}-${diff}=${smaller}`, `${larger} - ${diff} = ${smaller}`] },
+          { label: "Write the working equation to find the total amount:", expectedAnswer: `${larger} + ${smaller} = ${total}`, acceptedAnswers: [total.toString(), `${larger}+${smaller}=${total}`, `${larger} + ${smaller} = ${total}`, `${smaller}+${larger}=${total}`, `${smaller} + ${larger} = ${total}`] },
+          { label: "Final Answer:", expectedAnswer: finalAnswer, acceptedAnswers: [finalAnswer, `${finalAnswer} ${item}`] }
+        ];
+
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${larger} - ${diff} = ${smaller}` },
-            { label: "Write the working equation to find the total amount:", expectedAnswer: `${larger} + ${smaller} = ${total}` },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
-          ]
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "TOTAL_DIFFERENCE_BASE",
+            targetType: "TOTAL",
+            targetName: "Combined Total",
+            itemName: item,
+            correctModelType: "COMPARISON",
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities of distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfer or change over time" }
+            ],
+            entities: [
+              { id: "A", name: nameA, value: larger, displayValue: larger.toLocaleString(), relation: "BASE" },
+              { id: "B", name: nameB, relativeTo: nameA, relation: "FEWER", diffValue: diff, displayDiff: `-${diff.toLocaleString()}` }
+            ],
+            total: {
+              label: "Combined Total",
+              value: total,
+              displayValue: "?",
+              isTarget: true
+            },
+            target: { type: "TOTAL", label: "Combined Total" },
+            steps: steps
+          }
         }, null, 2);
       }
 
@@ -548,13 +748,53 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       promptInstruction = `- Question stem: "${nameA} and ${nameB} have a combined total of ${total.toLocaleString()} ${item}. ${nameA} has ${larger.toLocaleString()} ${item}. How many more ${item} does ${nameA} have than ${nameB}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL_COMPARISON",
+          componentData: {
+            hideVisual: true,
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: larger, layoutSize: larger, displayValue: larger.toLocaleString() },
+              { name: nameB, value: "", layoutSize: smaller, displayValue: "" }
+            ],
+            difference: { displayValue: "?" },
+            whole: total.toLocaleString()
+          }
+        }, null, 2);
+
+        const steps = [
+          { label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${total} - ${larger} = ${smaller}`, acceptedAnswers: [smaller.toString(), `${total}-${larger}=${smaller}`, `${total} - ${larger} = ${smaller}`] },
+          { label: `Write the working equation to find the difference between ${nameA} and ${nameB}:`, expectedAnswer: `${larger} - ${smaller} = ${diff}`, acceptedAnswers: [diff.toString(), `${larger}-${smaller}=${diff}`, `${larger} - ${smaller} = ${diff}`] },
+          { label: "Final Answer:", expectedAnswer: finalAnswer, acceptedAnswers: [finalAnswer, `${finalAnswer} ${item}`] }
+        ];
+
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${total} - ${larger} = ${smaller}` },
-            { label: `Write the working equation to find the difference between ${nameA} and ${nameB}:`, expectedAnswer: `${larger} - ${smaller} = ${diff}` },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
-          ]
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "TOTAL_DIFFERENCE_BASE",
+            targetType: "DIFFERENCE",
+            targetName: "Difference",
+            itemName: item,
+            correctModelType: "COMPARISON",
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities of distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfer or change over time" }
+            ],
+            entities: [
+              { id: "A", name: nameA, value: larger, displayValue: larger.toLocaleString(), relation: "BASE" },
+              { id: "B", name: nameB, relativeTo: nameA, relation: "FEWER", diffValue: "?", displayDiff: "?" }
+            ],
+            total: {
+              label: "Combined Total",
+              value: total,
+              displayValue: total.toLocaleString(),
+              isTarget: false
+            },
+            target: { type: "DIFFERENCE", label: "Difference" },
+            steps: steps
+          }
         }, null, 2);
       }
 
@@ -593,13 +833,53 @@ export function standardLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       promptInstruction = `- Question stem: "${nameA} and ${nameB} have a combined total of ${total.toLocaleString()} ${item}. ${nameB} has ${smaller.toLocaleString()} ${item}. What is the difference between the number of ${item} ${nameA} and ${nameB} have?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL_COMPARISON",
+          componentData: {
+            hideVisual: true,
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: "", layoutSize: larger, displayValue: "" },
+              { name: nameB, value: smaller, layoutSize: smaller, displayValue: smaller.toLocaleString() }
+            ],
+            difference: { displayValue: "?" },
+            whole: total.toLocaleString()
+          }
+        }, null, 2);
+
+        const steps = [
+          { label: `Write the working equation to find ${nameA}'s amount:`, expectedAnswer: `${total} - ${smaller} = ${larger}`, acceptedAnswers: [larger.toString(), `${total}-${smaller}=${larger}`, `${total} - ${smaller} = ${larger}`] },
+          { label: "Write the working equation to find the difference:", expectedAnswer: `${larger} - ${smaller} = ${diff}`, acceptedAnswers: [diff.toString(), `${larger}-${smaller}=${diff}`, `${larger} - ${smaller} = ${diff}`] },
+          { label: "Final Answer:", expectedAnswer: finalAnswer, acceptedAnswers: [finalAnswer, `${finalAnswer} ${item}`] }
+        ];
+
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: `Write the working equation to find ${nameA}'s amount:`, expectedAnswer: `${total} - ${smaller} = ${larger}` },
-            { label: "Write the working equation to find the difference:", expectedAnswer: `${larger} - ${smaller} = ${diff}` },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
-          ]
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "TOTAL_DIFFERENCE_BASE",
+            targetType: "DIFFERENCE",
+            targetName: "Difference",
+            itemName: item,
+            correctModelType: "COMPARISON",
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities of distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfer or change over time" }
+            ],
+            entities: [
+              { id: "B", name: nameB, value: smaller, displayValue: smaller.toLocaleString(), relation: "BASE" },
+              { id: "A", name: nameA, relativeTo: nameB, relation: "MORE", diffValue: "?", displayDiff: "?" }
+            ],
+            total: {
+              label: "Combined Total",
+              value: total,
+              displayValue: total.toLocaleString(),
+              isTarget: false
+            },
+            target: { type: "DIFFERENCE", label: "Difference" },
+            steps: steps
+          }
         }, null, 2);
       }
 
