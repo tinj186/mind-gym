@@ -49,10 +49,18 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
   [normalizedQuestion]);
 
   const isTextAnswer = /[a-zA-Z]/.test(String(normalizedQuestion?.finalAnswer || ''));
+  const isInteractiveBar = normalizedQuestion?.inputRequirement?.inputType === 'INTERACTIVE_BAR_BUILDER';
 
   // 🛡️ Universal Content Guard: Validates based on the presence of DATA, not component names.
   const hasVisualContent = useMemo(() => {
-    if (!currentVisual || currentVisual === "NONE" || normalizedQuestion?.modelData?.hideVisual) return false;
+    if (
+      !currentVisual || 
+      currentVisual === "NONE" || 
+      isInteractiveBar ||
+      normalizedQuestion?.visualEngine?.hideVisual || 
+      normalizedQuestion?.visualEngine?.componentData?.hideVisual || 
+      normalizedQuestion?.modelData?.hideVisual
+    ) return false;
 
     // 1. MODERN VISUALS (Picture Graphs, Ordinal Lines, etc.)
     const componentData = normalizedQuestion?.visualEngine?.componentData;
@@ -619,7 +627,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
           */}
 
           {/* Robust Visual Engine - Guarded by Attempt count unless Essential */}
-          {(attempts > 0 || isEssential) && currentVisual && currentVisual !== "NONE" && hasVisualContent && (
+          {!isInteractiveBar && (attempts > 0 || isEssential) && currentVisual && currentVisual !== "NONE" && hasVisualContent && (
             <div className="mt-8 p-8 bg-white border-4 border-slate-900 rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] animate-in fade-in zoom-in-95 duration-500">
               
               <VisualRenderer 

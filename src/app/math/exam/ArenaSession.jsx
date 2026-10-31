@@ -539,7 +539,11 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
                 </h2>
               </div>
 
-              {normalizedQuestion?.visualEngine?.componentToRender && normalizedQuestion.visualEngine.componentToRender !== "NONE" && (
+              {!normalizedQuestion?.visualEngine?.hideVisual && 
+               !normalizedQuestion?.visualEngine?.componentData?.hideVisual && 
+               normalizedQuestion?.inputRequirement?.inputType !== 'INTERACTIVE_BAR_BUILDER' && 
+               normalizedQuestion?.visualEngine?.componentToRender && 
+               normalizedQuestion.visualEngine.componentToRender !== "NONE" && (
                 <div className="mt-6 p-6 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                   <VisualRenderer 
                     type={normalizedQuestion.visualEngine.componentToRender} 

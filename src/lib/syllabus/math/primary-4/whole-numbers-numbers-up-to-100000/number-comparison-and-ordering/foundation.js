@@ -239,9 +239,10 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
 
       if (isStructure) {
         visualEngineStr = JSON.stringify({
-          componentToRender: "BAR_MODEL_COMPARISON",
+          componentToRender: "NONE",
           hideVisual: true,
           componentData: {
+            hideVisual: true,
             modelType: "BAR_MODEL_COMPARISON",
             bars: [
               { name: nameA, value: larger, layoutSize: larger, displayValue: larger.toLocaleString() },
@@ -335,9 +336,10 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
 
       if (isStructure) {
         visualEngineStr = JSON.stringify({
-          componentToRender: "BAR_MODEL_COMPARISON",
+          componentToRender: "NONE",
           hideVisual: true,
           componentData: {
+            hideVisual: true,
             modelType: "BAR_MODEL_COMPARISON",
             bars: [
               { name: nameA, value: "?", layoutSize: larger, displayValue: "?" },
@@ -434,9 +436,10 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
 
       if (isStructure) {
         visualEngineStr = JSON.stringify({
-          componentToRender: "BAR_MODEL_COMPARISON",
+          componentToRender: "NONE",
           hideVisual: true,
           componentData: {
+            hideVisual: true,
             modelType: "BAR_MODEL_COMPARISON",
             bars: [
               { name: nameA, value: larger, layoutSize: larger, displayValue: larger.toLocaleString() },
