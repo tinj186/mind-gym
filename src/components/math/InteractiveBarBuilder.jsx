@@ -247,7 +247,14 @@ export default function InteractiveBarBuilder({
   const handleUpdateBar = (id, field, val) => {
     setUserBars(prev => prev.map(bar => {
       if (bar.id !== id) return bar;
-      return { ...bar, [field]: val };
+      let finalVal = val;
+      if (field === 'diffValue' && bar.diffType === 'FEWER') {
+        finalVal = val.replace(/[+\-]/g, '');
+      }
+      if (field === 'diffType' && val === 'FEWER' && bar.diffValue) {
+        return { ...bar, diffType: val, diffValue: bar.diffValue.replace(/[+\-]/g, '').trim() };
+      }
+      return { ...bar, [field]: finalVal };
     }));
     setStage2Status('idle');
     setStage2ErrorMsg(null);
@@ -268,7 +275,7 @@ export default function InteractiveBarBuilder({
         hasDifference: willHave,
         diffType: bar.diffType || 'MORE',
         diffLength: bar.diffLength || 20,
-        diffValue: willHave ? (bar.diffValue || '+ More') : ''
+        diffValue: willHave ? (bar.diffValue ? bar.diffValue.replace(/[+\-]/g, '').trim() : '') : ''
       };
     }));
     setStage2Status('idle');
@@ -279,24 +286,28 @@ export default function InteractiveBarBuilder({
     if (!entities || entities.length === 0) {
       setUserBars([
         { id: 'bar-1', name: 'Entity A', length: 50, value: '10,000', hasDifference: false, diffType: 'MORE', diffLength: 20, diffValue: '', isTarget: false, isCollapsed: true },
-        { id: 'bar-2', name: 'Entity B', length: 50, value: 'Same as A', hasDifference: true, diffType: 'MORE', diffLength: 20, diffValue: '+ 5,000', isTarget: false, isCollapsed: true },
-        { id: 'bar-3', name: 'Entity C', length: 50, value: 'Same as B', hasDifference: true, diffType: 'FEWER', diffLength: 20, diffValue: '- 5,000', isTarget: true, isCollapsed: true }
+        { id: 'bar-2', name: 'Entity B', length: 50, value: 'Same as A', hasDifference: true, diffType: 'MORE', diffLength: 20, diffValue: '5,000', isTarget: false, isCollapsed: true },
+        { id: 'bar-3', name: 'Entity C', length: 50, value: 'Same as B', hasDifference: true, diffType: 'FEWER', diffLength: 20, diffValue: '5,000', isTarget: true, isCollapsed: true }
       ]);
       setStage2Status('idle');
       return;
     }
-    const filled = entities.map((e, idx) => ({
-      id: `bar-${idx + 1}`,
-      name: e.name,
-      length: 50,
-      value: e.relation === 'BASE' ? (e.displayValue || `${e.value}`) : 'Same as base',
-      hasDifference: e.relation === 'MORE' || e.relation === 'FEWER',
-      diffType: e.relation === 'FEWER' ? 'FEWER' : 'MORE',
-      diffLength: 20,
-      diffValue: e.displayDiff || (e.diffValue ? `${e.relation === 'FEWER' ? '-' : '+'}${e.diffValue}` : ''),
-      isTarget: target?.type === 'BAR' && target?.targetEntity === e.id,
-      isCollapsed: true // Default to tightly collapsed bar model view
-    }));
+    const filled = entities.map((e, idx) => {
+      const rawDiff = e.displayDiff || e.diffValue || '';
+      const cleanDiff = `${rawDiff}`.replace(/[+\-]/g, '').trim();
+      return {
+        id: `bar-${idx + 1}`,
+        name: e.name,
+        length: 50,
+        value: e.relation === 'BASE' ? (e.displayValue || `${e.value}`) : 'Same as base',
+        hasDifference: e.relation === 'MORE' || e.relation === 'FEWER',
+        diffType: e.relation === 'FEWER' ? 'FEWER' : 'MORE',
+        diffLength: 20,
+        diffValue: cleanDiff,
+        isTarget: target?.type === 'BAR' && target?.targetEntity === e.id,
+        isCollapsed: true // Default to tightly collapsed bar model view
+      };
+    });
     setUserBars(filled);
     setStage2Status('idle');
     setStage2ErrorMsg(null);
@@ -649,28 +660,61 @@ export default function InteractiveBarBuilder({
                             {/* Difference Segment / Bracket */}
                             {bar.hasDifference && (
                               bar.diffType === 'FEWER' ? (
-                                /* WHEN LESS / FEWER: Shorter bar followed by dashed difference bracket with dotted ending line */
-                                <div
-                                  style={{ width: `${bar.diffLength}%` }}
-                                  className="relative h-full ml-1.5 rounded-lg border-2 border-dashed border-rose-400 bg-rose-50/70 flex items-center justify-center px-2 transition-all duration-150 overflow-visible select-none shrink-0"
-                                  title="Difference bracket showing how much less than the reference"
-                                >
-                                  {/* Label inside the bracket */}
-                                  <div className="flex items-center gap-1 text-[11px] font-black text-rose-700 truncate">
-                                    <span>{bar.diffValue || "- Fewer"}</span>
-                                  </div>
+                                /* WHEN LESS / FEWER: Open shortage gap with bottom bracket and unsigned numeric value */
+                                (() => {
+                                  const cleanDiffNum = (bar.diffValue || "").replace(/[+\-]/g, '').trim();
+                                  const isComparingToTop = idx > 0;
+                                  return (
+                                    <div
+                                      style={{ width: `${bar.diffLength}%` }}
+                                      className="relative h-full ml-1 flex flex-col justify-between items-center py-1 px-1 transition-all duration-150 overflow-visible select-none shrink-0"
+                                      title="Difference bracket showing comparison with reference"
+                                    >
+                                      {/* Vertical dotted alignment reference line reaching down from the longer bar above (or to bar below) */}
+                                      <div
+                                        className={`absolute right-0 w-0 border-r-2 border-dotted border-rose-400 pointer-events-none z-10 ${
+                                          isComparingToTop ? '-top-6 bottom-0' : 'top-0 -bottom-6'
+                                        }`}
+                                      >
+                                        <span className="absolute -top-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                                        <span className="absolute -bottom-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                                      </div>
 
-                                  {/* Vertical dotted ending line with reference indicator */}
-                                  <div className="absolute -top-3 -bottom-3 right-0 w-0 border-r-2 border-dotted border-rose-500 pointer-events-none">
-                                    <span className="absolute -top-1 -right-1 w-2 h-0.5 bg-rose-500 rounded-full" />
-                                    <span className="absolute -bottom-1 -right-1 w-2 h-0.5 bg-rose-500 rounded-full" />
-                                  </div>
+                                      {/* Subtle open gap floor guide */}
+                                      <div className="absolute inset-0 bg-rose-50/20 rounded-lg border-b border-dashed border-rose-200 pointer-events-none" />
 
-                                  {/* Difference Tag */}
-                                  <span className="absolute -top-3.5 right-1/2 translate-x-1/2 text-[9px] font-black uppercase tracking-wider text-rose-600 bg-white px-1.5 py-0.2 rounded border border-rose-200 shadow-xs whitespace-nowrap">
-                                    Difference
-                                  </span>
-                                </div>
+                                      {isComparingToTop ? (
+                                        <>
+                                          {/* Unsigned Number (strictly numeric, no + or - sign) above bottom bracket */}
+                                          <div className="relative z-10 flex-1 flex items-center justify-center">
+                                            <span className="text-[11px] font-black text-rose-700 font-mono tracking-tight px-1.5 py-0.2 bg-white/95 rounded border border-rose-200 shadow-2xs truncate max-w-full">
+                                              {cleanDiffNum || "5,000"}
+                                            </span>
+                                          </div>
+
+                                          {/* Bottom Bracket: Horizontal line at bottom with upward ticks on left and right, and center downward cusp */}
+                                          <div className="relative z-10 w-full h-2 border-x-2 border-b-2 border-rose-500 rounded-b-md">
+                                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0 border-x-3 border-x-transparent border-t-3 border-t-rose-500" />
+                                          </div>
+                                        </>
+                                      ) : (
+                                        <>
+                                          {/* Top Bracket: Horizontal line at top with downward ticks on left and right, and center upward cusp */}
+                                          <div className="relative z-10 w-full h-2 border-x-2 border-t-2 border-rose-500 rounded-t-md">
+                                            <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-0 h-0 border-x-3 border-x-transparent border-b-3 border-b-rose-500" />
+                                          </div>
+
+                                          {/* Unsigned Number (strictly numeric, no + or - sign) below top bracket */}
+                                          <div className="relative z-10 flex-1 flex items-center justify-center">
+                                            <span className="text-[11px] font-black text-rose-700 font-mono tracking-tight px-1.5 py-0.2 bg-white/95 rounded border border-rose-200 shadow-2xs truncate max-w-full">
+                                              {cleanDiffNum || "5,000"}
+                                            </span>
+                                          </div>
+                                        </>
+                                      )}
+                                    </div>
+                                  );
+                                })()
                               ) : (
                                 /* WHEN MORE: Solid green protruding extra difference section */
                                 <div
@@ -843,7 +887,7 @@ export default function InteractiveBarBuilder({
                                 type="text"
                                 value={bar.diffValue}
                                 onChange={(e) => handleUpdateBar(bar.id, 'diffValue', e.target.value)}
-                                placeholder="Diff Label (e.g. 5,000)"
+                                placeholder={bar.diffType === 'FEWER' ? "Difference (e.g. 5,000)" : "Diff (e.g. 5,000)"}
                                 className="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1 text-xs font-bold text-slate-900 focus:outline-none focus:border-indigo-500"
                               />
                             </div>
