@@ -224,6 +224,7 @@ export default function InteractiveBarBuilder({
       diffType: 'MORE',
       diffLength: 20,
       diffValue: "",
+      bracketPosition: 'bottom',
       isTarget: false,
       isCollapsed: false
     };
@@ -252,7 +253,7 @@ export default function InteractiveBarBuilder({
         finalVal = val.replace(/[+\-]/g, '');
       }
       if (field === 'diffType' && val === 'FEWER' && bar.diffValue) {
-        return { ...bar, diffType: val, diffValue: bar.diffValue.replace(/[+\-]/g, '').trim() };
+        return { ...bar, diffType: val, diffValue: bar.diffValue.replace(/[+\-]/g, '').trim(), bracketPosition: bar.bracketPosition || 'bottom' };
       }
       return { ...bar, [field]: finalVal };
     }));
@@ -275,7 +276,8 @@ export default function InteractiveBarBuilder({
         hasDifference: willHave,
         diffType: bar.diffType || 'MORE',
         diffLength: bar.diffLength || 20,
-        diffValue: willHave ? (bar.diffValue ? bar.diffValue.replace(/[+\-]/g, '').trim() : '') : ''
+        diffValue: willHave ? (bar.diffValue ? bar.diffValue.replace(/[+\-]/g, '').trim() : '') : '',
+        bracketPosition: bar.bracketPosition || 'bottom'
       };
     }));
     setStage2Status('idle');
@@ -287,7 +289,7 @@ export default function InteractiveBarBuilder({
       setUserBars([
         { id: 'bar-1', name: 'Entity A', length: 50, value: '10,000', hasDifference: false, diffType: 'MORE', diffLength: 20, diffValue: '', isTarget: false, isCollapsed: true },
         { id: 'bar-2', name: 'Entity B', length: 50, value: 'Same as A', hasDifference: true, diffType: 'MORE', diffLength: 20, diffValue: '5,000', isTarget: false, isCollapsed: true },
-        { id: 'bar-3', name: 'Entity C', length: 50, value: 'Same as B', hasDifference: true, diffType: 'FEWER', diffLength: 20, diffValue: '5,000', isTarget: true, isCollapsed: true }
+        { id: 'bar-3', name: 'Entity C', length: 50, value: 'Same as B', hasDifference: true, diffType: 'FEWER', diffLength: 20, diffValue: '5,000', bracketPosition: 'bottom', isTarget: true, isCollapsed: true }
       ]);
       setStage2Status('idle');
       return;
@@ -304,6 +306,7 @@ export default function InteractiveBarBuilder({
         diffType: e.relation === 'FEWER' ? 'FEWER' : 'MORE',
         diffLength: 20,
         diffValue: cleanDiff,
+        bracketPosition: 'bottom',
         isTarget: target?.type === 'BAR' && target?.targetEntity === e.id,
         isCollapsed: true // Default to tightly collapsed bar model view
       };
@@ -660,10 +663,10 @@ export default function InteractiveBarBuilder({
                             {/* Difference Segment / Bracket */}
                             {bar.hasDifference && (
                               bar.diffType === 'FEWER' ? (
-                                /* WHEN LESS / FEWER: Open shortage gap with bottom bracket and unsigned numeric value */
+                                /* WHEN LESS / FEWER: Open shortage gap with bracket and unsigned numeric value */
                                 (() => {
                                   const cleanDiffNum = (bar.diffValue || "").replace(/[+\-]/g, '').trim();
-                                  const isComparingToTop = idx > 0;
+                                  const isBottomBracket = (bar.bracketPosition || (idx > 0 ? 'bottom' : 'top')) === 'bottom';
                                   return (
                                     <div
                                       style={{ width: `${bar.diffLength}%` }}
@@ -673,17 +676,19 @@ export default function InteractiveBarBuilder({
                                       {/* Vertical dotted alignment reference line reaching down from the longer bar above (or to bar below) */}
                                       <div
                                         className={`absolute right-0 w-0 border-r-2 border-dotted border-rose-400 pointer-events-none z-10 ${
-                                          isComparingToTop ? '-top-6 bottom-0' : 'top-0 -bottom-6'
+                                          isBottomBracket ? '-top-6 bottom-0' : 'top-0 -bottom-6'
                                         }`}
                                       >
                                         <span className="absolute -top-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
                                         <span className="absolute -bottom-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
                                       </div>
 
-                                      {/* Subtle open gap floor guide */}
-                                      <div className="absolute inset-0 bg-rose-50/20 rounded-lg border-b border-dashed border-rose-200 pointer-events-none" />
+                                      {/* Subtle open gap floor/ceiling guide */}
+                                      <div className={`absolute inset-0 bg-rose-50/20 rounded-lg pointer-events-none ${
+                                        isBottomBracket ? 'border-b border-dashed border-rose-200' : 'border-t border-dashed border-rose-200'
+                                      }`} />
 
-                                      {isComparingToTop ? (
+                                      {isBottomBracket ? (
                                         <>
                                           {/* Unsigned Number (strictly numeric, no + or - sign) above bottom bracket */}
                                           <div className="relative z-10 flex-1 flex items-center justify-center">
@@ -770,10 +775,10 @@ export default function InteractiveBarBuilder({
                           </span>
                         </div>
 
-                        {/* Primary Inputs Row */}
+                        {/* Primary Inputs Row: Base Bar Parameters */}
                         <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
                           {/* Name input */}
-                          <div className="sm:col-span-4 space-y-1">
+                          <div className="sm:col-span-5 space-y-1">
                             <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
                               Bar Label / Name
                             </label>
@@ -816,7 +821,7 @@ export default function InteractiveBarBuilder({
                           </div>
 
                           {/* Bar Length Slider */}
-                          <div className="sm:col-span-3 space-y-1">
+                          <div className="sm:col-span-4 space-y-1">
                             <div className="flex justify-between text-[10px] font-black uppercase tracking-wider text-slate-500">
                               <span>Bar Length</span>
                               <span className="font-mono text-indigo-600">{bar.length}%</span>
@@ -830,85 +835,121 @@ export default function InteractiveBarBuilder({
                               className="w-full accent-indigo-600 cursor-pointer"
                             />
                           </div>
+                        </div>
 
-                          {/* Difference Segment Toggle */}
-                          <div className="sm:col-span-2 pt-3 sm:pt-0 flex items-center justify-end">
+                        {/* Line 2: Difference Segment Parameters (1 line below base bar parameter) */}
+                        <div className="pt-2 border-t border-slate-100">
+                          <div className="p-2.5 bg-slate-50/80 rounded-xl border border-slate-200 flex flex-wrap items-center gap-2.5 sm:gap-3">
+                            {/* Has Diff Button */}
                             <button
                               type="button"
                               onClick={() => handleToggleDifference(bar.id)}
-                              className={`w-full py-2 px-2 rounded-xl text-[11px] font-black tracking-wide border transition-all cursor-pointer text-center ${
+                              className={`px-3 py-1.5 rounded-xl text-xs font-black tracking-wide border transition-all cursor-pointer shrink-0 ${
                                 bar.hasDifference
-                                  ? 'bg-emerald-50 border-emerald-300 text-emerald-800 hover:bg-emerald-100'
+                                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
                                   : 'bg-white border-slate-300 text-slate-600 hover:border-indigo-400 hover:text-indigo-600'
                               }`}
                             >
                               {bar.hasDifference ? "✓ Has Diff" : "+ Diff"}
                             </button>
+
+                            {/* Aligned rest of difference segment parameters next to Has Diff button */}
+                            {bar.hasDifference ? (
+                              <>
+                                {/* Type (+ More / - Fewer) */}
+                                <div className="flex items-center gap-1 bg-white p-0.5 rounded-xl border border-slate-200 shrink-0 shadow-2xs">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleUpdateBar(bar.id, 'diffType', 'MORE')}
+                                    className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
+                                      bar.diffType === 'MORE'
+                                        ? 'bg-emerald-600 text-white shadow-xs'
+                                        : 'text-slate-600 hover:bg-slate-100'
+                                    }`}
+                                  >
+                                    + More
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleUpdateBar(bar.id, 'diffType', 'FEWER')}
+                                    className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
+                                      bar.diffType === 'FEWER'
+                                        ? 'bg-rose-600 text-white shadow-xs'
+                                        : 'text-slate-600 hover:bg-slate-100'
+                                    }`}
+                                  >
+                                    - Fewer
+                                  </button>
+                                </div>
+
+                                {/* Diff Value */}
+                                <div className="w-28 sm:w-32 shrink-0">
+                                  <input
+                                    type="text"
+                                    value={bar.diffValue}
+                                    onChange={(e) => handleUpdateBar(bar.id, 'diffValue', e.target.value)}
+                                    placeholder={bar.diffType === 'FEWER' ? "Diff (e.g. 5,000)" : "Diff (e.g. 5,000)"}
+                                    className="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1 text-xs font-bold text-slate-900 focus:outline-none focus:border-indigo-500 shadow-2xs"
+                                  />
+                                </div>
+
+                                {/* Bracket Position Toggle (for negative difference / FEWER) */}
+                                {bar.diffType === 'FEWER' && (
+                                  <div className="flex items-center gap-1 bg-white p-0.5 rounded-xl border border-slate-200 shrink-0 shadow-2xs">
+                                    <span className="text-[10px] font-black uppercase text-slate-400 pl-1.5 shrink-0">
+                                      Bracket:
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleUpdateBar(bar.id, 'bracketPosition', 'bottom')}
+                                      className={`px-2 py-1 rounded-lg text-[11px] font-black flex items-center gap-1 transition-all cursor-pointer ${
+                                        (bar.bracketPosition || (idx > 0 ? 'bottom' : 'top')) === 'bottom'
+                                          ? 'bg-indigo-600 text-white shadow-xs'
+                                          : 'text-slate-600 hover:bg-slate-100'
+                                      }`}
+                                      title="Render bottom bracket (comparing to top bar)"
+                                    >
+                                      <span>⎵</span>
+                                      <span>Bottom</span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleUpdateBar(bar.id, 'bracketPosition', 'top')}
+                                      className={`px-2 py-1 rounded-lg text-[11px] font-black flex items-center gap-1 transition-all cursor-pointer ${
+                                        (bar.bracketPosition || (idx > 0 ? 'bottom' : 'top')) === 'top'
+                                          ? 'bg-indigo-600 text-white shadow-xs'
+                                          : 'text-slate-600 hover:bg-slate-100'
+                                      }`}
+                                      title="Render top bracket (comparing to bottom bar)"
+                                    >
+                                      <span>⎴</span>
+                                      <span>Top</span>
+                                    </button>
+                                  </div>
+                                )}
+
+                                {/* Diff Width Slider */}
+                                <div className="flex items-center gap-2 min-w-[130px] max-w-[190px] flex-1 shrink-0">
+                                  <span className="text-[10px] font-black uppercase text-slate-500 shrink-0">
+                                    Width: <span className="font-mono text-indigo-600">{bar.diffLength}%</span>
+                                  </span>
+                                  <input
+                                    type="range"
+                                    min="10"
+                                    max="40"
+                                    value={bar.diffLength}
+                                    onChange={(e) => handleUpdateBar(bar.id, 'diffLength', Number(e.target.value))}
+                                    className="w-full accent-indigo-600 cursor-pointer"
+                                  />
+                                </div>
+                              </>
+                            ) : (
+                              <span className="text-xs text-slate-400 font-medium">
+                                No difference attached to this bar. Click "+ Diff" to add.
+                              </span>
+                            )}
                           </div>
                         </div>
-
-                        {/* Extended Difference Controls (when hasDifference is true) */}
-                        {bar.hasDifference && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            className="pt-2 border-t border-slate-200/50 grid grid-cols-1 sm:grid-cols-12 gap-3 items-center bg-slate-50/70 p-2.5 rounded-xl border border-slate-200"
-                          >
-                            {/* Diff Type */}
-                            <div className="sm:col-span-4 flex items-center gap-1.5">
-                              <span className="text-[10px] font-black uppercase text-slate-500 shrink-0">Type:</span>
-                              <button
-                                type="button"
-                                onClick={() => handleUpdateBar(bar.id, 'diffType', 'MORE')}
-                                className={`flex-1 py-1 rounded-lg text-[10px] font-black transition-all cursor-pointer ${
-                                  bar.diffType === 'MORE'
-                                    ? 'bg-emerald-600 text-white shadow-xs'
-                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                                }`}
-                              >
-                                + More
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleUpdateBar(bar.id, 'diffType', 'FEWER')}
-                                className={`flex-1 py-1 rounded-lg text-[10px] font-black transition-all cursor-pointer ${
-                                  bar.diffType === 'FEWER'
-                                    ? 'bg-rose-600 text-white shadow-xs'
-                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                                }`}
-                              >
-                                - Fewer
-                              </button>
-                            </div>
-
-                            {/* Diff Value */}
-                            <div className="sm:col-span-4">
-                              <input
-                                type="text"
-                                value={bar.diffValue}
-                                onChange={(e) => handleUpdateBar(bar.id, 'diffValue', e.target.value)}
-                                placeholder={bar.diffType === 'FEWER' ? "Difference (e.g. 5,000)" : "Diff (e.g. 5,000)"}
-                                className="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1 text-xs font-bold text-slate-900 focus:outline-none focus:border-indigo-500"
-                              />
-                            </div>
-
-                            {/* Diff Width Slider */}
-                            <div className="sm:col-span-4 space-y-0.5">
-                              <div className="flex justify-between text-[9px] font-black uppercase text-slate-500">
-                                <span>Diff Width</span>
-                                <span className="font-mono text-indigo-600">{bar.diffLength}%</span>
-                              </div>
-                              <input
-                                type="range"
-                                min="10"
-                                max="40"
-                                value={bar.diffLength}
-                                onChange={(e) => handleUpdateBar(bar.id, 'diffLength', Number(e.target.value))}
-                                className="w-full accent-indigo-600 cursor-pointer"
-                              />
-                            </div>
-                          </motion.div>
-                        )}
 
                         {/* Bottom Actions Row: Delete Button + Done / Collapse Button */}
                         <div className="flex items-center justify-between pt-2 border-t border-slate-100">
