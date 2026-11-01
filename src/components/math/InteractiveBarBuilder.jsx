@@ -302,87 +302,91 @@ export function checkPartWholeParameters(userParts = [], userWhole = '', config 
 
 /**
  * Parameter Check for Student Before-and-After Bar Model
- * Validates the student's Before State, Transfer Bridge, and After State.
+ * Uses the comparison parameter check to validate Before State,
+ * and validates the resulting After State entities and relations.
  */
-export function checkBeforeAfterParameters(beforeBars = [], afterBars = [], transfer = {}, config = {}) {
+export function checkBeforeAfterParameters(beforeBars = [], afterBars = [], transferOrConfig = {}, maybeConfig = {}) {
+  const actualConfig = (maybeConfig && (maybeConfig.entities || maybeConfig.problemType || maybeConfig.target || maybeConfig.correctModelType))
+    ? maybeConfig
+    : (transferOrConfig && (transferOrConfig.entities || transferOrConfig.problemType || transferOrConfig.target || transferOrConfig.correctModelType))
+      ? transferOrConfig
+      : {};
+
   const rawBefore = Array.isArray(beforeBars) ? beforeBars : (beforeBars.beforeBars || []);
   const rawAfter = Array.isArray(afterBars) ? afterBars : (afterBars.afterBars || []);
-  const rawTransfer = transfer || {};
 
-  if (!rawBefore || rawBefore.length < 2) {
+  if (!rawBefore || rawBefore.length === 0) {
     return {
       isValid: false,
       defect: 'INSUFFICIENT_BEFORE_BARS',
-      errorMsg: "Please configure both entity bars in the Before State (At First).",
+      errorMsg: "Please configure the entity bars in the Before State (At First).",
       details: null
     };
   }
 
-  const expectedGiver = config?.transferFrom || config?.entities?.[0]?.name;
-  const expectedReceiver = config?.transferTo || config?.entities?.[1]?.name;
-
-  // 1. Verify entity names in Before state
-  const giverBar = rawBefore.find(b => normalizeName(b.name) === normalizeName(expectedGiver));
-  const receiverBar = rawBefore.find(b => normalizeName(b.name) === normalizeName(expectedReceiver));
-
-  if (!giverBar) {
+  // 1. Validate Before State using standard comparison parameter check!
+  const beforeCheck = checkBarModelParameters(rawBefore, actualConfig, {});
+  if (!beforeCheck.isValid) {
     return {
       isValid: false,
-      defect: 'MISSING_GIVER_BAR',
-      errorMsg: `The Before State must include a bar for "${expectedGiver}".`,
-      details: { expectedGiver }
+      defect: `BEFORE_${beforeCheck.defect}`,
+      errorMsg: `Before State: ${beforeCheck.errorMsg}`,
+      details: beforeCheck.details
     };
   }
 
-  if (!receiverBar) {
-    return {
-      isValid: false,
-      defect: 'MISSING_RECEIVER_BAR',
-      errorMsg: `The Before State must include a bar for "${expectedReceiver}".`,
-      details: { expectedReceiver }
-    };
-  }
-
-  // 2. Check that Giver has MORE (not fewer) in Before state
-  if (giverBar.hasDifference && giverBar.diffType === 'FEWER') {
-    return {
-      isValid: false,
-      defect: 'GIVER_CANNOT_HAVE_FEWER',
-      errorMsg: `"${expectedGiver}" gives items to "${expectedReceiver}", so "${expectedGiver}" must have MORE at first. Mark "${expectedGiver}" with a "+ Diff" segment or longer bar.`,
-      details: null
-    };
-  }
-
-  // 3. Check transfer amount
-  if (config.transferAmount !== undefined && config.transferAmount !== null && config.transferAmount !== '') {
-    const expTransfer = normalizeNumber(config.transferAmount);
-    const actTransfer = normalizeNumber(rawTransfer.amount);
-    if (!actTransfer) {
-      return {
-        isValid: false,
-        defect: 'MISSING_TRANSFER_AMOUNT',
-        errorMsg: `Please enter the transfer amount (${config.displayTransfer || Number(config.transferAmount).toLocaleString()}) in the transfer connection box.`,
-        details: { expected: expTransfer }
-      };
-    }
-    if (actTransfer !== expTransfer) {
-      return {
-        isValid: false,
-        defect: 'INCORRECT_TRANSFER_AMOUNT',
-        errorMsg: `The transfer amount should be ${config.displayTransfer || Number(config.transferAmount).toLocaleString()}, but got "${rawTransfer.amount}".`,
-        details: { expected: expTransfer, actual: actTransfer }
-      };
-    }
-  }
-
-  // 4. Check After state bars count
-  if (!rawAfter || rawAfter.length < 2) {
+  // 2. Validate After State presence
+  if (!rawAfter || rawAfter.length === 0) {
     return {
       isValid: false,
       defect: 'INSUFFICIENT_AFTER_BARS',
-      errorMsg: "Please ensure both entities are shown in the After State (In the End).",
+      errorMsg: "Please configure the entity bars in the After State (In the End).",
       details: null
     };
+  }
+
+  // Check each entity represented in Before State exists in After State
+  for (const bBar of rawBefore) {
+    if (!bBar.name || !bBar.name.trim()) continue;
+    const matched = rawAfter.find(a => normalizeName(a.name) === normalizeName(bBar.name));
+    if (!matched) {
+      return {
+        isValid: false,
+        defect: 'MISSING_AFTER_ENTITY',
+        errorMsg: `Missing bar for "${bBar.name}" in the After State (In the End).`,
+        details: { entity: bBar.name }
+      };
+    }
+  }
+
+  // 3. For Equalizing Problems: Validate that After State reflects equal quantities
+  const isEqualizing = actualConfig?.problemType === 'EQUALIZING_TRANSFER' || 
+    actualConfig?.equalizedValue || 
+    actualConfig?.targetType === 'TRANSFER' ||
+    (actualConfig?.target?.type === 'DIFFERENCE' && actualConfig?.transferAmount);
+
+  if (isEqualizing && rawAfter.length >= 2) {
+    // Check for conflicting non-zero difference segments in after state
+    const conflictingDiff = rawAfter.find(a => a.hasDifference && a.diffValue && a.diffValue !== '?' && Number(normalizeNumber(a.diffValue)) > 0);
+    if (conflictingDiff) {
+      return {
+        isValid: false,
+        defect: 'AFTER_HAS_CONFLICTING_DIFF',
+        errorMsg: `In the end, both entities have an equal number. Remove difference segments from "${conflictingDiff.name}" in the After State.`,
+        details: { entity: conflictingDiff.name }
+      };
+    }
+
+    const lengths = rawAfter.map(a => Number(a.length) || 50);
+    const lengthSpread = Math.max(...lengths) - Math.min(...lengths);
+    if (lengthSpread > 20) {
+      return {
+        isValid: false,
+        defect: 'AFTER_STATE_NOT_EQUAL',
+        errorMsg: "In the end, both entities have an equal number. Adjust the bars in the After State to show equal lengths (e.g. 50% each or 1 unit each).",
+        details: { spread: lengthSpread }
+      };
+    }
   }
 
   return {
@@ -841,7 +845,7 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
         <div className="p-4 bg-white border border-emerald-200 rounded-2xl space-y-2">
           <div className="flex items-center justify-between pb-1 border-b border-slate-100">
             <span className="text-[11px] font-black uppercase tracking-wider text-slate-700">
-              1. Before Transfer (At First)
+              1. Before State (At First)
             </span>
             <span className="text-[10px] font-bold text-slate-500">
               Difference = {diffDisplay}
@@ -849,7 +853,7 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
           </div>
 
           <div className="space-y-2 pt-1">
-            {/* Giver Bar (Has Difference) */}
+            {/* Entity A Bar (Has Difference) */}
             <div className="flex items-center gap-2">
               <span className="w-20 text-right text-xs font-black text-slate-800 truncate">{nameA}</span>
               <div className="flex-1 pl-2 border-l-4 border-indigo-500 border-dashed">
@@ -857,14 +861,25 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
                   <div style={{ width: '48%' }} className="h-full bg-indigo-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
                     {largerDisplay || "Base Unit"}
                   </div>
-                  <div style={{ width: '24%' }} className="h-full ml-1 bg-emerald-500 rounded flex items-center justify-center text-xs font-black text-white px-2 truncate border border-emerald-400 border-dashed">
-                    +{diffDisplay}
-                  </div>
+                  {transferVal ? (
+                    <>
+                      <div style={{ width: '18%' }} className="h-full ml-1 bg-emerald-500 rounded flex items-center justify-center text-xs font-black text-white px-1 truncate border border-emerald-400 border-dashed" title="Amount transferred">
+                        +{transferDisplay}
+                      </div>
+                      <div style={{ width: '18%' }} className="h-full ml-1 bg-teal-500 rounded flex items-center justify-center text-xs font-black text-white px-1 truncate border border-teal-400 border-dashed" title="Amount to equalize">
+                        +{transferDisplay}
+                      </div>
+                    </>
+                  ) : (
+                    <div style={{ width: '28%' }} className="h-full ml-1 bg-emerald-500 rounded flex items-center justify-center text-xs font-black text-white px-2 truncate border border-emerald-400 border-dashed">
+                      +{diffDisplay}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* Receiver Bar (Base) */}
+            {/* Entity B Bar (Base) */}
             <div className="flex items-center gap-2">
               <span className="w-20 text-right text-xs font-black text-slate-800 truncate">{nameB}</span>
               <div className="flex-1 pl-2 border-l-4 border-indigo-500 border-dashed">
@@ -878,22 +893,14 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
           </div>
         </div>
 
-        {/* Transfer Indicator */}
-        <div className="flex items-center justify-center gap-2 py-1.5 px-3 bg-amber-100/70 border border-amber-300 rounded-xl text-xs font-black text-amber-950">
-          <span>Transfer:</span>
-          <span className="px-2 py-0.5 bg-white rounded border border-amber-300 font-mono">
-            {nameA} gives {transferDisplay} {itemName} to {nameB}
-          </span>
-        </div>
-
         {/* 2. After State Box */}
         <div className="p-4 bg-white border border-emerald-200 rounded-2xl space-y-2">
           <div className="flex items-center justify-between pb-1 border-b border-slate-100">
             <span className="text-[11px] font-black uppercase tracking-wider text-slate-700">
-              2. After Transfer (In the End)
+              2. After State (In the End)
             </span>
             <span className="text-[10px] font-black uppercase text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-              Equalized (1 Unit Each)
+              Resulting Quantities
             </span>
           </div>
 
@@ -1122,7 +1129,7 @@ export function CompactBarCanvas({
         {/* 1. Before State Box */}
         <div className="p-3 bg-white rounded-2xl border border-slate-200 space-y-2">
           <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
-            1. Before Transfer (At First)
+            1. Before State (At First)
           </span>
           <div className="space-y-1.5">
             {beforeBars.map((bar, idx) => {
@@ -1164,17 +1171,10 @@ export function CompactBarCanvas({
           </div>
         </div>
 
-        {/* Transfer Badge */}
-        {transfer?.amount && (
-          <div className="text-center py-1.5 px-3 bg-amber-50 rounded-xl border border-amber-200 text-xs font-bold text-amber-900">
-            Transfer: {transfer.giver} gives {transfer.amount} {itemName} to {transfer.receiver}
-          </div>
-        )}
-
         {/* 2. After State Box */}
         <div className="p-3 bg-white rounded-2xl border border-slate-200 space-y-2">
           <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 block">
-            2. After Transfer (Equalized: 1 Unit Each)
+            2. After State (In the End)
           </span>
           <div className="space-y-1.5">
             {afterBars.map((bar, idx) => (
@@ -1932,6 +1932,15 @@ export default function InteractiveBarBuilder({
     const transferVal = config.transferAmount || '';
     const equalVal = config.equalizedValue || '';
 
+    const diffSegments = (transferVal && !isNaN(Number(transferVal)))
+      ? [
+          { id: 'before-seg-1', value: Number(transferVal).toLocaleString(), length: 20 },
+          { id: 'before-seg-2', value: Number(transferVal).toLocaleString(), length: 20 }
+        ]
+      : diffVal
+        ? [{ id: 'before-seg-1', value: config.target?.type === 'DIFFERENCE' ? '?' : Number(diffVal).toLocaleString(), length: 25 }]
+        : [{ id: 'before-seg-1', value: '?', length: 25 }];
+
     setUserBeforeBars([
       {
         id: 'before-1',
@@ -1940,7 +1949,9 @@ export default function InteractiveBarBuilder({
         length: 65,
         hasDifference: true,
         diffType: 'MORE',
-        diffValue: diffVal ? (config.target?.type === 'DIFFERENCE' ? '?' : Number(diffVal).toLocaleString()) : (transferVal ? (Number(transferVal) * 2).toLocaleString() : '?')
+        diffValue: diffVal ? (config.target?.type === 'DIFFERENCE' ? '?' : Number(diffVal).toLocaleString()) : (transferVal ? (Number(transferVal) * 2).toLocaleString() : '?'),
+        diffSegments: diffSegments,
+        isCollapsed: false
       },
       {
         id: 'before-2',
@@ -1949,7 +1960,9 @@ export default function InteractiveBarBuilder({
         length: 42,
         hasDifference: false,
         diffType: 'MORE',
-        diffValue: ''
+        diffValue: '',
+        diffSegments: [],
+        isCollapsed: false
       }
     ]);
 
@@ -1965,14 +1978,22 @@ export default function InteractiveBarBuilder({
         name: `${nameA} (In the end)`,
         value: equalVal ? Number(equalVal).toLocaleString() : '1 unit',
         length: 50,
-        isEqual: true
+        hasDifference: false,
+        diffType: 'MORE',
+        diffValue: '',
+        diffSegments: [],
+        isCollapsed: false
       },
       {
         id: 'after-2',
         name: `${nameB} (In the end)`,
         value: equalVal ? Number(equalVal).toLocaleString() : '1 unit',
         length: 50,
-        isEqual: true
+        hasDifference: false,
+        diffType: 'MORE',
+        diffValue: '',
+        diffSegments: [],
+        isCollapsed: false
       }
     ]);
 
@@ -1985,13 +2006,13 @@ export default function InteractiveBarBuilder({
     const nameA = config.transferFrom || config.entities?.[0]?.name || 'Entity A';
     const nameB = config.transferTo || config.entities?.[1]?.name || 'Entity B';
     setUserBeforeBars([
-      { id: 'before-1', name: nameA, value: '', length: 65, hasDifference: true, diffType: 'MORE', diffValue: '' },
-      { id: 'before-2', name: nameB, value: '', length: 42, hasDifference: false, diffType: 'MORE', diffValue: '' }
+      { id: 'before-1', name: nameA, value: '', length: 65, hasDifference: true, diffType: 'MORE', diffValue: '', isCollapsed: false },
+      { id: 'before-2', name: nameB, value: '', length: 42, hasDifference: false, diffType: 'MORE', diffValue: '', isCollapsed: false }
     ]);
     setUserTransfer({ giver: nameA, receiver: nameB, amount: '' });
     setUserAfterBars([
-      { id: 'after-1', name: `${nameA} (In the end)`, value: '', length: 50, isEqual: true },
-      { id: 'after-2', name: `${nameB} (In the end)`, value: '', length: 50, isEqual: true }
+      { id: 'after-1', name: `${nameA} (In the end)`, value: '1 unit', length: 50, hasDifference: false, diffType: 'MORE', diffValue: '', isCollapsed: false },
+      { id: 'after-2', name: `${nameB} (In the end)`, value: '1 unit', length: 50, hasDifference: false, diffType: 'MORE', diffValue: '', isCollapsed: false }
     ]);
     setStage2Status('idle');
     setStage2ErrorMsg(null);
@@ -2001,6 +2022,10 @@ export default function InteractiveBarBuilder({
     setUserBeforeBars(prev => prev.map(b => b.id === id ? { ...b, [field]: val } : b));
     setStage2Status('idle');
     setStage2ErrorMsg(null);
+  };
+
+  const handleToggleCollapseBeforeBar = (id) => {
+    setUserBeforeBars(prev => prev.map(b => b.id === id ? { ...b, isCollapsed: !b.isCollapsed } : b));
   };
 
   const handleToggleBeforeDiff = (id) => {
@@ -2066,6 +2091,71 @@ export default function InteractiveBarBuilder({
 
   const handleUpdateAfterBar = (id, field, val) => {
     setUserAfterBars(prev => prev.map(b => b.id === id ? { ...b, [field]: val } : b));
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleToggleCollapseAfterBar = (id) => {
+    setUserAfterBars(prev => prev.map(b => b.id === id ? { ...b, isCollapsed: !b.isCollapsed } : b));
+  };
+
+  const handleToggleAfterDiff = (id) => {
+    setUserAfterBars(prev => prev.map(b => {
+      if (b.id !== id) return b;
+      const willHave = !b.hasDifference;
+      return {
+        ...b,
+        hasDifference: willHave,
+        diffSegments: willHave ? [{ id: `${b.id}-seg-1`, value: b.diffValue || '', length: 20 }] : []
+      };
+    }));
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleAfterAddDiffSegment = (id) => {
+    setUserAfterBars(prev => prev.map(b => {
+      if (b.id !== id) return b;
+      const current = (b.diffSegments && b.diffSegments.length > 0)
+        ? b.diffSegments
+        : [{ id: `${b.id}-seg-1`, value: b.diffValue || '', length: 20 }];
+      return {
+        ...b,
+        diffSegments: [...current, { id: `${b.id}-seg-${Date.now()}`, value: '', length: 20 }]
+      };
+    }));
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleAfterUpdateDiffSegment = (barId, segId, field, val) => {
+    setUserAfterBars(prev => prev.map(b => {
+      if (b.id !== barId) return b;
+      const current = (b.diffSegments && b.diffSegments.length > 0)
+        ? b.diffSegments
+        : [{ id: `${b.id}-seg-1`, value: b.diffValue || '', length: 20 }];
+      const updated = current.map(s => s.id === segId ? { ...s, [field]: val } : s);
+      return {
+        ...b,
+        diffSegments: updated,
+        diffValue: updated[0] ? updated[0].value : b.diffValue
+      };
+    }));
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleAfterRemoveDiffSegment = (barId, segId) => {
+    setUserAfterBars(prev => prev.map(b => {
+      if (b.id !== barId) return b;
+      const current = b.diffSegments || [];
+      const filtered = current.filter(s => s.id !== segId);
+      return {
+        ...b,
+        diffSegments: filtered.length > 0 ? filtered : [{ id: `${b.id}-seg-1`, value: '', length: 20 }],
+        diffValue: filtered[0] ? filtered[0].value : ''
+      };
+    }));
     setStage2Status('idle');
     setStage2ErrorMsg(null);
   };
@@ -2609,56 +2699,127 @@ export default function InteractiveBarBuilder({
                 </div>
               </div>
 
-              {/* Section 1: BEFORE STATE (At First) */}
-              <div className="p-5 sm:p-6 bg-slate-50 border-2 border-slate-200 rounded-2xl space-y-4">
+              {/* ══════════════════════════════════════════════════════════════
+                  Section 1: BEFORE STATE (At First)
+                 ══════════════════════════════════════════════════════════════ */}
+              <div className="p-4 sm:p-5 bg-slate-50/70 border-2 border-slate-200 rounded-2xl space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
                     <span className="w-5 h-5 rounded-md bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold">1</span>
-                    Before Transfer (At First)
+                    Before State (At First)
                   </span>
                   <span className="text-[11px] font-bold text-slate-500">
-                    Parallel Bars with Common Baseline
+                    Comparative Bars with Common Baseline
                   </span>
                 </div>
 
                 {/* Live Canvas Preview for Before State */}
-                <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs space-y-3">
+                <div className="space-y-2">
                   {userBeforeBars.map((bar, idx) => {
-                    const cleanDiff = (bar.diffValue || "").replace(/[+\-]/g, '').trim();
                     return (
-                      <div key={bar.id} className="flex items-center gap-2">
-                        <span className="w-24 text-right text-xs font-black text-slate-800 truncate">
-                          {bar.name || `Entity ${idx + 1}`}
-                        </span>
-                        <div className="flex-1 pl-2 border-l-4 border-indigo-500 border-dashed">
-                          <div className="flex items-center h-10 bg-slate-50 rounded-xl p-1 border border-slate-200">
-                            <div 
-                              style={{ width: `${bar.length || 50}%` }} 
-                              className="h-full bg-indigo-600 rounded-lg flex items-center justify-center text-xs font-bold text-white px-2 truncate transition-all duration-150"
-                            >
-                              {bar.value || "Base"}
-                            </div>
-                            {bar.hasDifference && (() => {
-                              const segments = (bar.diffSegments && bar.diffSegments.length > 0)
-                                ? bar.diffSegments
-                                : [{ id: `${bar.id}-seg-1`, value: bar.diffValue, length: 25 }];
-                              return (
-                                <>
-                                  {segments.map((seg, sIdx) => {
-                                    const cleanDiff = (seg.value || "").replace(/[+\-]/g, '').trim();
+                      <div key={bar.id} className="flex items-center gap-2 sm:gap-3">
+                        {/* Entity Name */}
+                        <div className="w-20 sm:w-24 text-right shrink-0">
+                          <span className="text-xs font-black uppercase tracking-wider text-slate-800 truncate block">
+                            {bar.name || `Bar ${idx + 1}`}
+                          </span>
+                        </div>
+
+                        {/* Bar Track with Baseline */}
+                        <div className="flex-1 pl-3 border-l-4 border-indigo-500 border-dashed py-0.5">
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 flex items-center h-11 bg-white rounded-xl border border-slate-200 p-1 shadow-xs overflow-visible relative">
+                              {/* Base segment */}
+                              <div 
+                                style={{ width: `${bar.length || 50}%` }} 
+                                className={`h-full rounded-lg flex items-center justify-center text-xs font-black text-white shadow-xs transition-all duration-150 px-2 truncate shrink-0 ${
+                                  idx === 0 ? 'bg-indigo-600' : 'bg-indigo-500'
+                                }`}
+                              >
+                                {bar.value || ""}
+                              </div>
+
+                              {/* Difference Segment / Bracket */}
+                              {bar.hasDifference && (
+                                bar.diffType === 'FEWER' ? (
+                                  (() => {
+                                    const cleanDiffNum = (bar.diffValue || "").replace(/[+\-]/g, '').trim();
+                                    const isBottomBracket = (bar.bracketPosition || (idx > 0 ? 'bottom' : 'top')) === 'bottom';
                                     return (
-                                      <div 
-                                        key={seg.id || sIdx}
-                                        style={{ width: `${seg.length || 20}%` }} 
-                                        className="h-full bg-emerald-500 rounded-lg ml-1 flex items-center justify-center text-xs font-black text-white px-2 truncate border border-emerald-400 border-dashed shadow-xs transition-all duration-150 shrink-0"
+                                      <div
+                                        style={{ width: `${bar.diffLength || 20}%` }}
+                                        className="relative h-full ml-1 flex flex-col justify-between items-center py-1 px-1 transition-all duration-150 overflow-visible select-none shrink-0"
                                       >
-                                        +{cleanDiff || "Diff"}
+                                        <div
+                                          className={`absolute right-0 w-0 border-r-2 border-dotted border-rose-400 pointer-events-none z-10 ${
+                                            isBottomBracket ? '-top-6 bottom-0' : 'top-0 -bottom-6'
+                                          }`}
+                                        >
+                                          <span className="absolute -top-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                                          <span className="absolute -bottom-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                                        </div>
+                                        <div className={`absolute inset-0 bg-rose-50/20 rounded-lg pointer-events-none ${
+                                          isBottomBracket ? 'border-b border-dashed border-rose-200' : 'border-t border-dashed border-rose-200'
+                                        }`} />
+                                        <div className="relative z-10 flex-1 flex items-center justify-center">
+                                          <span className="text-[11px] font-black text-rose-700 font-mono tracking-tight px-1.5 py-0.2 bg-white/95 rounded border border-rose-200 shadow-2xs truncate max-w-full">
+                                            {cleanDiffNum || "Diff"}
+                                          </span>
+                                        </div>
                                       </div>
                                     );
-                                  })}
-                                </>
-                              );
-                            })()}
+                                  })()
+                                ) : (
+                                  (() => {
+                                    const segments = (bar.diffSegments && bar.diffSegments.length > 0)
+                                      ? bar.diffSegments
+                                      : [{ id: `${bar.id}-seg-1`, value: bar.diffValue, length: bar.diffLength || 20 }];
+                                    const segColors = [
+                                      'bg-emerald-500 border-emerald-400 text-white',
+                                      'bg-teal-500 border-teal-400 text-white',
+                                      'bg-emerald-600 border-emerald-500 text-white',
+                                      'bg-cyan-600 border-cyan-500 text-white'
+                                    ];
+                                    return (
+                                      <>
+                                        {segments.map((seg, sIdx) => {
+                                          const cleanVal = (seg.value || "").replace(/[+\-]/g, '').trim();
+                                          const colorClass = segColors[sIdx % segColors.length];
+                                          return (
+                                            <div
+                                              key={seg.id || sIdx}
+                                              style={{ width: `${seg.length || 18}%` }}
+                                              className={`h-full rounded-lg ml-1 px-2 flex items-center justify-center text-xs font-black shadow-xs border border-dashed transition-all duration-150 truncate shrink-0 ${colorClass}`}
+                                              title={`Difference segment ${sIdx + 1}: ${cleanVal || '+ Diff'}`}
+                                            >
+                                              {cleanVal ? `+${cleanVal}` : `+Diff ${sIdx + 1}`}
+                                            </div>
+                                          );
+                                        })}
+                                      </>
+                                    );
+                                  })()
+                                )
+                              )}
+                            </div>
+
+                            {/* Collapse/Expand Arrow Tag */}
+                            <button
+                              type="button"
+                              onClick={() => handleToggleCollapseBeforeBar(bar.id)}
+                              className={`h-9 px-2 rounded-lg flex items-center justify-center transition-all cursor-pointer shrink-0 ${
+                                bar.isCollapsed
+                                  ? 'bg-white hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200'
+                                  : 'bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-xs'
+                              }`}
+                              title={bar.isCollapsed ? "Edit bar parameters" : "Collapse into bar height"}
+                            >
+                              {bar.isCollapsed ? (
+                                <ChevronDown className="w-4 h-4 text-slate-500" />
+                              ) : (
+                                <ChevronUp className="w-4 h-4 text-indigo-600" />
+                              )}
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -2666,217 +2827,117 @@ export default function InteractiveBarBuilder({
                   })}
                 </div>
 
-                {/* Entity Controls for Before State */}
-                <div className="space-y-3 pt-2">
-                  {userBeforeBars.map((bar) => (
-                    <div key={bar.id} className="p-3 bg-white border border-slate-200 rounded-xl space-y-2">
-                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
-                        {/* Name */}
-                        <div className="sm:col-span-4 space-y-1">
-                          <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
-                            Entity Name
-                          </label>
-                          <input
-                            type="text"
-                            value={bar.name}
-                            onChange={(e) => handleUpdateBeforeBar(bar.id, 'name', e.target.value)}
-                            placeholder="e.g. Deepak"
-                            className="w-full px-3 py-1.5 text-xs font-bold text-slate-900 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                          />
-                        </div>
-
-                        {/* Initial Value */}
-                        <div className="sm:col-span-3 space-y-1">
-                          <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
-                            Base Value / Label
-                          </label>
-                          <input
-                            type="text"
-                            value={bar.value}
-                            onChange={(e) => handleUpdateBeforeBar(bar.id, 'value', e.target.value)}
-                            placeholder="e.g. 50,500 or blank"
-                            className="w-full px-3 py-1.5 text-xs font-mono font-bold text-slate-900 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                          />
-                        </div>
-
-                        {/* Difference Toggle & Value (Single or Multi-Segment) */}
-                        <div className="sm:col-span-5 space-y-1">
-                          <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
-                            Difference Segment (+ Diff)
-                          </label>
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => handleToggleBeforeDiff(bar.id)}
-                              className={`px-3 py-1.5 rounded-xl text-xs font-black tracking-wide border transition-all cursor-pointer shrink-0 ${
-                                bar.hasDifference
-                                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
-                                  : 'bg-white border-slate-300 text-slate-600 hover:border-indigo-400 hover:text-indigo-600'
-                              }`}
-                            >
-                              {bar.hasDifference ? "✓ Has Diff" : "+ Diff"}
-                            </button>
-
-                            {bar.hasDifference && (() => {
-                              const segments = (bar.diffSegments && bar.diffSegments.length > 0)
-                                ? bar.diffSegments
-                                : [{ id: `${bar.id}-seg-1`, value: bar.diffValue || '', length: 25 }];
-
-                              return (
-                                <div className="space-y-1.5 w-full pt-1">
-                                  {segments.map((seg, sIdx) => (
-                                    <div key={seg.id || sIdx} className="flex items-center gap-1.5">
-                                      <input
-                                        type="text"
-                                        value={seg.value || ''}
-                                        onChange={(e) => handleBeforeUpdateDiffSegment(bar.id, seg.id, 'value', e.target.value)}
-                                        placeholder={segments.length > 1 ? `Seg ${sIdx + 1} e.g. 8,000` : "e.g. ? or 16,000"}
-                                        className="flex-1 px-3 py-1.5 text-xs font-mono font-black text-emerald-800 bg-emerald-50 border border-emerald-300 rounded-xl focus:ring-2 focus:ring-emerald-400 focus:outline-none"
-                                      />
-                                      {segments.length > 1 && (
-                                        <button
-                                          type="button"
-                                          onClick={() => handleBeforeRemoveDiffSegment(bar.id, seg.id)}
-                                          className="text-slate-400 hover:text-rose-600 p-1 rounded-lg cursor-pointer transition-colors"
-                                          title="Remove segment"
-                                        >
-                                          <Trash2 className="w-3.5 h-3.5" />
-                                        </button>
-                                      )}
-                                    </div>
-                                  ))}
-                                  {segments.length < 4 && (
-                                    <button
-                                      type="button"
-                                      onClick={() => handleBeforeAddDiffSegment(bar.id)}
-                                      className="text-[10px] font-bold text-emerald-700 hover:text-emerald-900 flex items-center gap-1 pt-0.5 cursor-pointer"
-                                    >
-                                      <Plus className="w-3 h-3 text-emerald-600" />
-                                      + Add Another Segment
-                                    </button>
-                                  )}
-                                </div>
-                              );
-                            })()}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Bar Length Slider */}
-                      <div className="flex items-center gap-3 pt-1 border-t border-slate-100">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">Bar Length:</span>
-                        <EditablePercentBadge
-                          value={bar.length || 50}
-                          onChange={(val) => handleUpdateBeforeBar(bar.id, 'length', val)}
-                          min={20}
-                          max={90}
-                        />
-                        <input
-                          type="range"
-                          min="20"
-                          max="90"
-                          value={bar.length || 50}
-                          onChange={(e) => handleUpdateBeforeBar(bar.id, 'length', Number(e.target.value))}
-                          className="flex-1 accent-indigo-600 h-1.5 bg-slate-200 rounded-lg cursor-pointer"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                {/* Parameters Editor for Before State */}
+                {userBeforeBars.some(b => !b.isCollapsed) && (
+                  <div className="space-y-3 pt-3 border-t-2 border-dashed border-slate-200 w-full">
+                    {userBeforeBars.filter(b => !b.isCollapsed).map((bar) => (
+                      <BarParametersEditor
+                        key={bar.id}
+                        bar={bar}
+                        barIndex={userBeforeBars.findIndex(b => b.id === bar.id)}
+                        entities={entities}
+                        onUpdate={handleUpdateBeforeBar}
+                        onToggleDiff={handleToggleBeforeDiff}
+                        onAddDiffSegment={handleBeforeAddDiffSegment}
+                        onUpdateDiffSegment={handleBeforeUpdateDiffSegment}
+                        onRemoveDiffSegment={handleBeforeRemoveDiffSegment}
+                        onCollapse={() => handleToggleCollapseBeforeBar(bar.id)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* Section 2: TRANSFER TRANSITION */}
-              <div className="p-4 bg-amber-50/80 border-2 border-amber-300 rounded-2xl space-y-3">
+              {/* ══════════════════════════════════════════════════════════════
+                  Section 2: AFTER STATE (In the End)
+                 ══════════════════════════════════════════════════════════════ */}
+              <div className="p-4 sm:p-5 bg-slate-50/70 border-2 border-slate-200 rounded-2xl space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black uppercase tracking-wider text-amber-950 flex items-center gap-1.5">
-                    <RefreshCw className="w-4 h-4 text-amber-600" />
-                    Transfer Transition (The Change)
-                  </span>
-                  <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-200">
-                    Internal Shift
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
-                  <div className="sm:col-span-5 text-xs font-bold text-slate-700 flex items-center gap-2">
-                    <span className="px-2.5 py-1 bg-white rounded-lg border border-amber-200 font-black text-indigo-700 truncate max-w-[130px]">
-                      {userTransfer.giver || userBeforeBars[0]?.name || "Giver"}
-                    </span>
-                    <ArrowRight className="w-4 h-4 text-amber-600 shrink-0" />
-                    <span className="px-2.5 py-1 bg-white rounded-lg border border-amber-200 font-black text-indigo-700 truncate max-w-[130px]">
-                      {userTransfer.receiver || userBeforeBars[1]?.name || "Receiver"}
-                    </span>
-                  </div>
-
-                  <div className="sm:col-span-7 flex items-center gap-2">
-                    <label className="text-[10px] font-black uppercase tracking-wider text-amber-900 shrink-0">
-                      Amount Transferred:
-                    </label>
-                    <input
-                      type="text"
-                      value={userTransfer.amount || ''}
-                      onChange={(e) => {
-                        setUserTransfer(prev => ({ ...prev, amount: e.target.value }));
-                        setStage2Status('idle');
-                        setStage2ErrorMsg(null);
-                      }}
-                      placeholder="e.g. 8,000"
-                      className="flex-1 px-3 py-1.5 text-xs font-mono font-black text-amber-950 bg-white border-2 border-amber-300 rounded-xl focus:ring-2 focus:ring-amber-400 focus:outline-none"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Section 3: AFTER STATE (In The End) */}
-              <div className="p-5 sm:p-6 bg-slate-50 border-2 border-slate-200 rounded-2xl space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
                     <span className="w-5 h-5 rounded-md bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold">2</span>
-                    After Transfer (In the End)
+                    After State (In the End)
                   </span>
-                  <span className="text-[10px] font-black uppercase text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                    Equalized: 1 Unit Each
+                  <span className="text-[11px] font-bold text-emerald-700">
+                    Resulting Quantities Aligned to Baseline
                   </span>
                 </div>
 
                 {/* Live Canvas Preview for After State */}
-                <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs space-y-3">
+                <div className="space-y-2">
                   {userAfterBars.map((bar, idx) => (
-                    <div key={bar.id} className="flex items-center gap-2">
-                      <span className="w-24 text-right text-xs font-black text-slate-800 truncate">
-                        {bar.name || `Entity ${idx + 1}`}
-                      </span>
-                      <div className="flex-1 pl-2 border-l-4 border-emerald-500 border-dashed">
-                        <div className="flex items-center h-10 bg-slate-50 rounded-xl p-1 border border-slate-200">
-                          <div 
-                            style={{ width: `${bar.length || 50}%` }} 
-                            className="h-full bg-emerald-600 rounded-lg flex items-center justify-center text-xs font-bold text-white px-2 truncate transition-all duration-150"
-                          >
-                            {bar.value || "1 unit"}
+                    <div key={bar.id} className="flex items-center gap-2 sm:gap-3">
+                      {/* Entity Name */}
+                      <div className="w-20 sm:w-24 text-right shrink-0">
+                        <span className="text-xs font-black uppercase tracking-wider text-slate-800 truncate block">
+                          {bar.name || `Bar ${idx + 1}`}
+                        </span>
+                      </div>
+
+                      {/* Bar Track with Baseline */}
+                      <div className="flex-1 pl-3 border-l-4 border-emerald-500 border-dashed py-0.5">
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 flex items-center h-11 bg-white rounded-xl border border-slate-200 p-1 shadow-xs overflow-visible relative">
+                            {/* Base segment */}
+                            <div 
+                              style={{ width: `${bar.length || 50}%` }} 
+                              className="h-full rounded-lg flex items-center justify-center text-xs font-black text-white shadow-xs transition-all duration-150 px-2 truncate shrink-0 bg-emerald-600"
+                            >
+                              {bar.value || "1 unit"}
+                            </div>
+
+                            {/* Difference Segment (if student configured diff in After) */}
+                            {bar.hasDifference && (
+                              <div
+                                style={{ width: `${bar.diffLength || 20}%` }}
+                                className="h-full rounded-lg ml-1 px-2 flex items-center justify-center text-xs font-black shadow-xs border border-dashed transition-all duration-150 truncate shrink-0 bg-teal-500 text-white"
+                              >
+                                +{bar.diffValue || "Diff"}
+                              </div>
+                            )}
                           </div>
+
+                          {/* Collapse/Expand Arrow Tag */}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleCollapseAfterBar(bar.id)}
+                            className={`h-9 px-2 rounded-lg flex items-center justify-center transition-all cursor-pointer shrink-0 ${
+                              bar.isCollapsed
+                                ? 'bg-white hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 border border-slate-200'
+                                : 'bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs'
+                            }`}
+                            title={bar.isCollapsed ? "Edit bar parameters" : "Collapse into bar height"}
+                          >
+                            {bar.isCollapsed ? (
+                              <ChevronDown className="w-4 h-4 text-slate-500" />
+                            ) : (
+                              <ChevronUp className="w-4 h-4 text-emerald-600" />
+                            )}
+                          </button>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                {/* After Controls */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {userAfterBars.map((bar, idx) => (
-                    <div key={bar.id} className="p-3 bg-white border border-slate-200 rounded-xl space-y-1">
-                      <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
-                        {idx === 0 ? "Giver Bar (In the End)" : "Receiver Bar (In the End)"}
-                      </label>
-                      <input
-                        type="text"
-                        value={bar.value || ''}
-                        onChange={(e) => handleUpdateAfterBar(bar.id, 'value', e.target.value)}
-                        placeholder="e.g. 1 unit or equal amount"
-                        className="w-full px-3 py-1.5 text-xs font-mono font-bold text-slate-900 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                {/* Parameters Editor for After State */}
+                {userAfterBars.some(b => !b.isCollapsed) && (
+                  <div className="space-y-3 pt-3 border-t-2 border-dashed border-slate-200 w-full">
+                    {userAfterBars.filter(b => !b.isCollapsed).map((bar) => (
+                      <BarParametersEditor
+                        key={bar.id}
+                        bar={bar}
+                        barIndex={userAfterBars.findIndex(b => b.id === bar.id)}
+                        entities={entities}
+                        onUpdate={handleUpdateAfterBar}
+                        onToggleDiff={handleToggleAfterDiff}
+                        onAddDiffSegment={handleAfterAddDiffSegment}
+                        onUpdateDiffSegment={handleAfterUpdateDiffSegment}
+                        onRemoveDiffSegment={handleAfterRemoveDiffSegment}
+                        onCollapse={() => handleToggleCollapseAfterBar(bar.id)}
                       />
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Verification Footer Banner */}
