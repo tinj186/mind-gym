@@ -405,7 +405,10 @@ export function checkBarModelParameters(userBars = [], config = {}, totalState =
     return checkPartWholeParameters(parts, whole, config);
   }
 
-  if (config?.correctModelType === 'BEFORE_AFTER' && (userBars?.beforeBars || userBars?.afterBars)) {
+  const isBAModel = Array.isArray(config?.correctModelType)
+    ? config.correctModelType.includes('BEFORE_AFTER')
+    : config?.correctModelType === 'BEFORE_AFTER';
+  if (isBAModel && (userBars?.beforeBars || userBars?.afterBars)) {
     return checkBeforeAfterParameters(userBars.beforeBars, userBars.afterBars, userBars.transfer, config);
   }
 
@@ -577,32 +580,67 @@ export function checkBarModelParameters(userBars = [], config = {}, totalState =
       const actDiff = normalizeNumber(compBar.diffValue);
       const displayDiff = comp.displayDiff || (comp.diffValue === '?' ? '?' : Number(comp.diffValue).toLocaleString());
 
+      // Multi-segment difference support:
+      const segments = (compBar.diffSegments && compBar.diffSegments.length > 0)
+        ? compBar.diffSegments
+        : [{ value: compBar.diffValue }];
+
+      const segmentValues = segments.map(s => normalizeNumber(s.value));
+      const numericSegments = segmentValues.map(v => Number(v)).filter(n => !isNaN(n) && n > 0);
+      const sumOfSegments = numericSegments.reduce((acc, curr) => acc + curr, 0);
+
       if (expDiff === '?') {
-        const isActualDiffMatch = comp.actualDiff && normalizeNumber(actDiff) === normalizeNumber(comp.actualDiff);
-        if (actDiff && actDiff !== '?' && !isActualDiffMatch) {
-          return {
-            isValid: false,
-            defect: 'INCORRECT_DIFF_VALUE',
-            errorMsg: `The difference for "${comp.name}" is unknown. Mark it with "?" or leave it blank.`,
-            details: { entity: comp.name, expected: '?', actual: actDiff }
-          };
+        const isActualDiffMatch = comp.actualDiff && (
+          normalizeNumber(actDiff) === normalizeNumber(comp.actualDiff) ||
+          sumOfSegments === Number(comp.actualDiff)
+        );
+        if (segments.length > 1) {
+          if (sumOfSegments > 0 && !isActualDiffMatch && actDiff && actDiff !== '?') {
+            return {
+              isValid: false,
+              defect: 'INCORRECT_DIFF_VALUE',
+              errorMsg: `The difference for "${comp.name}" is unknown or should total ${comp.actualDiff ? Number(comp.actualDiff).toLocaleString() : '?'}, but the sum of your segments is ${sumOfSegments.toLocaleString()}.`,
+              details: { entity: comp.name, expected: comp.actualDiff || '?', actual: sumOfSegments }
+            };
+          }
+        } else {
+          if (actDiff && actDiff !== '?' && !isActualDiffMatch) {
+            return {
+              isValid: false,
+              defect: 'INCORRECT_DIFF_VALUE',
+              errorMsg: `The difference for "${comp.name}" is unknown. Mark it with "?" or leave it blank.`,
+              details: { entity: comp.name, expected: '?', actual: actDiff }
+            };
+          }
         }
       } else {
-        if (!actDiff) {
-          return {
-            isValid: false,
-            defect: 'MISSING_DIFF_VALUE',
-            errorMsg: `Please enter the difference value for "${comp.name}" (${displayDiff}).`,
-            details: { entity: comp.name, expectedDiff: displayDiff }
-          };
-        }
-        if (actDiff !== expDiff) {
-          return {
-            isValid: false,
-            defect: 'INCORRECT_DIFF_VALUE',
-            errorMsg: `The difference amount for "${comp.name}" should be ${displayDiff}, but got "${compBar.diffValue}".`,
-            details: { entity: comp.name, expected: expDiff, actual: actDiff }
-          };
+        if (segments.length > 1) {
+          const isSumMatch = sumOfSegments === Number(expDiff) || (comp.actualDiff && sumOfSegments === Number(comp.actualDiff));
+          if (!isSumMatch) {
+            return {
+              isValid: false,
+              defect: 'INCORRECT_DIFF_VALUE',
+              errorMsg: `The total difference for "${comp.name}" should be ${displayDiff}, but the sum of your difference segments (${numericSegments.map(n => n.toLocaleString()).join(' + ')}) is ${sumOfSegments.toLocaleString()}.`,
+              details: { entity: comp.name, expected: expDiff, actual: sumOfSegments }
+            };
+          }
+        } else {
+          if (!actDiff) {
+            return {
+              isValid: false,
+              defect: 'MISSING_DIFF_VALUE',
+              errorMsg: `Please enter the difference value for "${comp.name}" (${displayDiff}).`,
+              details: { entity: comp.name, expectedDiff: displayDiff }
+            };
+          }
+          if (actDiff !== expDiff) {
+            return {
+              isValid: false,
+              defect: 'INCORRECT_DIFF_VALUE',
+              errorMsg: `The difference amount for "${comp.name}" should be ${displayDiff}, but got "${compBar.diffValue}".`,
+              details: { entity: comp.name, expected: expDiff, actual: actDiff }
+            };
+          }
         }
       }
     }
@@ -1097,11 +1135,27 @@ export function CompactBarCanvas({
                       <div style={{ width: `${bar.length || 50}%` }} className="h-full bg-indigo-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
                         {bar.value || ""}
                       </div>
-                      {bar.hasDifference && (
-                        <div style={{ width: '24%' }} className="h-full ml-1 bg-emerald-500 rounded flex items-center justify-center text-xs font-black text-white px-2 truncate border border-emerald-400 border-dashed">
-                          +{cleanDiff || "Diff"}
-                        </div>
-                      )}
+                      {bar.hasDifference && (() => {
+                        const segments = (bar.diffSegments && bar.diffSegments.length > 0)
+                          ? bar.diffSegments
+                          : [{ id: `${bar.id}-seg-1`, value: bar.diffValue, length: 24 }];
+                        return (
+                          <div className="flex items-center h-full gap-1 ml-1 shrink-0">
+                            {segments.map((seg, sIdx) => {
+                              const cleanDiff = (seg.value || "").replace(/[+\-]/g, '').trim();
+                              return (
+                                <div
+                                  key={seg.id || sIdx}
+                                  style={{ width: `${seg.length || 24}%` }}
+                                  className="h-full bg-emerald-500 rounded flex items-center justify-center text-xs font-black text-white px-2 truncate border border-emerald-400 border-dashed shadow-2xs"
+                                >
+                                  +{cleanDiff || "Diff"}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>
@@ -1286,12 +1340,33 @@ export function CompactBarCanvas({
                             )}
                           </div>
                         ) : (
-                          <div
-                            style={{ width: `${bar.diffLength || 20}%` }}
-                            className="h-full rounded-md ml-1 px-2 flex items-center justify-center text-xs font-black text-white border border-emerald-400 border-dashed bg-emerald-500 truncate shrink-0"
-                          >
-                            {bar.diffValue || "+ More"}
-                          </div>
+                          (() => {
+                            const segments = (bar.diffSegments && bar.diffSegments.length > 0)
+                              ? bar.diffSegments
+                              : [{ id: `${bar.id}-seg-1`, value: bar.diffValue, length: bar.diffLength || 20 }];
+                            const segColors = [
+                              'bg-emerald-500 border-emerald-400 text-white',
+                              'bg-teal-500 border-teal-400 text-white',
+                              'bg-emerald-600 border-emerald-500 text-white',
+                              'bg-cyan-600 border-cyan-500 text-white'
+                            ];
+                            return (
+                              <div className="flex items-center h-full gap-1 ml-1 shrink-0">
+                                {segments.map((seg, sIdx) => {
+                                  const cleanVal = (seg.value || "").replace(/[+\-]/g, '').trim();
+                                  return (
+                                    <div
+                                      key={seg.id || sIdx}
+                                      style={{ width: `${seg.length || 18}%` }}
+                                      className={`h-full rounded-md px-1.5 flex items-center justify-center text-xs font-black border border-dashed truncate shrink-0 ${segColors[sIdx % segColors.length]}`}
+                                    >
+                                      {cleanVal ? `+${cleanVal}` : "+ More"}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            );
+                          })()
                         )
                       )}
                     </div>
@@ -1438,6 +1513,9 @@ function BarParametersEditor({
   entities = [],
   onUpdate,
   onToggleDiff,
+  onAddDiffSegment,
+  onUpdateDiffSegment,
+  onRemoveDiffSegment,
   onDelete,
   onCollapse
 }) {
@@ -1532,137 +1610,218 @@ function BarParametersEditor({
       </div>
 
       {/* Row 2: Difference Segment Parameters (Matching 5 / 3 / 4 columns) */}
-      <div className="pt-3 border-t border-slate-100">
-        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start">
-          {/* Difference Type */}
-          <div className="sm:col-span-5 space-y-1">
-            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
-              Difference Type
-            </label>
-            <div className="flex flex-wrap items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => onToggleDiff(bar.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-black tracking-wide border transition-all cursor-pointer shrink-0 ${
-                  bar.hasDifference
-                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
-                    : 'bg-white border-slate-300 text-slate-600 hover:border-indigo-400 hover:text-indigo-600'
-                }`}
-              >
-                {bar.hasDifference ? "✓ Has Diff" : "+ Diff"}
-              </button>
+      {/* Row 2: Difference Segment Parameters */}
+      <div className="pt-3 border-t border-slate-100 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+              Difference Segment (+ Diff)
+            </span>
+            <button
+              type="button"
+              onClick={() => onToggleDiff(bar.id)}
+              className={`px-3 py-1 rounded-xl text-xs font-black tracking-wide border transition-all cursor-pointer ${
+                bar.hasDifference
+                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                  : 'bg-white border-slate-300 text-slate-600 hover:border-indigo-400 hover:text-indigo-600'
+              }`}
+            >
+              {bar.hasDifference ? "✓ Has Difference" : "+ Add Difference"}
+            </button>
+          </div>
 
-              {bar.hasDifference && (
-                <>
-                  <div className="flex items-center gap-0.5 bg-slate-100 p-0.5 rounded-xl border border-slate-200 shrink-0 shadow-2xs">
-                    <button
-                      type="button"
-                      onClick={() => onUpdate(bar.id, 'diffType', 'MORE')}
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
-                        bar.diffType === 'MORE'
-                          ? 'bg-emerald-600 text-white shadow-xs'
-                          : 'text-slate-600 hover:bg-white'
-                      }`}
-                    >
-                      + More
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onUpdate(bar.id, 'diffType', 'FEWER')}
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
-                        bar.diffType === 'FEWER'
-                          ? 'bg-rose-600 text-white shadow-xs'
-                          : 'text-slate-600 hover:bg-white'
-                      }`}
-                    >
-                      - Fewer
-                    </button>
-                  </div>
+          {bar.hasDifference && (
+            <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5 bg-slate-100 p-0.5 rounded-xl border border-slate-200 shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => onUpdate(bar.id, 'diffType', 'MORE')}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
+                    bar.diffType === 'MORE'
+                      ? 'bg-emerald-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:bg-white'
+                  }`}
+                >
+                  + More (Protruding)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onUpdate(bar.id, 'diffType', 'FEWER')}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
+                    bar.diffType === 'FEWER'
+                      ? 'bg-rose-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:bg-white'
+                  }`}
+                >
+                  - Fewer (Shortage Bracket)
+                </button>
+              </div>
 
-                  {bar.diffType === 'FEWER' && (
-                    <div className="flex items-center gap-0.5 bg-rose-50 p-0.5 rounded-xl border border-rose-200 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => onUpdate(bar.id, 'bracketPosition', 'bottom')}
-                        className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer ${
-                          (bar.bracketPosition || 'bottom') === 'bottom'
-                            ? 'bg-rose-600 text-white shadow-2xs'
-                            : 'text-rose-700 hover:bg-rose-100'
-                        }`}
-                      >
-                        Bottom ⤓
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onUpdate(bar.id, 'bracketPosition', 'top')}
-                        className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer ${
-                          bar.bracketPosition === 'top'
-                            ? 'bg-rose-600 text-white shadow-2xs'
-                            : 'text-rose-700 hover:bg-rose-100'
-                        }`}
-                      >
-                        Top ⤒
-                      </button>
-                    </div>
-                  )}
-                </>
+              {bar.diffType === 'FEWER' && (
+                <div className="flex items-center gap-0.5 bg-rose-50 p-0.5 rounded-xl border border-rose-200">
+                  <button
+                    type="button"
+                    onClick={() => onUpdate(bar.id, 'bracketPosition', 'bottom')}
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer ${
+                      (bar.bracketPosition || 'bottom') === 'bottom'
+                        ? 'bg-rose-600 text-white shadow-2xs'
+                        : 'text-rose-700 hover:bg-rose-100'
+                    }`}
+                  >
+                    Bottom ⤓
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onUpdate(bar.id, 'bracketPosition', 'top')}
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer ${
+                      bar.bracketPosition === 'top'
+                        ? 'bg-rose-600 text-white shadow-2xs'
+                        : 'text-rose-700 hover:bg-rose-100'
+                    }`}
+                  >
+                    Top ⤒
+                  </button>
+                </div>
               )}
             </div>
-            {!bar.hasDifference && (
-              <p className="text-[10px] text-slate-400 font-medium pt-0.5">
-                No difference attached. Click "+ Diff" to add.
-              </p>
-            )}
-          </div>
+          )}
+        </div>
 
-          {/* Diff Value */}
-          <div className="sm:col-span-3 space-y-1">
-            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
-              Diff Value
-            </label>
-            <input
-              type="text"
-              disabled={!bar.hasDifference}
-              value={bar.diffValue}
-              onChange={(e) => onUpdate(bar.id, 'diffValue', e.target.value)}
-              placeholder={bar.hasDifference ? (bar.diffType === 'FEWER' ? "e.g. 5,000" : "e.g. 4,200") : "—"}
-              className={`w-full border rounded-xl px-3 py-1.5 text-xs font-bold focus:outline-none transition-all ${
-                bar.hasDifference
-                  ? 'bg-white border-slate-300 text-slate-900 focus:border-indigo-500 shadow-2xs'
-                  : 'bg-slate-50 border-slate-200 text-slate-300 cursor-not-allowed'
-              }`}
-            />
-          </div>
+        {!bar.hasDifference && (
+          <p className="text-[10px] text-slate-400 font-medium">
+            No difference attached. Click "+ Add Difference" to add a comparison segment.
+          </p>
+        )}
 
-          {/* Diff Width Slider */}
-          <div className="sm:col-span-4 space-y-1">
-            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-slate-500">
-              <span>Diff Width</span>
-              <EditablePercentBadge
-                value={bar.diffLength || 20}
-                onChange={(val) => onUpdate(bar.id, 'diffLength', val)}
-                min={5}
-                max={50}
-                disabled={!bar.hasDifference}
-                placeholder="—"
-                colorClass={bar.diffType === 'FEWER' ? 'text-rose-600' : 'text-emerald-600'}
+        {/* When FEWER: Single shortage bracket controls */}
+        {bar.hasDifference && bar.diffType === 'FEWER' && (
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start bg-rose-50/50 p-3 rounded-xl border border-rose-200">
+            <div className="sm:col-span-5 space-y-1">
+              <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
+                Shortage Value
+              </label>
+              <input
+                type="text"
+                value={bar.diffValue || ''}
+                onChange={(e) => onUpdate(bar.id, 'diffValue', e.target.value)}
+                placeholder="e.g. 5,000"
+                className="w-full border rounded-xl px-3 py-1.5 text-xs font-bold bg-white border-slate-300 text-slate-900 focus:outline-none focus:border-rose-500 shadow-2xs"
               />
             </div>
-            <input
-              type="range"
-              min="5"
-              max="50"
-              disabled={!bar.hasDifference}
-              value={bar.diffLength || 20}
-              onChange={(e) => onUpdate(bar.id, 'diffLength', Number(e.target.value))}
-              className={`w-full cursor-pointer ${
-                bar.hasDifference
-                  ? bar.diffType === 'FEWER' ? 'accent-rose-600' : 'accent-emerald-600'
-                  : 'accent-slate-300 cursor-not-allowed'
-              }`}
-            />
+            <div className="sm:col-span-7 space-y-1">
+              <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-slate-500">
+                <span>Shortage Bracket Width</span>
+                <EditablePercentBadge
+                  value={bar.diffLength || 20}
+                  onChange={(val) => onUpdate(bar.id, 'diffLength', val)}
+                  min={5}
+                  max={50}
+                  colorClass="text-rose-600"
+                />
+              </div>
+              <input
+                type="range"
+                min="5"
+                max="50"
+                value={bar.diffLength || 20}
+                onChange={(e) => onUpdate(bar.id, 'diffLength', Number(e.target.value))}
+                className="w-full accent-rose-600 cursor-pointer"
+              />
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* When MORE: Multi-Segment Difference Controls! */}
+        {bar.hasDifference && bar.diffType !== 'FEWER' && (() => {
+          const segments = (bar.diffSegments && bar.diffSegments.length > 0)
+            ? bar.diffSegments
+            : [{ id: `${bar.id}-seg-1`, value: bar.diffValue || '', length: bar.diffLength || 20 }];
+
+          return (
+            <div className="space-y-2.5">
+              <div className="space-y-2">
+                {segments.map((seg, sIdx) => (
+                  <div
+                    key={seg.id || sIdx}
+                    className="p-3 bg-emerald-50/60 border border-emerald-200 rounded-xl space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-black uppercase text-emerald-800 flex items-center gap-1.5">
+                        <span className="w-4 h-4 rounded-full bg-emerald-600 text-white text-[9px] flex items-center justify-center font-bold">
+                          {sIdx + 1}
+                        </span>
+                        Difference Segment {sIdx + 1}
+                        {segments.length > 1 && (
+                          <span className="text-[9px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.2 rounded-full">
+                            Partitioned Part
+                          </span>
+                        )}
+                      </span>
+                      {segments.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => onRemoveDiffSegment(bar.id, seg.id)}
+                          className="text-[10px] font-bold text-rose-600 hover:text-rose-800 hover:bg-rose-100/60 px-2 py-0.5 rounded cursor-pointer transition-all flex items-center gap-1"
+                          title="Remove this segment"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          Remove
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                      <div className="sm:col-span-5 space-y-1">
+                        <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
+                          Segment Value
+                        </label>
+                        <input
+                          type="text"
+                          value={seg.value || ''}
+                          onChange={(e) => onUpdateDiffSegment(bar.id, seg.id, 'value', e.target.value)}
+                          placeholder="e.g. 8,000"
+                          className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-emerald-500 shadow-2xs font-mono"
+                        />
+                      </div>
+                      <div className="sm:col-span-7 space-y-1">
+                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-slate-500">
+                          <span>Segment Width</span>
+                          <EditablePercentBadge
+                            value={seg.length || 18}
+                            onChange={(val) => onUpdateDiffSegment(bar.id, seg.id, 'length', val)}
+                            min={5}
+                            max={50}
+                            colorClass="text-emerald-600"
+                          />
+                        </div>
+                        <input
+                          type="range"
+                          min="5"
+                          max="50"
+                          value={seg.length || 18}
+                          onChange={(e) => onUpdateDiffSegment(bar.id, seg.id, 'length', Number(e.target.value))}
+                          className="w-full accent-emerald-600 cursor-pointer"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* + Add Another Segment Button */}
+              {segments.length < 4 && (
+                <button
+                  type="button"
+                  onClick={() => onAddDiffSegment(bar.id)}
+                  className="w-full py-2 px-3 text-xs font-black text-emerald-700 hover:text-emerald-800 bg-white hover:bg-emerald-50 border-2 border-dashed border-emerald-300 hover:border-emerald-400 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-2xs active:scale-[0.99]"
+                >
+                  <Plus className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>+ Add Another Segment (e.g. [ 8,000 ] + [ 8,000 ])</span>
+                </button>
+              )}
+            </div>
+          );
+        })()}
       </div>
 
       {/* Footer: Delete Bar & Done */}
@@ -1845,7 +2004,62 @@ export default function InteractiveBarBuilder({
   };
 
   const handleToggleBeforeDiff = (id) => {
-    setUserBeforeBars(prev => prev.map(b => b.id === id ? { ...b, hasDifference: !b.hasDifference } : b));
+    setUserBeforeBars(prev => prev.map(b => {
+      if (b.id !== id) return b;
+      const willHave = !b.hasDifference;
+      return {
+        ...b,
+        hasDifference: willHave,
+        diffSegments: willHave ? [{ id: `${b.id}-seg-1`, value: b.diffValue || '', length: 25 }] : []
+      };
+    }));
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleBeforeAddDiffSegment = (id) => {
+    setUserBeforeBars(prev => prev.map(b => {
+      if (b.id !== id) return b;
+      const current = (b.diffSegments && b.diffSegments.length > 0)
+        ? b.diffSegments
+        : [{ id: `${b.id}-seg-1`, value: b.diffValue || '', length: 25 }];
+      return {
+        ...b,
+        diffSegments: [...current, { id: `${b.id}-seg-${Date.now()}`, value: '', length: 20 }]
+      };
+    }));
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleBeforeUpdateDiffSegment = (barId, segId, field, val) => {
+    setUserBeforeBars(prev => prev.map(b => {
+      if (b.id !== barId) return b;
+      const current = (b.diffSegments && b.diffSegments.length > 0)
+        ? b.diffSegments
+        : [{ id: `${b.id}-seg-1`, value: b.diffValue || '', length: 25 }];
+      const updated = current.map(s => s.id === segId ? { ...s, [field]: val } : s);
+      return {
+        ...b,
+        diffSegments: updated,
+        diffValue: updated[0] ? updated[0].value : b.diffValue
+      };
+    }));
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleBeforeRemoveDiffSegment = (barId, segId) => {
+    setUserBeforeBars(prev => prev.map(b => {
+      if (b.id !== barId) return b;
+      const current = b.diffSegments || [];
+      const filtered = current.filter(s => s.id !== segId);
+      return {
+        ...b,
+        diffSegments: filtered.length > 0 ? filtered : [{ id: `${b.id}-seg-1`, value: '', length: 25 }],
+        diffValue: filtered[0] ? filtered[0].value : ''
+      };
+    }));
     setStage2Status('idle');
     setStage2ErrorMsg(null);
   };
@@ -1990,13 +2204,85 @@ export default function InteractiveBarBuilder({
     setUserBars(prev => prev.map(bar => {
       if (bar.id !== id) return bar;
       const willHave = !bar.hasDifference;
+      const defaultSegs = willHave
+        ? [{ id: `${bar.id}-seg-1`, value: bar.diffValue ? bar.diffValue.replace(/[+\-]/g, '').trim() : '', length: bar.diffLength || 20 }]
+        : [];
       return {
         ...bar,
         hasDifference: willHave,
         diffType: bar.diffType || 'MORE',
         diffLength: bar.diffLength || 20,
         diffValue: willHave ? (bar.diffValue ? bar.diffValue.replace(/[+\-]/g, '').trim() : '') : '',
+        diffSegments: defaultSegs,
         bracketPosition: bar.bracketPosition || 'bottom'
+      };
+    }));
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleAddDiffSegment = (barId) => {
+    setUserBars(prev => prev.map(bar => {
+      if (bar.id !== barId) return bar;
+      const currentSegments = (bar.diffSegments && bar.diffSegments.length > 0)
+        ? bar.diffSegments
+        : [{ id: `${bar.id}-seg-1`, value: bar.diffValue || '', length: bar.diffLength || 20 }];
+
+      const newSegId = `${bar.id}-seg-${Date.now()}`;
+      const newSegments = [
+        ...currentSegments,
+        { id: newSegId, value: '', length: 18 }
+      ];
+      return {
+        ...bar,
+        diffSegments: newSegments
+      };
+    }));
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleUpdateDiffSegment = (barId, segId, field, value) => {
+    setUserBars(prev => prev.map(bar => {
+      if (bar.id !== barId) return bar;
+      const currentSegments = (bar.diffSegments && bar.diffSegments.length > 0)
+        ? bar.diffSegments
+        : [{ id: `${bar.id}-seg-1`, value: bar.diffValue || '', length: bar.diffLength || 20 }];
+
+      const updatedSegments = currentSegments.map(seg => {
+        if (seg.id !== segId) return seg;
+        return { ...seg, [field]: value };
+      });
+
+      const firstSeg = updatedSegments[0];
+      return {
+        ...bar,
+        diffSegments: updatedSegments,
+        diffValue: firstSeg ? firstSeg.value : bar.diffValue,
+        diffLength: firstSeg ? firstSeg.length : bar.diffLength
+      };
+    }));
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleRemoveDiffSegment = (barId, segId) => {
+    setUserBars(prev => prev.map(bar => {
+      if (bar.id !== barId) return bar;
+      const currentSegments = bar.diffSegments || [];
+      const filtered = currentSegments.filter(s => s.id !== segId);
+      if (filtered.length === 0) {
+        return {
+          ...bar,
+          diffSegments: [{ id: `${bar.id}-seg-1`, value: '', length: 20 }],
+          diffValue: ''
+        };
+      }
+      return {
+        ...bar,
+        diffSegments: filtered,
+        diffValue: filtered[0].value,
+        diffLength: filtered[0].length
       };
     }));
     setStage2Status('idle');
@@ -2016,15 +2302,33 @@ export default function InteractiveBarBuilder({
     const filled = entities.map((e, idx) => {
       const rawDiff = e.displayDiff || e.diffValue || '';
       const cleanDiff = `${rawDiff}`.replace(/[+\-]/g, '').trim();
+      const hasDiff = e.relation === 'MORE' || e.relation === 'FEWER';
+
+      let defaultSegments = [];
+      if (hasDiff && e.relation !== 'FEWER') {
+        if (config.problemType === 'EQUALIZING_TRANSFER' && config.transferAmount) {
+          const tVal = Number(config.transferAmount).toLocaleString();
+          defaultSegments = [
+            { id: `bar-${idx + 1}-seg-1`, value: tVal, length: 18 },
+            { id: `bar-${idx + 1}-seg-2`, value: tVal, length: 18 }
+          ];
+        } else {
+          defaultSegments = [
+            { id: `bar-${idx + 1}-seg-1`, value: cleanDiff, length: 20 }
+          ];
+        }
+      }
+
       return {
         id: `bar-${idx + 1}`,
         name: e.name,
         length: 50,
         value: e.displayValue || (e.value !== undefined && e.value !== null ? (e.value === '?' ? '?' : Number(e.value).toLocaleString()) : ''),
-        hasDifference: e.relation === 'MORE' || e.relation === 'FEWER',
+        hasDifference: hasDiff,
         diffType: e.relation === 'FEWER' ? 'FEWER' : 'MORE',
-        diffLength: 20,
-        diffValue: cleanDiff,
+        diffLength: defaultSegments.length > 1 ? 36 : 20,
+        diffValue: defaultSegments.length > 1 ? defaultSegments[0].value : cleanDiff,
+        diffSegments: defaultSegments,
         bracketPosition: 'bottom',
         isTarget: target?.type === 'BAR' && target?.targetEntity === e.id,
         isCollapsed: true // Default to tightly collapsed bar model view
@@ -2334,14 +2638,27 @@ export default function InteractiveBarBuilder({
                             >
                               {bar.value || "Base"}
                             </div>
-                            {bar.hasDifference && (
-                              <div 
-                                style={{ width: '25%' }} 
-                                className="h-full ml-1 bg-emerald-500 rounded-lg flex items-center justify-center text-xs font-black text-white px-2 truncate border border-emerald-400 border-dashed shadow-xs transition-all duration-150"
-                              >
-                                +{cleanDiff || "Diff"}
-                              </div>
-                            )}
+                            {bar.hasDifference && (() => {
+                              const segments = (bar.diffSegments && bar.diffSegments.length > 0)
+                                ? bar.diffSegments
+                                : [{ id: `${bar.id}-seg-1`, value: bar.diffValue, length: 25 }];
+                              return (
+                                <div className="flex items-center h-full gap-1 ml-1 shrink-0">
+                                  {segments.map((seg, sIdx) => {
+                                    const cleanDiff = (seg.value || "").replace(/[+\-]/g, '').trim();
+                                    return (
+                                      <div 
+                                        key={seg.id || sIdx}
+                                        style={{ width: `${seg.length || 20}%` }} 
+                                        className="h-full bg-emerald-500 rounded-lg flex items-center justify-center text-xs font-black text-white px-2 truncate border border-emerald-400 border-dashed shadow-xs transition-all duration-150"
+                                      >
+                                        +{cleanDiff || "Diff"}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              );
+                            })()}
                           </div>
                         </div>
                       </div>
@@ -2382,12 +2699,12 @@ export default function InteractiveBarBuilder({
                           />
                         </div>
 
-                        {/* Difference Toggle & Value */}
+                        {/* Difference Toggle & Value (Single or Multi-Segment) */}
                         <div className="sm:col-span-5 space-y-1">
                           <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
                             Difference Segment (+ Diff)
                           </label>
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex flex-wrap items-center gap-1.5">
                             <button
                               type="button"
                               onClick={() => handleToggleBeforeDiff(bar.id)}
@@ -2400,15 +2717,47 @@ export default function InteractiveBarBuilder({
                               {bar.hasDifference ? "✓ Has Diff" : "+ Diff"}
                             </button>
 
-                            {bar.hasDifference && (
-                              <input
-                                type="text"
-                                value={bar.diffValue || ''}
-                                onChange={(e) => handleUpdateBeforeBar(bar.id, 'diffValue', e.target.value)}
-                                placeholder="e.g. ? or 16,000"
-                                className="flex-1 px-3 py-1.5 text-xs font-mono font-black text-emerald-800 bg-emerald-50 border border-emerald-300 rounded-xl focus:ring-2 focus:ring-emerald-400 focus:outline-none"
-                              />
-                            )}
+                            {bar.hasDifference && (() => {
+                              const segments = (bar.diffSegments && bar.diffSegments.length > 0)
+                                ? bar.diffSegments
+                                : [{ id: `${bar.id}-seg-1`, value: bar.diffValue || '', length: 25 }];
+
+                              return (
+                                <div className="space-y-1.5 w-full pt-1">
+                                  {segments.map((seg, sIdx) => (
+                                    <div key={seg.id || sIdx} className="flex items-center gap-1.5">
+                                      <input
+                                        type="text"
+                                        value={seg.value || ''}
+                                        onChange={(e) => handleBeforeUpdateDiffSegment(bar.id, seg.id, 'value', e.target.value)}
+                                        placeholder={segments.length > 1 ? `Seg ${sIdx + 1} e.g. 8,000` : "e.g. ? or 16,000"}
+                                        className="flex-1 px-3 py-1.5 text-xs font-mono font-black text-emerald-800 bg-emerald-50 border border-emerald-300 rounded-xl focus:ring-2 focus:ring-emerald-400 focus:outline-none"
+                                      />
+                                      {segments.length > 1 && (
+                                        <button
+                                          type="button"
+                                          onClick={() => handleBeforeRemoveDiffSegment(bar.id, seg.id)}
+                                          className="text-slate-400 hover:text-rose-600 p-1 rounded-lg cursor-pointer transition-colors"
+                                          title="Remove segment"
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      )}
+                                    </div>
+                                  ))}
+                                  {segments.length < 4 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleBeforeAddDiffSegment(bar.id)}
+                                      className="text-[10px] font-bold text-emerald-700 hover:text-emerald-900 flex items-center gap-1 pt-0.5 cursor-pointer"
+                                    >
+                                      <Plus className="w-3 h-3 text-emerald-600" />
+                                      + Add Another Segment
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </div>
                         </div>
                       </div>
@@ -3066,14 +3415,38 @@ export default function InteractiveBarBuilder({
                                   );
                                 })()
                               ) : (
-                                /* WHEN MORE: Solid green protruding extra difference section */
-                                <div
-                                  style={{ width: `${bar.diffLength}%` }}
-                                  className="h-full rounded-lg ml-1 px-2 flex items-center justify-center text-xs font-black text-white shadow-xs border border-emerald-400 border-dashed bg-emerald-500 transition-all duration-150 truncate shrink-0"
-                                  title="Extra difference amount protruding beyond the base"
-                                >
-                                  {bar.diffValue || "+ More"}
-                                </div>
+                                /* WHEN MORE: Solid green protruding extra difference section (Single or Multi-Segment) */
+                                (() => {
+                                  const segments = (bar.diffSegments && bar.diffSegments.length > 0)
+                                    ? bar.diffSegments
+                                    : [{ id: `${bar.id}-seg-1`, value: bar.diffValue, length: bar.diffLength || 20 }];
+
+                                  const segColors = [
+                                    'bg-emerald-500 border-emerald-400 text-white',
+                                    'bg-teal-500 border-teal-400 text-white',
+                                    'bg-emerald-600 border-emerald-500 text-white',
+                                    'bg-cyan-600 border-cyan-500 text-white'
+                                  ];
+
+                                  return (
+                                    <div className="flex items-center h-full gap-1 ml-1 shrink-0 overflow-visible">
+                                      {segments.map((seg, sIdx) => {
+                                        const cleanVal = (seg.value || "").replace(/[+\-]/g, '').trim();
+                                        const colorClass = segColors[sIdx % segColors.length];
+                                        return (
+                                          <div
+                                            key={seg.id || sIdx}
+                                            style={{ width: `${seg.length || 18}%` }}
+                                            className={`h-full rounded-lg px-2 flex items-center justify-center text-xs font-black shadow-xs border border-dashed transition-all duration-150 truncate shrink-0 ${colorClass}`}
+                                            title={`Difference segment ${sIdx + 1}: ${cleanVal || '+ Diff'}`}
+                                          >
+                                            {cleanVal ? `+${cleanVal}` : `+Diff ${sIdx + 1}`}
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  );
+                                })()
                               )
                             )}
                           </div>
@@ -3160,6 +3533,9 @@ export default function InteractiveBarBuilder({
                     entities={entities}
                     onUpdate={handleUpdateBar}
                     onToggleDiff={handleToggleDifference}
+                    onAddDiffSegment={handleAddDiffSegment}
+                    onUpdateDiffSegment={handleUpdateDiffSegment}
+                    onRemoveDiffSegment={handleRemoveDiffSegment}
                     onDelete={handleDeleteBar}
                     onCollapse={() => handleToggleCollapseBar(bar.id)}
                   />
