@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, AlertCircle, ArrowRight, Layers, Scale, RefreshCw, HelpCircle, Sparkles, ChevronDown, ChevronUp, Eye, Plus, Trash2, Zap, RotateCcw, X } from 'lucide-react';
+import { CheckCircle2, AlertCircle, ArrowRight, Layers, Scale, RefreshCw, HelpCircle, Sparkles, ChevronDown, ChevronUp, Eye, Plus, Trash2, Zap, RotateCcw, X, Lightbulb } from 'lucide-react';
 import MultiStepInput from '@/components/math/MultiStepInput';
 
 /**
@@ -301,6 +301,99 @@ export function checkPartWholeParameters(userParts = [], userWhole = '', config 
 }
 
 /**
+ * Parameter Check for Student Before-and-After Bar Model
+ * Validates the student's Before State, Transfer Bridge, and After State.
+ */
+export function checkBeforeAfterParameters(beforeBars = [], afterBars = [], transfer = {}, config = {}) {
+  const rawBefore = Array.isArray(beforeBars) ? beforeBars : (beforeBars.beforeBars || []);
+  const rawAfter = Array.isArray(afterBars) ? afterBars : (afterBars.afterBars || []);
+  const rawTransfer = transfer || {};
+
+  if (!rawBefore || rawBefore.length < 2) {
+    return {
+      isValid: false,
+      defect: 'INSUFFICIENT_BEFORE_BARS',
+      errorMsg: "Please configure both entity bars in the Before State (At First).",
+      details: null
+    };
+  }
+
+  const expectedGiver = config?.transferFrom || config?.entities?.[0]?.name;
+  const expectedReceiver = config?.transferTo || config?.entities?.[1]?.name;
+
+  // 1. Verify entity names in Before state
+  const giverBar = rawBefore.find(b => normalizeName(b.name) === normalizeName(expectedGiver));
+  const receiverBar = rawBefore.find(b => normalizeName(b.name) === normalizeName(expectedReceiver));
+
+  if (!giverBar) {
+    return {
+      isValid: false,
+      defect: 'MISSING_GIVER_BAR',
+      errorMsg: `The Before State must include a bar for "${expectedGiver}".`,
+      details: { expectedGiver }
+    };
+  }
+
+  if (!receiverBar) {
+    return {
+      isValid: false,
+      defect: 'MISSING_RECEIVER_BAR',
+      errorMsg: `The Before State must include a bar for "${expectedReceiver}".`,
+      details: { expectedReceiver }
+    };
+  }
+
+  // 2. Check that Giver has MORE (not fewer) in Before state
+  if (giverBar.hasDifference && giverBar.diffType === 'FEWER') {
+    return {
+      isValid: false,
+      defect: 'GIVER_CANNOT_HAVE_FEWER',
+      errorMsg: `"${expectedGiver}" gives items to "${expectedReceiver}", so "${expectedGiver}" must have MORE at first. Mark "${expectedGiver}" with a "+ Diff" segment or longer bar.`,
+      details: null
+    };
+  }
+
+  // 3. Check transfer amount
+  if (config.transferAmount !== undefined && config.transferAmount !== null && config.transferAmount !== '') {
+    const expTransfer = normalizeNumber(config.transferAmount);
+    const actTransfer = normalizeNumber(rawTransfer.amount);
+    if (!actTransfer) {
+      return {
+        isValid: false,
+        defect: 'MISSING_TRANSFER_AMOUNT',
+        errorMsg: `Please enter the transfer amount (${config.displayTransfer || Number(config.transferAmount).toLocaleString()}) in the transfer connection box.`,
+        details: { expected: expTransfer }
+      };
+    }
+    if (actTransfer !== expTransfer) {
+      return {
+        isValid: false,
+        defect: 'INCORRECT_TRANSFER_AMOUNT',
+        errorMsg: `The transfer amount should be ${config.displayTransfer || Number(config.transferAmount).toLocaleString()}, but got "${rawTransfer.amount}".`,
+        details: { expected: expTransfer, actual: actTransfer }
+      };
+    }
+  }
+
+  // 4. Check After state bars count
+  if (!rawAfter || rawAfter.length < 2) {
+    return {
+      isValid: false,
+      defect: 'INSUFFICIENT_AFTER_BARS',
+      errorMsg: "Please ensure both entities are shown in the After State (In the End).",
+      details: null
+    };
+  }
+
+  return {
+    isValid: true,
+    defect: null,
+    errorMsg: null,
+    details: null
+  };
+}
+
+/**
  * Comprehensive Parameter Check for Student Bar Model Drawing
  * Validates the student's structured bar state against problem config entities.
  * Returns defect classification for rich learning analytics and targeted feedback.
@@ -310,6 +403,10 @@ export function checkBarModelParameters(userBars = [], config = {}, totalState =
     const parts = Array.isArray(userBars) ? userBars : (userBars.parts || []);
     const whole = userBars.whole || '';
     return checkPartWholeParameters(parts, whole, config);
+  }
+
+  if (config?.correctModelType === 'BEFORE_AFTER' && (userBars?.beforeBars || userBars?.afterBars)) {
+    return checkBeforeAfterParameters(userBars.beforeBars, userBars.afterBars, userBars.transfer, config);
   }
 
   const rawBars = Array.isArray(userBars) ? userBars : (userBars.bars || []);
@@ -652,6 +749,151 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
   const target = config?.target || { type: 'TOTAL', label: 'Total' };
   const itemName = config?.itemName || 'units';
 
+  const isBeforeAfterModel = config?.correctModelType === 'BEFORE_AFTER' || 
+    config?.problemType === 'EQUALIZING_TRANSFER' || 
+    (Array.isArray(config?.correctModelType) && config?.correctModelType[0] === 'BEFORE_AFTER');
+
+  if (isBeforeAfterModel) {
+    const nameA = config.transferFrom || config.entities?.[0]?.name || 'Entity A';
+    const nameB = config.transferTo || config.entities?.[1]?.name || 'Entity B';
+    const largerVal = config.largerValue || config.entities?.find(e => normalizeName(e.name) === normalizeName(nameA))?.value;
+    const smallerVal = config.smallerValue || config.entities?.find(e => normalizeName(e.name) === normalizeName(nameB))?.value;
+    const diffVal = config.differenceValue || config.difference?.value;
+    const transferVal = config.transferAmount || config.transfer?.value;
+    const equalVal = config.equalizedValue;
+
+    const diffDisplay = (diffVal && diffVal !== '?' && !isNaN(Number(diffVal))) 
+      ? Number(diffVal).toLocaleString() 
+      : (config.displayDifference || (transferVal ? (Number(transferVal) * 2).toLocaleString() : '?'));
+    const transferDisplay = (transferVal && !isNaN(Number(transferVal))) 
+      ? Number(transferVal).toLocaleString() 
+      : (config.displayTransfer || '?');
+    const equalDisplay = (equalVal && !isNaN(Number(equalVal))) 
+      ? Number(equalVal).toLocaleString() 
+      : (config.displayEqualized || '1 unit');
+    const largerDisplay = (largerVal && largerVal !== '?' && !isNaN(Number(largerVal))) 
+      ? Number(largerVal).toLocaleString() 
+      : (config.entities?.[0]?.displayValue || '');
+    const smallerDisplay = (smallerVal && smallerVal !== '?' && !isNaN(Number(smallerVal))) 
+      ? Number(smallerVal).toLocaleString() 
+      : (config.entities?.[1]?.displayValue || '');
+
+    return (
+      <div className="bg-emerald-50/70 border-2 border-emerald-300 rounded-3xl p-5 sm:p-6 space-y-4 shadow-sm animate-in fade-in duration-200">
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-emerald-200">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+              <Layers className="w-4 h-4" />
+            </div>
+            <div>
+              <h4 className="text-xs font-black uppercase tracking-wider text-emerald-950">
+                {title}
+              </h4>
+              <span className="text-[10px] text-emerald-700 font-bold">
+                Before & After Model (Two Time States)
+              </span>
+            </div>
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full border border-emerald-300">
+            Ideal Reference
+          </span>
+        </div>
+
+        {/* 1. Before State Box */}
+        <div className="p-4 bg-white border border-emerald-200 rounded-2xl space-y-2">
+          <div className="flex items-center justify-between pb-1 border-b border-slate-100">
+            <span className="text-[11px] font-black uppercase tracking-wider text-slate-700">
+              1. Before Transfer (At First)
+            </span>
+            <span className="text-[10px] font-bold text-slate-500">
+              Difference = {diffDisplay}
+            </span>
+          </div>
+
+          <div className="space-y-2 pt-1">
+            {/* Giver Bar (Has Difference) */}
+            <div className="flex items-center gap-2">
+              <span className="w-20 text-right text-xs font-black text-slate-800 truncate">{nameA}</span>
+              <div className="flex-1 pl-2 border-l-4 border-indigo-500 border-dashed">
+                <div className="flex items-center h-9 bg-slate-50 rounded-lg p-1 border border-slate-200">
+                  <div style={{ width: '48%' }} className="h-full bg-indigo-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
+                    {largerDisplay || "Base Unit"}
+                  </div>
+                  <div style={{ width: '24%' }} className="h-full ml-1 bg-emerald-500 rounded flex items-center justify-center text-xs font-black text-white px-2 truncate border border-emerald-400 border-dashed">
+                    +{diffDisplay}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Receiver Bar (Base) */}
+            <div className="flex items-center gap-2">
+              <span className="w-20 text-right text-xs font-black text-slate-800 truncate">{nameB}</span>
+              <div className="flex-1 pl-2 border-l-4 border-indigo-500 border-dashed">
+                <div className="flex items-center h-9 bg-slate-50 rounded-lg p-1 border border-slate-200">
+                  <div style={{ width: '48%' }} className="h-full bg-indigo-500 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
+                    {smallerDisplay || "Base Unit"}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Transfer Indicator */}
+        <div className="flex items-center justify-center gap-2 py-1.5 px-3 bg-amber-100/70 border border-amber-300 rounded-xl text-xs font-black text-amber-950">
+          <span>Transfer:</span>
+          <span className="px-2 py-0.5 bg-white rounded border border-amber-300 font-mono">
+            {nameA} gives {transferDisplay} {itemName} to {nameB}
+          </span>
+        </div>
+
+        {/* 2. After State Box */}
+        <div className="p-4 bg-white border border-emerald-200 rounded-2xl space-y-2">
+          <div className="flex items-center justify-between pb-1 border-b border-slate-100">
+            <span className="text-[11px] font-black uppercase tracking-wider text-slate-700">
+              2. After Transfer (In the End)
+            </span>
+            <span className="text-[10px] font-black uppercase text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+              Equalized (1 Unit Each)
+            </span>
+          </div>
+
+          <div className="space-y-2 pt-1">
+            <div className="flex items-center gap-2">
+              <span className="w-20 text-right text-xs font-black text-slate-800 truncate">{nameA}</span>
+              <div className="flex-1 pl-2 border-l-4 border-emerald-500 border-dashed">
+                <div className="flex items-center h-9 bg-slate-50 rounded-lg p-1 border border-slate-200">
+                  <div style={{ width: '50%' }} className="h-full bg-emerald-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
+                    {equalDisplay}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-20 text-right text-xs font-black text-slate-800 truncate">{nameB}</span>
+              <div className="flex-1 pl-2 border-l-4 border-emerald-500 border-dashed">
+                <div className="flex items-center h-9 bg-slate-50 rounded-lg p-1 border border-slate-200">
+                  <div style={{ width: '50%' }} className="h-full bg-emerald-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
+                    {equalDisplay}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Target Indicator */}
+        <div className="flex items-center justify-between p-3 bg-white border border-emerald-200 rounded-xl">
+          <span className="text-xs font-bold text-emerald-950">Target to Solve:</span>
+          <span className="text-xs font-black text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300">
+            {target?.label || "Difference at First"}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   if (!entities || entities.length === 0) return null;
 
   return (
@@ -683,7 +925,13 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
               const isBase = e.relation === 'BASE';
               const isMore = e.relation === 'MORE';
               const isFewer = e.relation === 'FEWER';
-              const cleanDiffNum = e.diffValue ? Number(e.diffValue).toLocaleString() : (e.displayDiff || '').replace(/[+\-]/g, '').trim();
+              const cleanDiffNum = (e.displayDiff && e.displayDiff !== '?') 
+                ? e.displayDiff.replace(/[+\-]/g, '').trim()
+                : (e.diffValue && e.diffValue !== '?' && !isNaN(Number(e.diffValue)))
+                ? Number(e.diffValue).toLocaleString()
+                : (e.actualDiff && !isNaN(Number(e.actualDiff)))
+                ? Number(e.actualDiff).toLocaleString()
+                : (e.displayDiff || e.diffValue || '?').replace(/[+\-]/g, '').trim() || '?';
 
               return (
                 <div key={e.id || idx} className="flex items-center gap-2 sm:gap-3">
@@ -804,8 +1052,95 @@ export function CompactBarCanvas({
   isPartWhole = false,
   parts = [],
   whole = {},
-  total = null
+  total = null,
+  isBeforeAfter = false,
+  beforeBars = [],
+  afterBars = [],
+  transfer = {}
 }) {
+  if (isBeforeAfter) {
+    if (!beforeBars || beforeBars.length === 0) return null;
+
+    return (
+      <div className="bg-slate-50 border-2 border-slate-200 rounded-3xl p-5 space-y-3 shadow-xs">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-200/80">
+          <div className="flex items-center gap-2">
+            <Layers className="w-4 h-4 text-indigo-600" />
+            <span className="text-xs font-black uppercase tracking-wider text-slate-700">
+              Verified Before & After Model Reference
+            </span>
+          </div>
+          {onEdit && (
+            <button
+              type="button"
+              onClick={onEdit}
+              className="text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 px-2.5 py-1 rounded-xl transition-all cursor-pointer"
+            >
+              Edit Blueprint ✎
+            </button>
+          )}
+        </div>
+
+        {/* 1. Before State Box */}
+        <div className="p-3 bg-white rounded-2xl border border-slate-200 space-y-2">
+          <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+            1. Before Transfer (At First)
+          </span>
+          <div className="space-y-1.5">
+            {beforeBars.map((bar, idx) => {
+              const cleanDiff = (bar.diffValue || "").replace(/[+\-]/g, '').trim();
+              return (
+                <div key={bar.id || idx} className="flex items-center gap-2">
+                  <span className="w-20 text-right text-xs font-black text-slate-800 truncate">{bar.name}</span>
+                  <div className="flex-1 pl-2 border-l-4 border-indigo-500 border-dashed">
+                    <div className="flex items-center h-8 bg-slate-50 rounded-lg p-1 border border-slate-200">
+                      <div style={{ width: `${bar.length || 50}%` }} className="h-full bg-indigo-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
+                        {bar.value || ""}
+                      </div>
+                      {bar.hasDifference && (
+                        <div style={{ width: '24%' }} className="h-full ml-1 bg-emerald-500 rounded flex items-center justify-center text-xs font-black text-white px-2 truncate border border-emerald-400 border-dashed">
+                          +{cleanDiff || "Diff"}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Transfer Badge */}
+        {transfer?.amount && (
+          <div className="text-center py-1.5 px-3 bg-amber-50 rounded-xl border border-amber-200 text-xs font-bold text-amber-900">
+            Transfer: {transfer.giver} gives {transfer.amount} {itemName} to {transfer.receiver}
+          </div>
+        )}
+
+        {/* 2. After State Box */}
+        <div className="p-3 bg-white rounded-2xl border border-slate-200 space-y-2">
+          <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 block">
+            2. After Transfer (Equalized: 1 Unit Each)
+          </span>
+          <div className="space-y-1.5">
+            {afterBars.map((bar, idx) => (
+              <div key={bar.id || idx} className="flex items-center gap-2">
+                <span className="w-20 text-right text-xs font-black text-slate-800 truncate">{bar.name}</span>
+                <div className="flex-1 pl-2 border-l-4 border-emerald-500 border-dashed">
+                  <div className="flex items-center h-8 bg-slate-50 rounded-lg p-1 border border-slate-200">
+                    <div style={{ width: '50%' }} className="h-full bg-emerald-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
+                      {bar.value || "1 unit"}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (isPartWhole) {
     if (!parts || parts.length === 0) return null;
 
@@ -1374,13 +1709,13 @@ export default function InteractiveBarBuilder({
   isAdminReview = false
 }) {
   const correctModelType = config.correctModelType || "COMPARISON";
-  const isPartWhole = Array.isArray(correctModelType)
-    ? correctModelType.includes("PART_WHOLE")
-    : correctModelType === "PART_WHOLE";
-  const [currentStage, setCurrentStage] = useState(initialStage);
   const [selectedModel, setSelectedModel] = useState(
     isAdminReview ? (Array.isArray(correctModelType) ? correctModelType[0] : correctModelType) : null
   );
+  const activeModel = selectedModel || (Array.isArray(correctModelType) ? correctModelType[0] : correctModelType);
+  const isBeforeAfter = activeModel === 'BEFORE_AFTER';
+  const isPartWhole = !isBeforeAfter && (activeModel === 'PART_WHOLE');
+  const [currentStage, setCurrentStage] = useState(initialStage);
   const [confirmationStatus, setConfirmationStatus] = useState('idle'); // 'idle' | 'correct' | 'incorrect'
 
   const isModelMatch = Array.isArray(correctModelType)
@@ -1393,6 +1728,9 @@ export default function InteractiveBarBuilder({
   const [combinedTotalValue, setCombinedTotalValue] = useState('');
   const [userParts, setUserParts] = useState([]);
   const [userWhole, setUserWhole] = useState('');
+  const [userBeforeBars, setUserBeforeBars] = useState([]);
+  const [userAfterBars, setUserAfterBars] = useState([]);
+  const [userTransfer, setUserTransfer] = useState({ giver: '', receiver: '', amount: '' });
   const [stage2Status, setStage2Status] = useState('idle'); // 'idle' | 'correct' | 'incorrect'
   const [stage2ErrorMsg, setStage2ErrorMsg] = useState(null);
   const [showModelSolution, setShowModelSolution] = useState(false);
@@ -1426,9 +1764,103 @@ export default function InteractiveBarBuilder({
     }
   };
 
+  const handleAutoFillBeforeAfter = () => {
+    const nameA = config.transferFrom || config.entities?.[0]?.name || 'Entity A';
+    const nameB = config.transferTo || config.entities?.[1]?.name || 'Entity B';
+    const largerVal = config.largerValue || config.entities?.find(e => normalizeName(e.name) === normalizeName(nameA))?.value || '';
+    const smallerVal = config.smallerValue || config.entities?.find(e => normalizeName(e.name) === normalizeName(nameB))?.value || '';
+    const diffVal = config.differenceValue || config.difference?.value || '';
+    const transferVal = config.transferAmount || '';
+    const equalVal = config.equalizedValue || '';
+
+    setUserBeforeBars([
+      {
+        id: 'before-1',
+        name: nameA,
+        value: largerVal ? (largerVal === '?' ? '?' : Number(largerVal).toLocaleString()) : '',
+        length: 65,
+        hasDifference: true,
+        diffType: 'MORE',
+        diffValue: diffVal ? (config.target?.type === 'DIFFERENCE' ? '?' : Number(diffVal).toLocaleString()) : (transferVal ? (Number(transferVal) * 2).toLocaleString() : '?')
+      },
+      {
+        id: 'before-2',
+        name: nameB,
+        value: smallerVal ? (smallerVal === '?' ? '?' : Number(smallerVal).toLocaleString()) : '',
+        length: 42,
+        hasDifference: false,
+        diffType: 'MORE',
+        diffValue: ''
+      }
+    ]);
+
+    setUserTransfer({
+      giver: nameA,
+      receiver: nameB,
+      amount: transferVal ? Number(transferVal).toLocaleString() : ''
+    });
+
+    setUserAfterBars([
+      {
+        id: 'after-1',
+        name: `${nameA} (In the end)`,
+        value: equalVal ? Number(equalVal).toLocaleString() : '1 unit',
+        length: 50,
+        isEqual: true
+      },
+      {
+        id: 'after-2',
+        name: `${nameB} (In the end)`,
+        value: equalVal ? Number(equalVal).toLocaleString() : '1 unit',
+        length: 50,
+        isEqual: true
+      }
+    ]);
+
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleResetBeforeAfter = () => {
+    if (disabled) return;
+    const nameA = config.transferFrom || config.entities?.[0]?.name || 'Entity A';
+    const nameB = config.transferTo || config.entities?.[1]?.name || 'Entity B';
+    setUserBeforeBars([
+      { id: 'before-1', name: nameA, value: '', length: 65, hasDifference: true, diffType: 'MORE', diffValue: '' },
+      { id: 'before-2', name: nameB, value: '', length: 42, hasDifference: false, diffType: 'MORE', diffValue: '' }
+    ]);
+    setUserTransfer({ giver: nameA, receiver: nameB, amount: '' });
+    setUserAfterBars([
+      { id: 'after-1', name: `${nameA} (In the end)`, value: '', length: 50, isEqual: true },
+      { id: 'after-2', name: `${nameB} (In the end)`, value: '', length: 50, isEqual: true }
+    ]);
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleUpdateBeforeBar = (id, field, val) => {
+    setUserBeforeBars(prev => prev.map(b => b.id === id ? { ...b, [field]: val } : b));
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleToggleBeforeDiff = (id) => {
+    setUserBeforeBars(prev => prev.map(b => b.id === id ? { ...b, hasDifference: !b.hasDifference } : b));
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleUpdateAfterBar = (id, field, val) => {
+    setUserAfterBars(prev => prev.map(b => b.id === id ? { ...b, [field]: val } : b));
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
   const handleProceedToStage2 = () => {
     if (isModelMatch || isAdminReview) {
-      if (isPartWhole && userParts.length === 0) {
+      if (isBeforeAfter && userBeforeBars.length === 0) {
+        handleAutoFillBeforeAfter();
+      } else if (isPartWhole && userParts.length === 0) {
         const initialParts = (config.parts || []).map((p, idx) => ({
           id: `part-${idx + 1}`,
           name: '',
@@ -1441,6 +1873,8 @@ export default function InteractiveBarBuilder({
           { id: 'part-2', name: '', value: '', length: 35, isShortfall: false },
           { id: 'part-3', name: '', value: '', length: 30, isShortfall: true }
         ]);
+      } else if (!isPartWhole && !isBeforeAfter && userBars.length === 0) {
+        handleAutoFillBars();
       }
       setCurrentStage(2);
     }
@@ -1623,7 +2057,9 @@ export default function InteractiveBarBuilder({
       return;
     }
 
-    const checkRes = isPartWhole 
+    const checkRes = isBeforeAfter
+      ? checkBeforeAfterParameters(userBeforeBars, userAfterBars, userTransfer, config)
+      : isPartWhole 
       ? checkPartWholeParameters(userParts, userWhole, config)
       : checkBarModelParameters(userBars, config, { hasCombinedTotal, combinedTotalValue });
 
@@ -1636,7 +2072,11 @@ export default function InteractiveBarBuilder({
         details: checkRes.details,
         attempt: defectHistory.length + 1,
         time: Date.now(),
-        snapshot: isPartWhole ? { parts: userParts, whole: userWhole } : { bars: userBars, hasCombinedTotal, combinedTotalValue }
+        snapshot: isBeforeAfter
+          ? { beforeBars: userBeforeBars, afterBars: userAfterBars, transfer: userTransfer }
+          : isPartWhole 
+          ? { parts: userParts, whole: userWhole } 
+          : { bars: userBars, hasCombinedTotal, combinedTotalValue }
       };
       setDefectHistory(prev => [...prev, defectEntry]);
       if (onDefect) {
@@ -1653,6 +2093,18 @@ export default function InteractiveBarBuilder({
   const handleProceedToStage3 = () => {
     setCurrentStage(3);
   };
+
+  useEffect(() => {
+    if (isAdminReview || initialStage >= 2) {
+      if (isBeforeAfter && userBeforeBars.length === 0) {
+        handleAutoFillBeforeAfter();
+      } else if (isPartWhole && userParts.length === 0) {
+        handleAutoFillParts();
+      } else if (!isPartWhole && !isBeforeAfter && userBars.length === 0) {
+        handleAutoFillBars();
+      }
+    }
+  }, [isAdminReview, initialStage, isBeforeAfter, isPartWhole]);
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300">
@@ -1678,6 +2130,15 @@ export default function InteractiveBarBuilder({
               type="button"
               onClick={() => {
                 if (isAdminReview || isModelMatch) {
+                  if (stageNum === 2) {
+                    if (isBeforeAfter && userBeforeBars.length === 0) {
+                      handleAutoFillBeforeAfter();
+                    } else if (isPartWhole && userParts.length === 0) {
+                      handleAutoFillParts();
+                    } else if (!isPartWhole && !isBeforeAfter && userBars.length === 0) {
+                      handleAutoFillBars();
+                    }
+                  }
                   setCurrentStage(stageNum);
                 }
               }}
@@ -1808,7 +2269,346 @@ export default function InteractiveBarBuilder({
           animate={{ opacity: 1, y: 0 }} 
           className="space-y-4"
         >
-          {isPartWhole ? (
+          {isBeforeAfter ? (
+            <div className="bg-white border-2 border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
+              {/* Top Toolbar */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                    <Layers className="w-4 h-4 text-indigo-600" />
+                    Before & After Bar Model Canvas
+                  </span>
+                  <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
+                    Two Time States
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleAutoFillBeforeAfter}
+                    className="px-2.5 py-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-xl border border-indigo-200 transition-all flex items-center gap-1 cursor-pointer"
+                    title="Auto-fill with problem data for rapid review"
+                  >
+                    <Zap className="w-3.5 h-3.5 text-indigo-600" />
+                    Auto-Fill
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleResetBeforeAfter}
+                    className="px-2.5 py-1.5 text-xs font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl border border-slate-200 transition-all flex items-center gap-1 cursor-pointer"
+                    title="Reset blueprint"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              {/* Section 1: BEFORE STATE (At First) */}
+              <div className="p-5 sm:p-6 bg-slate-50 border-2 border-slate-200 rounded-2xl space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                    <span className="w-5 h-5 rounded-md bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold">1</span>
+                    Before Transfer (At First)
+                  </span>
+                  <span className="text-[11px] font-bold text-slate-500">
+                    Parallel Bars with Common Baseline
+                  </span>
+                </div>
+
+                {/* Live Canvas Preview for Before State */}
+                <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs space-y-3">
+                  {userBeforeBars.map((bar, idx) => {
+                    const cleanDiff = (bar.diffValue || "").replace(/[+\-]/g, '').trim();
+                    return (
+                      <div key={bar.id} className="flex items-center gap-2">
+                        <span className="w-24 text-right text-xs font-black text-slate-800 truncate">
+                          {bar.name || `Entity ${idx + 1}`}
+                        </span>
+                        <div className="flex-1 pl-2 border-l-4 border-indigo-500 border-dashed">
+                          <div className="flex items-center h-10 bg-slate-50 rounded-xl p-1 border border-slate-200">
+                            <div 
+                              style={{ width: `${bar.length || 50}%` }} 
+                              className="h-full bg-indigo-600 rounded-lg flex items-center justify-center text-xs font-bold text-white px-2 truncate transition-all duration-150"
+                            >
+                              {bar.value || "Base"}
+                            </div>
+                            {bar.hasDifference && (
+                              <div 
+                                style={{ width: '25%' }} 
+                                className="h-full ml-1 bg-emerald-500 rounded-lg flex items-center justify-center text-xs font-black text-white px-2 truncate border border-emerald-400 border-dashed shadow-xs transition-all duration-150"
+                              >
+                                +{cleanDiff || "Diff"}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Entity Controls for Before State */}
+                <div className="space-y-3 pt-2">
+                  {userBeforeBars.map((bar) => (
+                    <div key={bar.id} className="p-3 bg-white border border-slate-200 rounded-xl space-y-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                        {/* Name */}
+                        <div className="sm:col-span-4 space-y-1">
+                          <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                            Entity Name
+                          </label>
+                          <input
+                            type="text"
+                            value={bar.name}
+                            onChange={(e) => handleUpdateBeforeBar(bar.id, 'name', e.target.value)}
+                            placeholder="e.g. Deepak"
+                            className="w-full px-3 py-1.5 text-xs font-bold text-slate-900 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                          />
+                        </div>
+
+                        {/* Initial Value */}
+                        <div className="sm:col-span-3 space-y-1">
+                          <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                            Base Value / Label
+                          </label>
+                          <input
+                            type="text"
+                            value={bar.value}
+                            onChange={(e) => handleUpdateBeforeBar(bar.id, 'value', e.target.value)}
+                            placeholder="e.g. 50,500 or blank"
+                            className="w-full px-3 py-1.5 text-xs font-mono font-bold text-slate-900 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                          />
+                        </div>
+
+                        {/* Difference Toggle & Value */}
+                        <div className="sm:col-span-5 space-y-1">
+                          <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                            Difference Segment (+ Diff)
+                          </label>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleBeforeDiff(bar.id)}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-black tracking-wide border transition-all cursor-pointer shrink-0 ${
+                                bar.hasDifference
+                                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                                  : 'bg-white border-slate-300 text-slate-600 hover:border-indigo-400 hover:text-indigo-600'
+                              }`}
+                            >
+                              {bar.hasDifference ? "✓ Has Diff" : "+ Diff"}
+                            </button>
+
+                            {bar.hasDifference && (
+                              <input
+                                type="text"
+                                value={bar.diffValue || ''}
+                                onChange={(e) => handleUpdateBeforeBar(bar.id, 'diffValue', e.target.value)}
+                                placeholder="e.g. ? or 16,000"
+                                className="flex-1 px-3 py-1.5 text-xs font-mono font-black text-emerald-800 bg-emerald-50 border border-emerald-300 rounded-xl focus:ring-2 focus:ring-emerald-400 focus:outline-none"
+                              />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Bar Length Slider */}
+                      <div className="flex items-center gap-3 pt-1 border-t border-slate-100">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">Bar Length:</span>
+                        <EditablePercentBadge
+                          value={bar.length || 50}
+                          onChange={(val) => handleUpdateBeforeBar(bar.id, 'length', val)}
+                          min={20}
+                          max={90}
+                        />
+                        <input
+                          type="range"
+                          min="20"
+                          max="90"
+                          value={bar.length || 50}
+                          onChange={(e) => handleUpdateBeforeBar(bar.id, 'length', Number(e.target.value))}
+                          className="flex-1 accent-indigo-600 h-1.5 bg-slate-200 rounded-lg cursor-pointer"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Section 2: TRANSFER TRANSITION */}
+              <div className="p-4 bg-amber-50/80 border-2 border-amber-300 rounded-2xl space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black uppercase tracking-wider text-amber-950 flex items-center gap-1.5">
+                    <RefreshCw className="w-4 h-4 text-amber-600" />
+                    Transfer Transition (The Change)
+                  </span>
+                  <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-200">
+                    Internal Shift
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                  <div className="sm:col-span-5 text-xs font-bold text-slate-700 flex items-center gap-2">
+                    <span className="px-2.5 py-1 bg-white rounded-lg border border-amber-200 font-black text-indigo-700 truncate max-w-[130px]">
+                      {userTransfer.giver || userBeforeBars[0]?.name || "Giver"}
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span className="px-2.5 py-1 bg-white rounded-lg border border-amber-200 font-black text-indigo-700 truncate max-w-[130px]">
+                      {userTransfer.receiver || userBeforeBars[1]?.name || "Receiver"}
+                    </span>
+                  </div>
+
+                  <div className="sm:col-span-7 flex items-center gap-2">
+                    <label className="text-[10px] font-black uppercase tracking-wider text-amber-900 shrink-0">
+                      Amount Transferred:
+                    </label>
+                    <input
+                      type="text"
+                      value={userTransfer.amount || ''}
+                      onChange={(e) => {
+                        setUserTransfer(prev => ({ ...prev, amount: e.target.value }));
+                        setStage2Status('idle');
+                        setStage2ErrorMsg(null);
+                      }}
+                      placeholder="e.g. 8,000"
+                      className="flex-1 px-3 py-1.5 text-xs font-mono font-black text-amber-950 bg-white border-2 border-amber-300 rounded-xl focus:ring-2 focus:ring-amber-400 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 3: AFTER STATE (In The End) */}
+              <div className="p-5 sm:p-6 bg-slate-50 border-2 border-slate-200 rounded-2xl space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                    <span className="w-5 h-5 rounded-md bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold">2</span>
+                    After Transfer (In the End)
+                  </span>
+                  <span className="text-[10px] font-black uppercase text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                    Equalized: 1 Unit Each
+                  </span>
+                </div>
+
+                {/* Live Canvas Preview for After State */}
+                <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs space-y-3">
+                  {userAfterBars.map((bar, idx) => (
+                    <div key={bar.id} className="flex items-center gap-2">
+                      <span className="w-24 text-right text-xs font-black text-slate-800 truncate">
+                        {bar.name || `Entity ${idx + 1}`}
+                      </span>
+                      <div className="flex-1 pl-2 border-l-4 border-emerald-500 border-dashed">
+                        <div className="flex items-center h-10 bg-slate-50 rounded-xl p-1 border border-slate-200">
+                          <div 
+                            style={{ width: `${bar.length || 50}%` }} 
+                            className="h-full bg-emerald-600 rounded-lg flex items-center justify-center text-xs font-bold text-white px-2 truncate transition-all duration-150"
+                          >
+                            {bar.value || "1 unit"}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* After Controls */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {userAfterBars.map((bar, idx) => (
+                    <div key={bar.id} className="p-3 bg-white border border-slate-200 rounded-xl space-y-1">
+                      <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                        {idx === 0 ? "Giver Bar (In the End)" : "Receiver Bar (In the End)"}
+                      </label>
+                      <input
+                        type="text"
+                        value={bar.value || ''}
+                        onChange={(e) => handleUpdateAfterBar(bar.id, 'value', e.target.value)}
+                        placeholder="e.g. 1 unit or equal amount"
+                        className="w-full px-3 py-1.5 text-xs font-mono font-bold text-slate-900 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Verification Footer Banner */}
+              <div className="pt-2">
+                {stage2Status === 'correct' ? (
+                  <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-2xl space-y-3 animate-in fade-in">
+                    <div className="flex items-center gap-2.5">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                      <div>
+                        <div className="text-xs font-black text-emerald-950 uppercase tracking-wide">
+                          Model Blueprint Verified!
+                        </div>
+                        <p className="text-xs text-emerald-800 font-semibold">
+                          Both Before and After states correctly model the transfer. Proceed to solve the equations!
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleProceedToStage3}
+                      className="w-full py-3.5 px-6 rounded-2xl font-black text-xs uppercase tracking-wider bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer transition-all active:scale-[0.99] shadow-sm flex items-center justify-center gap-2"
+                    >
+                      Proceed to Step 3: Equations
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : stage2Status === 'incorrect' ? (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-rose-50 border border-rose-300 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in">
+                      <div className="flex items-center gap-2.5">
+                        <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
+                        <div>
+                          <div className="text-xs font-black text-rose-950 uppercase tracking-wide">
+                            Model Blueprint Error
+                          </div>
+                          <p className="text-xs text-rose-800 font-semibold mt-0.5">
+                            {stage2ErrorMsg || "Incomplete Model — Configure Before & After states and transfer amount."}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowModelSolution(prev => !prev)}
+                        className="px-3.5 py-1.5 bg-white hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-black border border-rose-300 transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs shrink-0"
+                      >
+                        <Lightbulb className="w-3.5 h-3.5" />
+                        <span>{showModelSolution ? "Hide Model Solution" : "View Model Solution"}</span>
+                      </button>
+                    </div>
+
+                    {showModelSolution && (
+                      <div className="animate-in fade-in slide-in-from-top-2">
+                        <ModelSolutionBarModel config={config} />
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      disabled={disabled}
+                      onClick={handleVerifyStage2}
+                      className="w-full py-3.5 px-6 rounded-2xl font-black text-xs uppercase tracking-wider bg-rose-600 hover:bg-rose-700 text-white cursor-pointer transition-all active:scale-[0.99] shadow-sm flex items-center justify-center gap-2"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      Check & Verify Again
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={disabled}
+                    onClick={handleVerifyStage2}
+                    className="w-full py-3.5 px-6 rounded-2xl font-black text-xs uppercase tracking-wider bg-slate-900 hover:bg-slate-800 text-white cursor-pointer transition-all active:scale-[0.99] shadow-sm flex items-center justify-center gap-2"
+                  >
+                    Check & Verify Model Blueprint
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : isPartWhole ? (
             <div className="bg-white border-2 border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
               {/* Top Toolbar */}
               <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
@@ -2478,7 +3278,20 @@ export default function InteractiveBarBuilder({
           className="space-y-6"
         >
           {/* Visual Bar Model Reference (Student's verified model) */}
-          {isPartWhole ? (
+          {isBeforeAfter ? (
+            userBeforeBars.length > 0 ? (
+              <CompactBarCanvas 
+                isBeforeAfter={true}
+                beforeBars={userBeforeBars}
+                afterBars={userAfterBars}
+                transfer={userTransfer}
+                itemName={config.itemName || "units"}
+                onEdit={() => setCurrentStage(2)} 
+              />
+            ) : (
+              <ModelSolutionBarModel config={config} title="Reference Before & After Model Blueprint" />
+            )
+          ) : isPartWhole ? (
             userParts.length > 0 ? (
               <CompactBarCanvas 
                 isPartWhole={true}

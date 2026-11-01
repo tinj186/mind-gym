@@ -472,6 +472,17 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           barBuilderConfig: {
             problemType: "EQUALIZING_TRANSFER",
             targetType: "TRANSFER",
+            transferFrom: nameA,
+            transferTo: nameB,
+            transferAmount: transfer,
+            differenceValue: diff,
+            largerValue: larger,
+            smallerValue: smaller,
+            equalizedValue: equalized,
+            grandTotal: grandTotal,
+            displayTransfer: transfer.toLocaleString(),
+            displayEqualized: equalized.toLocaleString(),
+            displayDifference: diff.toLocaleString(),
             itemName: item,
             correctModelType: ["BEFORE_AFTER", "COMPARISON"],
             modelOptions: [
@@ -566,6 +577,19 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           }
         ];
 
+        visualEngineStr = JSON.stringify({
+          componentToRender: "NONE",
+          hideVisual: true,
+          componentData: {
+            hideVisual: true,
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: `${nameA} (In the end)`, value: equalized, layoutSize: equalized, displayValue: equalized.toLocaleString() },
+              { name: `${nameB} (In the end)`, value: equalized, layoutSize: equalized, displayValue: equalized.toLocaleString() }
+            ]
+          }
+        }, null, 2);
+
         inputRequirementStr = JSON.stringify({
           inputType: "INTERACTIVE_BAR_BUILDER",
           steps: steps,
@@ -573,6 +597,17 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
             problemType: "EQUALIZING_TRANSFER",
             targetType: "BAR",
             targetName: targetName,
+            transferFrom: nameA,
+            transferTo: nameB,
+            transferAmount: transfer,
+            differenceValue: diff,
+            largerValue: larger,
+            smallerValue: smaller,
+            equalizedValue: equalized,
+            grandTotal: grandTotal,
+            displayTransfer: transfer.toLocaleString(),
+            displayEqualized: equalized.toLocaleString(),
+            displayDifference: diff.toLocaleString(),
             itemName: item,
             correctModelType: ["BEFORE_AFTER", "COMPARISON"],
             modelOptions: [
@@ -690,6 +725,21 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           }
         ];
 
+        visualEngineStr = JSON.stringify({
+          componentToRender: "NONE",
+          hideVisual: true,
+          componentData: {
+            hideVisual: true,
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: `${nameA} (At first)`, value: askForA ? "?" : "", layoutSize: larger, displayValue: askForA ? "?" : "" },
+              { name: `${nameB} (At first)`, value: !askForA ? "?" : "", layoutSize: smaller, displayValue: !askForA ? "?" : "" }
+            ],
+            difference: { displayValue: "" },
+            whole: grandTotal.toLocaleString()
+          }
+        }, null, 2);
+
         inputRequirementStr = JSON.stringify({
           inputType: "INTERACTIVE_BAR_BUILDER",
           steps: steps,
@@ -697,6 +747,17 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
             problemType: "EQUALIZING_TRANSFER",
             targetType: "BAR",
             targetName: targetName,
+            transferFrom: nameA,
+            transferTo: nameB,
+            transferAmount: transfer,
+            differenceValue: diff,
+            largerValue: larger,
+            smallerValue: smaller,
+            equalizedValue: equalized,
+            grandTotal: grandTotal,
+            displayTransfer: transfer.toLocaleString(),
+            displayEqualized: equalized.toLocaleString(),
+            displayDifference: diff.toLocaleString(),
             itemName: item,
             correctModelType: ["BEFORE_AFTER", "COMPARISON"],
             modelOptions: [
@@ -816,6 +877,17 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           barBuilderConfig: {
             problemType: "EQUALIZING_TRANSFER",
             targetType: "DIFFERENCE",
+            transferFrom: nameA,
+            transferTo: nameB,
+            transferAmount: transfer,
+            differenceValue: diff,
+            largerValue: larger,
+            smallerValue: smaller,
+            equalizedValue: equalized,
+            grandTotal: grandTotal,
+            displayTransfer: transfer.toLocaleString(),
+            displayEqualized: equalized.toLocaleString(),
+            displayDifference: diff.toLocaleString(),
             itemName: item,
             correctModelType: ["BEFORE_AFTER", "COMPARISON"],
             modelOptions: [
@@ -925,6 +997,20 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
             }
           ];
 
+          visualEngineStr = JSON.stringify({
+            componentToRender: "NONE",
+            hideVisual: true,
+            componentData: {
+              hideVisual: true,
+              modelType: "BAR_MODEL_COMPARISON",
+              bars: [
+                { name: `${nameA} (At first)`, value: larger, layoutSize: larger, displayValue: larger.toLocaleString() },
+                { name: `${nameB} (At first)`, value: "?", layoutSize: smaller, displayValue: "?" }
+              ],
+              difference: { displayValue: "" }
+            }
+          }, null, 2);
+
           inputRequirementStr = JSON.stringify({
             inputType: "INTERACTIVE_BAR_BUILDER",
             steps: steps,
@@ -932,6 +1018,17 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
               problemType: "EQUALIZING_TRANSFER",
               targetType: "BAR",
               targetName: nameB,
+              transferFrom: nameA,
+              transferTo: nameB,
+              transferAmount: transfer,
+              differenceValue: diff,
+              largerValue: larger,
+              smallerValue: smaller,
+              equalizedValue: equalized,
+              grandTotal: grandTotal,
+              displayTransfer: transfer.toLocaleString(),
+              displayEqualized: equalized.toLocaleString(),
+              displayDifference: diff.toLocaleString(),
               itemName: item,
               correctModelType: ["BEFORE_AFTER", "COMPARISON"],
               modelOptions: [
@@ -1034,6 +1131,20 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
             }
           ];
 
+          visualEngineStr = JSON.stringify({
+            componentToRender: "NONE",
+            hideVisual: true,
+            componentData: {
+              hideVisual: true,
+              modelType: "BAR_MODEL_COMPARISON",
+              bars: [
+                { name: `${nameA} (At first)`, value: "?", layoutSize: larger, displayValue: "?" },
+                { name: `${nameB} (At first)`, value: smaller, layoutSize: smaller, displayValue: smaller.toLocaleString() }
+              ],
+              difference: { displayValue: "" }
+            }
+          }, null, 2);
+
           inputRequirementStr = JSON.stringify({
             inputType: "INTERACTIVE_BAR_BUILDER",
             steps: steps,
@@ -1041,6 +1152,17 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
               problemType: "EQUALIZING_TRANSFER",
               targetType: "BAR",
               targetName: nameA,
+              transferFrom: nameA,
+              transferTo: nameB,
+              transferAmount: transfer,
+              differenceValue: diff,
+              largerValue: larger,
+              smallerValue: smaller,
+              equalizedValue: equalized,
+              grandTotal: grandTotal,
+              displayTransfer: transfer.toLocaleString(),
+              displayEqualized: equalized.toLocaleString(),
+              displayDifference: diff.toLocaleString(),
               itemName: item,
               correctModelType: ["BEFORE_AFTER", "COMPARISON"],
               modelOptions: [
