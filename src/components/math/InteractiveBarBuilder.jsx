@@ -1140,20 +1140,20 @@ export function CompactBarCanvas({
                           ? bar.diffSegments
                           : [{ id: `${bar.id}-seg-1`, value: bar.diffValue, length: 24 }];
                         return (
-                          <div className="flex items-center h-full gap-1 ml-1 shrink-0">
+                          <>
                             {segments.map((seg, sIdx) => {
                               const cleanDiff = (seg.value || "").replace(/[+\-]/g, '').trim();
                               return (
                                 <div
                                   key={seg.id || sIdx}
                                   style={{ width: `${seg.length || 24}%` }}
-                                  className="h-full bg-emerald-500 rounded flex items-center justify-center text-xs font-black text-white px-2 truncate border border-emerald-400 border-dashed shadow-2xs"
+                                  className="h-full bg-emerald-500 rounded ml-1 flex items-center justify-center text-xs font-black text-white px-2 truncate border border-emerald-400 border-dashed shadow-2xs shrink-0"
                                 >
                                   +{cleanDiff || "Diff"}
                                 </div>
                               );
                             })}
-                          </div>
+                          </>
                         );
                       })()}
                     </div>
@@ -1351,20 +1351,20 @@ export function CompactBarCanvas({
                               'bg-cyan-600 border-cyan-500 text-white'
                             ];
                             return (
-                              <div className="flex items-center h-full gap-1 ml-1 shrink-0">
+                              <>
                                 {segments.map((seg, sIdx) => {
                                   const cleanVal = (seg.value || "").replace(/[+\-]/g, '').trim();
                                   return (
                                     <div
                                       key={seg.id || sIdx}
                                       style={{ width: `${seg.length || 18}%` }}
-                                      className={`h-full rounded-md px-1.5 flex items-center justify-center text-xs font-black border border-dashed truncate shrink-0 ${segColors[sIdx % segColors.length]}`}
+                                      className={`h-full rounded-md ml-1 px-1.5 flex items-center justify-center text-xs font-black border border-dashed truncate shrink-0 ${segColors[sIdx % segColors.length]}`}
                                     >
                                       {cleanVal ? `+${cleanVal}` : "+ More"}
                                     </div>
                                   );
                                 })}
-                              </div>
+                              </>
                             );
                           })()
                         )
@@ -1715,14 +1715,14 @@ function BarParametersEditor({
                   value={bar.diffLength || 20}
                   onChange={(val) => onUpdate(bar.id, 'diffLength', val)}
                   min={5}
-                  max={50}
+                  max={60}
                   colorClass="text-rose-600"
                 />
               </div>
               <input
                 type="range"
                 min="5"
-                max="50"
+                max="60"
                 value={bar.diffLength || 20}
                 onChange={(e) => onUpdate(bar.id, 'diffLength', Number(e.target.value))}
                 className="w-full accent-rose-600 cursor-pointer"
@@ -1790,14 +1790,14 @@ function BarParametersEditor({
                             value={seg.length || 18}
                             onChange={(val) => onUpdateDiffSegment(bar.id, seg.id, 'length', val)}
                             min={5}
-                            max={50}
+                            max={60}
                             colorClass="text-emerald-600"
                           />
                         </div>
                         <input
                           type="range"
                           min="5"
-                          max="50"
+                          max="60"
                           value={seg.length || 18}
                           onChange={(e) => onUpdateDiffSegment(bar.id, seg.id, 'length', Number(e.target.value))}
                           className="w-full accent-emerald-600 cursor-pointer"
@@ -2643,20 +2643,20 @@ export default function InteractiveBarBuilder({
                                 ? bar.diffSegments
                                 : [{ id: `${bar.id}-seg-1`, value: bar.diffValue, length: 25 }];
                               return (
-                                <div className="flex items-center h-full gap-1 ml-1 shrink-0">
+                                <>
                                   {segments.map((seg, sIdx) => {
                                     const cleanDiff = (seg.value || "").replace(/[+\-]/g, '').trim();
                                     return (
                                       <div 
                                         key={seg.id || sIdx}
                                         style={{ width: `${seg.length || 20}%` }} 
-                                        className="h-full bg-emerald-500 rounded-lg flex items-center justify-center text-xs font-black text-white px-2 truncate border border-emerald-400 border-dashed shadow-xs transition-all duration-150"
+                                        className="h-full bg-emerald-500 rounded-lg ml-1 flex items-center justify-center text-xs font-black text-white px-2 truncate border border-emerald-400 border-dashed shadow-xs transition-all duration-150 shrink-0"
                                       >
                                         +{cleanDiff || "Diff"}
                                       </div>
                                     );
                                   })}
-                                </div>
+                                </>
                               );
                             })()}
                           </div>
@@ -3429,7 +3429,7 @@ export default function InteractiveBarBuilder({
                                   ];
 
                                   return (
-                                    <div className="flex items-center h-full gap-1 ml-1 shrink-0 overflow-visible">
+                                    <>
                                       {segments.map((seg, sIdx) => {
                                         const cleanVal = (seg.value || "").replace(/[+\-]/g, '').trim();
                                         const colorClass = segColors[sIdx % segColors.length];
@@ -3437,14 +3437,14 @@ export default function InteractiveBarBuilder({
                                           <div
                                             key={seg.id || sIdx}
                                             style={{ width: `${seg.length || 18}%` }}
-                                            className={`h-full rounded-lg px-2 flex items-center justify-center text-xs font-black shadow-xs border border-dashed transition-all duration-150 truncate shrink-0 ${colorClass}`}
+                                            className={`h-full rounded-lg ml-1 px-2 flex items-center justify-center text-xs font-black shadow-xs border border-dashed transition-all duration-150 truncate shrink-0 ${colorClass}`}
                                             title={`Difference segment ${sIdx + 1}: ${cleanVal || '+ Diff'}`}
                                           >
                                             {cleanVal ? `+${cleanVal}` : `+Diff ${sIdx + 1}`}
                                           </div>
                                         );
                                       })}
-                                    </div>
+                                    </>
                                   );
                                 })()
                               )
