@@ -377,20 +377,21 @@ export function checkBarModelParameters(userBars = [], config = {}, totalState =
   let expectedBase = expectedEntities.find(e => e.relation === 'BASE') || expectedEntities[0];
   let compEntities = expectedEntities.filter(e => e.relation === 'MORE' || e.relation === 'FEWER');
 
-  // Flexible baseline for 2-entity difference deduction: either entity can serve as base reference!
-  if (config?.target?.type === 'DIFFERENCE' && expectedEntities.length === 2) {
+  // Flexible baseline for 2-entity difference/transfer: either entity can serve as base reference!
+  if ((config?.target?.type === 'DIFFERENCE' || config?.target?.type === 'TRANSFER' || config?.problemType === 'EQUALIZING_TRANSFER' || config?.problemType === 'DIFFERENCE_DEDUCTION') && expectedEntities.length === 2 && !config?.total) {
     const barWithoutDiff = rawBars.find(b => !b.hasDifference);
     if (barWithoutDiff) {
       const matchedEntity = expectedEntities.find(e => normalizeName(e.name) === normalizeName(barWithoutDiff.name));
       if (matchedEntity && matchedEntity.id !== expectedBase.id) {
         const otherEntity = expectedEntities.find(e => e.id !== matchedEntity.id);
-        const isOtherLarger = Number(otherEntity.value) >= Number(matchedEntity.value);
+        const isOtherLarger = Number(otherEntity.value || 0) >= Number(matchedEntity.value || 0);
         expectedBase = { ...matchedEntity, relation: 'BASE' };
         compEntities = [{
           ...otherEntity,
           relation: isOtherLarger ? 'MORE' : 'FEWER',
-          diffValue: '?',
-          displayDiff: '?'
+          diffValue: otherEntity.diffValue !== undefined ? otherEntity.diffValue : (expectedBase.diffValue || '?'),
+          displayDiff: otherEntity.displayDiff !== undefined ? otherEntity.displayDiff : (expectedBase.displayDiff || '?'),
+          actualDiff: otherEntity.actualDiff || expectedBase.actualDiff
         }];
       }
     }
@@ -480,7 +481,8 @@ export function checkBarModelParameters(userBars = [], config = {}, totalState =
       const displayDiff = comp.displayDiff || (comp.diffValue === '?' ? '?' : Number(comp.diffValue).toLocaleString());
 
       if (expDiff === '?') {
-        if (actDiff && actDiff !== '?') {
+        const isActualDiffMatch = comp.actualDiff && normalizeNumber(actDiff) === normalizeNumber(comp.actualDiff);
+        if (actDiff && actDiff !== '?' && !isActualDiffMatch) {
           return {
             isValid: false,
             defect: 'INCORRECT_DIFF_VALUE',
@@ -1372,10 +1374,18 @@ export default function InteractiveBarBuilder({
   isAdminReview = false
 }) {
   const correctModelType = config.correctModelType || "COMPARISON";
-  const isPartWhole = correctModelType === "PART_WHOLE";
+  const isPartWhole = Array.isArray(correctModelType)
+    ? correctModelType.includes("PART_WHOLE")
+    : correctModelType === "PART_WHOLE";
   const [currentStage, setCurrentStage] = useState(initialStage);
-  const [selectedModel, setSelectedModel] = useState(isAdminReview ? correctModelType : null);
+  const [selectedModel, setSelectedModel] = useState(
+    isAdminReview ? (Array.isArray(correctModelType) ? correctModelType[0] : correctModelType) : null
+  );
   const [confirmationStatus, setConfirmationStatus] = useState('idle'); // 'idle' | 'correct' | 'incorrect'
+
+  const isModelMatch = Array.isArray(correctModelType)
+    ? correctModelType.includes(selectedModel)
+    : selectedModel === correctModelType;
 
   // Stage 2: Interactive Bar Builder State & Defect Tracking
   const [userBars, setUserBars] = useState([]);
@@ -1409,7 +1419,7 @@ export default function InteractiveBarBuilder({
       handleProceedToStage2();
       return;
     }
-    if (selectedModel === correctModelType) {
+    if (isModelMatch) {
       setConfirmationStatus('correct');
     } else {
       setConfirmationStatus('incorrect');
@@ -1417,7 +1427,7 @@ export default function InteractiveBarBuilder({
   };
 
   const handleProceedToStage2 = () => {
-    if (selectedModel === correctModelType || isAdminReview) {
+    if (isModelMatch || isAdminReview) {
       if (isPartWhole && userParts.length === 0) {
         const initialParts = (config.parts || []).map((p, idx) => ({
           id: `part-${idx + 1}`,
@@ -1667,15 +1677,15 @@ export default function InteractiveBarBuilder({
               key={stageNum}
               type="button"
               onClick={() => {
-                if (isAdminReview || selectedModel === correctModelType) {
+                if (isAdminReview || isModelMatch) {
                   setCurrentStage(stageNum);
                 }
               }}
-              disabled={!isAdminReview && selectedModel !== correctModelType && stageNum > 1}
+              disabled={!isAdminReview && !isModelMatch && stageNum > 1}
               className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all ${
                 currentStage === stageNum
                   ? 'bg-indigo-500 text-white shadow-md scale-105'
-                  : isAdminReview || (selectedModel === correctModelType && currentStage > stageNum)
+                  : isAdminReview || (isModelMatch && currentStage > stageNum)
                   ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 cursor-pointer border border-slate-700'
                   : 'bg-slate-900/50 text-slate-600 cursor-not-allowed'
               }`}

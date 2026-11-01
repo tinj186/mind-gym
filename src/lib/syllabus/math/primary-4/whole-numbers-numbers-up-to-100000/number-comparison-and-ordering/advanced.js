@@ -408,28 +408,96 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     if (selectedVariety === 'find_transfer_from_initial') {
       finalAnswer = transfer.toString();
 
-      visualEngineStr = JSON.stringify({
-        componentToRender: "BAR_MODEL_COMPARISON",
-        componentData: {
-          modelType: "BAR_MODEL_COMPARISON",
-          bars: [
-            { name: nameA, value: larger, layoutSize: larger, displayValue: larger.toLocaleString() },
-            { name: nameB, value: smaller, layoutSize: smaller, displayValue: smaller.toLocaleString() }
-          ],
-          difference: { displayValue: "?" }
-        }
-      }, null, 2);
-
       promptInstruction = `- Question stem: "${nameA} has ${larger.toLocaleString()} ${item} and ${nameB} has ${smaller.toLocaleString()} ${item}. How many ${item} must ${nameA} give to ${nameB} so that both of them have an equal number of ${item}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "NONE",
+          hideVisual: true,
+          componentData: {
+            hideVisual: true,
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: larger, layoutSize: larger, displayValue: larger.toLocaleString() },
+              { name: nameB, value: smaller, layoutSize: smaller, displayValue: smaller.toLocaleString() }
+            ],
+            difference: { displayValue: "?" }
+          }
+        }, null, 2);
+
+        const steps = [
+          {
+            label: "Write the working equation to find the difference between them:",
+            expectedAnswer: `${larger} - ${smaller} = ${diff}`,
+            acceptedAnswers: [
+              `${larger} - ${smaller} = ${diff}`,
+              `${larger}-${smaller}=${diff}`,
+              diff.toString(),
+              Number(diff).toLocaleString(),
+              `${larger} - ${smaller}`,
+              `${larger}-${smaller}`
+            ]
+          },
+          {
+            label: "Write the working equation to find the amount to transfer (half of the difference):",
+            expectedAnswer: `${diff} / 2 = ${transfer}`,
+            acceptedAnswers: [
+              `${diff} / 2 = ${transfer}`,
+              `${diff}/2=${transfer}`,
+              `${diff} ÷ 2 = ${transfer}`,
+              `${diff}÷2=${transfer}`,
+              transfer.toString(),
+              Number(transfer).toLocaleString(),
+              `${diff} / 2`,
+              `${diff}/2`,
+              `${diff} ÷ 2`,
+              `${diff}÷2`
+            ]
+          },
+          {
+            label: "Final Answer:",
+            expectedAnswer: finalAnswer,
+            acceptedAnswers: [
+              finalAnswer,
+              Number(finalAnswer).toLocaleString(),
+              `${finalAnswer} ${item}`,
+              `${Number(finalAnswer).toLocaleString()} ${item}`
+            ]
+          }
+        ];
+
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: "Write the working equation to find the difference between them:", expectedAnswer: `${larger} - ${smaller} = ${diff}` },
-            { label: "Write the working equation to find the amount to transfer (half of the difference):", expectedAnswer: `${diff} / 2 = ${transfer}` },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
-          ]
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "EQUALIZING_TRANSFER",
+            targetType: "TRANSFER",
+            itemName: item,
+            correctModelType: ["BEFORE_AFTER", "COMPARISON"],
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities across distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole quantity into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfers or changes across time states" }
+            ],
+            entities: [
+              { id: "B", name: nameB, value: smaller, displayValue: smaller.toLocaleString(), relation: "BASE" },
+              { id: "A", name: nameA, value: larger, displayValue: larger.toLocaleString(), relativeTo: nameB, relation: "MORE", diffValue: "?", displayDiff: "?", actualDiff: diff }
+            ],
+            target: { type: "TRANSFER", label: "Transfer Amount" },
+            steps: steps
+          }
+        }, null, 2);
+      } else {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL_COMPARISON",
+          componentData: {
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: larger, layoutSize: larger, displayValue: larger.toLocaleString() },
+              { name: nameB, value: smaller, layoutSize: smaller, displayValue: smaller.toLocaleString() }
+            ],
+            difference: { displayValue: "?" }
+          }
         }, null, 2);
       }
 
@@ -457,29 +525,79 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       finalAnswer = (askForA ? larger : smaller).toString();
       const targetName = askForA ? nameA : nameB;
 
-      visualEngineStr = JSON.stringify({
-        componentToRender: "BAR_MODEL_COMPARISON",
-        componentData: {
-          modelType: "BAR_MODEL_COMPARISON",
-          bars: [
-            { name: `${nameA} (In the end)`, value: equalized, layoutSize: equalized, displayValue: equalized.toLocaleString() },
-            { name: `${nameB} (In the end)`, value: equalized, layoutSize: equalized, displayValue: equalized.toLocaleString() }
-          ]
-        }
-      }, null, 2);
-
       promptInstruction = `- Question stem: "After ${nameA} gave ${transfer.toLocaleString()} ${item} to ${nameB}, both of them had ${equalized.toLocaleString()} ${item} each. How many ${item} did ${targetName} have at first?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "NONE",
+          hideVisual: true,
+          componentData: {
+            hideVisual: true,
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: `${nameA} (In the end)`, value: equalized, layoutSize: equalized, displayValue: equalized.toLocaleString() },
+              { name: `${nameB} (In the end)`, value: equalized, layoutSize: equalized, displayValue: equalized.toLocaleString() }
+            ]
+          }
+        }, null, 2);
+
+        const steps = [
+          {
+            label: `Write the working equation to find ${targetName}'s amount at first:`,
+            expectedAnswer: askForA ? `${equalized} + ${transfer} = ${larger}` : `${equalized} - ${transfer} = ${smaller}`,
+            acceptedAnswers: [
+              finalAnswer,
+              Number(finalAnswer).toLocaleString(),
+              askForA ? `${equalized} + ${transfer} = ${larger}` : `${equalized} - ${transfer} = ${smaller}`,
+              askForA ? `${equalized}+${transfer}=${larger}` : `${equalized}-${transfer}=${smaller}`,
+              askForA ? `${equalized} + ${transfer}` : `${equalized} - ${transfer}`,
+              askForA ? `${equalized}+${transfer}` : `${equalized}-${transfer}`
+            ]
+          },
+          {
+            label: "Final Answer:",
+            expectedAnswer: finalAnswer,
+            acceptedAnswers: [
+              finalAnswer,
+              Number(finalAnswer).toLocaleString(),
+              `${finalAnswer} ${item}`,
+              `${Number(finalAnswer).toLocaleString()} ${item}`
+            ]
+          }
+        ];
+
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            {
-              label: `Write the working equation to find ${targetName}'s amount at first:`,
-              expectedAnswer: askForA ? `${equalized} + ${transfer} = ${larger}` : `${equalized} - ${transfer} = ${smaller}`
-            },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
-          ]
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "EQUALIZING_TRANSFER",
+            targetType: "BAR",
+            targetName: targetName,
+            itemName: item,
+            correctModelType: ["BEFORE_AFTER", "COMPARISON"],
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities across distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole quantity into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfers or changes across time states" }
+            ],
+            entities: [
+              { id: "B", name: nameB, value: askForA ? smaller : "?", displayValue: askForA ? smaller.toLocaleString() : "?", relation: "BASE" },
+              { id: "A", name: nameA, value: askForA ? "?" : larger, displayValue: askForA ? "?" : larger.toLocaleString(), relativeTo: nameB, relation: "MORE", diffValue: diff, displayDiff: `+${diff.toLocaleString()}` }
+            ],
+            target: { type: "BAR", targetEntity: askForA ? "A" : "B", label: targetName },
+            steps: steps
+          }
+        }, null, 2);
+      } else {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL_COMPARISON",
+          componentData: {
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: `${nameA} (In the end)`, value: equalized, layoutSize: equalized, displayValue: equalized.toLocaleString() },
+              { name: `${nameB} (In the end)`, value: equalized, layoutSize: equalized, displayValue: equalized.toLocaleString() }
+            ]
+          }
         }, null, 2);
       }
 
@@ -513,32 +631,105 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       finalAnswer = (askForA ? larger : smaller).toString();
       const targetName = askForA ? nameA : nameB;
 
-      visualEngineStr = JSON.stringify({
-        componentToRender: "BAR_MODEL_COMPARISON",
-        componentData: {
-          modelType: "BAR_MODEL_COMPARISON",
-          bars: [
-            { name: `${nameA} (At first)`, value: askForA ? "?" : "", layoutSize: larger, displayValue: askForA ? "?" : "" },
-            { name: `${nameB} (At first)`, value: !askForA ? "?" : "", layoutSize: smaller, displayValue: !askForA ? "?" : "" }
-          ],
-          difference: { displayValue: "" },
-          whole: grandTotal.toLocaleString()
-        }
-      }, null, 2);
-
       promptInstruction = `- Question stem: "${nameA} and ${nameB} had a combined total of ${grandTotal.toLocaleString()} ${item}. After ${nameA} gave ${transfer.toLocaleString()} ${item} to ${nameB}, both of them had an equal number of ${item}. How many ${item} did ${targetName} have at first?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "NONE",
+          hideVisual: true,
+          componentData: {
+            hideVisual: true,
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: `${nameA} (At first)`, value: askForA ? "?" : "", layoutSize: larger, displayValue: askForA ? "?" : "" },
+              { name: `${nameB} (At first)`, value: !askForA ? "?" : "", layoutSize: smaller, displayValue: !askForA ? "?" : "" }
+            ],
+            difference: { displayValue: "" },
+            whole: grandTotal.toLocaleString()
+          }
+        }, null, 2);
+
+        const steps = [
+          {
+            label: `Write the working equation to find how many ${item} each person had in the end:`,
+            expectedAnswer: `${grandTotal} / 2 = ${equalized}`,
+            acceptedAnswers: [
+              `${grandTotal} / 2 = ${equalized}`,
+              `${grandTotal}/2=${equalized}`,
+              `${grandTotal} ÷ 2 = ${equalized}`,
+              `${grandTotal}÷2=${equalized}`,
+              equalized.toString(),
+              Number(equalized).toLocaleString(),
+              `${grandTotal} / 2`,
+              `${grandTotal}/2`,
+              `${grandTotal} ÷ 2`,
+              `${grandTotal}÷2`
+            ]
+          },
+          {
+            label: `Write the working equation to find ${targetName}'s amount at first:`,
+            expectedAnswer: askForA ? `${equalized} + ${transfer} = ${larger}` : `${equalized} - ${transfer} = ${smaller}`,
+            acceptedAnswers: [
+              finalAnswer,
+              Number(finalAnswer).toLocaleString(),
+              askForA ? `${equalized} + ${transfer} = ${larger}` : `${equalized} - ${transfer} = ${smaller}`,
+              askForA ? `${equalized}+${transfer}=${larger}` : `${equalized}-${transfer}=${smaller}`,
+              askForA ? `${equalized} + ${transfer}` : `${equalized} - ${transfer}`,
+              askForA ? `${equalized}+${transfer}` : `${equalized}-${transfer}`
+            ]
+          },
+          {
+            label: "Final Answer:",
+            expectedAnswer: finalAnswer,
+            acceptedAnswers: [
+              finalAnswer,
+              Number(finalAnswer).toLocaleString(),
+              `${finalAnswer} ${item}`,
+              `${Number(finalAnswer).toLocaleString()} ${item}`
+            ]
+          }
+        ];
+
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: `Write the working equation to find how many ${item} each person had in the end:`, expectedAnswer: `${grandTotal} / 2 = ${equalized}` },
-            {
-              label: `Write the working equation to find ${targetName}'s amount at first:`,
-              expectedAnswer: askForA ? `${equalized} + ${transfer} = ${larger}` : `${equalized} - ${transfer} = ${smaller}`
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "EQUALIZING_TRANSFER",
+            targetType: "BAR",
+            targetName: targetName,
+            itemName: item,
+            correctModelType: ["BEFORE_AFTER", "COMPARISON"],
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities across distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole quantity into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfers or changes across time states" }
+            ],
+            entities: [
+              { id: "B", name: nameB, value: !askForA ? "?" : smaller, displayValue: !askForA ? "?" : smaller.toLocaleString(), relation: "BASE" },
+              { id: "A", name: nameA, value: askForA ? "?" : larger, displayValue: askForA ? "?" : larger.toLocaleString(), relativeTo: nameB, relation: "MORE", diffValue: diff, displayDiff: `+${diff.toLocaleString()}` }
+            ],
+            total: {
+              label: "Combined Total",
+              value: grandTotal,
+              displayValue: grandTotal.toLocaleString(),
+              isTarget: false
             },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
-          ]
+            target: { type: "BAR", targetEntity: askForA ? "A" : "B", label: targetName },
+            steps: steps
+          }
+        }, null, 2);
+      } else {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL_COMPARISON",
+          componentData: {
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: `${nameA} (At first)`, value: askForA ? "?" : "", layoutSize: larger, displayValue: askForA ? "?" : "" },
+              { name: `${nameB} (At first)`, value: !askForA ? "?" : "", layoutSize: smaller, displayValue: !askForA ? "?" : "" }
+            ],
+            difference: { displayValue: "" },
+            whole: grandTotal.toLocaleString()
+          }
         }, null, 2);
       }
 
@@ -571,27 +762,86 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     } else if (selectedVariety === 'find_difference_from_transfer') {
       finalAnswer = diff.toString();
 
-      visualEngineStr = JSON.stringify({
-        componentToRender: "BAR_MODEL_COMPARISON",
-        componentData: {
-          modelType: "BAR_MODEL_COMPARISON",
-          bars: [
-            { name: nameA, value: "", layoutSize: larger, displayValue: "" },
-            { name: nameB, value: "", layoutSize: smaller, displayValue: "" }
-          ],
-          difference: { displayValue: "?" }
-        }
-      }, null, 2);
-
       promptInstruction = `- Question stem: "After ${nameA} gave ${transfer.toLocaleString()} ${item} to ${nameB}, both of them had an equal number of ${item}. How many more ${item} did ${nameA} have than ${nameB} at first?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "NONE",
+          hideVisual: true,
+          componentData: {
+            hideVisual: true,
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: "", layoutSize: larger, displayValue: "" },
+              { name: nameB, value: "", layoutSize: smaller, displayValue: "" }
+            ],
+            difference: { displayValue: "?" }
+          }
+        }, null, 2);
+
+        const steps = [
+          {
+            label: `Write the working equation to find how many more ${item} ${nameA} had than ${nameB} at first (twice the transferred amount):`,
+            expectedAnswer: `${transfer} * 2 = ${diff}`,
+            acceptedAnswers: [
+              `${transfer} * 2 = ${diff}`,
+              `${transfer}*2=${diff}`,
+              `${transfer} × 2 = ${diff}`,
+              `${transfer}×2=${diff}`,
+              `${transfer} + ${transfer} = ${diff}`,
+              `${transfer}+${transfer}=${diff}`,
+              diff.toString(),
+              Number(diff).toLocaleString(),
+              `${transfer} * 2`,
+              `${transfer}*2`,
+              `${transfer} × 2`,
+              `${transfer}×2`
+            ]
+          },
+          {
+            label: "Final Answer:",
+            expectedAnswer: finalAnswer,
+            acceptedAnswers: [
+              finalAnswer,
+              Number(finalAnswer).toLocaleString(),
+              `${finalAnswer} ${item}`,
+              `${Number(finalAnswer).toLocaleString()} ${item}`
+            ]
+          }
+        ];
+
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: `Write the working equation to find how many more ${item} ${nameA} had than ${nameB} at first (twice the transferred amount):`, expectedAnswer: `${transfer} * 2 = ${diff}` },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
-          ]
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "EQUALIZING_TRANSFER",
+            targetType: "DIFFERENCE",
+            itemName: item,
+            correctModelType: ["BEFORE_AFTER", "COMPARISON"],
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities across distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole quantity into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfers or changes across time states" }
+            ],
+            entities: [
+              { id: "B", name: nameB, value: "", displayValue: "", relation: "BASE" },
+              { id: "A", name: nameA, value: "", displayValue: "", relativeTo: nameB, relation: "MORE", diffValue: "?", displayDiff: "?", actualDiff: diff }
+            ],
+            target: { type: "DIFFERENCE", label: "Difference" },
+            steps: steps
+          }
+        }, null, 2);
+      } else {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL_COMPARISON",
+          componentData: {
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: "", layoutSize: larger, displayValue: "" },
+              { name: nameB, value: "", layoutSize: smaller, displayValue: "" }
+            ],
+            difference: { displayValue: "?" }
+          }
         }, null, 2);
       }
 
@@ -618,29 +868,96 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       const givenA = Math.random() < 0.5;
       finalAnswer = (givenA ? smaller : larger).toString();
 
-      visualEngineStr = JSON.stringify({
-        componentToRender: "BAR_MODEL_COMPARISON",
-        componentData: {
-          modelType: "BAR_MODEL_COMPARISON",
-          bars: [
-            { name: `${nameA} (At first)`, value: givenA ? larger : "?", layoutSize: larger, displayValue: givenA ? larger.toLocaleString() : "?" },
-            { name: `${nameB} (At first)`, value: givenA ? "?" : smaller, layoutSize: smaller, displayValue: givenA ? "?" : smaller.toLocaleString() }
-          ],
-          difference: { displayValue: "" }
-        }
-      }, null, 2);
-
       if (givenA) {
         promptInstruction = `- Question stem: "${nameA} had ${larger.toLocaleString()} ${item} at first. After ${nameA} gave ${transfer.toLocaleString()} ${item} to ${nameB}, both of them had an equal number of ${item}. How many ${item} did ${nameB} have at first?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
         if (isStructure) {
+          visualEngineStr = JSON.stringify({
+            componentToRender: "NONE",
+            hideVisual: true,
+            componentData: {
+              hideVisual: true,
+              modelType: "BAR_MODEL_COMPARISON",
+              bars: [
+                { name: `${nameA} (At first)`, value: larger, layoutSize: larger, displayValue: larger.toLocaleString() },
+                { name: `${nameB} (At first)`, value: "?", layoutSize: smaller, displayValue: "?" }
+              ],
+              difference: { displayValue: "" }
+            }
+          }, null, 2);
+
+          const steps = [
+            {
+              label: `Write the working equation to find the equalized amount ${nameA} had in the end:`,
+              expectedAnswer: `${larger} - ${transfer} = ${equalized}`,
+              acceptedAnswers: [
+                `${larger} - ${transfer} = ${equalized}`,
+                `${larger}-${transfer}=${equalized}`,
+                equalized.toString(),
+                Number(equalized).toLocaleString(),
+                `${larger} - ${transfer}`,
+                `${larger}-${transfer}`
+              ]
+            },
+            {
+              label: `Write the working equation to find ${nameB}'s amount at first:`,
+              expectedAnswer: `${equalized} - ${transfer} = ${smaller}`,
+              acceptedAnswers: [
+                `${equalized} - ${transfer} = ${smaller}`,
+                `${equalized}-${transfer}=${smaller}`,
+                `${larger} - ${diff} = ${smaller}`,
+                `${larger}-${diff}=${smaller}`,
+                smaller.toString(),
+                Number(smaller).toLocaleString(),
+                `${equalized} - ${transfer}`,
+                `${equalized}-${transfer}`
+              ]
+            },
+            {
+              label: "Final Answer:",
+              expectedAnswer: finalAnswer,
+              acceptedAnswers: [
+                finalAnswer,
+                Number(finalAnswer).toLocaleString(),
+                `${finalAnswer} ${item}`,
+                `${Number(finalAnswer).toLocaleString()} ${item}`
+              ]
+            }
+          ];
+
           inputRequirementStr = JSON.stringify({
-            inputType: "MULTI_STEP_INPUT",
-            steps: [
-              { label: `Write the working equation to find the equalized amount ${nameA} had in the end:`, expectedAnswer: `${larger} - ${transfer} = ${equalized}` },
-              { label: `Write the working equation to find ${nameB}'s amount at first:`, expectedAnswer: `${equalized} - ${transfer} = ${smaller}` },
-              { label: "Final Answer:", expectedAnswer: finalAnswer }
-            ]
+            inputType: "INTERACTIVE_BAR_BUILDER",
+            steps: steps,
+            barBuilderConfig: {
+              problemType: "EQUALIZING_TRANSFER",
+              targetType: "BAR",
+              targetName: nameB,
+              itemName: item,
+              correctModelType: ["BEFORE_AFTER", "COMPARISON"],
+              modelOptions: [
+                { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities across distinct entities" },
+                { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole quantity into parts" },
+                { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfers or changes across time states" }
+              ],
+              entities: [
+                { id: "B", name: nameB, value: "?", displayValue: "?", relation: "BASE" },
+                { id: "A", name: nameA, value: larger, displayValue: larger.toLocaleString(), relativeTo: nameB, relation: "MORE", diffValue: diff, displayDiff: `+${diff.toLocaleString()}` }
+              ],
+              target: { type: "BAR", targetEntity: "B", label: nameB },
+              steps: steps
+            }
+          }, null, 2);
+        } else {
+          visualEngineStr = JSON.stringify({
+            componentToRender: "BAR_MODEL_COMPARISON",
+            componentData: {
+              modelType: "BAR_MODEL_COMPARISON",
+              bars: [
+                { name: `${nameA} (At first)`, value: larger, layoutSize: larger, displayValue: larger.toLocaleString() },
+                { name: `${nameB} (At first)`, value: "?", layoutSize: smaller, displayValue: "?" }
+              ],
+              difference: { displayValue: "" }
+            }
           }, null, 2);
         }
 
@@ -664,13 +981,92 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         promptInstruction = `- Question stem: "${nameB} had ${smaller.toLocaleString()} ${item} at first. After ${nameA} gave ${transfer.toLocaleString()} ${item} to ${nameB}, both of them had an equal number of ${item}. How many ${item} did ${nameA} have at first?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
         if (isStructure) {
+          visualEngineStr = JSON.stringify({
+            componentToRender: "NONE",
+            hideVisual: true,
+            componentData: {
+              hideVisual: true,
+              modelType: "BAR_MODEL_COMPARISON",
+              bars: [
+                { name: `${nameA} (At first)`, value: "?", layoutSize: larger, displayValue: "?" },
+                { name: `${nameB} (At first)`, value: smaller, layoutSize: smaller, displayValue: smaller.toLocaleString() }
+              ],
+              difference: { displayValue: "" }
+            }
+          }, null, 2);
+
+          const steps = [
+            {
+              label: `Write the working equation to find the equalized amount ${nameB} had in the end:`,
+              expectedAnswer: `${smaller} + ${transfer} = ${equalized}`,
+              acceptedAnswers: [
+                `${smaller} + ${transfer} = ${equalized}`,
+                `${smaller}+${transfer}=${equalized}`,
+                equalized.toString(),
+                Number(equalized).toLocaleString(),
+                `${smaller} + ${transfer}`,
+                `${smaller}+${transfer}`
+              ]
+            },
+            {
+              label: `Write the working equation to find ${nameA}'s amount at first:`,
+              expectedAnswer: `${equalized} + ${transfer} = ${larger}`,
+              acceptedAnswers: [
+                `${equalized} + ${transfer} = ${larger}`,
+                `${equalized}+${transfer}=${larger}`,
+                `${smaller} + ${diff} = ${larger}`,
+                `${smaller}+${diff}=${larger}`,
+                larger.toString(),
+                Number(larger).toLocaleString(),
+                `${equalized} + ${transfer}`,
+                `${equalized}+${transfer}`
+              ]
+            },
+            {
+              label: "Final Answer:",
+              expectedAnswer: finalAnswer,
+              acceptedAnswers: [
+                finalAnswer,
+                Number(finalAnswer).toLocaleString(),
+                `${finalAnswer} ${item}`,
+                `${Number(finalAnswer).toLocaleString()} ${item}`
+              ]
+            }
+          ];
+
           inputRequirementStr = JSON.stringify({
-            inputType: "MULTI_STEP_INPUT",
-            steps: [
-              { label: `Write the working equation to find the equalized amount ${nameB} had in the end:`, expectedAnswer: `${smaller} + ${transfer} = ${equalized}` },
-              { label: `Write the working equation to find ${nameA}'s amount at first:`, expectedAnswer: `${equalized} + ${transfer} = ${larger}` },
-              { label: "Final Answer:", expectedAnswer: finalAnswer }
-            ]
+            inputType: "INTERACTIVE_BAR_BUILDER",
+            steps: steps,
+            barBuilderConfig: {
+              problemType: "EQUALIZING_TRANSFER",
+              targetType: "BAR",
+              targetName: nameA,
+              itemName: item,
+              correctModelType: ["BEFORE_AFTER", "COMPARISON"],
+              modelOptions: [
+                { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities across distinct entities" },
+                { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole quantity into parts" },
+                { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfers or changes across time states" }
+              ],
+              entities: [
+                { id: "B", name: nameB, value: smaller, displayValue: smaller.toLocaleString(), relation: "BASE" },
+                { id: "A", name: nameA, value: "?", displayValue: "?", relativeTo: nameB, relation: "MORE", diffValue: diff, displayDiff: `+${diff.toLocaleString()}` }
+              ],
+              target: { type: "BAR", targetEntity: "A", label: nameA },
+              steps: steps
+            }
+          }, null, 2);
+        } else {
+          visualEngineStr = JSON.stringify({
+            componentToRender: "BAR_MODEL_COMPARISON",
+            componentData: {
+              modelType: "BAR_MODEL_COMPARISON",
+              bars: [
+                { name: `${nameA} (At first)`, value: "?", layoutSize: larger, displayValue: "?" },
+                { name: `${nameB} (At first)`, value: smaller, layoutSize: smaller, displayValue: smaller.toLocaleString() }
+              ],
+              difference: { displayValue: "" }
+            }
           }, null, 2);
         }
 
