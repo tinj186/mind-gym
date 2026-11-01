@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, AlertCircle, ArrowRight, Layers, Scale, RefreshCw, HelpCircle, Sparkles, ChevronDown, ChevronUp, Eye, Plus, Trash2, Zap, RotateCcw, X } from 'lucide-react';
 import MultiStepInput from '@/components/math/MultiStepInput';
@@ -1005,6 +1005,93 @@ export function CompactBarCanvas({
 }
 
 /**
+ * 🏷️ EditablePercentBadge
+ * Displays a percentage with click-to-edit capability, allowing users to either
+ * drag the slider or click the number to key in an exact percentage directly.
+ */
+function EditablePercentBadge({
+  value,
+  onChange,
+  min = 10,
+  max = 90,
+  disabled = false,
+  colorClass = "text-indigo-600",
+  placeholder = "—"
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [tempVal, setTempVal] = useState(String(value ?? ''));
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (!isEditing) {
+      setTempVal(String(value ?? ''));
+    }
+  }, [value, isEditing]);
+
+  if (disabled) {
+    return <span className="font-mono text-slate-400 text-[11px] font-bold select-none">{placeholder}</span>;
+  }
+
+  const handleCommit = () => {
+    const parsed = parseInt(tempVal, 10);
+    if (!isNaN(parsed)) {
+      const clamped = Math.max(min, Math.min(max, parsed));
+      onChange(clamped);
+      setTempVal(String(clamped));
+    } else {
+      setTempVal(String(value ?? min));
+    }
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setTempVal(String(value ?? ''));
+    setIsEditing(false);
+  };
+
+  if (isEditing) {
+    return (
+      <div className="inline-flex items-center bg-white border-2 border-indigo-500 rounded-lg px-1.5 py-0.5 shadow-2xs">
+        <input
+          ref={inputRef}
+          type="number"
+          min={min}
+          max={max}
+          value={tempVal}
+          onChange={(e) => setTempVal(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleCommit();
+            } else if (e.key === 'Escape') {
+              e.preventDefault();
+              handleCancel();
+            }
+          }}
+          onBlur={handleCommit}
+          onFocus={(e) => e.target.select()}
+          autoFocus
+          className="w-8 text-[11px] font-mono font-black text-indigo-900 bg-transparent text-right outline-none p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        />
+        <span className="text-[10px] font-mono font-black text-indigo-600 ml-0.5 select-none">%</span>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setIsEditing(true)}
+      title="Click to key in custom percentage"
+      className={`font-mono text-[11px] font-black ${colorClass} hover:bg-indigo-50 hover:border-indigo-300 border border-dashed border-transparent px-1.5 py-0.5 rounded-lg transition-all cursor-pointer inline-flex items-center gap-1 group`}
+    >
+      <span>{value}%</span>
+      <span className="text-[9px] opacity-0 group-hover:opacity-100 text-indigo-400 transition-opacity">✎</span>
+    </button>
+  );
+}
+
+/**
  * BarParametersEditor
  * Clean, full-width responsive parameter editor card for individual bars in the Comparison model.
  */
@@ -1087,15 +1174,20 @@ function BarParametersEditor({
 
         {/* Bar Length Slider */}
         <div className="sm:col-span-4 space-y-1">
-          <div className="flex justify-between text-[10px] font-black uppercase tracking-wider text-slate-500">
+          <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-slate-500">
             <span>Bar Length</span>
-            <span className="font-mono text-indigo-600">{bar.length}%</span>
+            <EditablePercentBadge
+              value={bar.length || 50}
+              onChange={(val) => onUpdate(bar.id, 'length', val)}
+              min={10}
+              max={90}
+            />
           </div>
           <input
             type="range"
-            min="20"
-            max="80"
-            value={bar.length}
+            min="10"
+            max="90"
+            value={bar.length || 50}
             onChange={(e) => onUpdate(bar.id, 'length', Number(e.target.value))}
             className="w-full accent-indigo-600 cursor-pointer"
           />
@@ -1207,18 +1299,24 @@ function BarParametersEditor({
 
           {/* Diff Width Slider */}
           <div className="sm:col-span-4 space-y-1">
-            <div className="flex justify-between text-[10px] font-black uppercase tracking-wider text-slate-500">
+            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-slate-500">
               <span>Diff Width</span>
-              <span className="font-mono text-indigo-600">
-                {bar.hasDifference ? `${bar.diffLength}%` : "—"}
-              </span>
+              <EditablePercentBadge
+                value={bar.diffLength || 20}
+                onChange={(val) => onUpdate(bar.id, 'diffLength', val)}
+                min={5}
+                max={50}
+                disabled={!bar.hasDifference}
+                placeholder="—"
+                colorClass={bar.diffType === 'FEWER' ? 'text-rose-600' : 'text-emerald-600'}
+              />
             </div>
             <input
               type="range"
-              min="10"
-              max="40"
+              min="5"
+              max="50"
               disabled={!bar.hasDifference}
-              value={bar.diffLength}
+              value={bar.diffLength || 20}
               onChange={(e) => onUpdate(bar.id, 'diffLength', Number(e.target.value))}
               className={`w-full cursor-pointer ${
                 bar.hasDifference
@@ -1866,13 +1964,19 @@ export default function InteractiveBarBuilder({
                     </div>
 
                     <div className="flex items-center gap-3 pt-1 border-t border-slate-200/60">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase shrink-0">
-                        Segment Size: {part.length}%
-                      </span>
+                      <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 uppercase shrink-0">
+                        <span>Segment Size:</span>
+                        <EditablePercentBadge
+                          value={part.length}
+                          onChange={(val) => handleUpdatePart(part.id, 'length', val)}
+                          min={5}
+                          max={90}
+                        />
+                      </div>
                       <input
                         type="range"
-                        min="10"
-                        max="80"
+                        min="5"
+                        max="90"
                         value={part.length}
                         onChange={(e) => handleUpdatePart(part.id, 'length', Number(e.target.value))}
                         className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
