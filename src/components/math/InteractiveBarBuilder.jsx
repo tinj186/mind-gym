@@ -571,7 +571,11 @@ export function checkBarModelParameters(userBars = [], config = {}, totalState =
           (config?.targetType === 'BAR' || config?.target?.type === 'BAR' || config?.targetType !== 'DIFFERENCE');
 
         if (expVal === '?' || isEqualizingBarTarget || (config?.problemType === 'THREE_ENTITY_GRAND_TOTAL' && expVal === '?')) {
-          const isMatch = !actVal || actVal === '?' || actVal === '1' || actVal === '1unit' ||
+          const actLower = (baseBar.value || '').toString().toLowerCase().trim();
+          const cleanUnit = actLower.replace(/\s+/g, '');
+          const isUnitMatch = ['1', '1u', 'u', '1unit', '1units', '1 unit', '1 units', '?', ''].includes(cleanUnit) ||
+            cleanUnit === '1u' || cleanUnit === 'u';
+          const isMatch = isUnitMatch || !actVal || actVal === '?' ||
             (expVal && expVal !== '?' && actVal === expVal) ||
             (config.smallerValue && actVal === normalizeNumber(config.smallerValue)) ||
             (config.largerValue && actVal === normalizeNumber(config.largerValue)) ||
@@ -580,7 +584,7 @@ export function checkBarModelParameters(userBars = [], config = {}, totalState =
             return {
               isValid: false,
               defect: 'INCORRECT_BASE_VALUE',
-              errorMsg: `"${expectedBase.name}" is an unknown initial quantity. Mark it with "?" or leave it blank.`,
+              errorMsg: `"${expectedBase.name}" is an unknown quantity. Mark it with "1u", "?", or leave it blank.`,
               details: { entity: expectedBase.name, expected: '?', actual: actVal }
             };
           }
