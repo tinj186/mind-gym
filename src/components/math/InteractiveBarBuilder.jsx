@@ -2714,138 +2714,137 @@ export default function InteractiveBarBuilder({
                 </div>
 
                 {/* Live Canvas Preview for Before State */}
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {userBeforeBars.map((bar, idx) => {
                     return (
-                      <div key={bar.id} className="flex items-center gap-2 sm:gap-3">
-                        {/* Entity Name */}
-                        <div className="w-20 sm:w-24 text-right shrink-0">
-                          <span className="text-xs font-black uppercase tracking-wider text-slate-800 truncate block">
-                            {bar.name || `Bar ${idx + 1}`}
-                          </span>
-                        </div>
+                      <div key={bar.id} className="transition-all duration-200 space-y-2">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          {/* Entity Name */}
+                          <div className="w-20 sm:w-24 text-right shrink-0">
+                            <span className="text-xs font-black uppercase tracking-wider text-slate-800 truncate block">
+                              {bar.name || `Bar ${idx + 1}`}
+                            </span>
+                          </div>
 
-                        {/* Bar Track with Baseline */}
-                        <div className="flex-1 pl-3 border-l-4 border-indigo-500 border-dashed py-0.5">
-                          <div className="flex items-center gap-2">
-                            <div className="flex-1 flex items-center h-11 bg-white rounded-xl border border-slate-200 p-1 shadow-xs overflow-visible relative">
-                              {/* Base segment */}
-                              <div 
-                                style={{ width: `${bar.length || 50}%` }} 
-                                className={`h-full rounded-lg flex items-center justify-center text-xs font-black text-white shadow-xs transition-all duration-150 px-2 truncate shrink-0 ${
-                                  idx === 0 ? 'bg-indigo-600' : 'bg-indigo-500'
-                                }`}
-                              >
-                                {bar.value || ""}
+                          {/* Bar Track with Baseline */}
+                          <div className="flex-1 pl-3 border-l-4 border-indigo-500 border-dashed py-0.5">
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1 flex items-center h-11 bg-white rounded-xl border border-slate-200 p-1 shadow-xs overflow-visible relative">
+                                {/* Base segment */}
+                                <div 
+                                  style={{ width: `${bar.length || 50}%` }} 
+                                  className={`h-full rounded-lg flex items-center justify-center text-xs font-black text-white shadow-xs transition-all duration-150 px-2 truncate shrink-0 ${
+                                    idx === 0 ? 'bg-indigo-600' : 'bg-indigo-500'
+                                  }`}
+                                >
+                                  {bar.value || ""}
+                                </div>
+
+                                {/* Difference Segment / Bracket */}
+                                {bar.hasDifference && (
+                                  bar.diffType === 'FEWER' ? (
+                                    (() => {
+                                      const cleanDiffNum = (bar.diffValue || "").replace(/[+\-]/g, '').trim();
+                                      const isBottomBracket = (bar.bracketPosition || (idx > 0 ? 'bottom' : 'top')) === 'bottom';
+                                      return (
+                                        <div
+                                          style={{ width: `${bar.diffLength || 20}%` }}
+                                          className="relative h-full ml-1 flex flex-col justify-between items-center py-1 px-1 transition-all duration-150 overflow-visible select-none shrink-0"
+                                        >
+                                          <div
+                                            className={`absolute right-0 w-0 border-r-2 border-dotted border-rose-400 pointer-events-none z-10 ${
+                                              isBottomBracket ? '-top-6 bottom-0' : 'top-0 -bottom-6'
+                                            }`}
+                                          >
+                                            <span className="absolute -top-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                                            <span className="absolute -bottom-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                                          </div>
+                                          <div className={`absolute inset-0 bg-rose-50/20 rounded-lg pointer-events-none ${
+                                            isBottomBracket ? 'border-b border-dashed border-rose-200' : 'border-t border-dashed border-rose-200'
+                                          }`} />
+                                          <div className="relative z-10 flex-1 flex items-center justify-center">
+                                            <span className="text-[11px] font-black text-rose-700 font-mono tracking-tight px-1.5 py-0.2 bg-white/95 rounded border border-rose-200 shadow-2xs truncate max-w-full">
+                                              {cleanDiffNum || "Diff"}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      );
+                                    })()
+                                  ) : (
+                                    (() => {
+                                      const segments = (bar.diffSegments && bar.diffSegments.length > 0)
+                                        ? bar.diffSegments
+                                        : [{ id: `${bar.id}-seg-1`, value: bar.diffValue, length: bar.diffLength || 20 }];
+                                      const segColors = [
+                                        'bg-emerald-500 border-emerald-400 text-white',
+                                        'bg-teal-500 border-teal-400 text-white',
+                                        'bg-emerald-600 border-emerald-500 text-white',
+                                        'bg-cyan-600 border-cyan-500 text-white'
+                                      ];
+                                      return (
+                                        <>
+                                          {segments.map((seg, sIdx) => {
+                                            const cleanVal = (seg.value || "").replace(/[+\-]/g, '').trim();
+                                            const colorClass = segColors[sIdx % segColors.length];
+                                            return (
+                                              <div
+                                                key={seg.id || sIdx}
+                                                style={{ width: `${seg.length || 18}%` }}
+                                                className={`h-full rounded-lg ml-1 px-2 flex items-center justify-center text-xs font-black shadow-xs border border-dashed transition-all duration-150 truncate shrink-0 ${colorClass}`}
+                                                title={`Difference segment ${sIdx + 1}: ${cleanVal || '+ Diff'}`}
+                                              >
+                                                {cleanVal ? `+${cleanVal}` : `+Diff ${sIdx + 1}`}
+                                              </div>
+                                            );
+                                          })}
+                                        </>
+                                      );
+                                    })()
+                                  )
+                                )}
                               </div>
 
-                              {/* Difference Segment / Bracket */}
-                              {bar.hasDifference && (
-                                bar.diffType === 'FEWER' ? (
-                                  (() => {
-                                    const cleanDiffNum = (bar.diffValue || "").replace(/[+\-]/g, '').trim();
-                                    const isBottomBracket = (bar.bracketPosition || (idx > 0 ? 'bottom' : 'top')) === 'bottom';
-                                    return (
-                                      <div
-                                        style={{ width: `${bar.diffLength || 20}%` }}
-                                        className="relative h-full ml-1 flex flex-col justify-between items-center py-1 px-1 transition-all duration-150 overflow-visible select-none shrink-0"
-                                      >
-                                        <div
-                                          className={`absolute right-0 w-0 border-r-2 border-dotted border-rose-400 pointer-events-none z-10 ${
-                                            isBottomBracket ? '-top-6 bottom-0' : 'top-0 -bottom-6'
-                                          }`}
-                                        >
-                                          <span className="absolute -top-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
-                                          <span className="absolute -bottom-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
-                                        </div>
-                                        <div className={`absolute inset-0 bg-rose-50/20 rounded-lg pointer-events-none ${
-                                          isBottomBracket ? 'border-b border-dashed border-rose-200' : 'border-t border-dashed border-rose-200'
-                                        }`} />
-                                        <div className="relative z-10 flex-1 flex items-center justify-center">
-                                          <span className="text-[11px] font-black text-rose-700 font-mono tracking-tight px-1.5 py-0.2 bg-white/95 rounded border border-rose-200 shadow-2xs truncate max-w-full">
-                                            {cleanDiffNum || "Diff"}
-                                          </span>
-                                        </div>
-                                      </div>
-                                    );
-                                  })()
+                              {/* Collapse/Expand Arrow Tag */}
+                              <button
+                                type="button"
+                                onClick={() => handleToggleCollapseBeforeBar(bar.id)}
+                                className={`h-9 px-2 rounded-lg flex items-center justify-center transition-all cursor-pointer shrink-0 ${
+                                  bar.isCollapsed
+                                    ? 'bg-white hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200'
+                                    : 'bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-xs'
+                                }`}
+                                title={bar.isCollapsed ? "Edit bar parameters" : "Collapse into bar height"}
+                              >
+                                {bar.isCollapsed ? (
+                                  <ChevronDown className="w-4 h-4 text-slate-500" />
                                 ) : (
-                                  (() => {
-                                    const segments = (bar.diffSegments && bar.diffSegments.length > 0)
-                                      ? bar.diffSegments
-                                      : [{ id: `${bar.id}-seg-1`, value: bar.diffValue, length: bar.diffLength || 20 }];
-                                    const segColors = [
-                                      'bg-emerald-500 border-emerald-400 text-white',
-                                      'bg-teal-500 border-teal-400 text-white',
-                                      'bg-emerald-600 border-emerald-500 text-white',
-                                      'bg-cyan-600 border-cyan-500 text-white'
-                                    ];
-                                    return (
-                                      <>
-                                        {segments.map((seg, sIdx) => {
-                                          const cleanVal = (seg.value || "").replace(/[+\-]/g, '').trim();
-                                          const colorClass = segColors[sIdx % segColors.length];
-                                          return (
-                                            <div
-                                              key={seg.id || sIdx}
-                                              style={{ width: `${seg.length || 18}%` }}
-                                              className={`h-full rounded-lg ml-1 px-2 flex items-center justify-center text-xs font-black shadow-xs border border-dashed transition-all duration-150 truncate shrink-0 ${colorClass}`}
-                                              title={`Difference segment ${sIdx + 1}: ${cleanVal || '+ Diff'}`}
-                                            >
-                                              {cleanVal ? `+${cleanVal}` : `+Diff ${sIdx + 1}`}
-                                            </div>
-                                          );
-                                        })}
-                                      </>
-                                    );
-                                  })()
-                                )
-                              )}
+                                  <ChevronUp className="w-4 h-4 text-indigo-600" />
+                                )}
+                              </button>
                             </div>
-
-                            {/* Collapse/Expand Arrow Tag */}
-                            <button
-                              type="button"
-                              onClick={() => handleToggleCollapseBeforeBar(bar.id)}
-                              className={`h-9 px-2 rounded-lg flex items-center justify-center transition-all cursor-pointer shrink-0 ${
-                                bar.isCollapsed
-                                  ? 'bg-white hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200'
-                                  : 'bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-xs'
-                              }`}
-                              title={bar.isCollapsed ? "Edit bar parameters" : "Collapse into bar height"}
-                            >
-                              {bar.isCollapsed ? (
-                                <ChevronDown className="w-4 h-4 text-slate-500" />
-                              ) : (
-                                <ChevronUp className="w-4 h-4 text-indigo-600" />
-                              )}
-                            </button>
                           </div>
                         </div>
+
+                        {/* Parameter Window directly below this bar! */}
+                        {!bar.isCollapsed && (
+                          <div className="pt-1">
+                            <BarParametersEditor
+                              bar={bar}
+                              barIndex={idx}
+                              entities={entities}
+                              onUpdate={handleUpdateBeforeBar}
+                              onToggleDiff={handleToggleBeforeDiff}
+                              onAddDiffSegment={handleBeforeAddDiffSegment}
+                              onUpdateDiffSegment={handleBeforeUpdateDiffSegment}
+                              onRemoveDiffSegment={handleBeforeRemoveDiffSegment}
+                              onCollapse={() => handleToggleCollapseBeforeBar(bar.id)}
+                            />
+                          </div>
+                        )}
                       </div>
                     );
                   })}
                 </div>
-
-                {/* Parameters Editor for Before State */}
-                {userBeforeBars.some(b => !b.isCollapsed) && (
-                  <div className="space-y-3 pt-3 border-t-2 border-dashed border-slate-200 w-full">
-                    {userBeforeBars.filter(b => !b.isCollapsed).map((bar) => (
-                      <BarParametersEditor
-                        key={bar.id}
-                        bar={bar}
-                        barIndex={userBeforeBars.findIndex(b => b.id === bar.id)}
-                        entities={entities}
-                        onUpdate={handleUpdateBeforeBar}
-                        onToggleDiff={handleToggleBeforeDiff}
-                        onAddDiffSegment={handleBeforeAddDiffSegment}
-                        onUpdateDiffSegment={handleBeforeUpdateDiffSegment}
-                        onRemoveDiffSegment={handleBeforeRemoveDiffSegment}
-                        onCollapse={() => handleToggleCollapseBeforeBar(bar.id)}
-                      />
-                    ))}
-                  </div>
-                )}
               </div>
 
               {/* ══════════════════════════════════════════════════════════════
@@ -2863,81 +2862,80 @@ export default function InteractiveBarBuilder({
                 </div>
 
                 {/* Live Canvas Preview for After State */}
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {userAfterBars.map((bar, idx) => (
-                    <div key={bar.id} className="flex items-center gap-2 sm:gap-3">
-                      {/* Entity Name */}
-                      <div className="w-20 sm:w-24 text-right shrink-0">
-                        <span className="text-xs font-black uppercase tracking-wider text-slate-800 truncate block">
-                          {bar.name || `Bar ${idx + 1}`}
-                        </span>
-                      </div>
+                    <div key={bar.id} className="transition-all duration-200 space-y-2">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        {/* Entity Name */}
+                        <div className="w-20 sm:w-24 text-right shrink-0">
+                          <span className="text-xs font-black uppercase tracking-wider text-slate-800 truncate block">
+                            {bar.name || `Bar ${idx + 1}`}
+                          </span>
+                        </div>
 
-                      {/* Bar Track with Baseline */}
-                      <div className="flex-1 pl-3 border-l-4 border-emerald-500 border-dashed py-0.5">
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 flex items-center h-11 bg-white rounded-xl border border-slate-200 p-1 shadow-xs overflow-visible relative">
-                            {/* Base segment */}
-                            <div 
-                              style={{ width: `${bar.length || 50}%` }} 
-                              className="h-full rounded-lg flex items-center justify-center text-xs font-black text-white shadow-xs transition-all duration-150 px-2 truncate shrink-0 bg-emerald-600"
-                            >
-                              {bar.value || "1 unit"}
+                        {/* Bar Track with Baseline */}
+                        <div className="flex-1 pl-3 border-l-4 border-emerald-500 border-dashed py-0.5">
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 flex items-center h-11 bg-white rounded-xl border border-slate-200 p-1 shadow-xs overflow-visible relative">
+                              {/* Base segment */}
+                              <div 
+                                style={{ width: `${bar.length || 50}%` }} 
+                                className="h-full rounded-lg flex items-center justify-center text-xs font-black text-white shadow-xs transition-all duration-150 px-2 truncate shrink-0 bg-emerald-600"
+                              >
+                                {bar.value || "1 unit"}
+                              </div>
+
+                              {/* Difference Segment (if student configured diff in After) */}
+                              {bar.hasDifference && (
+                                <div
+                                  style={{ width: `${bar.diffLength || 20}%` }}
+                                  className="h-full rounded-lg ml-1 px-2 flex items-center justify-center text-xs font-black shadow-xs border border-dashed transition-all duration-150 truncate shrink-0 bg-teal-500 text-white"
+                                >
+                                  +{bar.diffValue || "Diff"}
+                                </div>
+                              )}
                             </div>
 
-                            {/* Difference Segment (if student configured diff in After) */}
-                            {bar.hasDifference && (
-                              <div
-                                style={{ width: `${bar.diffLength || 20}%` }}
-                                className="h-full rounded-lg ml-1 px-2 flex items-center justify-center text-xs font-black shadow-xs border border-dashed transition-all duration-150 truncate shrink-0 bg-teal-500 text-white"
-                              >
-                                +{bar.diffValue || "Diff"}
-                              </div>
-                            )}
+                            {/* Collapse/Expand Arrow Tag */}
+                            <button
+                              type="button"
+                              onClick={() => handleToggleCollapseAfterBar(bar.id)}
+                              className={`h-9 px-2 rounded-lg flex items-center justify-center transition-all cursor-pointer shrink-0 ${
+                                bar.isCollapsed
+                                  ? 'bg-white hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 border border-slate-200'
+                                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs'
+                              }`}
+                              title={bar.isCollapsed ? "Edit bar parameters" : "Collapse into bar height"}
+                            >
+                              {bar.isCollapsed ? (
+                                <ChevronDown className="w-4 h-4 text-slate-500" />
+                              ) : (
+                                <ChevronUp className="w-4 h-4 text-emerald-600" />
+                              )}
+                            </button>
                           </div>
-
-                          {/* Collapse/Expand Arrow Tag */}
-                          <button
-                            type="button"
-                            onClick={() => handleToggleCollapseAfterBar(bar.id)}
-                            className={`h-9 px-2 rounded-lg flex items-center justify-center transition-all cursor-pointer shrink-0 ${
-                              bar.isCollapsed
-                                ? 'bg-white hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 border border-slate-200'
-                                : 'bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs'
-                            }`}
-                            title={bar.isCollapsed ? "Edit bar parameters" : "Collapse into bar height"}
-                          >
-                            {bar.isCollapsed ? (
-                              <ChevronDown className="w-4 h-4 text-slate-500" />
-                            ) : (
-                              <ChevronUp className="w-4 h-4 text-emerald-600" />
-                            )}
-                          </button>
                         </div>
                       </div>
+
+                      {/* Parameter Window directly below this bar! */}
+                      {!bar.isCollapsed && (
+                        <div className="pt-1">
+                          <BarParametersEditor
+                            bar={bar}
+                            barIndex={idx}
+                            entities={entities}
+                            onUpdate={handleUpdateAfterBar}
+                            onToggleDiff={handleToggleAfterDiff}
+                            onAddDiffSegment={handleAfterAddDiffSegment}
+                            onUpdateDiffSegment={handleAfterUpdateDiffSegment}
+                            onRemoveDiffSegment={handleAfterRemoveDiffSegment}
+                            onCollapse={() => handleToggleCollapseAfterBar(bar.id)}
+                          />
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
-
-                {/* Parameters Editor for After State */}
-                {userAfterBars.some(b => !b.isCollapsed) && (
-                  <div className="space-y-3 pt-3 border-t-2 border-dashed border-slate-200 w-full">
-                    {userAfterBars.filter(b => !b.isCollapsed).map((bar) => (
-                      <BarParametersEditor
-                        key={bar.id}
-                        bar={bar}
-                        barIndex={userAfterBars.findIndex(b => b.id === bar.id)}
-                        entities={entities}
-                        onUpdate={handleUpdateAfterBar}
-                        onToggleDiff={handleToggleAfterDiff}
-                        onAddDiffSegment={handleAfterAddDiffSegment}
-                        onUpdateDiffSegment={handleAfterUpdateDiffSegment}
-                        onRemoveDiffSegment={handleAfterRemoveDiffSegment}
-                        onCollapse={() => handleToggleCollapseAfterBar(bar.id)}
-                      />
-                    ))}
-                  </div>
-                )}
               </div>
 
               {/* Verification Footer Banner */}
@@ -3386,7 +3384,7 @@ export default function InteractiveBarBuilder({
               /* Unified Comparative Bar Canvas: Compact live model on top, full-width parameter editor below */
               <div className="p-4 sm:p-5 bg-slate-50/70 border-2 border-slate-200 rounded-2xl space-y-4 w-full">
                 {/* ══ 1. The Live Visual Bars Stack with Side Total Bracket ══ */}
-                <div className="flex items-center gap-2 sm:gap-3 w-full">
+                <div className="flex items-start gap-2 sm:gap-3 w-full">
                   <div className="flex-1 space-y-2">
                 {userBars.map((bar, idx) => (
                   <div key={bar.id} className="transition-all duration-200">
@@ -3533,7 +3531,25 @@ export default function InteractiveBarBuilder({
                       </div>
                     </div>
 
-                                      </div>
+                    {/* ══ Parameter Window directly below this bar! ══ */}
+                    {!bar.isCollapsed && (
+                      <div className="pt-1">
+                        <BarParametersEditor
+                          bar={bar}
+                          barIndex={idx}
+                          entities={entities}
+                          onUpdate={handleUpdateBar}
+                          onToggleDiff={handleToggleDifference}
+                          onAddDiffSegment={handleAddDiffSegment}
+                          onUpdateDiffSegment={handleUpdateDiffSegment}
+                          onRemoveDiffSegment={handleRemoveDiffSegment}
+                          onDelete={handleDeleteBar}
+                          onCollapse={() => handleToggleCollapseBar(bar.id)}
+                        />
+                      </div>
+                    )}
+
+                  </div>
                 ))}
               </div>
 
@@ -3582,27 +3598,6 @@ export default function InteractiveBarBuilder({
                     </div>
                   )}
                 </div>
-
-            {/* ══ 2. Full-Width Responsive Parameter Editors for Expanded Bars ══ */}
-            {userBars.some(b => !b.isCollapsed) && (
-              <div className="space-y-3 pt-3 border-t-2 border-dashed border-slate-200 w-full">
-                {userBars.filter(b => !b.isCollapsed).map((bar) => (
-                  <BarParametersEditor
-                    key={bar.id}
-                    bar={bar}
-                    barIndex={userBars.findIndex(b => b.id === bar.id)}
-                    entities={entities}
-                    onUpdate={handleUpdateBar}
-                    onToggleDiff={handleToggleDifference}
-                    onAddDiffSegment={handleAddDiffSegment}
-                    onUpdateDiffSegment={handleUpdateDiffSegment}
-                    onRemoveDiffSegment={handleRemoveDiffSegment}
-                    onDelete={handleDeleteBar}
-                    onCollapse={() => handleToggleCollapseBar(bar.id)}
-                  />
-                ))}
-              </div>
-            )}
               </div>
             )}
             {target.type === 'BAR' && userBars.length > 0 && (

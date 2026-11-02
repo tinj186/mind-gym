@@ -138,3 +138,4 @@ assert.strictEqual(res5.isValid, true, `Case 5 Comparison model check must pass:
 console.log("✓ Case 5: Standard Comparison check passes for the exact same Before bars!");
 
 console.log("\nAll checkBeforeAfterParameters tests passed successfully!");
+
