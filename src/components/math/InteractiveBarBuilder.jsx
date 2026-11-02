@@ -450,7 +450,31 @@ export function checkBeforeAfterParameters(beforeBars = [], afterBars = [], tran
     if (barGiver && barReceiver) {
       const expDiff = normalizeNumber(actualConfig.newDiff || actualConfig.differenceValue);
 
+      // Check compound transfer representation:
+      // Receiver shows base + transfer amount (+z), and Giver shows shortage bracket (? or newDiff)
+      const isReceiverTransferCompound = barReceiver.hasDifference &&
+        barReceiver.diffType === 'MORE' &&
+        normalizeNumber(barReceiver.diffValue) === normalizeNumber(actualConfig.transferAmount);
+
+      const isGiverShortage = barGiver.hasDifference && barGiver.diffType === 'FEWER';
+
       if (barGiver.hasDifference && barReceiver.hasDifference) {
+        if (isReceiverTransferCompound && isGiverShortage) {
+          // Valid compound representation! Grace has shortage against Mei Ling's resulting total (base + transfer).
+          if (barGiver.diffValue && barGiver.diffValue !== '?') {
+            const actDiff = normalizeNumber(barGiver.diffValue);
+            if (actDiff !== expDiff) {
+              return {
+                isValid: false,
+                defect: 'AFTER_STATE_INCORRECT_DIFF',
+                errorMsg: `The new difference in the After State should be ${Number(expDiff).toLocaleString()}, but got "${barGiver.diffValue}".`,
+                details: { expected: expDiff, actual: actDiff }
+              };
+            }
+          }
+          return { isValid: true, defect: null, errorMsg: null, details: null };
+        }
+
         return {
           isValid: false,
           defect: 'AFTER_STATE_MULTIPLE_DIFFS',
@@ -2350,7 +2374,11 @@ export default function InteractiveBarBuilder({
   ];
   const entities = config.entities || [];
   const target = config.target || { type: "TOTAL", label: "Total" };
-  const calculationSteps = steps.length > 0 ? steps : (config.steps || []);
+  const calculationSteps = (activeModel === 'COMPARISON' && config?.comparisonSteps?.length > 0)
+    ? config.comparisonSteps
+    : (activeModel === 'BEFORE_AFTER' && config?.beforeAfterSteps?.length > 0)
+      ? config.beforeAfterSteps
+      : (steps.length > 0 ? steps : (config.steps || []));
 
   const handleSelectModel = (modelId) => {
     if (disabled) return;

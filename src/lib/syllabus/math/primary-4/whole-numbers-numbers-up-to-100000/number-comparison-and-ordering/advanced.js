@@ -2431,9 +2431,95 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         }
       ];
 
+      const comparisonSteps = [
+        {
+          label: `Write the working equation to find the initial difference between ${nameA} and ${nameB}:`,
+          expectedAnswer: `${initialA} - ${initialB} = ${initialDiff}`,
+          acceptedAnswers: [
+            `${initialA} - ${initialB} = ${initialDiff}`,
+            `${initialA}-${initialB}=${initialDiff}`,
+            `${initialA.toLocaleString()} - ${initialB.toLocaleString()} = ${initialDiff.toLocaleString()}`,
+            `${initialA.toLocaleString()}-${initialB.toLocaleString()}=${initialDiff.toLocaleString()}`,
+            `${initialA} - ${initialB}`,
+            `${initialA}-${initialB}`,
+            `${initialA.toLocaleString()} - ${initialB.toLocaleString()}`,
+            `${initialA.toLocaleString()}-${initialB.toLocaleString()}`,
+            initialDiff.toString(),
+            Number(initialDiff).toLocaleString(),
+            `${initialDiff} ${item}`,
+            `${Number(initialDiff).toLocaleString()} ${item}`
+          ]
+        },
+        {
+          label: `Write the working equation to find the change in difference caused by the transfer:`,
+          expectedAnswer: `${z} * 2 = ${z * 2}`,
+          acceptedAnswers: [
+            `${z} * 2 = ${z * 2}`,
+            `${z}*2=${z * 2}`,
+            `${z} x 2 = ${z * 2}`,
+            `${z}x2=${z * 2}`,
+            `${z} × 2 = ${z * 2}`,
+            `${z}×2=${z * 2}`,
+            `${z} + ${z} = ${z * 2}`,
+            `${z}+${z}=${z * 2}`,
+            `${z.toLocaleString()} * 2 = ${(z * 2).toLocaleString()}`,
+            `${z.toLocaleString()}*2=${(z * 2).toLocaleString()}`,
+            `${z.toLocaleString()} x 2 = ${(z * 2).toLocaleString()}`,
+            `${z.toLocaleString()} + ${z.toLocaleString()} = ${(z * 2).toLocaleString()}`,
+            `${z} * 2`,
+            `${z}*2`,
+            `${z} x 2`,
+            `${z} + ${z}`,
+            `${z}+${z}`,
+            `${z.toLocaleString()} * 2`,
+            `${z.toLocaleString()} + ${z.toLocaleString()}`,
+            (z * 2).toString(),
+            Number(z * 2).toLocaleString(),
+            `${z * 2} ${item}`,
+            `${Number(z * 2).toLocaleString()} ${item}`
+          ]
+        },
+        {
+          label: `Write the working equation to find how many more ${item} ${nameB} has than ${nameA} now:`,
+          expectedAnswer: `${z * 2} - ${initialDiff} = ${newDiff}`,
+          acceptedAnswers: [
+            `${z * 2} - ${initialDiff} = ${newDiff}`,
+            `${z * 2}-${initialDiff}=${newDiff}`,
+            `${(z * 2).toLocaleString()} - ${initialDiff.toLocaleString()} = ${newDiff.toLocaleString()}`,
+            `${(z * 2).toLocaleString()}-${initialDiff.toLocaleString()}=${newDiff.toLocaleString()}`,
+            `${z * 2} - ${initialDiff}`,
+            `${z * 2}-${initialDiff}`,
+            `${(z * 2).toLocaleString()} - ${initialDiff.toLocaleString()}`,
+            `${(z * 2).toLocaleString()}-${initialDiff.toLocaleString()}`,
+            `${newB} - ${newA} = ${newDiff}`,
+            `${newB}-${newA}=${newDiff}`,
+            `${newB.toLocaleString()} - ${newA.toLocaleString()} = ${newDiff.toLocaleString()}`,
+            `${newB.toLocaleString()}-${newA.toLocaleString()}=${newDiff.toLocaleString()}`,
+            `${newB} - ${newA}`,
+            `${newB}-${newA}`,
+            `${newB.toLocaleString()} - ${newA.toLocaleString()}`,
+            newDiff.toString(),
+            Number(newDiff).toLocaleString(),
+            `${newDiff} ${item}`,
+            `${Number(newDiff).toLocaleString()} ${item}`
+          ]
+        },
+        {
+          label: "Final Answer:",
+          expectedAnswer: finalAnswer,
+          acceptedAnswers: [
+            finalAnswer,
+            Number(finalAnswer).toLocaleString(),
+            `${finalAnswer} ${item}`,
+            `${Number(finalAnswer).toLocaleString()} ${item}`
+          ]
+        }
+      ];
+
       inputRequirementStr = JSON.stringify({
         inputType: "INTERACTIVE_BAR_BUILDER",
         steps: steps,
+        alternativeSteps: comparisonSteps,
         barBuilderConfig: {
           problemType: "SHIFTING_DIFFERENCE_TRANSFER",
           transferFrom: nameA,
@@ -2464,7 +2550,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
             { id: "A", name: nameA, value: initialA, displayValue: initialA.toLocaleString(), relativeTo: nameB, relation: "MORE", diffValue: initialDiff, displayDiff: initialDiff.toLocaleString(), actualDiff: initialDiff }
           ],
           target: { type: "DIFFERENCE", label: "New Difference" },
-          steps: steps
+          steps: steps,
+          comparisonSteps: comparisonSteps
         }
       }, null, 2);
     } else {

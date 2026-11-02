@@ -103,11 +103,31 @@ if (irJson.steps.length !== 4) {
   allPassed = false;
 }
 
+console.log("Alternative calculation steps count:", irJson.alternativeSteps?.length);
+if (!irJson.alternativeSteps || irJson.alternativeSteps.length !== 4) {
+  console.error("FAIL: Expected alternativeSteps with 4 steps for comparison model strategy");
+  allPassed = false;
+}
+
+if (!config.comparisonSteps || config.comparisonSteps.length !== 4) {
+  console.error("FAIL: Expected barBuilderConfig.comparisonSteps with 4 steps");
+  allPassed = false;
+}
+
 for (let i = 0; i < irJson.steps.length; i++) {
   const step = irJson.steps[i];
   console.log(`Step ${i + 1}: ${step.label} => Expected: ${step.expectedAnswer}`);
   if (!step.acceptedAnswers || step.acceptedAnswers.length === 0) {
     console.error(`FAIL: Step ${i + 1} has no acceptedAnswers`);
+    allPassed = false;
+  }
+}
+
+for (let i = 0; i < irJson.alternativeSteps.length; i++) {
+  const step = irJson.alternativeSteps[i];
+  console.log(`Alt Step ${i + 1}: ${step.label} => Expected: ${step.expectedAnswer}`);
+  if (!step.acceptedAnswers || step.acceptedAnswers.length === 0) {
+    console.error(`FAIL: Alt Step ${i + 1} has no acceptedAnswers`);
     allPassed = false;
   }
 }
@@ -336,6 +356,33 @@ const check7 = checkBeforeAfterParameters(validBefore, invalidAfterBothDiff, {},
 console.log("Check 7 (Both entities have diff in After state): isValid =", check7.isValid, "defect =", check7.defect);
 if (check7.isValid || check7.defect !== 'AFTER_STATE_MULTIPLE_DIFFS') {
   console.error("FAIL: Should detect AFTER_STATE_MULTIPLE_DIFFS defect!");
+  allPassed = false;
+}
+
+// Test 3h: Compound transfer representation (Receiver = initialB + z, Giver = newA with shortage bracket '?')
+const validAfterCompound = [
+  {
+    name: nameA,
+    value: newA.toString(),
+    length: 42,
+    hasDifference: true,
+    diffType: 'FEWER',
+    diffValue: '?'
+  },
+  {
+    name: nameB,
+    value: initB.toString(),
+    length: 68,
+    hasDifference: true,
+    diffType: 'MORE',
+    diffValue: config.transferAmount.toString(),
+    diffSegments: [{ value: config.transferAmount.toString(), length: 15 }]
+  }
+];
+const check8 = checkBeforeAfterParameters(validBefore, validAfterCompound, {}, config);
+console.log("Check 8 (Compound representation - Receiver base + z, Giver shortage bracket): isValid =", check8.isValid, "defect =", check8.defect);
+if (!check8.isValid) {
+  console.error("FAIL: Compound representation should be valid! Error:", check8.errorMsg);
   allPassed = false;
 }
 

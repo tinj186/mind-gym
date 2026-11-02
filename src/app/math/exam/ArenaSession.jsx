@@ -305,19 +305,52 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
 
       if (inputType === 'MULTI_STEP_INPUT' || inputType === 'INTERACTIVE_BAR_BUILDER') {
         const steps = q.inputRequirement?.steps || [];
+        const altSteps = q.inputRequirement?.alternativeSteps || 
+          q.inputRequirement?.barBuilderConfig?.comparisonSteps || [];
         const studentObj = typeof rawAns === 'object' && rawAns !== null ? rawAns : {};
         
-        // Fast-path strict matching
-        isCorrect = true;
-        for (let i = 0; i < steps.length; i++) {
-          let sAns = cleanString(studentObj[i]);
-          let rAns = cleanString(steps[i].expectedAnswer);
-          const accepted = (steps[i].acceptedAnswers || []).map(a => cleanString(a));
-          if (sAns !== rAns && !accepted.includes(sAns)) {
-            isCorrect = false;
-            break;
+        const checkMatch = (targetSteps) => {
+          if (!targetSteps || targetSteps.length === 0) return false;
+          let allMatch = true;
+          for (let i = 0; i < targetSteps.length; i++) {
+            let sAns = cleanString(studentObj[i]);
+            let rAns = cleanString(targetSteps[i].expectedAnswer);
+            const accepted = (targetSteps[i].acceptedAnswers || []).map(a => cleanString(a));
+            if (sAns !== rAns && !accepted.includes(sAns)) {
+              allMatch = false;
+              break;
+            }
           }
-        }
+          if (allMatch) return true;
+
+          // Permutation check for intermediate steps
+          if (targetSteps.length >= 3) {
+            const finalIndex = targetSteps.length - 1;
+            const studentFinal = cleanString(studentObj[finalIndex]);
+            const expFinal = cleanString(targetSteps[finalIndex].expectedAnswer);
+            const accFinal = targetSteps[finalIndex].acceptedAnswers ? targetSteps[finalIndex].acceptedAnswers.map(a => cleanString(a)) : [];
+            if (studentFinal === expFinal || accFinal.includes(studentFinal)) {
+              if (targetSteps.length === 4) {
+                const s0 = cleanString(studentObj[0]);
+                const s1 = cleanString(studentObj[1]);
+                const s2 = cleanString(studentObj[2]);
+
+                const matchStep = (sVal, stepObj) => {
+                  const exp = cleanString(stepObj.expectedAnswer);
+                  const acc = (stepObj.acceptedAnswers || []).map(a => cleanString(a));
+                  return sVal === exp || acc.includes(sVal);
+                };
+
+                if (matchStep(s0, targetSteps[1]) && matchStep(s1, targetSteps[0]) && matchStep(s2, targetSteps[2])) {
+                  return true;
+                }
+              }
+            }
+          }
+          return false;
+        };
+
+        isCorrect = checkMatch(steps) || checkMatch(altSteps);
         
         // AI Fallback for Multi-Step
         if (!isCorrect && Object.keys(studentObj).length > 0) {
@@ -328,7 +361,9 @@ export default function ArenaSession({ studentId, level, examPaper, durationMinu
               body: JSON.stringify({
                 studentAnswers: studentObj,
                 expectedSteps: steps,
-                questionText: q.question
+                questionText: q.question,
+                level: q.level || level || 'Primary 4',
+                finalAnswer: q.finalAnswer
               })
             });
             if (res.ok) {

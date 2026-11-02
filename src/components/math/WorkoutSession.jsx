@@ -315,17 +315,51 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
     // Handle array of answers from MultiStepInput
     if (typeof submittedAnswer === 'object' && submittedAnswer !== null && !Array.isArray(submittedAnswer)) {
       const steps = normalizedQuestion.inputRequirement?.steps || [];
-      // Fast-path strict matching
-      isCorrect = true;
-      for (let i = 0; i < steps.length; i++) {
-        const studentVal = cleanString(submittedAnswer[i]);
-        const expectedVal = cleanString(steps[i].expectedAnswer);
-        const acceptedVals = steps[i].acceptedAnswers ? steps[i].acceptedAnswers.map(a => cleanString(a)) : [];
-        if (studentVal !== expectedVal && !acceptedVals.includes(studentVal)) {
-          isCorrect = false;
-          break;
+      const altSteps = normalizedQuestion.inputRequirement?.alternativeSteps || 
+        normalizedQuestion.inputRequirement?.barBuilderConfig?.comparisonSteps || [];
+
+      const checkMatch = (targetSteps) => {
+        if (!targetSteps || targetSteps.length === 0) return false;
+        let allMatch = true;
+        for (let i = 0; i < targetSteps.length; i++) {
+          const studentVal = cleanString(submittedAnswer[i]);
+          const expectedVal = cleanString(targetSteps[i].expectedAnswer);
+          const acceptedVals = targetSteps[i].acceptedAnswers ? targetSteps[i].acceptedAnswers.map(a => cleanString(a)) : [];
+          if (studentVal !== expectedVal && !acceptedVals.includes(studentVal)) {
+            allMatch = false;
+            break;
+          }
         }
-      }
+        if (allMatch) return true;
+
+        // Permutation check for intermediate steps (e.g. step 0 and step 1 swapped)
+        if (targetSteps.length >= 3) {
+          const finalIndex = targetSteps.length - 1;
+          const studentFinal = cleanString(submittedAnswer[finalIndex]);
+          const expFinal = cleanString(targetSteps[finalIndex].expectedAnswer);
+          const accFinal = targetSteps[finalIndex].acceptedAnswers ? targetSteps[finalIndex].acceptedAnswers.map(a => cleanString(a)) : [];
+          if (studentFinal === expFinal || accFinal.includes(studentFinal)) {
+            if (targetSteps.length === 4) {
+              const s0 = cleanString(submittedAnswer[0]);
+              const s1 = cleanString(submittedAnswer[1]);
+              const s2 = cleanString(submittedAnswer[2]);
+
+              const matchStep = (sVal, stepObj) => {
+                const exp = cleanString(stepObj.expectedAnswer);
+                const acc = (stepObj.acceptedAnswers || []).map(a => cleanString(a));
+                return sVal === exp || acc.includes(sVal);
+              };
+
+              if (matchStep(s0, targetSteps[1]) && matchStep(s1, targetSteps[0]) && matchStep(s2, targetSteps[2])) {
+                return true;
+              }
+            }
+          }
+        }
+        return false;
+      };
+
+      isCorrect = checkMatch(steps) || checkMatch(altSteps);
 
       // If fast-path fails, call AI multi-step grader
       if (!isCorrect) {
@@ -336,7 +370,9 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
             body: JSON.stringify({
               studentAnswers: submittedAnswer,
               expectedSteps: steps,
-              questionText: normalizedQuestion.question
+              questionText: normalizedQuestion.question,
+              level: normalizedQuestion.level || level || 'Primary 4',
+              finalAnswer: normalizedQuestion.finalAnswer
             })
           });
           if (res.ok) {

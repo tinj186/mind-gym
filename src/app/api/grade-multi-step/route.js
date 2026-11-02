@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getBestModel } from '@/lib/ai-config';
+import { buildMultiStepGradingPrompt } from '@/lib/grading/multiStepGrader';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const AI_TIMEOUT_MS = 10000;
 
 export async function POST(req) {
   try {
-    const { studentAnswers, expectedSteps, questionText } = await req.json();
+    const { studentAnswers, expectedSteps, questionText, level, finalAnswer } = await req.json();
 
     const selectedModelId = getBestModel();
     const model = genAI.getGenerativeModel({ 
@@ -15,19 +16,13 @@ export async function POST(req) {
       generationConfig: { temperature: 0, responseMimeType: "application/json" }
     }, { apiVersion: 'v1beta' });
     
-    const prompt = `You are a strict math grader for Primary 1.
-Question: ${questionText}
-Expected Steps: ${JSON.stringify(expectedSteps)}
-Student Answers: ${JSON.stringify(studentAnswers)}
-
-Evaluate if the student's answers are mathematically valid and arrive at the correct final answer.
-It is OK if the student chose a different valid associative order for addition/subtraction (e.g. adding different numbers first) as long as it logically solves the problem.
-It is OK if they format spaces differently.
-It is NOT OK if they use incorrect numbers or the final answer is wrong.
-IMPORTANT: If the Question explicitly asks to write a fraction or answer "in words", the student MUST provide the answer in text words (e.g., "one half"). If they provide a numeric fraction (e.g., "1/2" or "\\\\frac{1}{2}"), you MUST mark it as incorrect.
-IMPORTANT: If an Expected Step contains a currency symbol ('$' or '¢'), the student's corresponding answer MUST also contain that exact symbol. If the symbol is missing, you MUST mark it as incorrect.
-
-Return ONLY a JSON object: { "isCorrect": true/false }`;
+    const prompt = buildMultiStepGradingPrompt({
+      level: level || 'Primary 4',
+      questionText,
+      expectedSteps,
+      studentAnswers,
+      finalAnswer
+    });
 
     const aiResult = await Promise.race([
       model.generateContent(prompt),
@@ -35,7 +30,7 @@ Return ONLY a JSON object: { "isCorrect": true/false }`;
     ]);
 
     const result = JSON.parse(aiResult.response.text().match(/\{[\s\S]*\}/)[0]);
-    return NextResponse.json({ isCorrect: result.isCorrect });
+    return NextResponse.json({ isCorrect: result.isCorrect, reason: result.reason });
   } catch (error) {
     console.error("Multi-step grading failed:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
