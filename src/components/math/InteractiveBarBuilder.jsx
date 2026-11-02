@@ -19,12 +19,12 @@ const CurlyBracket = () => (
 export function ShortageGapBracket({ cleanDiff, isBottom = true, isCompact = false }) {
   return isBottom ? (
     <>
-      {/* Top Bracket: Horizontal line with end ticks and center DOWNWARD arrow pointing towards the label */}
-      <div className="relative z-10 w-full pt-0.5 px-0.5">
+      {/* Top Bracket: 2 side ticks extend from top down to horizontal line, center arrow points DOWN towards label */}
+      <div className={`relative z-10 w-full ${isCompact ? 'pt-1' : 'pt-1.5'} px-0.5`}>
         <div className="w-full border-t-2 border-rose-500 relative">
-          <div className="absolute left-0 top-0 w-0.5 h-1.5 bg-rose-500" />
-          <div className="absolute right-0 top-0 w-0.5 h-1.5 bg-rose-500" />
-          <div className="absolute left-1/2 -translate-x-1/2 top-0 w-0 h-0 border-x-[5px] border-x-transparent border-t-[6px] border-t-rose-500" />
+          <div className={`absolute left-0 ${isCompact ? '-top-1 h-1' : '-top-1.5 h-1.5'} w-0.5 bg-rose-500`} />
+          <div className={`absolute right-0 ${isCompact ? '-top-1 h-1' : '-top-1.5 h-1.5'} w-0.5 bg-rose-500`} />
+          <div className={`absolute left-1/2 -translate-x-1/2 top-0 w-0 h-0 border-x-[5px] border-x-transparent ${isCompact ? 'border-t-[5px]' : 'border-t-[6px]'} border-t-rose-500`} />
         </div>
       </div>
 
@@ -44,12 +44,12 @@ export function ShortageGapBracket({ cleanDiff, isBottom = true, isCompact = fal
         </span>
       </div>
 
-      {/* Bottom Bracket: Horizontal line with end ticks and center UPWARD arrow pointing towards the label */}
-      <div className="relative z-10 w-full pb-0.5 px-0.5">
+      {/* Bottom Bracket: 2 side ticks extend from bottom up to horizontal line, center arrow points UP towards label */}
+      <div className={`relative z-10 w-full ${isCompact ? 'pb-1' : 'pb-1.5'} px-0.5`}>
         <div className="w-full border-b-2 border-rose-500 relative">
-          <div className="absolute left-0 bottom-0 w-0.5 h-1.5 bg-rose-500" />
-          <div className="absolute right-0 bottom-0 w-0.5 h-1.5 bg-rose-500" />
-          <div className="absolute left-1/2 -translate-x-1/2 bottom-0 w-0 h-0 border-x-[5px] border-x-transparent border-b-[6px] border-b-rose-500" />
+          <div className={`absolute left-0 ${isCompact ? '-bottom-1 h-1' : '-bottom-1.5 h-1.5'} w-0.5 bg-rose-500`} />
+          <div className={`absolute right-0 ${isCompact ? '-bottom-1 h-1' : '-bottom-1.5 h-1.5'} w-0.5 bg-rose-500`} />
+          <div className={`absolute left-1/2 -translate-x-1/2 bottom-0 w-0 h-0 border-x-[5px] border-x-transparent ${isCompact ? 'border-b-[5px]' : 'border-b-[6px]'} border-b-rose-500`} />
         </div>
       </div>
     </>
