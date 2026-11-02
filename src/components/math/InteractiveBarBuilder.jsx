@@ -796,12 +796,22 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
     (Array.isArray(config?.correctModelType) && config?.correctModelType[0] === 'BEFORE_AFTER');
 
   if (isBeforeAfterModel) {
-    const nameA = config.transferFrom || config.entities?.[0]?.name || 'Entity A';
-    const nameB = config.transferTo || config.entities?.[1]?.name || 'Entity B';
-    const largerVal = config.largerValue || config.entities?.find(e => normalizeName(e.name) === normalizeName(nameA))?.value;
-    const smallerVal = config.smallerValue || config.entities?.find(e => normalizeName(e.name) === normalizeName(nameB))?.value;
-    const diffVal = config.differenceValue || config.difference?.value;
-    const transferVal = config.transferAmount || config.transfer?.value;
+    // Robustly resolve the Giver / Entity with MORE (nameA) vs Receiver / Entity with BASE (nameB)
+    const entityMore = config.entities?.find(e => e.relation === 'MORE') ||
+                       config.entities?.find(e => e.diffValue || e.actualDiff || e.displayDiff);
+    const entityBase = config.entities?.find(e => e.relation === 'BASE') ||
+                       config.entities?.find(e => e !== entityMore);
+
+    const nameA = config.transferFrom || entityMore?.name || config.entities?.[0]?.name || 'Entity A';
+    const nameB = config.transferTo || entityBase?.name || config.entities?.[1]?.name || 'Entity B';
+
+    const giverEntity = config.entities?.find(e => normalizeName(e.name) === normalizeName(nameA)) || entityMore;
+    const receiverEntity = config.entities?.find(e => normalizeName(e.name) === normalizeName(nameB)) || entityBase;
+
+    const largerVal = config.largerValue || giverEntity?.value;
+    const smallerVal = config.smallerValue || receiverEntity?.value;
+    const diffVal = config.differenceValue || config.difference?.value || giverEntity?.actualDiff;
+    const transferVal = config.transferAmount || config.transfer?.value || (giverEntity?.actualDiff ? Number(giverEntity.actualDiff) / 2 : undefined);
     const equalVal = config.equalizedValue;
 
     const diffDisplay = (diffVal && diffVal !== '?' && !isNaN(Number(diffVal))) 
@@ -815,10 +825,10 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
       : (config.displayEqualized || '1 unit');
     const largerDisplay = (largerVal && largerVal !== '?' && !isNaN(Number(largerVal))) 
       ? Number(largerVal).toLocaleString() 
-      : (config.entities?.[0]?.displayValue || '');
+      : (giverEntity?.displayValue || '');
     const smallerDisplay = (smallerVal && smallerVal !== '?' && !isNaN(Number(smallerVal))) 
       ? Number(smallerVal).toLocaleString() 
-      : (config.entities?.[1]?.displayValue || '');
+      : (receiverEntity?.displayValue || '');
 
     return (
       <div className="bg-emerald-50/70 border-2 border-emerald-300 rounded-3xl p-5 sm:p-6 space-y-4 shadow-sm animate-in fade-in duration-200">
@@ -1928,12 +1938,21 @@ export default function InteractiveBarBuilder({
   };
 
   const handleAutoFillBeforeAfter = () => {
-    const nameA = config.transferFrom || config.entities?.[0]?.name || 'Entity A';
-    const nameB = config.transferTo || config.entities?.[1]?.name || 'Entity B';
-    const largerVal = config.largerValue || config.entities?.find(e => normalizeName(e.name) === normalizeName(nameA))?.value || '';
-    const smallerVal = config.smallerValue || config.entities?.find(e => normalizeName(e.name) === normalizeName(nameB))?.value || '';
-    const diffVal = config.differenceValue || config.difference?.value || '';
-    const transferVal = config.transferAmount || '';
+    const entityMore = config.entities?.find(e => e.relation === 'MORE') ||
+                       config.entities?.find(e => e.diffValue || e.actualDiff || e.displayDiff);
+    const entityBase = config.entities?.find(e => e.relation === 'BASE') ||
+                       config.entities?.find(e => e !== entityMore);
+
+    const nameA = config.transferFrom || entityMore?.name || config.entities?.[0]?.name || 'Entity A';
+    const nameB = config.transferTo || entityBase?.name || config.entities?.[1]?.name || 'Entity B';
+
+    const giverEntity = config.entities?.find(e => normalizeName(e.name) === normalizeName(nameA)) || entityMore;
+    const receiverEntity = config.entities?.find(e => normalizeName(e.name) === normalizeName(nameB)) || entityBase;
+
+    const largerVal = config.largerValue || giverEntity?.value || '';
+    const smallerVal = config.smallerValue || receiverEntity?.value || '';
+    const diffVal = config.differenceValue || config.difference?.value || giverEntity?.actualDiff || '';
+    const transferVal = config.transferAmount || (giverEntity?.actualDiff ? Number(giverEntity.actualDiff) / 2 : '');
     const equalVal = config.equalizedValue || '';
 
     const diffSegments = (transferVal && !isNaN(Number(transferVal)))
@@ -2007,8 +2026,14 @@ export default function InteractiveBarBuilder({
 
   const handleResetBeforeAfter = () => {
     if (disabled) return;
-    const nameA = config.transferFrom || config.entities?.[0]?.name || 'Entity A';
-    const nameB = config.transferTo || config.entities?.[1]?.name || 'Entity B';
+    const entityMore = config.entities?.find(e => e.relation === 'MORE') ||
+                       config.entities?.find(e => e.diffValue || e.actualDiff || e.displayDiff);
+    const entityBase = config.entities?.find(e => e.relation === 'BASE') ||
+                       config.entities?.find(e => e !== entityMore);
+
+    const nameA = config.transferFrom || entityMore?.name || config.entities?.[0]?.name || 'Entity A';
+    const nameB = config.transferTo || entityBase?.name || config.entities?.[1]?.name || 'Entity B';
+
     setUserBeforeBars([
       { id: 'before-1', name: nameA, value: '', length: 65, hasDifference: true, diffType: 'MORE', diffValue: '', isCollapsed: false },
       { id: 'before-2', name: nameB, value: '', length: 42, hasDifference: false, diffType: 'MORE', diffValue: '', isCollapsed: false }
