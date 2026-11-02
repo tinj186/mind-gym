@@ -13,6 +13,50 @@ const CurlyBracket = () => (
 );
 
 /**
+ * Shortage Difference Bracket with Directional Arrow
+ * Bracket arrow points away from the bar it is comparing to, towards the label.
+ */
+export function ShortageGapBracket({ cleanDiff, isBottom = true, isCompact = false }) {
+  return isBottom ? (
+    <>
+      {/* Top Bracket: Horizontal line with end ticks and center DOWNWARD arrow pointing towards the label */}
+      <div className="relative z-10 w-full pt-0.5 px-0.5">
+        <div className="w-full border-t-2 border-rose-500 relative">
+          <div className="absolute left-0 top-0 w-0.5 h-1.5 bg-rose-500" />
+          <div className="absolute right-0 top-0 w-0.5 h-1.5 bg-rose-500" />
+          <div className="absolute left-1/2 -translate-x-1/2 top-0 w-0 h-0 border-x-[5px] border-x-transparent border-t-[6px] border-t-rose-500" />
+        </div>
+      </div>
+
+      {/* Label Badge below arrow */}
+      <div className="relative z-10 flex-1 flex items-center justify-center">
+        <span className={`${isCompact ? 'text-[10px] px-1.5' : 'text-[11px] px-1.5'} font-black text-rose-700 font-mono tracking-tight py-0.2 bg-white/95 rounded border border-rose-200 shadow-2xs truncate max-w-full`}>
+          {cleanDiff || "Diff"}
+        </span>
+      </div>
+    </>
+  ) : (
+    <>
+      {/* Label Badge above arrow */}
+      <div className="relative z-10 flex-1 flex items-center justify-center">
+        <span className={`${isCompact ? 'text-[10px] px-1.5' : 'text-[11px] px-1.5'} font-black text-rose-700 font-mono tracking-tight py-0.2 bg-white/95 rounded border border-rose-200 shadow-2xs truncate max-w-full`}>
+          {cleanDiff || "Diff"}
+        </span>
+      </div>
+
+      {/* Bottom Bracket: Horizontal line with end ticks and center UPWARD arrow pointing towards the label */}
+      <div className="relative z-10 w-full pb-0.5 px-0.5">
+        <div className="w-full border-b-2 border-rose-500 relative">
+          <div className="absolute left-0 bottom-0 w-0.5 h-1.5 bg-rose-500" />
+          <div className="absolute right-0 bottom-0 w-0.5 h-1.5 bg-rose-500" />
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-0 w-0 h-0 border-x-[5px] border-x-transparent border-b-[6px] border-b-rose-500" />
+        </div>
+      </div>
+    </>
+  );
+}
+
+/**
  * Miniature Preview Diagrams for each Bar Model Archetype
  */
 function ComparisonPreview() {
@@ -1020,7 +1064,7 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
                         </div>
                       )}
 
-                      {/* FEWER: Shortage gap with bottom bracket and unsigned diff */}
+                      {/* FEWER: Shortage gap with directional bracket and unsigned diff */}
                       {isFewer && (
                         <div
                           style={{ width: '16%' }}
@@ -1033,19 +1077,9 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
                           </div>
 
                           {/* Guide floor */}
-                          <div className="absolute inset-0 bg-rose-50/20 border-b border-dashed border-rose-200 rounded-lg pointer-events-none" />
+                          <div className="absolute inset-0 bg-rose-50/20 border border-dashed border-rose-200/50 rounded-lg pointer-events-none" />
 
-                          {/* Unsigned Number */}
-                          <div className="relative z-10 flex-1 flex items-center justify-center">
-                            <span className="text-[11px] font-black text-rose-700 font-mono tracking-tight px-1.5 py-0.2 bg-white rounded border border-rose-200 shadow-2xs truncate">
-                              {cleanDiffNum}
-                            </span>
-                          </div>
-
-                          {/* Bottom Bracket */}
-                          <div className="relative z-10 w-full h-2 border-x-2 border-b-2 border-rose-500 rounded-b-md">
-                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0 border-x-3 border-x-transparent border-t-3 border-t-rose-500" />
-                          </div>
+                          <ShortageGapBracket cleanDiff={cleanDiffNum} isBottom={idx > 0} />
                         </div>
                       )}
                     </div>
@@ -1173,14 +1207,8 @@ export function CompactBarCanvas({
                               <span className="absolute -top-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
                               <span className="absolute -bottom-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
                             </div>
-                            <div className={`absolute inset-0 bg-rose-50/20 rounded pointer-events-none ${
-                              isBottom ? 'border-b border-dashed border-rose-200' : 'border-t border-dashed border-rose-200'
-                            }`} />
-                            <div className="relative z-10 flex-1 flex items-center justify-center">
-                              <span className="text-[10px] font-black text-rose-700 font-mono tracking-tight px-1.5 py-0.2 bg-white rounded border border-rose-200 shadow-2xs">
-                                {cleanDiff || "Diff"}
-                              </span>
-                            </div>
+                            <div className="absolute inset-0 bg-rose-50/20 rounded pointer-events-none border border-dashed border-rose-200/50" />
+                            <ShortageGapBracket cleanDiff={cleanDiff} isBottom={isBottom} isCompact={true} />
                           </div>
                         ) : (
                           (() => {
@@ -1349,7 +1377,7 @@ export function CompactBarCanvas({
         <div className="flex items-center gap-2 min-w-max">
           <div className="flex-1 space-y-2 min-w-[240px]">
             {bars.map((bar, idx) => {
-              const isBottom = (bar.bracketPosition || 'bottom') === 'bottom';
+              const isBottom = (bar.bracketPosition || (idx > 0 ? 'bottom' : 'top')) === 'bottom';
               const cleanDiff = (bar.diffValue || "").replace(/[+\-]/g, '').trim();
 
               return (
@@ -1379,25 +1407,8 @@ export function CompactBarCanvas({
                             <div className={`absolute right-0 w-0 border-r-2 border-dotted border-rose-400 pointer-events-none z-10 ${
                               isBottom ? '-top-5 bottom-0' : 'top-0 -bottom-5'
                             }`} />
-                            {isBottom ? (
-                              <>
-                                <div className="relative z-10 flex-1 flex items-center justify-center">
-                                  <span className="text-[10px] font-black text-rose-700 font-mono tracking-tight px-1 py-0.2 bg-white rounded border border-rose-200">
-                                    {cleanDiff}
-                                  </span>
-                                </div>
-                                <div className="relative z-10 w-full h-1.5 border-x-2 border-b-2 border-rose-500 rounded-b-sm" />
-                              </>
-                            ) : (
-                              <>
-                                <div className="relative z-10 w-full h-1.5 border-x-2 border-t-2 border-rose-500 rounded-t-sm" />
-                                <div className="relative z-10 flex-1 flex items-center justify-center">
-                                  <span className="text-[10px] font-black text-rose-700 font-mono tracking-tight px-1 py-0.2 bg-white rounded border border-rose-200">
-                                    {cleanDiff}
-                                  </span>
-                                </div>
-                              </>
-                            )}
+                            <div className="absolute inset-0 bg-rose-50/20 rounded pointer-events-none border border-dashed border-rose-200/50" />
+                            <ShortageGapBracket cleanDiff={cleanDiff} isBottom={isBottom} isCompact={true} />
                           </div>
                         ) : (
                           (() => {
@@ -2861,14 +2872,8 @@ export default function InteractiveBarBuilder({
                                             <span className="absolute -top-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
                                             <span className="absolute -bottom-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
                                           </div>
-                                          <div className={`absolute inset-0 bg-rose-50/20 rounded-lg pointer-events-none ${
-                                            isBottomBracket ? 'border-b border-dashed border-rose-200' : 'border-t border-dashed border-rose-200'
-                                          }`} />
-                                          <div className="relative z-10 flex-1 flex items-center justify-center">
-                                            <span className="text-[11px] font-black text-rose-700 font-mono tracking-tight px-1.5 py-0.2 bg-white/95 rounded border border-rose-200 shadow-2xs truncate max-w-full">
-                                              {cleanDiffNum || "Diff"}
-                                            </span>
-                                          </div>
+                                          <div className="absolute inset-0 bg-rose-50/20 rounded-lg pointer-events-none border border-dashed border-rose-200/50" />
+                                          <ShortageGapBracket cleanDiff={cleanDiffNum} isBottom={isBottomBracket} />
                                         </div>
                                       );
                                     })()
@@ -3566,39 +3571,9 @@ export default function InteractiveBarBuilder({
                                       </div>
 
                                       {/* Subtle open gap floor/ceiling guide */}
-                                      <div className={`absolute inset-0 bg-rose-50/20 rounded-lg pointer-events-none ${
-                                        isBottomBracket ? 'border-b border-dashed border-rose-200' : 'border-t border-dashed border-rose-200'
-                                      }`} />
+                                      <div className="absolute inset-0 bg-rose-50/20 rounded-lg pointer-events-none border border-dashed border-rose-200/50" />
 
-                                      {isBottomBracket ? (
-                                        <>
-                                          {/* Unsigned Number (strictly numeric, no + or - sign) above bottom bracket */}
-                                          <div className="relative z-10 flex-1 flex items-center justify-center">
-                                            <span className="text-[11px] font-black text-rose-700 font-mono tracking-tight px-1.5 py-0.2 bg-white/95 rounded border border-rose-200 shadow-2xs truncate max-w-full">
-                                              {cleanDiffNum || "5,000"}
-                                            </span>
-                                          </div>
-
-                                          {/* Bottom Bracket: Horizontal line at bottom with upward ticks on left and right, and center downward cusp */}
-                                          <div className="relative z-10 w-full h-2 border-x-2 border-b-2 border-rose-500 rounded-b-md">
-                                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0 border-x-3 border-x-transparent border-t-3 border-t-rose-500" />
-                                          </div>
-                                        </>
-                                      ) : (
-                                        <>
-                                          {/* Top Bracket: Horizontal line at top with downward ticks on left and right, and center upward cusp */}
-                                          <div className="relative z-10 w-full h-2 border-x-2 border-t-2 border-rose-500 rounded-t-md">
-                                            <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-0 h-0 border-x-3 border-x-transparent border-b-3 border-b-rose-500" />
-                                          </div>
-
-                                          {/* Unsigned Number (strictly numeric, no + or - sign) below top bracket */}
-                                          <div className="relative z-10 flex-1 flex items-center justify-center">
-                                            <span className="text-[11px] font-black text-rose-700 font-mono tracking-tight px-1.5 py-0.2 bg-white/95 rounded border border-rose-200 shadow-2xs truncate max-w-full">
-                                              {cleanDiffNum || "5,000"}
-                                            </span>
-                                          </div>
-                                        </>
-                                      )}
+                                      <ShortageGapBracket cleanDiff={cleanDiffNum} isBottom={isBottomBracket} />
                                     </div>
                                   );
                                 })()
