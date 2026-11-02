@@ -2026,23 +2026,9 @@ export default function InteractiveBarBuilder({
 
   const handleResetBeforeAfter = () => {
     if (disabled) return;
-    const entityMore = config.entities?.find(e => e.relation === 'MORE') ||
-                       config.entities?.find(e => e.diffValue || e.actualDiff || e.displayDiff);
-    const entityBase = config.entities?.find(e => e.relation === 'BASE') ||
-                       config.entities?.find(e => e !== entityMore);
-
-    const nameA = config.transferFrom || entityMore?.name || config.entities?.[0]?.name || 'Entity A';
-    const nameB = config.transferTo || entityBase?.name || config.entities?.[1]?.name || 'Entity B';
-
-    setUserBeforeBars([
-      { id: 'before-1', name: nameA, value: '', length: 65, hasDifference: true, diffType: 'MORE', diffValue: '', isCollapsed: false },
-      { id: 'before-2', name: nameB, value: '', length: 42, hasDifference: false, diffType: 'MORE', diffValue: '', isCollapsed: false }
-    ]);
-    setUserTransfer({ giver: nameA, receiver: nameB, amount: '' });
-    setUserAfterBars([
-      { id: 'after-1', name: `${nameA} (In the end)`, value: '1 unit', length: 50, hasDifference: false, diffType: 'MORE', diffValue: '', isCollapsed: false },
-      { id: 'after-2', name: `${nameB} (In the end)`, value: '1 unit', length: 50, hasDifference: false, diffType: 'MORE', diffValue: '', isCollapsed: false }
-    ]);
+    setUserBeforeBars([]);
+    setUserAfterBars([]);
+    setUserTransfer({ giver: '', receiver: '', amount: '' });
     setStage2Status('idle');
     setStage2ErrorMsg(null);
   };
@@ -2159,7 +2145,7 @@ export default function InteractiveBarBuilder({
       id: `after-bar-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
       name: "",
       length: 50,
-      value: "1 unit",
+      value: "",
       hasDifference: false,
       diffType: 'MORE',
       diffLength: 20,
@@ -2239,24 +2225,6 @@ export default function InteractiveBarBuilder({
 
   const handleProceedToStage2 = () => {
     if (isModelMatch || isAdminReview) {
-      if (isBeforeAfter && userBeforeBars.length === 0) {
-        handleAutoFillBeforeAfter();
-      } else if (isPartWhole && userParts.length === 0) {
-        const initialParts = (config.parts || []).map((p, idx) => ({
-          id: `part-${idx + 1}`,
-          name: '',
-          value: '',
-          length: Math.round(100 / (config.parts?.length || 3)),
-          isShortfall: !!p.isShortfall
-        }));
-        setUserParts(initialParts.length > 0 ? initialParts : [
-          { id: 'part-1', name: '', value: '', length: 35, isShortfall: false },
-          { id: 'part-2', name: '', value: '', length: 35, isShortfall: false },
-          { id: 'part-3', name: '', value: '', length: 30, isShortfall: true }
-        ]);
-      } else if (!isPartWhole && !isBeforeAfter && userBars.length === 0) {
-        handleAutoFillBars();
-      }
       setCurrentStage(2);
     }
   };
@@ -2565,17 +2533,10 @@ export default function InteractiveBarBuilder({
     setCurrentStage(3);
   };
 
+  // Blank canvas by default - student builds up the model from scratch
   useEffect(() => {
-    if (isAdminReview || initialStage >= 2) {
-      if (isBeforeAfter && userBeforeBars.length === 0) {
-        handleAutoFillBeforeAfter();
-      } else if (isPartWhole && userParts.length === 0) {
-        handleAutoFillParts();
-      } else if (!isPartWhole && !isBeforeAfter && userBars.length === 0) {
-        handleAutoFillBars();
-      }
-    }
-  }, [isAdminReview, initialStage, isBeforeAfter, isPartWhole]);
+    // Keep user bars blank on load so students construct them
+  }, []);
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300">
@@ -2601,15 +2562,6 @@ export default function InteractiveBarBuilder({
               type="button"
               onClick={() => {
                 if (isAdminReview || isModelMatch) {
-                  if (stageNum === 2) {
-                    if (isBeforeAfter && userBeforeBars.length === 0) {
-                      handleAutoFillBeforeAfter();
-                    } else if (isPartWhole && userParts.length === 0) {
-                      handleAutoFillParts();
-                    } else if (!isPartWhole && !isBeforeAfter && userBars.length === 0) {
-                      handleAutoFillBars();
-                    }
-                  }
                   setCurrentStage(stageNum);
                 }
               }}
@@ -2801,10 +2753,23 @@ export default function InteractiveBarBuilder({
                 </div>
 
                 {/* Live Canvas Preview for Before State */}
-                <div className="space-y-3">
-                  {userBeforeBars.map((bar, idx) => {
-                    return (
-                      <div key={bar.id} className="transition-all duration-200 space-y-2">
+                {userBeforeBars.length === 0 ? (
+                  <div className="py-8 flex flex-col items-center justify-center text-center space-y-2 border-2 border-dashed border-slate-200 rounded-2xl bg-white/60">
+                    <p className="text-xs font-bold text-slate-500">No bars added to Before State (At First) yet.</p>
+                    <button
+                      type="button"
+                      onClick={handleAddBeforeBar}
+                      className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Build First Bar
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {userBeforeBars.map((bar, idx) => {
+                      return (
+                        <div key={bar.id} className="transition-all duration-200 space-y-2">
                         <div className="flex items-center gap-2 sm:gap-3">
                           {/* Entity Name */}
                           <div className="w-20 sm:w-24 text-right shrink-0">
@@ -2933,33 +2898,47 @@ export default function InteractiveBarBuilder({
                     );
                   })}
                 </div>
+              )}
+            </div>
+
+            {/* ══════════════════════════════════════════════════════════════
+                Section 2: AFTER STATE (In the End)
+               ══════════════════════════════════════════════════════════════ */}
+            <div className="p-4 sm:p-5 bg-slate-50/70 border-2 border-slate-200 rounded-2xl space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                  <span className="w-5 h-5 rounded-md bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold">2</span>
+                  After State (In the End)
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold text-emerald-700 hidden sm:inline">
+                    Resulting Quantities Aligned to Baseline
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleAddAfterBar}
+                    className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-black text-[11px] uppercase tracking-wider flex items-center gap-1 shadow-xs transition-all cursor-pointer"
+                  >
+                    <Plus className="w-3 h-3" />
+                    Add Bar
+                  </button>
+                </div>
               </div>
 
-              {/* ══════════════════════════════════════════════════════════════
-                  Section 2: AFTER STATE (In the End)
-                 ══════════════════════════════════════════════════════════════ */}
-              <div className="p-4 sm:p-5 bg-slate-50/70 border-2 border-slate-200 rounded-2xl space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-black uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-                    <span className="w-5 h-5 rounded-md bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold">2</span>
-                    After State (In the End)
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-bold text-emerald-700 hidden sm:inline">
-                      Resulting Quantities Aligned to Baseline
-                    </span>
-                    <button
-                      type="button"
-                      onClick={handleAddAfterBar}
-                      className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-black text-[11px] uppercase tracking-wider flex items-center gap-1 shadow-xs transition-all cursor-pointer"
-                    >
-                      <Plus className="w-3 h-3" />
-                      Add Bar
-                    </button>
-                  </div>
+              {/* Live Canvas Preview for After State */}
+              {userAfterBars.length === 0 ? (
+                <div className="py-8 flex flex-col items-center justify-center text-center space-y-2 border-2 border-dashed border-slate-200 rounded-2xl bg-white/60">
+                  <p className="text-xs font-bold text-slate-500">No bars added to After State (In the End) yet.</p>
+                  <button
+                    type="button"
+                    onClick={handleAddAfterBar}
+                    className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Build First Bar
+                  </button>
                 </div>
-
-                {/* Live Canvas Preview for After State */}
+              ) : (
                 <div className="space-y-3">
                   {userAfterBars.map((bar, idx) => (
                     <div key={bar.id} className="transition-all duration-200 space-y-2">
@@ -2980,7 +2959,7 @@ export default function InteractiveBarBuilder({
                                 style={{ width: `${bar.length || 50}%` }} 
                                 className="h-full rounded-lg flex items-center justify-center text-xs font-black text-white shadow-xs transition-all duration-150 px-2 truncate shrink-0 bg-emerald-600"
                               >
-                                {bar.value || "1 unit"}
+                                {bar.value || ""}
                               </div>
 
                               {/* Difference Segment (if student configured diff in After) */}
@@ -3035,7 +3014,8 @@ export default function InteractiveBarBuilder({
                     </div>
                   ))}
                 </div>
-              </div>
+              )}
+            </div>
 
               {/* Verification Footer Banner */}
               <div className="pt-2">
