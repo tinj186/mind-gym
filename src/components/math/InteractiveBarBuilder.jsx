@@ -448,11 +448,22 @@ export function checkBeforeAfterParameters(beforeBars = [], afterBars = [], tran
     const barReceiver = rawAfter.find(a => normalizeName(a.name).includes(normalizeName(receiverName)));
 
     if (barGiver && barReceiver) {
+      const expDiff = normalizeNumber(actualConfig.newDiff || actualConfig.differenceValue);
+
+      if (barGiver.hasDifference && barReceiver.hasDifference) {
+        return {
+          isValid: false,
+          defect: 'AFTER_STATE_MULTIPLE_DIFFS',
+          errorMsg: `Please attach the comparison difference to only one entity (either MORE on "${barReceiver.name}" or FEWER on "${barGiver.name}").`,
+          details: null
+        };
+      }
+
       if (barGiver.hasDifference && barGiver.diffType === 'MORE') {
         return {
           isValid: false,
           defect: 'AFTER_STATE_WRONG_WINNER',
-          errorMsg: `After the transfer, "${barReceiver.name}" has more than "${barGiver.name}". Add the difference segment to "${barReceiver.name}" instead.`,
+          errorMsg: `After the transfer, "${barReceiver.name}" has more than "${barGiver.name}". Add the difference segment to "${barReceiver.name}" instead, or mark "${barGiver.name}" with FEWER (- shortage bracket).`,
           details: { entity: barGiver.name }
         };
       }
@@ -466,28 +477,45 @@ export function checkBeforeAfterParameters(beforeBars = [], afterBars = [], tran
         };
       }
 
+      // If receiver has difference segment (MORE)
+      if (barReceiver.hasDifference && barReceiver.diffType === 'MORE') {
+        if (barReceiver.diffValue && barReceiver.diffValue !== '?') {
+          const actDiff = normalizeNumber(barReceiver.diffValue);
+          if (actDiff !== expDiff) {
+            return {
+              isValid: false,
+              defect: 'AFTER_STATE_INCORRECT_DIFF',
+              errorMsg: `The new difference in the After State should be ${Number(expDiff).toLocaleString()}, but got "${barReceiver.diffValue}".`,
+              details: { expected: expDiff, actual: actDiff }
+            };
+          }
+        }
+      }
+
+      // If giver has difference segment (FEWER)
+      if (barGiver.hasDifference && barGiver.diffType === 'FEWER') {
+        if (barGiver.diffValue && barGiver.diffValue !== '?') {
+          const actDiff = normalizeNumber(barGiver.diffValue);
+          if (actDiff !== expDiff) {
+            return {
+              isValid: false,
+              defect: 'AFTER_STATE_INCORRECT_DIFF',
+              errorMsg: `The new difference in the After State should be ${Number(expDiff).toLocaleString()}, but got "${barGiver.diffValue}".`,
+              details: { expected: expDiff, actual: actDiff }
+            };
+          }
+        }
+      }
+
       const giverLen = Number(barGiver.length) || 50;
       const receiverLen = Number(barReceiver.length) || 50;
-      if (giverLen > receiverLen + 15 && (!barReceiver.hasDifference || barReceiver.diffType !== 'MORE')) {
+      if (giverLen > receiverLen + 15 && (!barReceiver.hasDifference || barReceiver.diffType !== 'MORE') && (!barGiver.hasDifference || barGiver.diffType !== 'FEWER')) {
         return {
           isValid: false,
           defect: 'AFTER_STATE_WRONG_LENGTH',
           errorMsg: `After the transfer, "${barReceiver.name}" has more than "${barGiver.name}". Adjust "${barReceiver.name}"'s bar to be longer.`,
           details: { giverLen, receiverLen }
         };
-      }
-
-      if (barReceiver.hasDifference && barReceiver.diffValue && barReceiver.diffValue !== '?') {
-        const actDiff = normalizeNumber(barReceiver.diffValue);
-        const expDiff = normalizeNumber(actualConfig.newDiff || actualConfig.differenceValue);
-        if (actDiff !== expDiff) {
-          return {
-            isValid: false,
-            defect: 'AFTER_STATE_INCORRECT_DIFF',
-            errorMsg: `The new difference in the After State should be ${Number(expDiff).toLocaleString()}, but got "${barReceiver.diffValue}".`,
-            details: { expected: expDiff, actual: actDiff }
-          };
-        }
       }
     }
   }
@@ -1496,34 +1524,98 @@ export function CompactBarCanvas({
         </div>
 
         {/* 2. After State Box */}
-        <div className="p-3 bg-white rounded-2xl border border-slate-200 space-y-2">
+        <div className="p-3 bg-white rounded-2xl border border-slate-200 space-y-2 overflow-visible">
           <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 block">
             2. After State (In the End)
           </span>
           <div className="space-y-2">
-            {afterBars.map((bar, idx) => (
-              <div key={bar.id || idx} className="flex items-center gap-2">
-                <span className="w-20 text-right text-xs font-black text-slate-800 truncate">{bar.name}</span>
-                <div className="flex-1 pl-2.5 border-l-4 border-emerald-500 border-dashed py-0.5">
-                  <div className="flex items-center h-9 bg-slate-50 rounded-lg p-0.5 border border-slate-200 overflow-visible relative">
-                    <div
-                      style={{ width: `${bar.length || 50}%` }}
-                      className="h-full bg-emerald-600 rounded-md flex items-center justify-center text-xs font-black text-white px-2 truncate shrink-0"
-                    >
-                      {bar.value || ""}
-                    </div>
-                    {bar.hasDifference && (
+            {afterBars.map((bar, idx) => {
+              const cleanDiff = (bar.diffValue || "").replace(/[+\-]/g, '').trim();
+              const isBottom = (bar.bracketPosition || (idx > 0 ? 'bottom' : 'top')) === 'bottom';
+              return (
+                <div key={bar.id || idx} className="flex items-center gap-2">
+                  <span className="w-20 text-right text-xs font-black text-slate-800 truncate">{bar.name}</span>
+                  <div className="flex-1 pl-2.5 border-l-4 border-emerald-500 border-dashed py-0.5">
+                    <div className="flex items-center h-9 bg-slate-50 rounded-lg p-0.5 border border-slate-200 overflow-visible relative">
                       <div
-                        style={{ width: `${bar.diffLength || 20}%` }}
-                        className="h-full rounded-md ml-1 px-1.5 flex items-center justify-center text-xs font-black border border-dashed truncate shrink-0 bg-teal-500 border-teal-400 text-white"
+                        style={{ width: `${bar.length || 50}%` }}
+                        className="h-full bg-emerald-600 rounded-md flex items-center justify-center text-xs font-black text-white px-2 truncate shrink-0"
                       >
-                        +{bar.diffValue || "Diff"}
+                        {bar.value || ""}
                       </div>
-                    )}
+
+                      {bar.hasDifference && (
+                        bar.diffType === 'FEWER' ? (
+                          (() => {
+                            const segments = (bar.diffSegments && bar.diffSegments.length > 0)
+                              ? bar.diffSegments
+                              : [{ id: `${bar.id}-seg-1`, value: bar.diffValue, length: bar.diffLength || 20 }];
+                            return (
+                              <>
+                                {segments.map((seg, sIdx) => {
+                                  const cleanDiff = (seg.value || "").replace(/[+\-]/g, '').trim();
+                                  const isLastSeg = sIdx === segments.length - 1;
+                                  return (
+                                    <div
+                                      key={seg.id || sIdx}
+                                      style={{ width: `${seg.length || 18}%` }}
+                                      className="relative h-full ml-1 flex flex-col justify-between items-center py-0.5 px-1 overflow-visible select-none shrink-0"
+                                    >
+                                      {isLastSeg ? (
+                                        <div
+                                          className={`absolute right-0 w-0 border-r-2 border-dotted border-rose-400 pointer-events-none z-10 ${
+                                            isBottom ? '-top-5 bottom-0' : 'top-0 -bottom-5'
+                                          }`}
+                                        >
+                                          <span className="absolute -top-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                                          <span className="absolute -bottom-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                                        </div>
+                                      ) : (
+                                        <div className="absolute right-0 top-0 bottom-0 w-0 border-r border-dotted border-rose-300/80 pointer-events-none z-10" />
+                                      )}
+                                      <div className="absolute inset-0 bg-rose-50/20 rounded pointer-events-none border border-dashed border-rose-200/50" />
+                                      <ShortageGapBracket cleanDiff={cleanDiff} isBottom={isBottom} isCompact={true} />
+                                    </div>
+                                  );
+                                })}
+                              </>
+                            );
+                          })()
+                        ) : (
+                          (() => {
+                            const segments = (bar.diffSegments && bar.diffSegments.length > 0)
+                              ? bar.diffSegments
+                              : [{ id: `${bar.id}-seg-1`, value: bar.diffValue, length: bar.diffLength || 20 }];
+                            const segColors = [
+                              'bg-teal-500 border-teal-400 text-white',
+                              'bg-emerald-500 border-emerald-400 text-white',
+                              'bg-cyan-600 border-cyan-500 text-white',
+                              'bg-emerald-600 border-emerald-500 text-white'
+                            ];
+                            return (
+                              <>
+                                {segments.map((seg, sIdx) => {
+                                  const cleanVal = (seg.value || "").replace(/[+\-]/g, '').trim();
+                                  return (
+                                    <div
+                                      key={seg.id || sIdx}
+                                      style={{ width: `${seg.length || 18}%` }}
+                                      className={`h-full rounded-md ml-1 px-1.5 flex items-center justify-center text-xs font-black border border-dashed truncate shrink-0 ${segColors[sIdx % segColors.length]}`}
+                                    >
+                                      {cleanVal ? `+${cleanVal}` : "+Diff"}
+                                    </div>
+                                  );
+                                })}
+                              </>
+                            );
+                          })()
+                        )
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -2557,7 +2649,23 @@ export default function InteractiveBarBuilder({
   };
 
   const handleUpdateAfterBar = (id, field, val) => {
-    setUserAfterBars(prev => prev.map(b => b.id === id ? { ...b, [field]: val } : b));
+    setUserAfterBars(prev => prev.map(b => {
+      if (b.id !== id) return b;
+      if (field === 'diffType') {
+        const cleanedSegments = (b.diffSegments || []).map(s => ({
+          ...s,
+          value: val === 'FEWER' && s.value ? s.value.replace(/[+\-]/g, '').trim() : s.value
+        }));
+        return {
+          ...b,
+          diffType: val,
+          diffValue: val === 'FEWER' && b.diffValue ? b.diffValue.replace(/[+\-]/g, '').trim() : b.diffValue,
+          diffSegments: cleanedSegments.length > 0 ? cleanedSegments : [{ id: `${b.id}-seg-1`, value: '', length: 20 }],
+          bracketPosition: b.bracketPosition || 'bottom'
+        };
+      }
+      return { ...b, [field]: val };
+    }));
     setStage2Status('idle');
     setStage2ErrorMsg(null);
   };
@@ -2629,7 +2737,8 @@ export default function InteractiveBarBuilder({
       return {
         ...b,
         diffSegments: updated,
-        diffValue: updated[0] ? updated[0].value : b.diffValue
+        diffValue: updated[0] ? updated[0].value : b.diffValue,
+        diffLength: updated[0] ? updated[0].length : b.diffLength
       };
     }));
     setStage2Status('idle');
@@ -2644,7 +2753,8 @@ export default function InteractiveBarBuilder({
       return {
         ...b,
         diffSegments: filtered.length > 0 ? filtered : [{ id: `${b.id}-seg-1`, value: '', length: 20 }],
-        diffValue: filtered[0] ? filtered[0].value : ''
+        diffValue: filtered[0] ? filtered[0].value : '',
+        diffLength: filtered[0] ? filtered[0].length : 20
       };
     }));
     setStage2Status('idle');
@@ -3420,14 +3530,77 @@ export default function InteractiveBarBuilder({
                                 {bar.value || ""}
                               </div>
 
-                              {/* Difference Segment (if student configured diff in After) */}
+                              {/* Difference Segment / Bracket */}
                               {bar.hasDifference && (
-                                <div
-                                  style={{ width: `${bar.diffLength || 20}%` }}
-                                  className="h-full rounded-lg ml-1 px-2 flex items-center justify-center text-xs font-black shadow-xs border border-dashed transition-all duration-150 truncate shrink-0 bg-teal-500 text-white"
-                                >
-                                  +{bar.diffValue || "Diff"}
-                                </div>
+                                bar.diffType === 'FEWER' ? (
+                                  (() => {
+                                    const segments = (bar.diffSegments && bar.diffSegments.length > 0)
+                                      ? bar.diffSegments
+                                      : [{ id: `${bar.id}-seg-1`, value: bar.diffValue, length: bar.diffLength || 20 }];
+                                    const isBottomBracket = (bar.bracketPosition || (idx > 0 ? 'bottom' : 'top')) === 'bottom';
+                                    return (
+                                      <>
+                                        {segments.map((seg, sIdx) => {
+                                          const cleanDiffNum = (seg.value || "").replace(/[+\-]/g, '').trim();
+                                          const isLastSeg = sIdx === segments.length - 1;
+                                          return (
+                                            <div
+                                              key={seg.id || sIdx}
+                                              style={{ width: `${seg.length || 18}%` }}
+                                              className="relative h-full ml-1 flex flex-col justify-between items-center py-1 px-1 transition-all duration-150 overflow-visible select-none shrink-0"
+                                              title={`Shortage segment ${sIdx + 1}: ${cleanDiffNum || 'Diff'}`}
+                                            >
+                                              {isLastSeg ? (
+                                                <div
+                                                  className={`absolute right-0 w-0 border-r-2 border-dotted border-rose-400 pointer-events-none z-10 ${
+                                                    isBottomBracket ? '-top-6 bottom-0' : 'top-0 -bottom-6'
+                                                  }`}
+                                                >
+                                                  <span className="absolute -top-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                                                  <span className="absolute -bottom-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                                                </div>
+                                              ) : (
+                                                <div className="absolute right-0 top-0 bottom-0 w-0 border-r border-dotted border-rose-300/80 pointer-events-none z-10" />
+                                              )}
+                                              <div className="absolute inset-0 bg-rose-50/20 rounded-lg pointer-events-none border border-dashed border-rose-200/50" />
+                                              <ShortageGapBracket cleanDiff={cleanDiffNum} isBottom={isBottomBracket} />
+                                            </div>
+                                          );
+                                        })}
+                                      </>
+                                    );
+                                  })()
+                                ) : (
+                                  (() => {
+                                    const segments = (bar.diffSegments && bar.diffSegments.length > 0)
+                                      ? bar.diffSegments
+                                      : [{ id: `${bar.id}-seg-1`, value: bar.diffValue, length: bar.diffLength || 20 }];
+                                    const segColors = [
+                                      'bg-teal-500 border-teal-400 text-white',
+                                      'bg-emerald-500 border-emerald-400 text-white',
+                                      'bg-cyan-600 border-cyan-500 text-white',
+                                      'bg-emerald-600 border-emerald-500 text-white'
+                                    ];
+                                    return (
+                                      <>
+                                        {segments.map((seg, sIdx) => {
+                                          const cleanVal = (seg.value || "").replace(/[+\-]/g, '').trim();
+                                          const colorClass = segColors[sIdx % segColors.length];
+                                          return (
+                                            <div
+                                              key={seg.id || sIdx}
+                                              style={{ width: `${seg.length || 18}%` }}
+                                              className={`h-full rounded-lg ml-1 px-2 flex items-center justify-center text-xs font-black shadow-xs border border-dashed transition-all duration-150 truncate shrink-0 ${colorClass}`}
+                                              title={`Difference segment ${sIdx + 1}: ${cleanVal || '+ Diff'}`}
+                                            >
+                                              {cleanVal ? `+${cleanVal}` : `+Diff ${sIdx + 1}`}
+                                            </div>
+                                          );
+                                        })}
+                                      </>
+                                    );
+                                  })()
+                                )
                               )}
                             </div>
 

@@ -288,6 +288,57 @@ if (check5.isValid || check5.defect !== 'AFTER_STATE_INCORRECT_DIFF') {
   allPassed = false;
 }
 
+// Test 3f: Student marks Giver with FEWER (- shortage bracket) in After state
+const validAfterFewerOnGiver = [
+  {
+    name: nameA,
+    value: newA.toString(),
+    length: 42,
+    hasDifference: true,
+    diffType: 'FEWER',
+    diffValue: newDiff.toString(),
+    diffSegments: [{ value: newDiff.toString(), length: 20 }]
+  },
+  {
+    name: nameB,
+    value: newB.toString(),
+    length: 68,
+    hasDifference: false
+  }
+];
+const check6 = checkBeforeAfterParameters(validBefore, validAfterFewerOnGiver, {}, config);
+console.log("Check 6 (Giver marked with FEWER in After state): isValid =", check6.isValid);
+if (!check6.isValid) {
+  console.error("FAIL: Giver with FEWER in After state should be valid! Error:", check6.errorMsg);
+  allPassed = false;
+}
+
+// Test 3g: Both entities have difference segments in After state
+const invalidAfterBothDiff = [
+  {
+    name: nameA,
+    value: newA.toString(),
+    length: 42,
+    hasDifference: true,
+    diffType: 'FEWER',
+    diffValue: newDiff.toString()
+  },
+  {
+    name: nameB,
+    value: newA.toString(),
+    length: 68,
+    hasDifference: true,
+    diffType: 'MORE',
+    diffValue: newDiff.toString()
+  }
+];
+const check7 = checkBeforeAfterParameters(validBefore, invalidAfterBothDiff, {}, config);
+console.log("Check 7 (Both entities have diff in After state): isValid =", check7.isValid, "defect =", check7.defect);
+if (check7.isValid || check7.defect !== 'AFTER_STATE_MULTIPLE_DIFFS') {
+  console.error("FAIL: Should detect AFTER_STATE_MULTIPLE_DIFFS defect!");
+  allPassed = false;
+}
+
 // 4. Test ModelSolutionBarModel rendering
 console.log("\n4. Testing ModelSolutionBarModel execution:");
 try {
