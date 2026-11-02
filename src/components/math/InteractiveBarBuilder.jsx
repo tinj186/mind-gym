@@ -1137,42 +1137,81 @@ export function CompactBarCanvas({
         </div>
 
         {/* 1. Before State Box */}
-        <div className="p-3 bg-white rounded-2xl border border-slate-200 space-y-2">
+        <div className="p-3 bg-white rounded-2xl border border-slate-200 space-y-2 overflow-visible">
           <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
             1. Before State (At First)
           </span>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             {beforeBars.map((bar, idx) => {
               const cleanDiff = (bar.diffValue || "").replace(/[+\-]/g, '').trim();
+              const isBottom = (bar.bracketPosition || (idx > 0 ? 'bottom' : 'top')) === 'bottom';
               return (
                 <div key={bar.id || idx} className="flex items-center gap-2">
                   <span className="w-20 text-right text-xs font-black text-slate-800 truncate">{bar.name}</span>
-                  <div className="flex-1 pl-2 border-l-4 border-indigo-500 border-dashed">
-                    <div className="flex items-center h-8 bg-slate-50 rounded-lg p-1 border border-slate-200">
-                      <div style={{ width: `${bar.length || 50}%` }} className="h-full bg-indigo-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
+                  <div className="flex-1 pl-2.5 border-l-4 border-indigo-500 border-dashed py-0.5">
+                    <div className="flex items-center h-9 bg-slate-50 rounded-lg p-0.5 border border-slate-200 overflow-visible relative">
+                      <div
+                        style={{ width: `${bar.length || 50}%` }}
+                        className={`h-full rounded-md flex items-center justify-center text-xs font-black text-white px-2 truncate shrink-0 ${
+                          idx === 0 ? 'bg-indigo-600' : 'bg-indigo-500'
+                        }`}
+                      >
                         {bar.value || ""}
                       </div>
-                      {bar.hasDifference && (() => {
-                        const segments = (bar.diffSegments && bar.diffSegments.length > 0)
-                          ? bar.diffSegments
-                          : [{ id: `${bar.id}-seg-1`, value: bar.diffValue, length: 24 }];
-                        return (
-                          <>
-                            {segments.map((seg, sIdx) => {
-                              const cleanDiff = (seg.value || "").replace(/[+\-]/g, '').trim();
-                              return (
-                                <div
-                                  key={seg.id || sIdx}
-                                  style={{ width: `${seg.length || 24}%` }}
-                                  className="h-full bg-emerald-500 rounded ml-1 flex items-center justify-center text-xs font-black text-white px-2 truncate border border-emerald-400 border-dashed shadow-2xs shrink-0"
-                                >
-                                  +{cleanDiff || "Diff"}
-                                </div>
-                              );
-                            })}
-                          </>
-                        );
-                      })()}
+
+                      {bar.hasDifference && (
+                        bar.diffType === 'FEWER' ? (
+                          <div
+                            style={{ width: `${bar.diffLength || 20}%` }}
+                            className="relative h-full ml-1 flex flex-col justify-between items-center py-0.5 px-1 overflow-visible select-none shrink-0"
+                          >
+                            <div
+                              className={`absolute right-0 w-0 border-r-2 border-dotted border-rose-400 pointer-events-none z-10 ${
+                                isBottom ? '-top-5 bottom-0' : 'top-0 -bottom-5'
+                              }`}
+                            >
+                              <span className="absolute -top-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                              <span className="absolute -bottom-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                            </div>
+                            <div className={`absolute inset-0 bg-rose-50/20 rounded pointer-events-none ${
+                              isBottom ? 'border-b border-dashed border-rose-200' : 'border-t border-dashed border-rose-200'
+                            }`} />
+                            <div className="relative z-10 flex-1 flex items-center justify-center">
+                              <span className="text-[10px] font-black text-rose-700 font-mono tracking-tight px-1.5 py-0.2 bg-white rounded border border-rose-200 shadow-2xs">
+                                {cleanDiff || "Diff"}
+                              </span>
+                            </div>
+                          </div>
+                        ) : (
+                          (() => {
+                            const segments = (bar.diffSegments && bar.diffSegments.length > 0)
+                              ? bar.diffSegments
+                              : [{ id: `${bar.id}-seg-1`, value: bar.diffValue, length: bar.diffLength || 20 }];
+                            const segColors = [
+                              'bg-emerald-500 border-emerald-400 text-white',
+                              'bg-teal-500 border-teal-400 text-white',
+                              'bg-emerald-600 border-emerald-500 text-white',
+                              'bg-cyan-600 border-cyan-500 text-white'
+                            ];
+                            return (
+                              <>
+                                {segments.map((seg, sIdx) => {
+                                  const cleanVal = (seg.value || "").replace(/[+\-]/g, '').trim();
+                                  return (
+                                    <div
+                                      key={seg.id || sIdx}
+                                      style={{ width: `${seg.length || 18}%` }}
+                                      className={`h-full rounded-md ml-1 px-1.5 flex items-center justify-center text-xs font-black border border-dashed truncate shrink-0 ${segColors[sIdx % segColors.length]}`}
+                                    >
+                                      {cleanVal ? `+${cleanVal}` : "+Diff"}
+                                    </div>
+                                  );
+                                })}
+                              </>
+                            );
+                          })()
+                        )
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1186,15 +1225,26 @@ export function CompactBarCanvas({
           <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 block">
             2. After State (In the End)
           </span>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             {afterBars.map((bar, idx) => (
               <div key={bar.id || idx} className="flex items-center gap-2">
                 <span className="w-20 text-right text-xs font-black text-slate-800 truncate">{bar.name}</span>
-                <div className="flex-1 pl-2 border-l-4 border-emerald-500 border-dashed">
-                  <div className="flex items-center h-8 bg-slate-50 rounded-lg p-1 border border-slate-200">
-                    <div style={{ width: '50%' }} className="h-full bg-emerald-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
-                      {bar.value || "1 unit"}
+                <div className="flex-1 pl-2.5 border-l-4 border-emerald-500 border-dashed py-0.5">
+                  <div className="flex items-center h-9 bg-slate-50 rounded-lg p-0.5 border border-slate-200 overflow-visible relative">
+                    <div
+                      style={{ width: `${bar.length || 50}%` }}
+                      className="h-full bg-emerald-600 rounded-md flex items-center justify-center text-xs font-black text-white px-2 truncate shrink-0"
+                    >
+                      {bar.value || ""}
                     </div>
+                    {bar.hasDifference && (
+                      <div
+                        style={{ width: `${bar.diffLength || 20}%` }}
+                        className="h-full rounded-md ml-1 px-1.5 flex items-center justify-center text-xs font-black border border-dashed truncate shrink-0 bg-teal-500 border-teal-400 text-white"
+                      >
+                        +{bar.diffValue || "Diff"}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

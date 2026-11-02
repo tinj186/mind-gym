@@ -427,31 +427,29 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
         const steps = [
           {
-            label: "Write the working equation to find the difference between them:",
-            expectedAnswer: `${larger} - ${smaller} = ${diff}`,
-            acceptedAnswers: [
-              `${larger} - ${smaller} = ${diff}`,
-              `${larger}-${smaller}=${diff}`,
-              diff.toString(),
-              Number(diff).toLocaleString(),
-              `${larger} - ${smaller}`,
-              `${larger}-${smaller}`
-            ]
-          },
-          {
-            label: "Write the working equation to find the amount to transfer (half of the difference):",
+            label: "Write the working equation:",
             expectedAnswer: `${diff} / 2 = ${transfer}`,
             acceptedAnswers: [
               `${diff} / 2 = ${transfer}`,
               `${diff}/2=${transfer}`,
               `${diff} ÷ 2 = ${transfer}`,
               `${diff}÷2=${transfer}`,
-              transfer.toString(),
-              Number(transfer).toLocaleString(),
+              `(${larger} - ${smaller}) / 2 = ${transfer}`,
+              `(${larger}-${smaller})/2=${transfer}`,
+              `(${larger} - ${smaller}) ÷ 2 = ${transfer}`,
+              `(${larger}-${smaller})÷2=${transfer}`,
+              `${larger} - ${smaller} = ${diff}`,
+              `${larger}-${smaller}=${diff}`,
               `${diff} / 2`,
               `${diff}/2`,
               `${diff} ÷ 2`,
-              `${diff}÷2`
+              `${diff}÷2`,
+              `${larger} - ${smaller}`,
+              `${larger}-${smaller}`,
+              diff.toString(),
+              Number(diff).toLocaleString(),
+              transfer.toString(),
+              Number(transfer).toLocaleString()
             ]
           },
           {
@@ -842,7 +840,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
         const steps = [
           {
-            label: `Write the working equation to find how many more ${item} ${nameA} had than ${nameB} at first (twice the transferred amount):`,
+            label: "Write the working equation:",
             expectedAnswer: `${transfer} * 2 = ${diff}`,
             acceptedAnswers: [
               `${transfer} * 2 = ${diff}`,
@@ -1359,14 +1357,14 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       if (isStructure) {
         const steps = [
           { label: `Write the working equation to find the total extra amount above the 3 equal base units:`, expectedAnswer: `${x} + ${x} + ${y} = ${extraTotal}` },
-          { label: `Write the working equation to remove the extra amounts from the grand total (to find 3 units):`, expectedAnswer: `${grandTotal} - ${extraTotal} = ${3 * baseUnit}` },
+          { label: `Write the working equation to remove the extra amounts from the grand total:`, expectedAnswer: `${grandTotal} - ${extraTotal} = ${3 * baseUnit}` },
           { label: `Write the working equation to find 1 unit (${nameA}):`, expectedAnswer: `${3 * baseUnit} / 3 = ${baseUnit}` }
         ];
 
         if (questionTarget === 'B') {
-          steps.push({ label: `Write the working equation to find ${nameB}'s amount (1 unit + ${x.toLocaleString()}):`, expectedAnswer: `${baseUnit} + ${x} = ${amountB}` });
+          steps.push({ label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${baseUnit} + ${x} = ${amountB}` });
         } else if (questionTarget === 'C') {
-          steps.push({ label: `Write the working equation to find ${nameC}'s amount (1 unit + ${(x + y).toLocaleString()}):`, expectedAnswer: `${baseUnit} + ${x + y} = ${amountC}` });
+          steps.push({ label: `Write the working equation to find ${nameC}'s amount:`, expectedAnswer: `${baseUnit} + ${x + y} = ${amountC}` });
         } else if (questionTarget === 'A_plus_B') {
           steps.push({ label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${baseUnit} + ${x} = ${amountB}` });
           steps.push({ label: `Write the working equation to find the total of ${nameA} and ${nameB}:`, expectedAnswer: `${amountA} + ${amountB} = ${amountA + amountB}` });
@@ -1507,11 +1505,11 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         ];
 
         if (questionTarget === 'B') {
-          steps.push({ label: `Write the working equation to find ${nameB}'s amount (2 units):`, expectedAnswer: `${baseUnit} * 2 = ${amountB}` });
+          steps.push({ label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${baseUnit} * 2 = ${amountB}` });
         } else if (questionTarget === 'C') {
-          steps.push({ label: `Write the working equation to find ${nameC}'s amount (1 unit + ${x.toLocaleString()}):`, expectedAnswer: `${baseUnit} + ${x} = ${amountC}` });
+          steps.push({ label: `Write the working equation to find ${nameC}'s amount:`, expectedAnswer: `${baseUnit} + ${x} = ${amountC}` });
         } else if (questionTarget === 'A_plus_B') {
-          steps.push({ label: `Write the working equation to find the total of ${nameA} and ${nameB} (3 units):`, expectedAnswer: `${baseUnit} * 3 = ${amountA + amountB}` });
+          steps.push({ label: `Write the working equation to find the total of ${nameA} and ${nameB}:`, expectedAnswer: `${baseUnit} * 3 = ${amountA + amountB}` });
         }
 
         steps.push({ label: "Final Answer:", expectedAnswer: finalAnswer });
@@ -1650,11 +1648,11 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         ];
 
         if (questionTarget === 'B') {
-          steps.push({ label: `Write the working equation to find ${nameB}'s amount (2 units):`, expectedAnswer: `${baseUnit} * 2 = ${amountB}` });
+          steps.push({ label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${baseUnit} * 2 = ${amountB}` });
         } else if (questionTarget === 'C') {
-          steps.push({ label: `Write the working equation to find ${nameC}'s amount (2 units + ${x.toLocaleString()}):`, expectedAnswer: `${amountB} + ${x} = ${amountC}` });
+          steps.push({ label: `Write the working equation to find ${nameC}'s amount:`, expectedAnswer: `${amountB} + ${x} = ${amountC}` });
         } else if (questionTarget === 'A_plus_B') {
-          steps.push({ label: `Write the working equation to find the total of ${nameA} and ${nameB} (3 units):`, expectedAnswer: `${baseUnit} * 3 = ${amountA + amountB}` });
+          steps.push({ label: `Write the working equation to find the total of ${nameA} and ${nameB}:`, expectedAnswer: `${baseUnit} * 3 = ${amountA + amountB}` });
         }
 
         steps.push({ label: "Final Answer:", expectedAnswer: finalAnswer });
