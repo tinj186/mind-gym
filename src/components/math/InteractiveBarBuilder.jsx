@@ -561,12 +561,20 @@ export function checkBarModelParameters(userBars = [], config = {}, totalState =
       const actVal = normalizeNumber(baseBar.value);
       const displayVal = expectedBase.displayValue || (expectedBase.value === '?' ? '?' : Number(expectedBase.value).toLocaleString());
 
-      if (expVal === '?') {
-        if (actVal && actVal !== '?') {
+      const isEqualizingBarTarget = config?.problemType === 'EQUALIZING_TRANSFER' && 
+        (config?.targetType === 'BAR' || config?.target?.type === 'BAR' || config?.targetType !== 'DIFFERENCE');
+
+      if (expVal === '?' || isEqualizingBarTarget) {
+        const isMatch = !actVal || actVal === '?' || actVal === '1' || actVal === '1unit' ||
+          (expVal && expVal !== '?' && actVal === expVal) ||
+          (config.smallerValue && actVal === normalizeNumber(config.smallerValue)) ||
+          (config.largerValue && actVal === normalizeNumber(config.largerValue)) ||
+          (config.equalizedValue && actVal === normalizeNumber(config.equalizedValue));
+        if (!isMatch) {
           return {
             isValid: false,
             defect: 'INCORRECT_BASE_VALUE',
-            errorMsg: `"${expectedBase.name}" is an unknown quantity. Mark it with "?" or leave it as 1 unit.`,
+            errorMsg: `"${expectedBase.name}" is an unknown initial quantity. Mark it with "?" or leave it blank.`,
             details: { entity: expectedBase.name, expected: '?', actual: actVal }
           };
         }
@@ -637,13 +645,24 @@ export function checkBarModelParameters(userBars = [], config = {}, totalState =
       const numericSegments = segmentValues.map(v => Number(v)).filter(n => !isNaN(n) && n > 0);
       const sumOfSegments = numericSegments.reduce((acc, curr) => acc + curr, 0);
 
-      if (expDiff === '?') {
+      const isEqualizingBarTarget = config?.problemType === 'EQUALIZING_TRANSFER' && 
+        (config?.targetType === 'BAR' || config?.target?.type === 'BAR' || config?.targetType !== 'DIFFERENCE');
+
+      if (expDiff === '?' || isEqualizingBarTarget) {
+        const isTransferMatch = config.transferAmount && (
+          normalizeNumber(actDiff) === normalizeNumber(config.transferAmount) ||
+          sumOfSegments === Number(config.transferAmount)
+        );
         const isActualDiffMatch = comp.actualDiff && (
           normalizeNumber(actDiff) === normalizeNumber(comp.actualDiff) ||
           sumOfSegments === Number(comp.actualDiff)
         );
+        const isExpDiffMatch = expDiff && expDiff !== '?' && (
+          actDiff === expDiff || sumOfSegments === Number(expDiff)
+        );
+
         if (segments.length > 1) {
-          if (sumOfSegments > 0 && !isActualDiffMatch && actDiff && actDiff !== '?') {
+          if (sumOfSegments > 0 && !isActualDiffMatch && !isTransferMatch && !isExpDiffMatch && actDiff && actDiff !== '?') {
             return {
               isValid: false,
               defect: 'INCORRECT_DIFF_VALUE',
@@ -652,7 +671,7 @@ export function checkBarModelParameters(userBars = [], config = {}, totalState =
             };
           }
         } else {
-          if (actDiff && actDiff !== '?' && !isActualDiffMatch) {
+          if (actDiff && actDiff !== '?' && !isActualDiffMatch && !isTransferMatch && !isExpDiffMatch) {
             return {
               isValid: false,
               defect: 'INCORRECT_DIFF_VALUE',
@@ -901,35 +920,50 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
             <span className="text-[11px] font-black uppercase tracking-wider text-slate-700">
               1. Before State (At First)
             </span>
-            <span className="text-[10px] font-bold text-slate-500">
-              Difference = {diffDisplay}
-            </span>
+            {(target?.type === 'DIFFERENCE' || config?.targetType === 'DIFFERENCE') && (
+              <span className="text-[10px] font-bold text-slate-500">
+                Difference = {diffDisplay}
+              </span>
+            )}
           </div>
 
           <div className="space-y-2 pt-1">
-            {/* Entity A Bar (Has Difference) */}
+            {/* Entity A Bar (Has Difference / Transferred) */}
             <div className="flex items-center gap-2">
               <span className="w-20 text-right text-xs font-black text-slate-800 truncate">{nameA}</span>
               <div className="flex-1 pl-2 border-l-4 border-indigo-500 border-dashed">
-                <div className="flex items-center h-9 bg-slate-50 rounded-lg p-1 border border-slate-200">
-                  <div style={{ width: '48%' }} className="h-full bg-indigo-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
-                    {largerDisplay || "Base Unit"}
-                  </div>
-                  {transferVal ? (
-                    <>
-                      <div style={{ width: '18%' }} className="h-full ml-1 bg-emerald-500 rounded flex items-center justify-center text-xs font-black text-white px-1 truncate border border-emerald-400 border-dashed" title="Amount transferred">
-                        +{transferDisplay}
-                      </div>
-                      <div style={{ width: '18%' }} className="h-full ml-1 bg-teal-500 rounded flex items-center justify-center text-xs font-black text-white px-1 truncate border border-teal-400 border-dashed" title="Amount to equalize">
-                        +{transferDisplay}
-                      </div>
-                    </>
-                  ) : (
-                    <div style={{ width: '28%' }} className="h-full ml-1 bg-emerald-500 rounded flex items-center justify-center text-xs font-black text-white px-2 truncate border border-emerald-400 border-dashed">
-                      +{diffDisplay}
+                {target?.type === 'BAR' ? (
+                  <div className="flex items-center h-9 bg-slate-50 rounded-lg p-1 border border-slate-200">
+                    <div style={{ width: '50%' }} className="h-full bg-indigo-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate" title="Equalized amount in the end">
+                      {equalDisplay}
                     </div>
-                  )}
-                </div>
+                    {transferVal ? (
+                      <div style={{ width: '22%' }} className="h-full ml-1 bg-emerald-500 rounded flex items-center justify-center text-xs font-black text-white px-1 truncate border border-emerald-400 border-dashed" title="Amount transferred">
+                        +{transferDisplay}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : (
+                  <div className="flex items-center h-9 bg-slate-50 rounded-lg p-1 border border-slate-200">
+                    <div style={{ width: '48%' }} className="h-full bg-indigo-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
+                      {smallerDisplay || "Base Unit"}
+                    </div>
+                    {transferVal ? (
+                      <>
+                        <div style={{ width: '18%' }} className="h-full ml-1 bg-emerald-500 rounded flex items-center justify-center text-xs font-black text-white px-1 truncate border border-emerald-400 border-dashed" title="Amount transferred">
+                          +{transferDisplay}
+                        </div>
+                        <div style={{ width: '18%' }} className="h-full ml-1 bg-teal-500 rounded flex items-center justify-center text-xs font-black text-white px-1 truncate border border-teal-400 border-dashed" title="Amount to equalize">
+                          +{transferDisplay}
+                        </div>
+                      </>
+                    ) : (
+                      <div style={{ width: '28%' }} className="h-full ml-1 bg-emerald-500 rounded flex items-center justify-center text-xs font-black text-white px-2 truncate border border-emerald-400 border-dashed">
+                        +{diffDisplay}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -938,7 +972,7 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
               <span className="w-20 text-right text-xs font-black text-slate-800 truncate">{nameB}</span>
               <div className="flex-1 pl-2 border-l-4 border-indigo-500 border-dashed">
                 <div className="flex items-center h-9 bg-slate-50 rounded-lg p-1 border border-slate-200">
-                  <div style={{ width: '48%' }} className="h-full bg-indigo-500 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
+                  <div style={{ width: target?.type === 'BAR' ? '40%' : '48%' }} className="h-full bg-indigo-500 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
                     {smallerDisplay || "Base Unit"}
                   </div>
                 </div>

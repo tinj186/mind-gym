@@ -614,8 +614,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
               { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfers or changes across time states" }
             ],
             entities: [
-              { id: "B", name: nameB, value: askForA ? smaller : "?", displayValue: askForA ? smaller.toLocaleString() : "?", relation: "BASE" },
-              { id: "A", name: nameA, value: askForA ? "?" : larger, displayValue: askForA ? "?" : larger.toLocaleString(), relativeTo: nameB, relation: "MORE", diffValue: diff, displayDiff: `+${diff.toLocaleString()}` }
+              { id: "B", name: nameB, value: "?", displayValue: "?", relation: "BASE" },
+              { id: "A", name: nameA, value: "?", displayValue: "?", relativeTo: nameB, relation: "MORE", diffValue: "?", displayDiff: "?", actualDiff: diff }
             ],
             target: { type: "BAR", targetEntity: askForA ? "A" : "B", label: targetName },
             steps: steps
@@ -764,8 +764,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
               { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfers or changes across time states" }
             ],
             entities: [
-              { id: "B", name: nameB, value: !askForA ? "?" : smaller, displayValue: !askForA ? "?" : smaller.toLocaleString(), relation: "BASE" },
-              { id: "A", name: nameA, value: askForA ? "?" : larger, displayValue: askForA ? "?" : larger.toLocaleString(), relativeTo: nameB, relation: "MORE", diffValue: diff, displayDiff: `+${diff.toLocaleString()}` }
+              { id: "B", name: nameB, value: "?", displayValue: "?", relation: "BASE" },
+              { id: "A", name: nameA, value: "?", displayValue: "?", relativeTo: nameB, relation: "MORE", diffValue: "?", displayDiff: "?", actualDiff: diff }
             ],
             total: {
               label: "Combined Total",

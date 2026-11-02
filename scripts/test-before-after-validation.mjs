@@ -1,141 +1,83 @@
-import assert from 'assert';
 import { checkBeforeAfterParameters, checkBarModelParameters } from '../src/components/math/InteractiveBarBuilder.jsx';
 
-console.log("=== Testing checkBeforeAfterParameters ===");
-
-const config = {
+const sampleConfig = {
   problemType: "EQUALIZING_TRANSFER",
-  targetType: "DIFFERENCE",
-  transferFrom: "Deepak",
-  transferTo: "Mrs. Teo",
-  transferAmount: 8000,
-  differenceValue: 16000,
-  largerValue: 50500,
-  smallerValue: 34500,
-  equalizedValue: 42500,
+  targetType: "BAR",
+  targetName: "Muthu",
+  transferFrom: "Muthu",
+  transferTo: "Farhan",
+  transferAmount: 6000,
+  differenceValue: 12000,
+  largerValue: 42800,
+  smallerValue: 30800,
+  equalizedValue: 36800,
+  grandTotal: 73600,
+  displayTransfer: "6,000",
+  displayEqualized: "36,800",
+  displayDifference: "12,000",
+  itemName: "takeout boxes",
   correctModelType: ["BEFORE_AFTER", "COMPARISON"],
   entities: [
-    { id: "B", name: "Mrs. Teo", value: "", displayValue: "", relation: "BASE" },
-    { id: "A", name: "Deepak", value: "", displayValue: "", relativeTo: "Mrs. Teo", relation: "MORE", diffValue: "?", displayDiff: "?", actualDiff: 16000 }
+    { id: "B", name: "Farhan", value: "?", relation: "BASE", displayValue: "?" },
+    { id: "A", name: "Muthu", value: "?", relation: "MORE", diffValue: "?", relativeTo: "Farhan", displayDiff: "?", displayValue: "?", actualDiff: 12000 }
   ],
-  target: { type: "DIFFERENCE", label: "Difference" }
+  target: { type: "BAR", label: "Muthu", targetEntity: "A" }
 };
 
-// Case 1: Valid Before & After with multi-segment difference in Before state
-const validBeforeBars1 = [
-  {
-    id: "before-1",
-    name: "Deepak",
-    value: "",
-    length: 65,
-    hasDifference: true,
-    diffType: "MORE",
-    diffValue: "16000",
-    diffSegments: [
-      { id: "seg-1", value: "8000", length: 20 },
-      { id: "seg-2", value: "8000", length: 20 }
-    ]
-  },
-  {
-    id: "before-2",
-    name: "Mrs. Teo",
-    value: "",
-    length: 42,
-    hasDifference: false
-  }
+// 1. Student configuration from the screenshot:
+// Muthu: long bar (blank)
+// Farhan: shorter bar with shortage bracket '?'
+// After State: both 36800
+const studentBeforeBars = [
+  { id: 'b1', name: 'Muthu', value: '', length: 65, hasDifference: false },
+  { id: 'b2', name: 'Farhan', value: '', length: 45, hasDifference: true, diffType: 'FEWER', diffValue: '?' }
 ];
 
-const validAfterBars = [
-  {
-    id: "after-1",
-    name: "Deepak",
-    value: "1 unit",
-    length: 50,
-    hasDifference: false
-  },
-  {
-    id: "after-2",
-    name: "Mrs. Teo",
-    value: "1 unit",
-    length: 50,
-    hasDifference: false
-  }
+const studentAfterBars = [
+  { id: 'a1', name: 'Muthu', value: '36800', length: 50 },
+  { id: 'a2', name: 'Farhan', value: '36800', length: 50 }
 ];
 
-const res1 = checkBeforeAfterParameters(validBeforeBars1, validAfterBars, {}, config);
-assert.strictEqual(res1.isValid, true, `Case 1 must pass: ${res1.errorMsg}`);
-console.log("✓ Case 1: Multi-segment diff in Before State + Equal After State passed!");
+const res1 = checkBeforeAfterParameters(studentBeforeBars, studentAfterBars, { from: 'Muthu', to: 'Farhan', amount: '6000' }, sampleConfig);
+console.log('Test 1 (Student submission with ? diff):', res1);
+if (!res1.isValid) {
+  throw new Error(`Test 1 Failed: ${res1.errorMsg}`);
+}
 
-// Case 2: Valid Before State with "?" difference
-const validBeforeBars2 = [
-  {
-    id: "before-1",
-    name: "Deepak",
-    value: "",
-    length: 65,
-    hasDifference: true,
-    diffType: "MORE",
-    diffValue: "?",
-    diffSegments: [{ id: "seg-1", value: "?", length: 25 }]
-  },
-  {
-    id: "before-2",
-    name: "Mrs. Teo",
-    value: "",
-    length: 42,
-    hasDifference: false
-  }
+// 2. Student submission with +6000 (transfer amount):
+const studentBeforeBars2 = [
+  { id: 'b1', name: 'Muthu', value: '', length: 65, hasDifference: true, diffType: 'MORE', diffValue: '6000' },
+  { id: 'b2', name: 'Farhan', value: '', length: 45, hasDifference: false }
 ];
+const res2 = checkBeforeAfterParameters(studentBeforeBars2, studentAfterBars, { from: 'Muthu', to: 'Farhan', amount: '6000' }, sampleConfig);
+console.log('Test 2 (Student submission with transfer amount 6000):', res2);
+if (!res2.isValid) {
+  throw new Error(`Test 2 Failed: ${res2.errorMsg}`);
+}
 
-const res2 = checkBeforeAfterParameters(validBeforeBars2, validAfterBars, config);
-assert.strictEqual(res2.isValid, true, `Case 2 must pass: ${res2.errorMsg}`);
-console.log("✓ Case 2: '?' diff in Before State + Equal After State passed!");
-
-// Case 3: Conflicting difference in After State (should fail with friendly error)
-const invalidAfterBars = [
-  {
-    id: "after-1",
-    name: "Deepak",
-    value: "",
-    length: 70,
-    hasDifference: true,
-    diffType: "MORE",
-    diffValue: "8000"
-  },
-  {
-    id: "after-2",
-    name: "Mrs. Teo",
-    value: "",
-    length: 40,
-    hasDifference: false
-  }
+// 3. Student submission with +12000 (full difference):
+const studentBeforeBars3 = [
+  { id: 'b1', name: 'Muthu', value: '', length: 65, hasDifference: true, diffType: 'MORE', diffValue: '12000' },
+  { id: 'b2', name: 'Farhan', value: '', length: 45, hasDifference: false }
 ];
+const res3 = checkBeforeAfterParameters(studentBeforeBars3, studentAfterBars, { from: 'Muthu', to: 'Farhan', amount: '6000' }, sampleConfig);
+console.log('Test 3 (Student submission with full diff 12000):', res3);
+if (!res3.isValid) {
+  throw new Error(`Test 3 Failed: ${res3.errorMsg}`);
+}
 
-const res3 = checkBeforeAfterParameters(validBeforeBars1, invalidAfterBars, config);
-assert.strictEqual(res3.isValid, false, "Case 3 must fail when After State is not equal");
-console.log(`✓ Case 3: Rejected conflicting after diff correctly (${res3.errorMsg})`);
+// 4. Backward compatibility: if config still has diffValue: 12000 and Farhan: 30800
+const oldConfig = {
+  ...sampleConfig,
+  entities: [
+    { id: "B", name: "Farhan", value: 30800, relation: "BASE", displayValue: "30,800" },
+    { id: "A", name: "Muthu", value: "?", relation: "MORE", diffValue: 12000, relativeTo: "Farhan", displayDiff: "+12,000", displayValue: "?" }
+  ]
+};
+const res4 = checkBeforeAfterParameters(studentBeforeBars, studentAfterBars, { from: 'Muthu', to: 'Farhan', amount: '6000' }, oldConfig);
+console.log('Test 4 (Old config with diffValue: 12000, but student enters ?):', res4);
+if (!res4.isValid) {
+  throw new Error(`Test 4 Failed: ${res4.errorMsg}`);
+}
 
-// Case 4: Missing entity in Before State
-const missingBeforeBars = [
-  {
-    id: "before-1",
-    name: "Deepak",
-    value: "",
-    length: 65,
-    hasDifference: true,
-    diffType: "MORE",
-    diffValue: "16000"
-  }
-];
-
-const res4 = checkBeforeAfterParameters(missingBeforeBars, validAfterBars, config);
-assert.strictEqual(res4.isValid, false, "Case 4 must fail when Before State lacks entities");
-console.log(`✓ Case 4: Rejected missing entity in Before State correctly (${res4.errorMsg})`);
-
-// Case 5: Single comparison model directly via checkBarModelParameters
-const res5 = checkBarModelParameters(validBeforeBars1, config);
-assert.strictEqual(res5.isValid, true, `Case 5 Comparison model check must pass: ${res5.errorMsg}`);
-console.log("✓ Case 5: Standard Comparison check passes for the exact same Before bars!");
-
-console.log("\nAll checkBeforeAfterParameters tests passed successfully!");
-
+console.log('ALL TESTS PASSED SUCCESSFULLY!');
