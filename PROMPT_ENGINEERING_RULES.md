@@ -65,8 +65,28 @@ Execution: Developers MUST NOT hardcode complex vocabulary (e.g., "cumulative", 
 Law (Variant Fallback Constraints): Variants that conceptually violate a requested question type must securely fallback or override.
 Execution: During generation, the engine filters variants. If a variant conceptually violates the requested type (e.g., trying to render a "Strict Word Problem" as a "Short Question" equation), the generator securely falls back to a valid variant. Conversely, variants that strictly rely on multiple-choice mechanics (e.g., Equation Equivalence) will explicitly override the user's type request to `MCQ`.
 
-Law (Multi-Step Associative Flexibility): While final answers must match deterministically, multi-step associative working (e.g., 3+2=5 vs 2+3=5) must be handled flexibly.
-Execution: The client-side `WorkoutSession` executes a strict string-matching "fast path". If strict matching fails for a multi-step input, it securely delegates the check to a deterministic, zero-temperature AI Grader API (`/api/grade-multi-step`) to mathematically evaluate logical equivalence before incorrectly failing the student.
+Law (Two-Tier Multi-Step Grading Architecture - Fast-Path Primary + Level-Based AI Backup):
+While final answers must match deterministically, multi-step structured working allows diverse valid mathematical strategies (e.g. State Tracking vs. Difference Shifting) and step order permutations (e.g., finding Entity B before Entity A).
+Execution:
+1. **Tier 1 (Fast-Path Primary - 0ms Latency)**: Evaluates student working in `WorkoutSession` and `ArenaSession` synchronously. It verifies both primary `steps` (e.g. State Tracking) and alternative strategy steps (`alternativeSteps` / `barBuilderConfig.comparisonSteps` e.g. Difference Shifting). It incorporates **intermediate step permutation checking** (e.g., swapping Step 0 and Step 1 when finding two independent entity amounts) and applies resilient string sanitization (space removal, comma normalization, operator standardisation like `*`, `×`, `/`, `÷`).
+2. **Tier 2 (AI Multi-Step Grader - Backup Fallback)**: If Fast-Path strict and permutation matching fails (due to unexpected combined expressions, alternative intermediate steps, or non-standard unitary representations), the submission is sent to `/api/grade-multi-step`. The AI evaluates the mathematical logic and pedagogical validity using grade-level criteria before incorrectly penalizing the student.
+
+Law (Modular Level-Based AI Grader Library - Anti-Bloat Mandate):
+Route handlers (like `/api/grade-multi-step/route.js`) must NOT be bloated with monolithic prompt templates, hardcoded single-grade logic, or repetitive pedagogical rules.
+Execution: Prompt construction and pedagogical rubrics must be completely decoupled into `src/lib/grading/multiStepGrader.js`. The prompt builder dynamically injects grade-appropriate guidelines based on the student's level (`Primary 1` through `Primary 6`):
+- *Lower Primary (P1–P2)*: Focuses on basic arithmetic, word problem context, text-form numbers ("in words"), and currency notation (`$` or `¢`).
+- *Middle Primary (P3–P4)*: Evaluates Singapore Bar Model methods, the unitary method (`1 unit`, `1u`, `?`), state tracking vs. difference shifting, combined expressions, and step-order flexibility.
+- *Upper Primary (P5–P6)*: Accepts algebraic equations, unit ratios, percentage deductions, and fraction multipliers.
+The route handler in `route.js` remains a lean, single-purpose coordinator under 50 lines.
+
+Law (Interactive Bar Model 3-Stage Workflow & Multi-Archetype Flexibility):
+When solving structured comparative word problems using `INTERACTIVE_BAR_BUILDER`, the system must support multiple valid visual representations and dynamically adapt downstream calculation steps.
+Execution:
+1. **Stage 1 (Archetype Selection & Multi-Match)**: When a problem can legitimately be solved using multiple model types (e.g., both `BEFORE_AFTER` and `COMPARISON` for inequality-flipping shifting transfers), `barBuilderConfig.correctModelType` is provided as an array `["BEFORE_AFTER", "COMPARISON"]`, allowing the student to successfully confirm either valid archetype.
+2. **Stage 2 (Blueprint Verification & Compound Representation)**:
+   - Standard comparative models enforce that differences attach to only one entity.
+   - *Compound Transfer Exception*: In Before & After models, when the receiver shows their initial base plus an attached difference segment equal to the transfer amount ($+z$), and the giver shows a shortage bracket (`- FEWER`) against that new total, this is recognized as a valid compound transfer representation. The blueprint validator (`checkBeforeAfterParameters`) explicitly permits this representation instead of rejecting it with `AFTER_STATE_MULTIPLE_DIFFS`.
+3. **Stage 3 (Archetype-Adaptive Working Steps)**: The multi-step equation prompts rendered in Stage 3 adapt dynamically to the model archetype selected in Stage 1. If the student chose `COMPARISON`, `InteractiveBarBuilder` renders the difference-shift working steps (`config.comparisonSteps`). If they chose `BEFORE_AFTER`, it renders the state-tracking steps (`config.steps`).
 
 Law (Template Preservation Strictness): When dynamic context or randomized attributes (e.g. random objects like "eraser" or math numbers) are generated deterministically in code, the AI must NEVER be allowed to "autocorrect" or rewrite the template string.
 Execution: To prevent the LLM from taking creative liberty and replacing randomized values with what it perceives to be "better" standard examples, the format instructions MUST explicitly prepend the following directive to the prompt: `CRITICAL INSTRUCTION: You MUST use the EXACT strings provided in the template below for questionText, hint, and solutionSteps. DO NOT rephrase them!`
@@ -137,11 +157,11 @@ Database: PostgreSQL + Prisma ORM.
 AI Engine: Google Gemini (Generative AI) via strict JSON templates.
 
 7. Hybrid Grading Engine
-Tier 1 (Local Grader): Instant deterministic JS feedback for MCQs and Short Answers.
+Tier 1 (Local Deterministic Grader & Fast-Path): Instant 0ms JS evaluation in `WorkoutSession` and `ArenaSession`. Handles MCQs, Short Answers, and Multi-Step working (evaluating primary equations, alternative archetype equations, and intermediate step permutations with resilient string sanitization).
 
-Tier 2 (Stealth AI Diagnostic): Asynchronous background processing by Gemini to assign "Defect Codes" for incorrect answers.
+Tier 2 (Stealth AI Diagnostic): Asynchronous background processing by Gemini to assign "Defect Codes" for incorrect MCQ and Short answers, driving granular synapse strength tracking.
 
-Tier 3 (Full AI Grader): Comprehensive logical analysis for structured working.
+Tier 3 (AI Multi-Step Grader Fallback): Modular, grade-level-aware LLM evaluation (`/api/grade-multi-step` powered by `src/lib/grading/multiStepGrader.js`) that triggers as a backup ONLY when Tier 1 Fast-Path fails. It evaluates alternative mathematical methods, unitary notation (`1u`), combined equations, and pedagogical correctness tailored across Primary 1 through Primary 6.
 
 8. The Adaptive Workout Algorithm
 The trainer curates a 10-question set using the 20/60/20 Rep Structure:
@@ -222,6 +242,9 @@ To ensure AI agents understand the modern Vercel/Supabase Phase 2 Architecture, 
 - `src/lib/payments/gateway.js`: The core of the Payment-Agnostic architecture.
 - `src/lib/payments/adapters/HitPayAdapter.js`: The active Singapore payment gateway.
 - `src/app/api/webhooks/payment/route.js`: The secure listener that validates HMAC signatures and updates `subscriptionStatus` to ACTIVE.
+- `src/lib/grading/multiStepGrader.js`: The modular grade-level AI grading prompt builder for multi-step structured working.
+- `src/components/math/InteractiveBarBuilder.jsx`: The 3-stage interactive bar model builder component supporting multi-archetype verification, compound transfers, and dynamic equation scaffolding.
+- `src/app/api/grade-multi-step/route.js`: The lean multi-step AI grader API endpoint.
 
 7. Agent Index Trigger Command
 !INDEX_TRIGGER: ALL AI AGENTS joining this conversation MUST read `prisma/schema.prisma` and `src/lib/payments/gateway.js` to understand the database architecture and payment decoupling before proposing any backend or subscription changes.
