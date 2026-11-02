@@ -1535,7 +1535,7 @@ function BarParametersEditor({
         </span>
         <button
           type="button"
-          onClick={onCollapse}
+          onClick={() => onCollapse && onCollapse()}
           className="text-xs font-bold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-3 py-1 rounded-xl flex items-center gap-1 cursor-pointer transition-all"
         >
           <ChevronUp className="w-3.5 h-3.5" />
@@ -1826,19 +1826,23 @@ function BarParametersEditor({
 
       {/* Footer: Delete Bar & Done */}
       <div className="pt-2 flex items-center justify-between border-t border-slate-100">
-        <button
-          type="button"
-          onClick={() => onDelete(bar.id)}
-          className="text-xs font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-200 flex items-center gap-1.5 transition-all cursor-pointer"
-          title="Delete this bar"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-          Delete Bar
-        </button>
+        {onDelete ? (
+          <button
+            type="button"
+            onClick={() => onDelete && onDelete(bar.id)}
+            className="text-xs font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-200 flex items-center gap-1.5 transition-all cursor-pointer"
+            title="Delete this bar"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            Delete Bar
+          </button>
+        ) : (
+          <div />
+        )}
 
         <button
           type="button"
-          onClick={onCollapse}
+          onClick={() => onCollapse && onCollapse()}
           className="text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3.5 py-1.5 rounded-xl flex items-center gap-1 transition-all cursor-pointer"
         >
           <ChevronUp className="w-3.5 h-3.5" />
@@ -2024,6 +2028,30 @@ export default function InteractiveBarBuilder({
     setStage2ErrorMsg(null);
   };
 
+  const handleDeleteBeforeBar = (id) => {
+    setUserBeforeBars(prev => prev.filter(b => b.id !== id));
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleAddBeforeBar = () => {
+    const newBar = {
+      id: `before-bar-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      name: "",
+      length: 50,
+      value: "",
+      hasDifference: false,
+      diffType: 'MORE',
+      diffLength: 20,
+      diffValue: "",
+      diffSegments: [],
+      isCollapsed: false
+    };
+    setUserBeforeBars(prev => [...prev, newBar]);
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
   const handleToggleCollapseBeforeBar = (id) => {
     setUserBeforeBars(prev => prev.map(b => b.id === id ? { ...b, isCollapsed: !b.isCollapsed } : b));
   };
@@ -2091,6 +2119,30 @@ export default function InteractiveBarBuilder({
 
   const handleUpdateAfterBar = (id, field, val) => {
     setUserAfterBars(prev => prev.map(b => b.id === id ? { ...b, [field]: val } : b));
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleDeleteAfterBar = (id) => {
+    setUserAfterBars(prev => prev.filter(b => b.id !== id));
+    setStage2Status('idle');
+    setStage2ErrorMsg(null);
+  };
+
+  const handleAddAfterBar = () => {
+    const newBar = {
+      id: `after-bar-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      name: "",
+      length: 50,
+      value: "1 unit",
+      hasDifference: false,
+      diffType: 'MORE',
+      diffLength: 20,
+      diffValue: "",
+      diffSegments: [],
+      isCollapsed: false
+    };
+    setUserAfterBars(prev => [...prev, newBar]);
     setStage2Status('idle');
     setStage2ErrorMsg(null);
   };
@@ -2708,9 +2760,19 @@ export default function InteractiveBarBuilder({
                     <span className="w-5 h-5 rounded-md bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold">1</span>
                     Before State (At First)
                   </span>
-                  <span className="text-[11px] font-bold text-slate-500">
-                    Comparative Bars with Common Baseline
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold text-slate-500 hidden sm:inline">
+                      Comparative Bars with Common Baseline
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleAddBeforeBar}
+                      className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-black text-[11px] uppercase tracking-wider flex items-center gap-1 shadow-xs transition-all cursor-pointer"
+                    >
+                      <Plus className="w-3 h-3" />
+                      Add Bar
+                    </button>
+                  </div>
                 </div>
 
                 {/* Live Canvas Preview for Before State */}
@@ -2837,6 +2899,7 @@ export default function InteractiveBarBuilder({
                               onAddDiffSegment={handleBeforeAddDiffSegment}
                               onUpdateDiffSegment={handleBeforeUpdateDiffSegment}
                               onRemoveDiffSegment={handleBeforeRemoveDiffSegment}
+                              onDelete={handleDeleteBeforeBar}
                               onCollapse={() => handleToggleCollapseBeforeBar(bar.id)}
                             />
                           </div>
@@ -2856,9 +2919,19 @@ export default function InteractiveBarBuilder({
                     <span className="w-5 h-5 rounded-md bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold">2</span>
                     After State (In the End)
                   </span>
-                  <span className="text-[11px] font-bold text-emerald-700">
-                    Resulting Quantities Aligned to Baseline
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold text-emerald-700 hidden sm:inline">
+                      Resulting Quantities Aligned to Baseline
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleAddAfterBar}
+                      className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-black text-[11px] uppercase tracking-wider flex items-center gap-1 shadow-xs transition-all cursor-pointer"
+                    >
+                      <Plus className="w-3 h-3" />
+                      Add Bar
+                    </button>
+                  </div>
                 </div>
 
                 {/* Live Canvas Preview for After State */}
@@ -2929,6 +3002,7 @@ export default function InteractiveBarBuilder({
                             onAddDiffSegment={handleAfterAddDiffSegment}
                             onUpdateDiffSegment={handleAfterUpdateDiffSegment}
                             onRemoveDiffSegment={handleAfterRemoveDiffSegment}
+                            onDelete={handleDeleteAfterBar}
                             onCollapse={() => handleToggleCollapseAfterBar(bar.id)}
                           />
                         </div>
