@@ -1229,21 +1229,41 @@ export function CompactBarCanvas({
 
                       {bar.hasDifference && (
                         bar.diffType === 'FEWER' ? (
-                          <div
-                            style={{ width: `${bar.diffLength || 20}%` }}
-                            className="relative h-full ml-1 flex flex-col justify-between items-center py-0.5 px-1 overflow-visible select-none shrink-0"
-                          >
-                            <div
-                              className={`absolute right-0 w-0 border-r-2 border-dotted border-rose-400 pointer-events-none z-10 ${
-                                isBottom ? '-top-5 bottom-0' : 'top-0 -bottom-5'
-                              }`}
-                            >
-                              <span className="absolute -top-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
-                              <span className="absolute -bottom-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
-                            </div>
-                            <div className="absolute inset-0 bg-rose-50/20 rounded pointer-events-none border border-dashed border-rose-200/50" />
-                            <ShortageGapBracket cleanDiff={cleanDiff} isBottom={isBottom} isCompact={true} />
-                          </div>
+                          (() => {
+                            const segments = (bar.diffSegments && bar.diffSegments.length > 0)
+                              ? bar.diffSegments
+                              : [{ id: `${bar.id}-seg-1`, value: bar.diffValue, length: bar.diffLength || 20 }];
+                            return (
+                              <>
+                                {segments.map((seg, sIdx) => {
+                                  const cleanDiff = (seg.value || "").replace(/[+\-]/g, '').trim();
+                                  const isLastSeg = sIdx === segments.length - 1;
+                                  return (
+                                    <div
+                                      key={seg.id || sIdx}
+                                      style={{ width: `${seg.length || 18}%` }}
+                                      className="relative h-full ml-1 flex flex-col justify-between items-center py-0.5 px-1 overflow-visible select-none shrink-0"
+                                    >
+                                      {isLastSeg ? (
+                                        <div
+                                          className={`absolute right-0 w-0 border-r-2 border-dotted border-rose-400 pointer-events-none z-10 ${
+                                            isBottom ? '-top-5 bottom-0' : 'top-0 -bottom-5'
+                                          }`}
+                                        >
+                                          <span className="absolute -top-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                                          <span className="absolute -bottom-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                                        </div>
+                                      ) : (
+                                        <div className="absolute right-0 top-0 bottom-0 w-0 border-r border-dotted border-rose-300/80 pointer-events-none z-10" />
+                                      )}
+                                      <div className="absolute inset-0 bg-rose-50/20 rounded pointer-events-none border border-dashed border-rose-200/50" />
+                                      <ShortageGapBracket cleanDiff={cleanDiff} isBottom={isBottom} isCompact={true} />
+                                    </div>
+                                  );
+                                })}
+                              </>
+                            );
+                          })()
                         ) : (
                           (() => {
                             const segments = (bar.diffSegments && bar.diffSegments.length > 0)
@@ -1434,16 +1454,41 @@ export function CompactBarCanvas({
 
                       {bar.hasDifference && (
                         bar.diffType === 'FEWER' ? (
-                          <div
-                            style={{ width: `${bar.diffLength || 20}%` }}
-                            className="relative h-full ml-1 flex flex-col justify-between items-center py-0.5 px-1 overflow-visible select-none shrink-0"
-                          >
-                            <div className={`absolute right-0 w-0 border-r-2 border-dotted border-rose-400 pointer-events-none z-10 ${
-                              isBottom ? '-top-5 bottom-0' : 'top-0 -bottom-5'
-                            }`} />
-                            <div className="absolute inset-0 bg-rose-50/20 rounded pointer-events-none border border-dashed border-rose-200/50" />
-                            <ShortageGapBracket cleanDiff={cleanDiff} isBottom={isBottom} isCompact={true} />
-                          </div>
+                          (() => {
+                            const segments = (bar.diffSegments && bar.diffSegments.length > 0)
+                              ? bar.diffSegments
+                              : [{ id: `${bar.id}-seg-1`, value: bar.diffValue, length: bar.diffLength || 20 }];
+                            return (
+                              <>
+                                {segments.map((seg, sIdx) => {
+                                  const cleanDiff = (seg.value || "").replace(/[+\-]/g, '').trim();
+                                  const isLastSeg = sIdx === segments.length - 1;
+                                  return (
+                                    <div
+                                      key={seg.id || sIdx}
+                                      style={{ width: `${seg.length || 18}%` }}
+                                      className="relative h-full ml-1 flex flex-col justify-between items-center py-0.5 px-1 overflow-visible select-none shrink-0"
+                                    >
+                                      {isLastSeg ? (
+                                        <div
+                                          className={`absolute right-0 w-0 border-r-2 border-dotted border-rose-400 pointer-events-none z-10 ${
+                                            isBottom ? '-top-5 bottom-0' : 'top-0 -bottom-5'
+                                          }`}
+                                        >
+                                          <span className="absolute -top-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                                          <span className="absolute -bottom-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                                        </div>
+                                      ) : (
+                                        <div className="absolute right-0 top-0 bottom-0 w-0 border-r border-dotted border-rose-300/80 pointer-events-none z-10" />
+                                      )}
+                                      <div className="absolute inset-0 bg-rose-50/20 rounded pointer-events-none border border-dashed border-rose-200/50" />
+                                      <ShortageGapBracket cleanDiff={cleanDiff} isBottom={isBottom} isCompact={true} />
+                                    </div>
+                                  );
+                                })}
+                              </>
+                            );
+                          })()
                         ) : (
                           (() => {
                             const segments = (bar.diffSegments && bar.diffSegments.length > 0)
@@ -1798,49 +1843,50 @@ function BarParametersEditor({
           </p>
         )}
 
-        {/* When FEWER: Single shortage bracket controls */}
-        {bar.hasDifference && bar.diffType === 'FEWER' && (
-          <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start bg-rose-50/50 p-3 rounded-xl border border-rose-200">
-            <div className="sm:col-span-5 space-y-1">
-              <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
-                Shortage Value
-              </label>
-              <input
-                type="text"
-                value={bar.diffValue || ''}
-                onChange={(e) => onUpdate(bar.id, 'diffValue', e.target.value)}
-                placeholder="e.g. 5,000"
-                className="w-full border rounded-xl px-3 py-1.5 text-xs font-bold bg-white border-slate-300 text-slate-900 focus:outline-none focus:border-rose-500 shadow-2xs"
-              />
-            </div>
-            <div className="sm:col-span-7 space-y-1">
-              <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-slate-500">
-                <span>Shortage Bracket Width</span>
-                <EditablePercentBadge
-                  value={bar.diffLength || 20}
-                  onChange={(val) => onUpdate(bar.id, 'diffLength', val)}
-                  min={5}
-                  max={60}
-                  colorClass="text-rose-600"
-                />
-              </div>
-              <input
-                type="range"
-                min="5"
-                max="60"
-                value={bar.diffLength || 20}
-                onChange={(e) => onUpdate(bar.id, 'diffLength', Number(e.target.value))}
-                className="w-full accent-rose-600 cursor-pointer"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* When MORE: Multi-Segment Difference Controls! */}
-        {bar.hasDifference && bar.diffType !== 'FEWER' && (() => {
+        {/* Difference Segments Controls (Multi-Segment for both MORE and FEWER!) */}
+        {bar.hasDifference && (() => {
+          const isFewer = bar.diffType === 'FEWER';
           const segments = (bar.diffSegments && bar.diffSegments.length > 0)
             ? bar.diffSegments
             : [{ id: `${bar.id}-seg-1`, value: bar.diffValue || '', length: bar.diffLength || 20 }];
+
+          const theme = isFewer ? {
+            bgCard: 'bg-rose-50/60',
+            borderCard: 'border-rose-200',
+            badgeBg: 'bg-rose-600',
+            titleText: 'text-rose-800',
+            tagText: 'text-rose-600 bg-rose-100',
+            inputFocus: 'focus:border-rose-500',
+            sliderColor: 'text-rose-600',
+            sliderAccent: 'accent-rose-600',
+            btnAddText: 'text-rose-700 hover:text-rose-800',
+            btnAddBg: 'bg-white hover:bg-rose-50',
+            btnAddBorder: 'border-rose-300 hover:border-rose-400',
+            btnAddIcon: 'text-rose-600',
+            segmentLabel: 'Shortage Segment',
+            valueLabel: 'Shortage Value',
+            widthLabel: 'Shortage Bracket Width',
+            placeholder: 'e.g. 5,000',
+            addBtnText: '+ Add Another Segment (e.g. [ 6,000 ] + [ 6,000 ])'
+          } : {
+            bgCard: 'bg-emerald-50/60',
+            borderCard: 'border-emerald-200',
+            badgeBg: 'bg-emerald-600',
+            titleText: 'text-emerald-800',
+            tagText: 'text-emerald-600 bg-emerald-100',
+            inputFocus: 'focus:border-emerald-500',
+            sliderColor: 'text-emerald-600',
+            sliderAccent: 'accent-emerald-600',
+            btnAddText: 'text-emerald-700 hover:text-emerald-800',
+            btnAddBg: 'bg-white hover:bg-emerald-50',
+            btnAddBorder: 'border-emerald-300 hover:border-emerald-400',
+            btnAddIcon: 'text-emerald-600',
+            segmentLabel: 'Difference Segment',
+            valueLabel: 'Segment Value',
+            widthLabel: 'Segment Width',
+            placeholder: 'e.g. 8,000',
+            addBtnText: '+ Add Another Segment (e.g. [ 8,000 ] + [ 8,000 ])'
+          };
 
           return (
             <div className="space-y-2.5">
@@ -1848,16 +1894,16 @@ function BarParametersEditor({
                 {segments.map((seg, sIdx) => (
                   <div
                     key={seg.id || sIdx}
-                    className="p-3 bg-emerald-50/60 border border-emerald-200 rounded-xl space-y-2"
+                    className={`p-3 ${theme.bgCard} border ${theme.borderCard} rounded-xl space-y-2`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-black uppercase text-emerald-800 flex items-center gap-1.5">
-                        <span className="w-4 h-4 rounded-full bg-emerald-600 text-white text-[9px] flex items-center justify-center font-bold">
+                      <span className={`text-[11px] font-black uppercase ${theme.titleText} flex items-center gap-1.5`}>
+                        <span className={`w-4 h-4 rounded-full ${theme.badgeBg} text-white text-[9px] flex items-center justify-center font-bold`}>
                           {sIdx + 1}
                         </span>
-                        Difference Segment {sIdx + 1}
+                        {theme.segmentLabel} {sIdx + 1}
                         {segments.length > 1 && (
-                          <span className="text-[9px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.2 rounded-full">
+                          <span className={`text-[9px] font-bold ${theme.tagText} px-1.5 py-0.2 rounded-full`}>
                             Partitioned Part
                           </span>
                         )}
@@ -1878,25 +1924,25 @@ function BarParametersEditor({
                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
                       <div className="sm:col-span-5 space-y-1">
                         <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
-                          Segment Value
+                          {theme.valueLabel}
                         </label>
                         <input
                           type="text"
                           value={seg.value || ''}
                           onChange={(e) => onUpdateDiffSegment(bar.id, seg.id, 'value', e.target.value)}
-                          placeholder="e.g. 8,000"
-                          className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-emerald-500 shadow-2xs font-mono"
+                          placeholder={theme.placeholder}
+                          className={`w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-900 focus:outline-none ${theme.inputFocus} shadow-2xs font-mono`}
                         />
                       </div>
                       <div className="sm:col-span-7 space-y-1">
                         <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-slate-500">
-                          <span>Segment Width</span>
+                          <span>{theme.widthLabel}</span>
                           <EditablePercentBadge
                             value={seg.length || 18}
                             onChange={(val) => onUpdateDiffSegment(bar.id, seg.id, 'length', val)}
                             min={5}
                             max={60}
-                            colorClass="text-emerald-600"
+                            colorClass={theme.sliderColor}
                           />
                         </div>
                         <input
@@ -1905,7 +1951,7 @@ function BarParametersEditor({
                           max="60"
                           value={seg.length || 18}
                           onChange={(e) => onUpdateDiffSegment(bar.id, seg.id, 'length', Number(e.target.value))}
-                          className="w-full accent-emerald-600 cursor-pointer"
+                          className={`w-full ${theme.sliderAccent} cursor-pointer`}
                         />
                       </div>
                     </div>
@@ -1918,10 +1964,10 @@ function BarParametersEditor({
                 <button
                   type="button"
                   onClick={() => onAddDiffSegment(bar.id)}
-                  className="w-full py-2 px-3 text-xs font-black text-emerald-700 hover:text-emerald-800 bg-white hover:bg-emerald-50 border-2 border-dashed border-emerald-300 hover:border-emerald-400 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-2xs active:scale-[0.99]"
+                  className={`w-full py-2 px-3 text-xs font-black ${theme.btnAddText} ${theme.btnAddBg} border-2 border-dashed ${theme.btnAddBorder} rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-2xs active:scale-[0.99]`}
                 >
-                  <Plus className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>+ Add Another Segment (e.g. [ 8,000 ] + [ 8,000 ])</span>
+                  <Plus className={`w-3.5 h-3.5 ${theme.btnAddIcon}`} />
+                  <span>{theme.addBtnText}</span>
                 </button>
               )}
             </div>
@@ -2129,7 +2175,23 @@ export default function InteractiveBarBuilder({
   };
 
   const handleUpdateBeforeBar = (id, field, val) => {
-    setUserBeforeBars(prev => prev.map(b => b.id === id ? { ...b, [field]: val } : b));
+    setUserBeforeBars(prev => prev.map(b => {
+      if (b.id !== id) return b;
+      if (field === 'diffType') {
+        const cleanedSegments = (b.diffSegments || []).map(s => ({
+          ...s,
+          value: val === 'FEWER' && s.value ? s.value.replace(/[+\-]/g, '').trim() : s.value
+        }));
+        return {
+          ...b,
+          diffType: val,
+          diffValue: val === 'FEWER' && b.diffValue ? b.diffValue.replace(/[+\-]/g, '').trim() : b.diffValue,
+          diffSegments: cleanedSegments.length > 0 ? cleanedSegments : [{ id: `${b.id}-seg-1`, value: '', length: 20 }],
+          bracketPosition: b.bracketPosition || 'bottom'
+        };
+      }
+      return { ...b, [field]: val };
+    }));
     setStage2Status('idle');
     setStage2ErrorMsg(null);
   };
@@ -2415,8 +2477,18 @@ export default function InteractiveBarBuilder({
       if (field === 'diffValue' && bar.diffType === 'FEWER') {
         finalVal = val.replace(/[+\-]/g, '');
       }
-      if (field === 'diffType' && val === 'FEWER' && bar.diffValue) {
-        return { ...bar, diffType: val, diffValue: bar.diffValue.replace(/[+\-]/g, '').trim(), bracketPosition: bar.bracketPosition || 'bottom' };
+      if (field === 'diffType') {
+        const cleanedSegments = (bar.diffSegments || []).map(s => ({
+          ...s,
+          value: val === 'FEWER' && s.value ? s.value.replace(/[+\-]/g, '').trim() : s.value
+        }));
+        return {
+          ...bar,
+          diffType: val,
+          diffValue: val === 'FEWER' && bar.diffValue ? bar.diffValue.replace(/[+\-]/g, '').trim() : bar.diffValue,
+          diffSegments: cleanedSegments.length > 0 ? cleanedSegments : [{ id: `${bar.id}-seg-1`, value: '', length: 20 }],
+          bracketPosition: bar.bracketPosition || 'bottom'
+        };
       }
       return { ...bar, [field]: finalVal };
     }));
@@ -2891,24 +2963,40 @@ export default function InteractiveBarBuilder({
                                 {bar.hasDifference && (
                                   bar.diffType === 'FEWER' ? (
                                     (() => {
-                                      const cleanDiffNum = (bar.diffValue || "").replace(/[+\-]/g, '').trim();
+                                      const segments = (bar.diffSegments && bar.diffSegments.length > 0)
+                                        ? bar.diffSegments
+                                        : [{ id: `${bar.id}-seg-1`, value: bar.diffValue, length: bar.diffLength || 20 }];
                                       const isBottomBracket = (bar.bracketPosition || (idx > 0 ? 'bottom' : 'top')) === 'bottom';
                                       return (
-                                        <div
-                                          style={{ width: `${bar.diffLength || 20}%` }}
-                                          className="relative h-full ml-1 flex flex-col justify-between items-center py-1 px-1 transition-all duration-150 overflow-visible select-none shrink-0"
-                                        >
-                                          <div
-                                            className={`absolute right-0 w-0 border-r-2 border-dotted border-rose-400 pointer-events-none z-10 ${
-                                              isBottomBracket ? '-top-6 bottom-0' : 'top-0 -bottom-6'
-                                            }`}
-                                          >
-                                            <span className="absolute -top-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
-                                            <span className="absolute -bottom-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
-                                          </div>
-                                          <div className="absolute inset-0 bg-rose-50/20 rounded-lg pointer-events-none border border-dashed border-rose-200/50" />
-                                          <ShortageGapBracket cleanDiff={cleanDiffNum} isBottom={isBottomBracket} />
-                                        </div>
+                                        <>
+                                          {segments.map((seg, sIdx) => {
+                                            const cleanDiffNum = (seg.value || "").replace(/[+\-]/g, '').trim();
+                                            const isLastSeg = sIdx === segments.length - 1;
+                                            return (
+                                              <div
+                                                key={seg.id || sIdx}
+                                                style={{ width: `${seg.length || 18}%` }}
+                                                className="relative h-full ml-1 flex flex-col justify-between items-center py-1 px-1 transition-all duration-150 overflow-visible select-none shrink-0"
+                                                title={`Shortage segment ${sIdx + 1}: ${cleanDiffNum || 'Diff'}`}
+                                              >
+                                                {isLastSeg ? (
+                                                  <div
+                                                    className={`absolute right-0 w-0 border-r-2 border-dotted border-rose-400 pointer-events-none z-10 ${
+                                                      isBottomBracket ? '-top-6 bottom-0' : 'top-0 -bottom-6'
+                                                    }`}
+                                                  >
+                                                    <span className="absolute -top-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                                                    <span className="absolute -bottom-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                                                  </div>
+                                                ) : (
+                                                  <div className="absolute right-0 top-0 bottom-0 w-0 border-r border-dotted border-rose-300/80 pointer-events-none z-10" />
+                                                )}
+                                                <div className="absolute inset-0 bg-rose-50/20 rounded-lg pointer-events-none border border-dashed border-rose-200/50" />
+                                                <ShortageGapBracket cleanDiff={cleanDiffNum} isBottom={isBottomBracket} />
+                                              </div>
+                                            );
+                                          })}
+                                        </>
                                       );
                                     })()
                                   ) : (
@@ -3584,31 +3672,46 @@ export default function InteractiveBarBuilder({
                             {/* Difference Segment / Bracket */}
                             {bar.hasDifference && (
                               bar.diffType === 'FEWER' ? (
-                                /* WHEN LESS / FEWER: Open shortage gap with bracket and unsigned numeric value */
+                                /* WHEN LESS / FEWER: Open shortage gap with bracket(s) and unsigned numeric value(s) */
                                 (() => {
-                                  const cleanDiffNum = (bar.diffValue || "").replace(/[+\-]/g, '').trim();
+                                  const segments = (bar.diffSegments && bar.diffSegments.length > 0)
+                                    ? bar.diffSegments
+                                    : [{ id: `${bar.id}-seg-1`, value: bar.diffValue, length: bar.diffLength || 20 }];
                                   const isBottomBracket = (bar.bracketPosition || (idx > 0 ? 'bottom' : 'top')) === 'bottom';
                                   return (
-                                    <div
-                                      style={{ width: `${bar.diffLength}%` }}
-                                      className="relative h-full ml-1 flex flex-col justify-between items-center py-1 px-1 transition-all duration-150 overflow-visible select-none shrink-0"
-                                      title="Difference bracket showing comparison with reference"
-                                    >
-                                      {/* Vertical dotted alignment reference line reaching down from the longer bar above (or to bar below) */}
-                                      <div
-                                        className={`absolute right-0 w-0 border-r-2 border-dotted border-rose-400 pointer-events-none z-10 ${
-                                          isBottomBracket ? '-top-6 bottom-0' : 'top-0 -bottom-6'
-                                        }`}
-                                      >
-                                        <span className="absolute -top-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
-                                        <span className="absolute -bottom-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
-                                      </div>
+                                    <>
+                                      {segments.map((seg, sIdx) => {
+                                        const cleanDiffNum = (seg.value || "").replace(/[+\-]/g, '').trim();
+                                        const isLastSeg = sIdx === segments.length - 1;
+                                        return (
+                                          <div
+                                            key={seg.id || sIdx}
+                                            style={{ width: `${seg.length || 18}%` }}
+                                            className="relative h-full ml-1 flex flex-col justify-between items-center py-1 px-1 transition-all duration-150 overflow-visible select-none shrink-0"
+                                            title={`Shortage segment ${sIdx + 1}: ${cleanDiffNum || 'Diff'}`}
+                                          >
+                                            {/* Vertical dotted alignment reference line: on the final segment, reach reference bar with red dots; on inner segments, show subtle inner separator */}
+                                            {isLastSeg ? (
+                                              <div
+                                                className={`absolute right-0 w-0 border-r-2 border-dotted border-rose-400 pointer-events-none z-10 ${
+                                                  isBottomBracket ? '-top-6 bottom-0' : 'top-0 -bottom-6'
+                                                }`}
+                                              >
+                                                <span className="absolute -top-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                                                <span className="absolute -bottom-1 -right-[3px] w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                                              </div>
+                                            ) : (
+                                              <div className="absolute right-0 top-0 bottom-0 w-0 border-r border-dotted border-rose-300/80 pointer-events-none z-10" />
+                                            )}
 
-                                      {/* Subtle open gap floor/ceiling guide */}
-                                      <div className="absolute inset-0 bg-rose-50/20 rounded-lg pointer-events-none border border-dashed border-rose-200/50" />
+                                            {/* Subtle open gap floor/ceiling guide */}
+                                            <div className="absolute inset-0 bg-rose-50/20 rounded-lg pointer-events-none border border-dashed border-rose-200/50" />
 
-                                      <ShortageGapBracket cleanDiff={cleanDiffNum} isBottom={isBottomBracket} />
-                                    </div>
+                                            <ShortageGapBracket cleanDiff={cleanDiffNum} isBottom={isBottomBracket} />
+                                          </div>
+                                        );
+                                      })}
+                                    </>
                                   );
                                 })()
                               ) : (
