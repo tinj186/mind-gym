@@ -521,80 +521,106 @@ export function checkBarModelParameters(userBars = [], config = {}, totalState =
     }
   }
 
-  // 3. Validate Base Entity
-  let expectedBase = expectedEntities.find(e => e.relation === 'BASE') || expectedEntities[0];
+  // 3. Validate Base Entities
+  let expectedBases = expectedEntities.filter(e => e.relation === 'BASE');
   let compEntities = expectedEntities.filter(e => e.relation === 'MORE' || e.relation === 'FEWER');
 
   // Flexible baseline for 2-entity difference/transfer: either entity can serve as base reference!
   if ((config?.target?.type === 'DIFFERENCE' || config?.target?.type === 'TRANSFER' || config?.problemType === 'EQUALIZING_TRANSFER' || config?.problemType === 'DIFFERENCE_DEDUCTION') && expectedEntities.length === 2 && !config?.total) {
+    const defaultBase = expectedBases[0] || expectedEntities[0];
     const barWithoutDiff = rawBars.find(b => !b.hasDifference);
     if (barWithoutDiff) {
       const matchedEntity = expectedEntities.find(e => normalizeName(e.name) === normalizeName(barWithoutDiff.name));
-      if (matchedEntity && matchedEntity.id !== expectedBase.id) {
+      if (matchedEntity && matchedEntity.id !== defaultBase.id) {
         const otherEntity = expectedEntities.find(e => e.id !== matchedEntity.id);
         const isOtherLarger = Number(otherEntity.value || 0) >= Number(matchedEntity.value || 0);
-        expectedBase = { ...matchedEntity, relation: 'BASE' };
+        expectedBases = [{ ...matchedEntity, relation: 'BASE' }];
         compEntities = [{
           ...otherEntity,
           relation: isOtherLarger ? 'MORE' : 'FEWER',
-          diffValue: otherEntity.diffValue !== undefined ? otherEntity.diffValue : (expectedBase.diffValue || '?'),
-          displayDiff: otherEntity.displayDiff !== undefined ? otherEntity.displayDiff : (expectedBase.displayDiff || '?'),
-          actualDiff: otherEntity.actualDiff || expectedBase.actualDiff
+          diffValue: otherEntity.diffValue !== undefined ? otherEntity.diffValue : (defaultBase.diffValue || '?'),
+          displayDiff: otherEntity.displayDiff !== undefined ? otherEntity.displayDiff : (defaultBase.displayDiff || '?'),
+          actualDiff: otherEntity.actualDiff || defaultBase.actualDiff
         }];
       }
     }
   }
 
-  const baseBar = rawBars.find(b => normalizeName(b.name) === normalizeName(expectedBase.name));
-  if (baseBar) {
-    if (baseBar.hasDifference) {
-      return {
-        isValid: false,
-        defect: 'BASE_ENTITY_HAS_DIFF',
-        errorMsg: `"${expectedBase.name}" is the base reference quantity and should not have a difference segment attached.`,
-        details: { entity: expectedBase.name }
-      };
+  if (expectedBases.length === 0) {
+    expectedBases = [expectedEntities[0]];
+  }
+
+  for (const expectedBase of expectedBases) {
+    const baseBar = rawBars.find(b => normalizeName(b.name) === normalizeName(expectedBase.name));
+    if (baseBar) {
+      if (baseBar.hasDifference) {
+        return {
+          isValid: false,
+          defect: 'BASE_ENTITY_HAS_DIFF',
+          errorMsg: `"${expectedBase.name}" is the base reference quantity and should not have a difference segment attached.`,
+          details: { entity: expectedBase.name }
+        };
+      }
+
+      if (expectedBase.value !== undefined && expectedBase.value !== null && expectedBase.value !== '') {
+        const expVal = normalizeNumber(expectedBase.value);
+        const actVal = normalizeNumber(baseBar.value);
+        const displayVal = expectedBase.displayValue || (expectedBase.value === '?' ? '?' : Number(expectedBase.value).toLocaleString());
+
+        const isEqualizingBarTarget = config?.problemType === 'EQUALIZING_TRANSFER' && 
+          (config?.targetType === 'BAR' || config?.target?.type === 'BAR' || config?.targetType !== 'DIFFERENCE');
+
+        if (expVal === '?' || isEqualizingBarTarget || (config?.problemType === 'THREE_ENTITY_GRAND_TOTAL' && expVal === '?')) {
+          const isMatch = !actVal || actVal === '?' || actVal === '1' || actVal === '1unit' ||
+            (expVal && expVal !== '?' && actVal === expVal) ||
+            (config.smallerValue && actVal === normalizeNumber(config.smallerValue)) ||
+            (config.largerValue && actVal === normalizeNumber(config.largerValue)) ||
+            (config.equalizedValue && actVal === normalizeNumber(config.equalizedValue));
+          if (!isMatch) {
+            return {
+              isValid: false,
+              defect: 'INCORRECT_BASE_VALUE',
+              errorMsg: `"${expectedBase.name}" is an unknown initial quantity. Mark it with "?" or leave it blank.`,
+              details: { entity: expectedBase.name, expected: '?', actual: actVal }
+            };
+          }
+        } else {
+          if (!actVal) {
+            return {
+              isValid: false,
+              defect: 'MISSING_BASE_VALUE',
+              errorMsg: `Please enter the base value (${displayVal}) inside "${expectedBase.name}"'s bar.`,
+              details: { entity: expectedBase.name, expectedValue: displayVal }
+            };
+          }
+          if (actVal !== expVal) {
+            return {
+              isValid: false,
+              defect: 'INCORRECT_BASE_VALUE',
+              errorMsg: `The value for "${expectedBase.name}" should be ${displayVal}, but got "${baseBar.value}".`,
+              details: { entity: expectedBase.name, expected: expVal, actual: actVal }
+            };
+          }
+        }
+      }
     }
+  }
 
-    if (expectedBase.value !== undefined && expectedBase.value !== null && expectedBase.value !== '') {
-      const expVal = normalizeNumber(expectedBase.value);
-      const actVal = normalizeNumber(baseBar.value);
-      const displayVal = expectedBase.displayValue || (expectedBase.value === '?' ? '?' : Number(expectedBase.value).toLocaleString());
-
-      const isEqualizingBarTarget = config?.problemType === 'EQUALIZING_TRANSFER' && 
-        (config?.targetType === 'BAR' || config?.target?.type === 'BAR' || config?.targetType !== 'DIFFERENCE');
-
-      if (expVal === '?' || isEqualizingBarTarget) {
-        const isMatch = !actVal || actVal === '?' || actVal === '1' || actVal === '1unit' ||
-          (expVal && expVal !== '?' && actVal === expVal) ||
-          (config.smallerValue && actVal === normalizeNumber(config.smallerValue)) ||
-          (config.largerValue && actVal === normalizeNumber(config.largerValue)) ||
-          (config.equalizedValue && actVal === normalizeNumber(config.equalizedValue));
-        if (!isMatch) {
-          return {
-            isValid: false,
-            defect: 'INCORRECT_BASE_VALUE',
-            errorMsg: `"${expectedBase.name}" is an unknown initial quantity. Mark it with "?" or leave it blank.`,
-            details: { entity: expectedBase.name, expected: '?', actual: actVal }
-          };
-        }
-      } else {
-        if (!actVal) {
-          return {
-            isValid: false,
-            defect: 'MISSING_BASE_VALUE',
-            errorMsg: `Please enter the base value (${displayVal}) inside "${expectedBase.name}"'s bar.`,
-            details: { entity: expectedBase.name, expectedValue: displayVal }
-          };
-        }
-        if (actVal !== expVal) {
-          return {
-            isValid: false,
-            defect: 'INCORRECT_BASE_VALUE',
-            errorMsg: `The value for "${expectedBase.name}" should be ${displayVal}, but got "${baseBar.value}".`,
-            details: { entity: expectedBase.name, expected: expVal, actual: actVal }
-          };
-        }
+  // 3b. Validate Multiple Unit Entities (e.g. 2 units)
+  const multipleEntities = expectedEntities.filter(e => (e.relation === 'MULTIPLE' || e.isMultiple) && e.relation !== 'MORE' && e.relation !== 'FEWER');
+  for (const multEnt of multipleEntities) {
+    const multBar = rawBars.find(b => normalizeName(b.name) === normalizeName(multEnt.name));
+    if (!multBar) continue;
+    const refBase = expectedBases[0];
+    const refBar = refBase ? rawBars.find(b => normalizeName(b.name) === normalizeName(refBase.name)) : null;
+    if (refBar && multEnt.multipleFactor && multEnt.multipleFactor > 1) {
+      if ((multBar.length || 50) < (refBar.length || 50)) {
+        return {
+          isValid: false,
+          defect: 'MULTIPLE_BAR_TOO_SHORT',
+          errorMsg: `"${multEnt.name}" represents ${multEnt.multipleFactor} units (${multEnt.multipleFactor} times "${refBase.name}"). Adjust "${multEnt.name}"'s bar length to be longer than "${refBase.name}".`,
+          details: { entity: multEnt.name }
+        };
       }
     }
   }
@@ -1058,6 +1084,7 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
               const isBase = e.relation === 'BASE';
               const isMore = e.relation === 'MORE';
               const isFewer = e.relation === 'FEWER';
+              const isMultiple = e.relation === 'MULTIPLE' || e.isMultiple;
               const cleanDiffNum = (e.displayDiff && e.displayDiff !== '?') 
                 ? e.displayDiff.replace(/[+\-]/g, '').trim()
                 : (e.diffValue && e.diffValue !== '?' && !isNaN(Number(e.diffValue)))
@@ -1065,6 +1092,24 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
                 : (e.actualDiff && !isNaN(Number(e.actualDiff)))
                 ? Number(e.actualDiff).toLocaleString()
                 : (e.displayDiff || e.diffValue || '?').replace(/[+\-]/g, '').trim() || '?';
+
+              let baseWidth = '50%';
+              if (isMultiple && !isMore && !isFewer) {
+                baseWidth = `${Math.min(80, (e.multipleFactor || 2) * 35)}%`;
+              } else if (isFewer) {
+                baseWidth = '38%';
+              } else if (e.diffSegments && e.diffSegments.length > 1) {
+                baseWidth = '38%';
+              } else if (isMore && isMultiple) {
+                baseWidth = `${Math.min(60, (e.multipleFactor || 2) * 28)}%`;
+              }
+
+              let baseLabel = "";
+              if (isBase) {
+                baseLabel = e.displayValue || (e.value ? (e.value === '?' ? '?' : Number(e.value).toLocaleString()) : (config?.problemType === 'THREE_ENTITY_GRAND_TOTAL' ? '1 unit' : ''));
+              } else if (isMultiple) {
+                baseLabel = e.displayValue || `${e.multipleFactor || 2} units`;
+              }
 
               return (
                 <div key={e.id || idx} className="flex items-center gap-2 sm:gap-3">
@@ -1080,22 +1125,42 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
                     <div className="flex items-center h-11 bg-slate-50/80 rounded-xl border border-slate-200 p-1 shadow-xs relative overflow-visible">
                       {/* Solid Base Segment */}
                       <div
-                        style={{ width: isFewer ? '38%' : '50%' }}
+                        style={{ width: baseWidth }}
                         className={`h-full rounded-lg flex items-center justify-center text-xs font-black text-white shadow-xs px-2 truncate shrink-0 ${
                           idx === 0 ? 'bg-indigo-600' : idx === 1 ? 'bg-indigo-500' : 'bg-indigo-400'
                         }`}
                       >
-                        {isBase ? (e.displayValue || (e.value ? Number(e.value).toLocaleString() : "")) : ""}
+                        {baseLabel}
                       </div>
 
-                      {/* MORE: Solid green segment protruding */}
+                      {/* MORE: Solid green segment(s) protruding */}
                       {isMore && (
-                        <div
-                          style={{ width: '22%' }}
-                          className="h-full rounded-lg ml-1 px-2 flex items-center justify-center text-xs font-black text-white shadow-xs border border-emerald-400 border-dashed bg-emerald-500 truncate shrink-0"
-                        >
-                          +{cleanDiffNum || "Diff"}
-                        </div>
+                        e.diffSegments && e.diffSegments.length > 1 ? (
+                          e.diffSegments.map((seg, sIdx) => {
+                            const segVal = seg.displayValue || (seg.value ? (isNaN(Number(seg.value)) ? seg.value : Number(seg.value).toLocaleString()) : '?');
+                            const cleanVal = `${segVal}`.replace(/[+\-]/g, '').trim();
+                            return (
+                              <div
+                                key={seg.id || sIdx}
+                                style={{ width: `${seg.length || 18}%` }}
+                                className={`h-full rounded-lg ml-1 px-1.5 flex items-center justify-center text-xs font-black text-white shadow-xs border border-dashed truncate shrink-0 ${
+                                  sIdx === 0 
+                                    ? 'bg-emerald-500 border-emerald-400' 
+                                    : 'bg-teal-500 border-teal-400'
+                                }`}
+                              >
+                                +{cleanVal}
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <div
+                            style={{ width: '22%' }}
+                            className="h-full rounded-lg ml-1 px-2 flex items-center justify-center text-xs font-black text-white shadow-xs border border-emerald-400 border-dashed bg-emerald-500 truncate shrink-0"
+                          >
+                            +{cleanDiffNum || "Diff"}
+                          </div>
+                        )
                       )}
 
                       {/* FEWER: Shortage gap with directional bracket and unsigned diff */}
@@ -1156,6 +1221,14 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
           <span className="font-bold text-rose-950">Target to Solve:</span>
           <span className="font-black text-rose-800 bg-rose-200 px-2.5 py-0.5 rounded-lg">
             Find Difference
+          </span>
+        </div>
+      )}
+      {target?.type === 'COMBINED' && (
+        <div className="flex items-center justify-between bg-purple-50 p-3 rounded-2xl border border-purple-200 text-xs">
+          <span className="font-bold text-purple-950">Target to Solve:</span>
+          <span className="font-black text-purple-800 bg-purple-200 px-2.5 py-0.5 rounded-lg">
+            Find {target.label || 'Combined Amount'}
           </span>
         </div>
       )}
@@ -1559,6 +1632,14 @@ export function CompactBarCanvas({
           <span className="font-bold text-rose-950">Target to Solve:</span>
           <span className="font-black text-rose-800 bg-rose-200 px-2.5 py-0.5 rounded-lg">
             Find Difference
+          </span>
+        </div>
+      )}
+      {target?.type === 'COMBINED' && (
+        <div className="flex items-center justify-between bg-purple-50 px-3 py-2 rounded-xl border border-purple-200 text-xs">
+          <span className="font-bold text-purple-950">Target to Solve:</span>
+          <span className="font-black text-purple-800 bg-purple-200 px-2.5 py-0.5 rounded-lg">
+            Find {target.label || 'Combined Amount'}
           </span>
         </div>
       )}
@@ -2607,7 +2688,13 @@ export default function InteractiveBarBuilder({
       const hasDiff = e.relation === 'MORE' || e.relation === 'FEWER';
 
       let defaultSegments = [];
-      if (hasDiff && e.relation !== 'FEWER') {
+      if (e.diffSegments && e.diffSegments.length > 0) {
+        defaultSegments = e.diffSegments.map((s, sIdx) => ({
+          id: s.id || `bar-${idx + 1}-seg-${sIdx + 1}`,
+          value: s.displayValue || (s.value ? `${s.value}`.replace(/[+\-]/g, '').trim() : cleanDiff),
+          length: s.length || 18
+        }));
+      } else if (hasDiff && e.relation !== 'FEWER') {
         if (config.problemType === 'EQUALIZING_TRANSFER' && config.transferAmount) {
           const tVal = Number(config.transferAmount).toLocaleString();
           defaultSegments = [
@@ -2621,14 +2708,18 @@ export default function InteractiveBarBuilder({
         }
       }
 
+      const barLength = e.isMultiple || e.relation === 'MULTIPLE' 
+        ? Math.min(85, (e.multipleFactor || 2) * 35) 
+        : (e.relation === 'FEWER' ? 38 : (defaultSegments.length > 1 ? 40 : 50));
+
       return {
         id: `bar-${idx + 1}`,
         name: e.name,
-        length: 50,
+        length: barLength,
         value: e.displayValue || (e.value !== undefined && e.value !== null ? (e.value === '?' ? '?' : Number(e.value).toLocaleString()) : ''),
         hasDifference: hasDiff,
         diffType: e.relation === 'FEWER' ? 'FEWER' : 'MORE',
-        diffLength: defaultSegments.length > 1 ? 36 : 20,
+        diffLength: defaultSegments.length > 1 ? defaultSegments.reduce((acc, s) => acc + (s.length || 18), 0) : 20,
         diffValue: defaultSegments.length > 1 ? defaultSegments[0].value : cleanDiff,
         diffSegments: defaultSegments,
         bracketPosition: 'bottom',
@@ -3854,6 +3945,14 @@ export default function InteractiveBarBuilder({
                 <span className="font-bold text-rose-950">Target to Solve:</span>
                 <span className="font-black text-rose-800 bg-rose-200 px-3 py-1 rounded-xl">
                   Find Difference
+                </span>
+              </div>
+            )}
+            {target.type === 'COMBINED' && userBars.length > 0 && (
+              <div className="flex items-center justify-between bg-purple-50/80 p-3.5 rounded-2xl border border-purple-200 text-xs">
+                <span className="font-bold text-purple-950">Target to Solve:</span>
+                <span className="font-black text-purple-800 bg-purple-200 px-3 py-1 rounded-xl">
+                  Find {target.label || 'Combined Amount'}
                 </span>
               </div>
             )}

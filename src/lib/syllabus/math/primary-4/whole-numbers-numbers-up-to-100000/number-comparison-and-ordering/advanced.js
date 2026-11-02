@@ -1286,97 +1286,282 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         finalAnswer = (amountC - amountA).toString();
       }
 
-      visualEngineStr = JSON.stringify({
-        componentToRender: "BAR_MODEL_COMPARISON",
-        componentData: {
-          modelType: "BAR_MODEL_COMPARISON",
-          bars: [
-            {
-              name: nameA,
-              value: questionTarget === 'A' ? '?' : '',
-              layoutSize: amountA,
-              parts: [
-                {
-                  label: questionTarget === 'A' ? '?' : '1 unit',
-                  size: amountA,
-                  bgClass: questionTarget === 'A' ? 'bg-indigo-600 text-white font-black' : 'bg-blue-500 text-white'
-                }
-              ]
-            },
-            {
-              name: nameB,
-              value: questionTarget === 'B' ? '?' : '',
-              layoutSize: amountB,
-              parts: [
-                {
-                  label: '1 unit',
-                  size: amountA,
-                  bgClass: 'bg-blue-500 text-white'
-                },
-                {
-                  label: '',
-                  bracket: `${x.toLocaleString()}`,
-                  size: x,
-                  isExtra: true,
-                  bgClass: 'bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400'
-                }
-              ]
-            },
-            {
-              name: nameC,
-              value: questionTarget === 'C' ? '?' : '',
-              layoutSize: amountC,
-              parts: [
-                {
-                  label: '1 unit',
-                  size: amountA,
-                  bgClass: 'bg-blue-500 text-white'
-                },
-                {
-                  label: '',
-                  size: x,
-                  isExtra: true,
-                  bgClass: 'bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400'
-                },
-                {
-                  label: '',
-                  bracket: `${y.toLocaleString()}`,
-                  size: y,
-                  isExtra: true,
-                  bgClass: 'bg-emerald-100 text-emerald-900 border-l-2 border-dashed border-emerald-400'
-                }
-              ]
-            }
-          ],
-          whole: grandTotal.toLocaleString()
-        }
-      }, null, 2);
-
-      promptInstruction = `- Question stem: "${nameA}, ${nameB}, and ${nameC} collected a grand total of ${grandTotal.toLocaleString()} ${item}. ${nameB} collected ${x.toLocaleString()} more ${item} than ${nameA}. ${nameC} collected ${y.toLocaleString()} more ${item} than ${nameB}. ${targetQuestionText}"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+      const threeUnits = 3 * baseUnit;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "NONE",
+          hideVisual: true,
+          componentData: {
+            hideVisual: true,
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: "", layoutSize: amountA, displayValue: "" },
+              { name: nameB, value: "", layoutSize: amountB, displayValue: "" },
+              { name: nameC, value: "", layoutSize: amountC, displayValue: "" }
+            ],
+            whole: grandTotal.toLocaleString()
+          }
+        }, null, 2);
+
         const steps = [
-          { label: `Write the working equation to find the total extra amount above the 3 equal base units:`, expectedAnswer: `${x} + ${x} + ${y} = ${extraTotal}` },
-          { label: `Write the working equation to remove the extra amounts from the grand total:`, expectedAnswer: `${grandTotal} - ${extraTotal} = ${3 * baseUnit}` },
-          { label: `Write the working equation to find 1 unit (${nameA}):`, expectedAnswer: `${3 * baseUnit} / 3 = ${baseUnit}` }
+          {
+            label: "Write the working equation to find the total extra amount:",
+            expectedAnswer: `${x} + ${x + y} = ${extraTotal}`,
+            acceptedAnswers: [
+              `${x} + ${x + y} = ${extraTotal}`,
+              `${x}+${x + y}=${extraTotal}`,
+              `${x + y} + ${x} = ${extraTotal}`,
+              `${x + y}+${x}=${extraTotal}`,
+              `${x} + ${x} + ${y} = ${extraTotal}`,
+              `${x}+${x}+${y}=${extraTotal}`,
+              `${2 * x} + ${y} = ${extraTotal}`,
+              `${2 * x}+${y}=${extraTotal}`,
+              extraTotal.toString(),
+              Number(extraTotal).toLocaleString(),
+              `${x} + ${x + y}`,
+              `${x}+${x + y}`,
+              `${x} + ${x} + ${y}`,
+              `${x}+${x}+${y}`
+            ]
+          },
+          {
+            label: "Write the working equation to find the value of 3 equal units:",
+            expectedAnswer: `${grandTotal} - ${extraTotal} = ${threeUnits}`,
+            acceptedAnswers: [
+              `${grandTotal} - ${extraTotal} = ${threeUnits}`,
+              `${grandTotal}-${extraTotal}=${threeUnits}`,
+              threeUnits.toString(),
+              Number(threeUnits).toLocaleString(),
+              `${grandTotal} - ${extraTotal}`,
+              `${grandTotal}-${extraTotal}`
+            ]
+          },
+          {
+            label: `Write the working equation to find 1 unit (${nameA}):`,
+            expectedAnswer: `${threeUnits} / 3 = ${baseUnit}`,
+            acceptedAnswers: [
+              `${threeUnits} / 3 = ${baseUnit}`,
+              `${threeUnits}/3=${baseUnit}`,
+              `${threeUnits} ÷ 3 = ${baseUnit}`,
+              `${threeUnits}÷3=${baseUnit}`,
+              baseUnit.toString(),
+              Number(baseUnit).toLocaleString(),
+              `${threeUnits} / 3`,
+              `${threeUnits}/3`,
+              `${threeUnits} ÷ 3`,
+              `${threeUnits}÷3`
+            ]
+          }
         ];
 
         if (questionTarget === 'B') {
-          steps.push({ label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${baseUnit} + ${x} = ${amountB}` });
+          steps.push({
+            label: `Write the working equation to find ${nameB}'s amount:`,
+            expectedAnswer: `${baseUnit} + ${x} = ${amountB}`,
+            acceptedAnswers: [
+              `${baseUnit} + ${x} = ${amountB}`,
+              `${baseUnit}+${x}=${amountB}`,
+              `${x} + ${baseUnit} = ${amountB}`,
+              `${x}+${baseUnit}=${amountB}`,
+              amountB.toString(),
+              Number(amountB).toLocaleString(),
+              `${baseUnit} + ${x}`,
+              `${baseUnit}+${x}`
+            ]
+          });
         } else if (questionTarget === 'C') {
-          steps.push({ label: `Write the working equation to find ${nameC}'s amount:`, expectedAnswer: `${baseUnit} + ${x + y} = ${amountC}` });
+          steps.push({
+            label: `Write the working equation to find ${nameC}'s amount:`,
+            expectedAnswer: `${baseUnit} + ${x + y} = ${amountC}`,
+            acceptedAnswers: [
+              `${baseUnit} + ${x + y} = ${amountC}`,
+              `${baseUnit}+${x + y}=${amountC}`,
+              `${baseUnit} + ${x} + ${y} = ${amountC}`,
+              `${baseUnit}+${x}+${y}=${amountC}`,
+              `${amountB} + ${y} = ${amountC}`,
+              `${amountB}+${y}=${amountC}`,
+              `${x + y} + ${baseUnit} = ${amountC}`,
+              `${x + y}+${baseUnit}=${amountC}`,
+              amountC.toString(),
+              Number(amountC).toLocaleString(),
+              `${baseUnit} + ${x + y}`,
+              `${baseUnit}+${x + y}`,
+              `${baseUnit} + ${x} + ${y}`,
+              `${baseUnit}+${x}+${y}`,
+              `${amountB} + ${y}`,
+              `${amountB}+${y}`
+            ]
+          });
         } else if (questionTarget === 'A_plus_B') {
-          steps.push({ label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${baseUnit} + ${x} = ${amountB}` });
-          steps.push({ label: `Write the working equation to find the total of ${nameA} and ${nameB}:`, expectedAnswer: `${amountA} + ${amountB} = ${amountA + amountB}` });
+          steps.push({
+            label: `Write the working equation to find ${nameB}'s amount:`,
+            expectedAnswer: `${baseUnit} + ${x} = ${amountB}`,
+            acceptedAnswers: [
+              `${baseUnit} + ${x} = ${amountB}`,
+              `${baseUnit}+${x}=${amountB}`,
+              `${x} + ${baseUnit} = ${amountB}`,
+              `${x}+${baseUnit}=${amountB}`,
+              amountB.toString(),
+              Number(amountB).toLocaleString(),
+              `${baseUnit} + ${x}`,
+              `${baseUnit}+${x}`
+            ]
+          });
+          steps.push({
+            label: `Write the working equation to find the total of ${nameA} and ${nameB}:`,
+            expectedAnswer: `${amountA} + ${amountB} = ${amountA + amountB}`,
+            acceptedAnswers: [
+              `${amountA} + ${amountB} = ${amountA + amountB}`,
+              `${amountA}+${amountB}=${amountA + amountB}`,
+              `${amountB} + ${amountA} = ${amountA + amountB}`,
+              `${amountB}+${amountA}=${amountA + amountB}`,
+              `${baseUnit} * 2 + ${x} = ${amountA + amountB}`,
+              `${baseUnit}*2+${x}=${amountA + amountB}`,
+              `${baseUnit} × 2 + ${x} = ${amountA + amountB}`,
+              `${baseUnit}×2+${x}=${amountA + amountB}`,
+              (amountA + amountB).toString(),
+              Number(amountA + amountB).toLocaleString(),
+              `${amountA} + ${amountB}`,
+              `${amountA}+${amountB}`
+            ]
+          });
         } else if (questionTarget === 'C_minus_A') {
-          steps.push({ label: `Write the working equation to find how many more ${item} ${nameC} collected than ${nameA}:`, expectedAnswer: `${x} + ${y} = ${amountC - amountA}` });
+          steps.push({
+            label: `Write the working equation to find how many more ${item} ${nameC} collected than ${nameA}:`,
+            expectedAnswer: `${x} + ${y} = ${amountC - amountA}`,
+            acceptedAnswers: [
+              `${x} + ${y} = ${amountC - amountA}`,
+              `${x}+${y}=${amountC - amountA}`,
+              `${y} + ${x} = ${amountC - amountA}`,
+              `${y}+${x}=${amountC - amountA}`,
+              `${amountC} - ${amountA} = ${amountC - amountA}`,
+              `${amountC}-${amountA}=${amountC - amountA}`,
+              (amountC - amountA).toString(),
+              Number(amountC - amountA).toLocaleString(),
+              `${x} + ${y}`,
+              `${x}+${y}`,
+              `${amountC} - ${amountA}`,
+              `${amountC}-${amountA}`
+            ]
+          });
         }
 
-        steps.push({ label: "Final Answer:", expectedAnswer: finalAnswer });
+        steps.push({
+          label: "Final Answer:",
+          expectedAnswer: finalAnswer,
+          acceptedAnswers: [
+            finalAnswer,
+            Number(finalAnswer).toLocaleString(),
+            `${finalAnswer} ${item}`,
+            `${Number(finalAnswer).toLocaleString()} ${item}`
+          ]
+        });
+
+        let targetObj = { type: "BAR", targetEntity: "bar-1", label: nameA };
+        if (questionTarget === 'B') targetObj = { type: "BAR", targetEntity: "bar-2", label: nameB };
+        else if (questionTarget === 'C') targetObj = { type: "BAR", targetEntity: "bar-3", label: nameC };
+        else if (questionTarget === 'A_plus_B') targetObj = { type: "COMBINED", label: `${nameA} & ${nameB}` };
+        else if (questionTarget === 'C_minus_A') targetObj = { type: "DIFFERENCE", label: `${nameC} - ${nameA}` };
 
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: steps
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "THREE_ENTITY_GRAND_TOTAL",
+            correctModelType: "COMPARISON",
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities across distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole quantity into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfers or changes across time states" }
+            ],
+            entities: [
+              { id: "bar-1", name: nameA, relation: "BASE", value: "?", displayValue: "1 unit" },
+              { id: "bar-2", name: nameB, relation: "MORE", relativeTo: nameA, diffValue: x.toString(), displayDiff: x.toLocaleString() },
+              { 
+                id: "bar-3", 
+                name: nameC, 
+                relation: "MORE", 
+                relativeTo: nameB, 
+                diffValue: (x + y).toString(), 
+                displayDiff: (x + y).toLocaleString(),
+                diffSegments: [
+                  { id: "bar-3-seg-1", value: x.toString(), displayValue: x.toLocaleString(), length: 14 },
+                  { id: "bar-3-seg-2", value: y.toString(), displayValue: y.toLocaleString(), length: 14 }
+                ]
+              }
+            ],
+            total: { label: "Grand Total", value: grandTotal.toString(), displayValue: grandTotal.toLocaleString(), isTarget: false },
+            target: targetObj,
+            steps: steps,
+            itemName: item
+          }
+        }, null, 2);
+      } else {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL_COMPARISON",
+          componentData: {
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              {
+                name: nameA,
+                value: questionTarget === 'A' ? '?' : '',
+                layoutSize: amountA,
+                parts: [
+                  {
+                    label: questionTarget === 'A' ? '?' : '1 unit',
+                    size: amountA,
+                    bgClass: questionTarget === 'A' ? 'bg-indigo-600 text-white font-black' : 'bg-blue-500 text-white'
+                  }
+                ]
+              },
+              {
+                name: nameB,
+                value: questionTarget === 'B' ? '?' : '',
+                layoutSize: amountB,
+                parts: [
+                  {
+                    label: '1 unit',
+                    size: amountA,
+                    bgClass: 'bg-blue-500 text-white'
+                  },
+                  {
+                    label: '',
+                    bracket: `${x.toLocaleString()}`,
+                    size: x,
+                    isExtra: true,
+                    bgClass: 'bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400'
+                  }
+                ]
+              },
+              {
+                name: nameC,
+                value: questionTarget === 'C' ? '?' : '',
+                layoutSize: amountC,
+                parts: [
+                  {
+                    label: '1 unit',
+                    size: amountA,
+                    bgClass: 'bg-blue-500 text-white'
+                  },
+                  {
+                    label: '',
+                    size: x,
+                    isExtra: true,
+                    bgClass: 'bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400'
+                  },
+                  {
+                    label: '',
+                    bracket: `${y.toLocaleString()}`,
+                    size: y,
+                    isExtra: true,
+                    bgClass: 'bg-emerald-100 text-emerald-900 border-l-2 border-dashed border-emerald-400'
+                  }
+                ]
+              }
+            ],
+            whole: grandTotal.toLocaleString()
+          }
         }, null, 2);
       }
 
@@ -1438,85 +1623,203 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         finalAnswer = (amountA + amountB).toString();
       }
 
-      visualEngineStr = JSON.stringify({
-        componentToRender: "BAR_MODEL_COMPARISON",
-        componentData: {
-          modelType: "BAR_MODEL_COMPARISON",
-          bars: [
-            {
-              name: nameA,
-              value: questionTarget === 'A' ? '?' : '',
-              layoutSize: amountA,
-              parts: [
-                {
-                  label: questionTarget === 'A' ? '?' : '1 unit',
-                  size: amountA,
-                  bgClass: questionTarget === 'A' ? 'bg-indigo-600 text-white font-black' : 'bg-blue-500 text-white'
-                }
-              ]
-            },
-            {
-              name: nameB,
-              value: questionTarget === 'B' ? '?' : '',
-              layoutSize: amountB,
-              parts: [
-                {
-                  label: '1 unit',
-                  size: amountA,
-                  bgClass: 'bg-blue-500 text-white'
-                },
-                {
-                  label: '1 unit',
-                  size: amountA,
-                  bgClass: 'bg-blue-500 text-white'
-                }
-              ]
-            },
-            {
-              name: nameC,
-              value: questionTarget === 'C' ? '?' : '',
-              layoutSize: amountC,
-              parts: [
-                {
-                  label: '1 unit',
-                  size: amountA,
-                  bgClass: 'bg-blue-500 text-white'
-                },
-                {
-                  label: '',
-                  bracket: `${x.toLocaleString()}`,
-                  size: x,
-                  isExtra: true,
-                  bgClass: 'bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400'
-                }
-              ]
-            }
-          ],
-          whole: grandTotal.toLocaleString()
-        }
-      }, null, 2);
-
-      promptInstruction = `- Question stem: "${nameA}, ${nameB}, and ${nameC} collected a grand total of ${grandTotal.toLocaleString()} ${item}. ${nameB} collected twice as many ${item} as ${nameA}. ${nameC} collected ${x.toLocaleString()} more ${item} than ${nameA}. ${targetQuestionText}"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+      const fourUnits = 4 * baseUnit;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "NONE",
+          hideVisual: true,
+          componentData: {
+            hideVisual: true,
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: "", layoutSize: amountA, displayValue: "" },
+              { name: nameB, value: "", layoutSize: amountB, displayValue: "" },
+              { name: nameC, value: "", layoutSize: amountC, displayValue: "" }
+            ],
+            whole: grandTotal.toLocaleString()
+          }
+        }, null, 2);
+
         const steps = [
-          { label: `Write the working equation to remove the extra amount above the 4 equal units:`, expectedAnswer: `${grandTotal} - ${x} = ${4 * baseUnit}` },
-          { label: `Write the working equation to find 1 unit (${nameA}):`, expectedAnswer: `${4 * baseUnit} / 4 = ${baseUnit}` }
+          {
+            label: "Write the working equation to find the value of 4 equal units:",
+            expectedAnswer: `${grandTotal} - ${x} = ${fourUnits}`,
+            acceptedAnswers: [
+              `${grandTotal} - ${x} = ${fourUnits}`,
+              `${grandTotal}-${x}=${fourUnits}`,
+              fourUnits.toString(),
+              Number(fourUnits).toLocaleString(),
+              `${grandTotal} - ${x}`,
+              `${grandTotal}-${x}`
+            ]
+          },
+          {
+            label: `Write the working equation to find 1 unit (${nameA}):`,
+            expectedAnswer: `${fourUnits} / 4 = ${baseUnit}`,
+            acceptedAnswers: [
+              `${fourUnits} / 4 = ${baseUnit}`,
+              `${fourUnits}/4=${baseUnit}`,
+              `${fourUnits} ÷ 4 = ${baseUnit}`,
+              `${fourUnits}÷4=${baseUnit}`,
+              baseUnit.toString(),
+              Number(baseUnit).toLocaleString(),
+              `${fourUnits} / 4`,
+              `${fourUnits}/4`,
+              `${fourUnits} ÷ 4`,
+              `${fourUnits}÷4`
+            ]
+          }
         ];
 
         if (questionTarget === 'B') {
-          steps.push({ label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${baseUnit} * 2 = ${amountB}` });
+          steps.push({
+            label: `Write the working equation to find ${nameB}'s amount:`,
+            expectedAnswer: `${baseUnit} * 2 = ${amountB}`,
+            acceptedAnswers: [
+              `${baseUnit} * 2 = ${amountB}`,
+              `${baseUnit}*2=${amountB}`,
+              `${baseUnit} × 2 = ${amountB}`,
+              `${baseUnit}×2=${amountB}`,
+              `${baseUnit} + ${baseUnit} = ${amountB}`,
+              `${baseUnit}+${baseUnit}=${amountB}`,
+              amountB.toString(),
+              Number(amountB).toLocaleString(),
+              `${baseUnit} * 2`,
+              `${baseUnit}*2`,
+              `${baseUnit} × 2`,
+              `${baseUnit}×2`
+            ]
+          });
         } else if (questionTarget === 'C') {
-          steps.push({ label: `Write the working equation to find ${nameC}'s amount:`, expectedAnswer: `${baseUnit} + ${x} = ${amountC}` });
+          steps.push({
+            label: `Write the working equation to find ${nameC}'s amount:`,
+            expectedAnswer: `${baseUnit} + ${x} = ${amountC}`,
+            acceptedAnswers: [
+              `${baseUnit} + ${x} = ${amountC}`,
+              `${baseUnit}+${x}=${amountC}`,
+              `${x} + ${baseUnit} = ${amountC}`,
+              `${x}+${baseUnit}=${amountC}`,
+              amountC.toString(),
+              Number(amountC).toLocaleString(),
+              `${baseUnit} + ${x}`,
+              `${baseUnit}+${x}`
+            ]
+          });
         } else if (questionTarget === 'A_plus_B') {
-          steps.push({ label: `Write the working equation to find the total of ${nameA} and ${nameB}:`, expectedAnswer: `${baseUnit} * 3 = ${amountA + amountB}` });
+          steps.push({
+            label: `Write the working equation to find the total of ${nameA} and ${nameB}:`,
+            expectedAnswer: `${baseUnit} * 3 = ${amountA + amountB}`,
+            acceptedAnswers: [
+              `${baseUnit} * 3 = ${amountA + amountB}`,
+              `${baseUnit}*3=${amountA + amountB}`,
+              `${baseUnit} × 3 = ${amountA + amountB}`,
+              `${baseUnit}×3=${amountA + amountB}`,
+              `${amountA} + ${amountB} = ${amountA + amountB}`,
+              `${amountA}+${amountB}=${amountA + amountB}`,
+              (amountA + amountB).toString(),
+              Number(amountA + amountB).toLocaleString(),
+              `${baseUnit} * 3`,
+              `${baseUnit}*3`
+            ]
+          });
         }
 
-        steps.push({ label: "Final Answer:", expectedAnswer: finalAnswer });
+        steps.push({
+          label: "Final Answer:",
+          expectedAnswer: finalAnswer,
+          acceptedAnswers: [
+            finalAnswer,
+            Number(finalAnswer).toLocaleString(),
+            `${finalAnswer} ${item}`,
+            `${Number(finalAnswer).toLocaleString()} ${item}`
+          ]
+        });
+
+        let targetObj = { type: "BAR", targetEntity: "bar-1", label: nameA };
+        if (questionTarget === 'B') targetObj = { type: "BAR", targetEntity: "bar-2", label: nameB };
+        else if (questionTarget === 'C') targetObj = { type: "BAR", targetEntity: "bar-3", label: nameC };
+        else if (questionTarget === 'A_plus_B') targetObj = { type: "COMBINED", label: `${nameA} & ${nameB}` };
 
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: steps
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "THREE_ENTITY_GRAND_TOTAL",
+            correctModelType: "COMPARISON",
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities across distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole quantity into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfers or changes across time states" }
+            ],
+            entities: [
+              { id: "bar-1", name: nameA, relation: "BASE", value: "?", displayValue: "1 unit" },
+              { id: "bar-2", name: nameB, relation: "MULTIPLE", isMultiple: true, multipleFactor: 2, displayValue: "2 units" },
+              { id: "bar-3", name: nameC, relation: "MORE", relativeTo: nameA, diffValue: x.toString(), displayDiff: x.toLocaleString() }
+            ],
+            total: { label: "Grand Total", value: grandTotal.toString(), displayValue: grandTotal.toLocaleString(), isTarget: false },
+            target: targetObj,
+            steps: steps,
+            itemName: item
+          }
+        }, null, 2);
+      } else {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL_COMPARISON",
+          componentData: {
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              {
+                name: nameA,
+                value: questionTarget === 'A' ? '?' : '',
+                layoutSize: amountA,
+                parts: [
+                  {
+                    label: questionTarget === 'A' ? '?' : '1 unit',
+                    size: amountA,
+                    bgClass: questionTarget === 'A' ? 'bg-indigo-600 text-white font-black' : 'bg-blue-500 text-white'
+                  }
+                ]
+              },
+              {
+                name: nameB,
+                value: questionTarget === 'B' ? '?' : '',
+                layoutSize: amountB,
+                parts: [
+                  {
+                    label: '1 unit',
+                    size: amountA,
+                    bgClass: 'bg-blue-500 text-white'
+                  },
+                  {
+                    label: '1 unit',
+                    size: amountA,
+                    bgClass: 'bg-blue-500 text-white'
+                  }
+                ]
+              },
+              {
+                name: nameC,
+                value: questionTarget === 'C' ? '?' : '',
+                layoutSize: amountC,
+                parts: [
+                  {
+                    label: '1 unit',
+                    size: amountA,
+                    bgClass: 'bg-blue-500 text-white'
+                  },
+                  {
+                    label: '',
+                    bracket: `${x.toLocaleString()}`,
+                    size: x,
+                    isExtra: true,
+                    bgClass: 'bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400'
+                  }
+                ]
+              }
+            ],
+            whole: grandTotal.toLocaleString()
+          }
         }, null, 2);
       }
 
@@ -1576,90 +1879,212 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         finalAnswer = (amountA + amountB).toString();
       }
 
-      visualEngineStr = JSON.stringify({
-        componentToRender: "BAR_MODEL_COMPARISON",
-        componentData: {
-          modelType: "BAR_MODEL_COMPARISON",
-          bars: [
-            {
-              name: nameA,
-              value: questionTarget === 'A' ? '?' : '',
-              layoutSize: amountA,
-              parts: [
-                {
-                  label: questionTarget === 'A' ? '?' : '1 unit',
-                  size: amountA,
-                  bgClass: questionTarget === 'A' ? 'bg-indigo-600 text-white font-black' : 'bg-blue-500 text-white'
-                }
-              ]
-            },
-            {
-              name: nameB,
-              value: questionTarget === 'B' ? '?' : '',
-              layoutSize: amountB,
-              parts: [
-                {
-                  label: '1 unit',
-                  size: amountA,
-                  bgClass: 'bg-blue-500 text-white'
-                },
-                {
-                  label: '1 unit',
-                  size: amountA,
-                  bgClass: 'bg-blue-500 text-white'
-                }
-              ]
-            },
-            {
-              name: nameC,
-              value: questionTarget === 'C' ? '?' : '',
-              layoutSize: amountC,
-              parts: [
-                {
-                  label: '1 unit',
-                  size: amountA,
-                  bgClass: 'bg-blue-500 text-white'
-                },
-                {
-                  label: '1 unit',
-                  size: amountA,
-                  bgClass: 'bg-blue-500 text-white'
-                },
-                {
-                  label: '',
-                  bracket: `${x.toLocaleString()}`,
-                  size: x,
-                  isExtra: true,
-                  bgClass: 'bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400'
-                }
-              ]
-            }
-          ],
-          whole: grandTotal.toLocaleString()
-        }
-      }, null, 2);
-
-      promptInstruction = `- Question stem: "${nameA}, ${nameB}, and ${nameC} collected a grand total of ${grandTotal.toLocaleString()} ${item}. ${nameB} collected twice as many ${item} as ${nameA}. ${nameC} collected ${x.toLocaleString()} more ${item} than ${nameB}. ${targetQuestionText}"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+      const fiveUnits = 5 * baseUnit;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "NONE",
+          hideVisual: true,
+          componentData: {
+            hideVisual: true,
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: "", layoutSize: amountA, displayValue: "" },
+              { name: nameB, value: "", layoutSize: amountB, displayValue: "" },
+              { name: nameC, value: "", layoutSize: amountC, displayValue: "" }
+            ],
+            whole: grandTotal.toLocaleString()
+          }
+        }, null, 2);
+
         const steps = [
-          { label: `Write the working equation to remove the extra amount above the 5 equal units:`, expectedAnswer: `${grandTotal} - ${x} = ${5 * baseUnit}` },
-          { label: `Write the working equation to find 1 unit (${nameA}):`, expectedAnswer: `${5 * baseUnit} / 5 = ${baseUnit}` }
+          {
+            label: "Write the working equation to find the value of 5 equal units:",
+            expectedAnswer: `${grandTotal} - ${x} = ${fiveUnits}`,
+            acceptedAnswers: [
+              `${grandTotal} - ${x} = ${fiveUnits}`,
+              `${grandTotal}-${x}=${fiveUnits}`,
+              fiveUnits.toString(),
+              Number(fiveUnits).toLocaleString(),
+              `${grandTotal} - ${x}`,
+              `${grandTotal}-${x}`
+            ]
+          },
+          {
+            label: `Write the working equation to find 1 unit (${nameA}):`,
+            expectedAnswer: `${fiveUnits} / 5 = ${baseUnit}`,
+            acceptedAnswers: [
+              `${fiveUnits} / 5 = ${baseUnit}`,
+              `${fiveUnits}/5=${baseUnit}`,
+              `${fiveUnits} ÷ 5 = ${baseUnit}`,
+              `${fiveUnits}÷5=${baseUnit}`,
+              baseUnit.toString(),
+              Number(baseUnit).toLocaleString(),
+              `${fiveUnits} / 5`,
+              `${fiveUnits}/5`,
+              `${fiveUnits} ÷ 5`,
+              `${fiveUnits}÷5`
+            ]
+          }
         ];
 
         if (questionTarget === 'B') {
-          steps.push({ label: `Write the working equation to find ${nameB}'s amount:`, expectedAnswer: `${baseUnit} * 2 = ${amountB}` });
+          steps.push({
+            label: `Write the working equation to find ${nameB}'s amount:`,
+            expectedAnswer: `${baseUnit} * 2 = ${amountB}`,
+            acceptedAnswers: [
+              `${baseUnit} * 2 = ${amountB}`,
+              `${baseUnit}*2=${amountB}`,
+              `${baseUnit} × 2 = ${amountB}`,
+              `${baseUnit}×2=${amountB}`,
+              `${baseUnit} + ${baseUnit} = ${amountB}`,
+              `${baseUnit}+${baseUnit}=${amountB}`,
+              amountB.toString(),
+              Number(amountB).toLocaleString(),
+              `${baseUnit} * 2`,
+              `${baseUnit}*2`,
+              `${baseUnit} × 2`,
+              `${baseUnit}×2`
+            ]
+          });
         } else if (questionTarget === 'C') {
-          steps.push({ label: `Write the working equation to find ${nameC}'s amount:`, expectedAnswer: `${amountB} + ${x} = ${amountC}` });
+          steps.push({
+            label: `Write the working equation to find ${nameC}'s amount:`,
+            expectedAnswer: `${amountB} + ${x} = ${amountC}`,
+            acceptedAnswers: [
+              `${amountB} + ${x} = ${amountC}`,
+              `${amountB}+${x}=${amountC}`,
+              `${baseUnit} * 2 + ${x} = ${amountC}`,
+              `${baseUnit}*2+${x}=${amountC}`,
+              `${baseUnit} × 2 + ${x} = ${amountC}`,
+              `${baseUnit}×2+${x}=${amountC}`,
+              `${x} + ${amountB} = ${amountC}`,
+              `${x}+${amountB}=${amountC}`,
+              amountC.toString(),
+              Number(amountC).toLocaleString(),
+              `${amountB} + ${x}`,
+              `${amountB}+${x}`
+            ]
+          });
         } else if (questionTarget === 'A_plus_B') {
-          steps.push({ label: `Write the working equation to find the total of ${nameA} and ${nameB}:`, expectedAnswer: `${baseUnit} * 3 = ${amountA + amountB}` });
+          steps.push({
+            label: `Write the working equation to find the total of ${nameA} and ${nameB}:`,
+            expectedAnswer: `${baseUnit} * 3 = ${amountA + amountB}`,
+            acceptedAnswers: [
+              `${baseUnit} * 3 = ${amountA + amountB}`,
+              `${baseUnit}*3=${amountA + amountB}`,
+              `${baseUnit} × 3 = ${amountA + amountB}`,
+              `${baseUnit}×3=${amountA + amountB}`,
+              `${amountA} + ${amountB} = ${amountA + amountB}`,
+              `${amountA}+${amountB}=${amountA + amountB}`,
+              (amountA + amountB).toString(),
+              Number(amountA + amountB).toLocaleString(),
+              `${baseUnit} * 3`,
+              `${baseUnit}*3`
+            ]
+          });
         }
 
-        steps.push({ label: "Final Answer:", expectedAnswer: finalAnswer });
+        steps.push({
+          label: "Final Answer:",
+          expectedAnswer: finalAnswer,
+          acceptedAnswers: [
+            finalAnswer,
+            Number(finalAnswer).toLocaleString(),
+            `${finalAnswer} ${item}`,
+            `${Number(finalAnswer).toLocaleString()} ${item}`
+          ]
+        });
+
+        let targetObj = { type: "BAR", targetEntity: "bar-1", label: nameA };
+        if (questionTarget === 'B') targetObj = { type: "BAR", targetEntity: "bar-2", label: nameB };
+        else if (questionTarget === 'C') targetObj = { type: "BAR", targetEntity: "bar-3", label: nameC };
+        else if (questionTarget === 'A_plus_B') targetObj = { type: "COMBINED", label: `${nameA} & ${nameB}` };
 
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: steps
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "THREE_ENTITY_GRAND_TOTAL",
+            correctModelType: "COMPARISON",
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities across distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole quantity into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfers or changes across time states" }
+            ],
+            entities: [
+              { id: "bar-1", name: nameA, relation: "BASE", value: "?", displayValue: "1 unit" },
+              { id: "bar-2", name: nameB, relation: "MULTIPLE", isMultiple: true, multipleFactor: 2, displayValue: "2 units" },
+              { id: "bar-3", name: nameC, relation: "MORE", isMultiple: true, multipleFactor: 2, relativeTo: nameB, diffValue: x.toString(), displayDiff: x.toLocaleString() }
+            ],
+            total: { label: "Grand Total", value: grandTotal.toString(), displayValue: grandTotal.toLocaleString(), isTarget: false },
+            target: targetObj,
+            steps: steps,
+            itemName: item
+          }
+        }, null, 2);
+      } else {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL_COMPARISON",
+          componentData: {
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              {
+                name: nameA,
+                value: questionTarget === 'A' ? '?' : '',
+                layoutSize: amountA,
+                parts: [
+                  {
+                    label: questionTarget === 'A' ? '?' : '1 unit',
+                    size: amountA,
+                    bgClass: questionTarget === 'A' ? 'bg-indigo-600 text-white font-black' : 'bg-blue-500 text-white'
+                  }
+                ]
+              },
+              {
+                name: nameB,
+                value: questionTarget === 'B' ? '?' : '',
+                layoutSize: amountB,
+                parts: [
+                  {
+                    label: '1 unit',
+                    size: amountA,
+                    bgClass: 'bg-blue-500 text-white'
+                  },
+                  {
+                    label: '1 unit',
+                    size: amountA,
+                    bgClass: 'bg-blue-500 text-white'
+                  }
+                ]
+              },
+              {
+                name: nameC,
+                value: questionTarget === 'C' ? '?' : '',
+                layoutSize: amountC,
+                parts: [
+                  {
+                    label: '1 unit',
+                    size: amountA,
+                    bgClass: 'bg-blue-500 text-white'
+                  },
+                  {
+                    label: '1 unit',
+                    size: amountA,
+                    bgClass: 'bg-blue-500 text-white'
+                  },
+                  {
+                    label: '',
+                    bracket: `${x.toLocaleString()}`,
+                    size: x,
+                    isExtra: true,
+                    bgClass: 'bg-amber-100 text-amber-900 border-l-2 border-dashed border-amber-400'
+                  }
+                ]
+              }
+            ],
+            whole: grandTotal.toLocaleString()
+          }
         }, null, 2);
       }
 
@@ -1713,69 +2138,153 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         finalAnswer = (amountA + amountC).toString();
       }
 
-      visualEngineStr = JSON.stringify({
-        componentToRender: "BAR_MODEL_COMPARISON",
-        componentData: {
-          modelType: "BAR_MODEL_COMPARISON",
-          bars: [
-            {
-              name: nameA,
-              value: questionTarget === 'A' ? '?' : '',
-              layoutSize: amountA,
-              parts: [
-                {
-                  label: questionTarget === 'A' ? '?' : '1 unit',
-                  size: amountA,
-                  bgClass: questionTarget === 'A' ? 'bg-indigo-600 text-white font-black' : 'bg-blue-500 text-white'
-                }
-              ]
-            },
-            {
-              name: nameB,
-              value: '',
-              layoutSize: amountB,
-              parts: [
-                {
-                  label: '1 unit',
-                  size: amountA,
-                  bgClass: 'bg-blue-500 text-white'
-                }
-              ]
-            },
-            {
-              name: nameC,
-              value: cVal.toLocaleString(),
-              layoutSize: amountC,
-              parts: [
-                {
-                  label: cVal.toLocaleString(),
-                  size: amountC,
-                  bgClass: 'bg-purple-600 text-white'
-                }
-              ]
-            }
-          ],
-          whole: grandTotal.toLocaleString()
-        }
-      }, null, 2);
-
-      promptInstruction = `- Question stem: "${nameA} and ${nameB} collected an equal number of ${item}. ${nameC} collected ${cVal.toLocaleString()} ${item}. Together, all three of them collected a grand total of ${grandTotal.toLocaleString()} ${item}. ${targetQuestionText}"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+      const twoUnits = 2 * baseUnit;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "NONE",
+          hideVisual: true,
+          componentData: {
+            hideVisual: true,
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: "", layoutSize: amountA, displayValue: "" },
+              { name: nameB, value: "", layoutSize: amountB, displayValue: "" },
+              { name: nameC, value: "", layoutSize: amountC, displayValue: "" }
+            ],
+            whole: grandTotal.toLocaleString()
+          }
+        }, null, 2);
+
         const steps = [
-          { label: `Write the working equation to remove ${nameC}'s collection from the grand total (to find 2 equal units):`, expectedAnswer: `${grandTotal} - ${cVal} = ${2 * baseUnit}` },
-          { label: `Write the working equation to find 1 unit (${nameA}):`, expectedAnswer: `${2 * baseUnit} / 2 = ${baseUnit}` }
+          {
+            label: "Write the working equation to find the value of 2 equal units:",
+            expectedAnswer: `${grandTotal} - ${cVal} = ${twoUnits}`,
+            acceptedAnswers: [
+              `${grandTotal} - ${cVal} = ${twoUnits}`,
+              `${grandTotal}-${cVal}=${twoUnits}`,
+              twoUnits.toString(),
+              Number(twoUnits).toLocaleString(),
+              `${grandTotal} - ${cVal}`,
+              `${grandTotal}-${cVal}`
+            ]
+          },
+          {
+            label: `Write the working equation to find 1 unit (${nameA}):`,
+            expectedAnswer: `${twoUnits} / 2 = ${baseUnit}`,
+            acceptedAnswers: [
+              `${twoUnits} / 2 = ${baseUnit}`,
+              `${twoUnits}/2=${baseUnit}`,
+              `${twoUnits} ÷ 2 = ${baseUnit}`,
+              `${twoUnits}÷2=${baseUnit}`,
+              baseUnit.toString(),
+              Number(baseUnit).toLocaleString(),
+              `${twoUnits} / 2`,
+              `${twoUnits}/2`,
+              `${twoUnits} ÷ 2`,
+              `${twoUnits}÷2`
+            ]
+          }
         ];
 
         if (questionTarget === 'A_plus_C') {
-          steps.push({ label: `Write the working equation to find the total of ${nameA} and ${nameC}:`, expectedAnswer: `${baseUnit} + ${cVal} = ${amountA + amountC}` });
+          steps.push({
+            label: `Write the working equation to find the total of ${nameA} and ${nameC}:`,
+            expectedAnswer: `${baseUnit} + ${cVal} = ${amountA + amountC}`,
+            acceptedAnswers: [
+              `${baseUnit} + ${cVal} = ${amountA + amountC}`,
+              `${baseUnit}+${cVal}=${amountA + amountC}`,
+              `${cVal} + ${baseUnit} = ${amountA + amountC}`,
+              `${cVal}+${baseUnit}=${amountA + amountC}`,
+              (amountA + amountC).toString(),
+              Number(amountA + amountC).toLocaleString(),
+              `${baseUnit} + ${cVal}`,
+              `${baseUnit}+${cVal}`
+            ]
+          });
         }
 
-        steps.push({ label: "Final Answer:", expectedAnswer: finalAnswer });
+        steps.push({
+          label: "Final Answer:",
+          expectedAnswer: finalAnswer,
+          acceptedAnswers: [
+            finalAnswer,
+            Number(finalAnswer).toLocaleString(),
+            `${finalAnswer} ${item}`,
+            `${Number(finalAnswer).toLocaleString()} ${item}`
+          ]
+        });
+
+        let targetObj = { type: "BAR", targetEntity: "bar-1", label: nameA };
+        if (questionTarget === 'A_plus_C') targetObj = { type: "COMBINED", label: `${nameA} & ${nameC}` };
 
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: steps
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "THREE_ENTITY_GRAND_TOTAL",
+            correctModelType: "COMPARISON",
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities across distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole quantity into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfers or changes across time states" }
+            ],
+            entities: [
+              { id: "bar-1", name: nameA, relation: "BASE", value: "?", displayValue: "1 unit" },
+              { id: "bar-2", name: nameB, relation: "BASE", value: "?", displayValue: "1 unit" },
+              { id: "bar-3", name: nameC, relation: "BASE", value: cVal.toString(), displayValue: cVal.toLocaleString() }
+            ],
+            total: { label: "Grand Total", value: grandTotal.toString(), displayValue: grandTotal.toLocaleString(), isTarget: false },
+            target: targetObj,
+            steps: steps,
+            itemName: item
+          }
+        }, null, 2);
+      } else {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "BAR_MODEL_COMPARISON",
+          componentData: {
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              {
+                name: nameA,
+                value: questionTarget === 'A' ? '?' : '',
+                layoutSize: amountA,
+                parts: [
+                  {
+                    label: questionTarget === 'A' ? '?' : '1 unit',
+                    size: amountA,
+                    bgClass: questionTarget === 'A' ? 'bg-indigo-600 text-white font-black' : 'bg-blue-500 text-white'
+                  }
+                ]
+              },
+              {
+                name: nameB,
+                value: '',
+                layoutSize: amountB,
+                parts: [
+                  {
+                    label: '1 unit',
+                    size: amountA,
+                    bgClass: 'bg-blue-500 text-white'
+                  }
+                ]
+              },
+              {
+                name: nameC,
+                value: cVal.toLocaleString(),
+                layoutSize: amountC,
+                parts: [
+                  {
+                    label: cVal.toLocaleString(),
+                    size: amountC,
+                    bgClass: 'bg-purple-600 text-white'
+                  }
+                ]
+              }
+            ],
+            whole: grandTotal.toLocaleString()
+          }
         }, null, 2);
       }
 
