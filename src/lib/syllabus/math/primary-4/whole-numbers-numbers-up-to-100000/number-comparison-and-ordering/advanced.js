@@ -2338,43 +2338,162 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
 
     finalAnswer = newDiff.toString();
 
-    visualEngineStr = JSON.stringify({
-      componentToRender: "BAR_MODEL_COMPARISON",
-      componentData: {
-        models: [
-          {
-            modelType: "BAR_MODEL_COMPARISON",
-            title: "At First",
-            hideDifference: true,
-            bars: [
-              { name: `${nameA} (At first)`, value: initialA, layoutSize: initialA, displayValue: initialA.toLocaleString(), bgClass: "bg-blue-500", hideDifference: true },
-              { name: `${nameB} (At first)`, value: initialB, layoutSize: initialB, displayValue: initialB.toLocaleString(), bgClass: "bg-amber-500", hideDifference: true }
-            ]
-          },
-          {
-            modelType: "BAR_MODEL_COMPARISON",
-            title: `In The End (After ${nameA} gave ${z.toLocaleString()} to ${nameB})`,
-            bars: [
-              { name: `${nameA} (Now)`, value: "?", layoutSize: newA, displayValue: "?", bgClass: "bg-blue-500" },
-              { name: `${nameB} (Now)`, value: "?", layoutSize: newB, displayValue: "?", bgClass: "bg-amber-500" }
-            ],
-            difference: { displayValue: "?" }
-          }
-        ]
-      }
-    }, null, 2);
-
-    promptInstruction = `- Question stem: "${nameA} had ${initialA.toLocaleString()} ${item} and ${nameB} had ${initialB.toLocaleString()} ${item}. ${nameA} gave ${z.toLocaleString()} ${item} to ${nameB}. How many more ${item} does ${nameB} have than ${nameA} now?"\\n- The finalAnswer must be strictly "${finalAnswer}".\\n- CRITICAL: Return visualEngine and componentData EXACTLY as provided. Keep ${nameA} as the first bar and ${nameB} as the second bar in both models. Do NOT add any difference to the first bar model, and do NOT replace "?" with computed numbers.`;
+    promptInstruction = `- Question stem: "${nameA} had ${initialA.toLocaleString()} ${item} and ${nameB} had ${initialB.toLocaleString()} ${item}. ${nameA} gave ${z.toLocaleString()} ${item} to ${nameB}. How many more ${item} does ${nameB} have than ${nameA} now?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
     if (isStructure) {
+      visualEngineStr = JSON.stringify({
+        componentToRender: "NONE",
+        hideVisual: true,
+        componentData: {
+          hideVisual: true,
+          modelType: "BAR_MODEL_COMPARISON",
+          bars: [
+            { name: nameA, value: initialA, layoutSize: initialA, displayValue: initialA.toLocaleString() },
+            { name: nameB, value: initialB, layoutSize: initialB, displayValue: initialB.toLocaleString() }
+          ],
+          difference: { displayValue: "?" }
+        }
+      }, null, 2);
+
+      const steps = [
+        {
+          label: `Write the working equation to find ${nameA}'s amount in the end:`,
+          expectedAnswer: `${initialA} - ${z} = ${newA}`,
+          acceptedAnswers: [
+            `${initialA} - ${z} = ${newA}`,
+            `${initialA}-${z}=${newA}`,
+            `${initialA.toLocaleString()} - ${z.toLocaleString()} = ${newA.toLocaleString()}`,
+            `${initialA.toLocaleString()}-${z.toLocaleString()}=${newA.toLocaleString()}`,
+            `${initialA} - ${z}`,
+            `${initialA}-${z}`,
+            `${initialA.toLocaleString()} - ${z.toLocaleString()}`,
+            `${initialA.toLocaleString()}-${z.toLocaleString()}`,
+            newA.toString(),
+            Number(newA).toLocaleString(),
+            `${newA} ${item}`,
+            `${Number(newA).toLocaleString()} ${item}`
+          ]
+        },
+        {
+          label: `Write the working equation to find ${nameB}'s amount in the end:`,
+          expectedAnswer: `${initialB} + ${z} = ${newB}`,
+          acceptedAnswers: [
+            `${initialB} + ${z} = ${newB}`,
+            `${initialB}+${z}=${newB}`,
+            `${z} + ${initialB} = ${newB}`,
+            `${z}+${initialB}=${newB}`,
+            `${initialB.toLocaleString()} + ${z.toLocaleString()} = ${newB.toLocaleString()}`,
+            `${initialB.toLocaleString()}+${z.toLocaleString()}=${newB.toLocaleString()}`,
+            `${z.toLocaleString()} + ${initialB.toLocaleString()} = ${newB.toLocaleString()}`,
+            `${z.toLocaleString()}+${initialB.toLocaleString()}=${newB.toLocaleString()}`,
+            `${initialB} + ${z}`,
+            `${initialB}+${z}`,
+            `${z} + ${initialB}`,
+            `${z}+${initialB}`,
+            `${initialB.toLocaleString()} + ${z.toLocaleString()}`,
+            `${initialB.toLocaleString()}+${z.toLocaleString()}`,
+            newB.toString(),
+            Number(newB).toLocaleString(),
+            `${newB} ${item}`,
+            `${Number(newB).toLocaleString()} ${item}`
+          ]
+        },
+        {
+          label: `Write the working equation to find how many more ${item} ${nameB} has than ${nameA} now:`,
+          expectedAnswer: `${newB} - ${newA} = ${newDiff}`,
+          acceptedAnswers: [
+            `${newB} - ${newA} = ${newDiff}`,
+            `${newB}-${newA}=${newDiff}`,
+            `${newB.toLocaleString()} - ${newA.toLocaleString()} = ${newDiff.toLocaleString()}`,
+            `${newB.toLocaleString()}-${newA.toLocaleString()}=${newDiff.toLocaleString()}`,
+            `${newB} - ${newA}`,
+            `${newB}-${newA}`,
+            `${newB.toLocaleString()} - ${newA.toLocaleString()}`,
+            `${newB.toLocaleString()}-${newA.toLocaleString()}`,
+            `${z * 2} - ${initialDiff} = ${newDiff}`,
+            `${z * 2}-${initialDiff}=${newDiff}`,
+            `${(z * 2).toLocaleString()} - ${initialDiff.toLocaleString()} = ${newDiff.toLocaleString()}`,
+            newDiff.toString(),
+            Number(newDiff).toLocaleString(),
+            `${newDiff} ${item}`,
+            `${Number(newDiff).toLocaleString()} ${item}`
+          ]
+        },
+        {
+          label: "Final Answer:",
+          expectedAnswer: finalAnswer,
+          acceptedAnswers: [
+            finalAnswer,
+            Number(finalAnswer).toLocaleString(),
+            `${finalAnswer} ${item}`,
+            `${Number(finalAnswer).toLocaleString()} ${item}`
+          ]
+        }
+      ];
+
       inputRequirementStr = JSON.stringify({
-        inputType: "MULTI_STEP_INPUT",
-        steps: [
-          { label: `Write the working equation to find ${nameA}'s new amount:`, expectedAnswer: `${initialA} - ${z} = ${newA}` },
-          { label: `Write the working equation to find ${nameB}'s new amount:`, expectedAnswer: `${initialB} + ${z} = ${newB}` },
-          { label: "Write the working equation to find the new difference:", expectedAnswer: `${newB} - ${newA} = ${newDiff}` },
-          { label: "Final Answer:", expectedAnswer: finalAnswer }
-        ]
+        inputType: "INTERACTIVE_BAR_BUILDER",
+        steps: steps,
+        barBuilderConfig: {
+          problemType: "SHIFTING_DIFFERENCE_TRANSFER",
+          transferFrom: nameA,
+          transferTo: nameB,
+          transferAmount: z,
+          initialA: initialA,
+          initialB: initialB,
+          initialDiff: initialDiff,
+          newA: newA,
+          newB: newB,
+          newDiff: newDiff,
+          differenceValue: newDiff,
+          largerValue: initialA,
+          smallerValue: initialB,
+          displayTransfer: z.toLocaleString(),
+          displayDifference: newDiff.toLocaleString(),
+          displayNewA: newA.toLocaleString(),
+          displayNewB: newB.toLocaleString(),
+          itemName: item,
+          correctModelType: ["BEFORE_AFTER", "COMPARISON"],
+          modelOptions: [
+            { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities across distinct entities" },
+            { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole quantity into parts" },
+            { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfers or changes across time states" }
+          ],
+          entities: [
+            { id: "B", name: nameB, value: initialB, displayValue: initialB.toLocaleString(), relation: "BASE" },
+            { id: "A", name: nameA, value: initialA, displayValue: initialA.toLocaleString(), relativeTo: nameB, relation: "MORE", diffValue: initialDiff, displayDiff: initialDiff.toLocaleString(), actualDiff: initialDiff }
+          ],
+          target: { type: "DIFFERENCE", label: "New Difference" },
+          steps: steps
+        }
+      }, null, 2);
+    } else {
+      promptInstruction += `\\n- CRITICAL: Return visualEngine and componentData EXACTLY as provided. Keep ${nameA} as the first bar and ${nameB} as the second bar in both models. Do NOT add any difference to the first bar model, and do NOT replace "?" with computed numbers.`;
+
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL_COMPARISON",
+        componentData: {
+          models: [
+            {
+              modelType: "BAR_MODEL_COMPARISON",
+              title: "At First",
+              hideDifference: true,
+              bars: [
+                { name: `${nameA} (At first)`, value: initialA, layoutSize: initialA, displayValue: initialA.toLocaleString(), bgClass: "bg-blue-500", hideDifference: true },
+                { name: `${nameB} (At first)`, value: initialB, layoutSize: initialB, displayValue: initialB.toLocaleString(), bgClass: "bg-amber-500", hideDifference: true }
+              ]
+            },
+            {
+              modelType: "BAR_MODEL_COMPARISON",
+              title: `In The End (After ${nameA} gave ${z.toLocaleString()} to ${nameB})`,
+              bars: [
+                { name: `${nameA} (Now)`, value: "?", layoutSize: newA, displayValue: "?", bgClass: "bg-blue-500" },
+                { name: `${nameB} (Now)`, value: "?", layoutSize: newB, displayValue: "?", bgClass: "bg-amber-500" }
+              ],
+              difference: { displayValue: "?" }
+            }
+          ]
+        }
       }, null, 2);
     }
 

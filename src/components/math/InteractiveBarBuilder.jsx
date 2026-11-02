@@ -392,7 +392,11 @@ export function checkBeforeAfterParameters(beforeBars = [], afterBars = [], tran
   // Check each entity represented in Before State exists in After State
   for (const bBar of rawBefore) {
     if (!bBar.name || !bBar.name.trim()) continue;
-    const matched = rawAfter.find(a => normalizeName(a.name) === normalizeName(bBar.name));
+    const bNorm = normalizeName(bBar.name);
+    const matched = rawAfter.find(a => {
+      const aNorm = normalizeName(a.name);
+      return aNorm === bNorm || aNorm.includes(bNorm) || bNorm.includes(aNorm);
+    });
     if (!matched) {
       return {
         isValid: false,
@@ -404,10 +408,11 @@ export function checkBeforeAfterParameters(beforeBars = [], afterBars = [], tran
   }
 
   // 3. For Equalizing Problems: Validate that After State reflects equal quantities
-  const isEqualizing = actualConfig?.problemType === 'EQUALIZING_TRANSFER' || 
+  const isEqualizing = (actualConfig?.problemType === 'EQUALIZING_TRANSFER' || 
     actualConfig?.equalizedValue || 
     actualConfig?.targetType === 'TRANSFER' ||
-    (actualConfig?.target?.type === 'DIFFERENCE' && actualConfig?.transferAmount);
+    (actualConfig?.target?.type === 'DIFFERENCE' && actualConfig?.transferAmount)) &&
+    actualConfig?.problemType !== 'SHIFTING_DIFFERENCE_TRANSFER';
 
   if (isEqualizing && rawAfter.length >= 2) {
     // Check for conflicting non-zero difference segments in after state
@@ -430,6 +435,60 @@ export function checkBeforeAfterParameters(beforeBars = [], afterBars = [], tran
         errorMsg: "In the end, both entities have an equal number. Adjust the bars in the After State to show equal lengths (e.g. 50% each or 1 unit each).",
         details: { spread: lengthSpread }
       };
+    }
+  }
+
+  // 4. For Shifting Difference Problems: Validate that After State reflects the flipped inequality
+  const isShiftingDiff = actualConfig?.problemType === 'SHIFTING_DIFFERENCE_TRANSFER';
+  if (isShiftingDiff && rawAfter.length >= 2) {
+    const giverName = actualConfig.transferFrom || actualConfig.giver || actualConfig.nameA;
+    const receiverName = actualConfig.transferTo || actualConfig.receiver || actualConfig.nameB;
+
+    const barGiver = rawAfter.find(a => normalizeName(a.name).includes(normalizeName(giverName)));
+    const barReceiver = rawAfter.find(a => normalizeName(a.name).includes(normalizeName(receiverName)));
+
+    if (barGiver && barReceiver) {
+      if (barGiver.hasDifference && barGiver.diffType === 'MORE') {
+        return {
+          isValid: false,
+          defect: 'AFTER_STATE_WRONG_WINNER',
+          errorMsg: `After the transfer, "${barReceiver.name}" has more than "${barGiver.name}". Add the difference segment to "${barReceiver.name}" instead.`,
+          details: { entity: barGiver.name }
+        };
+      }
+
+      if (barReceiver.hasDifference && barReceiver.diffType === 'FEWER') {
+        return {
+          isValid: false,
+          defect: 'AFTER_STATE_WRONG_DIFF_TYPE',
+          errorMsg: `After the transfer, "${barReceiver.name}" has more than "${barGiver.name}". Mark the difference as More (+ protruding) on "${barReceiver.name}".`,
+          details: { entity: barReceiver.name }
+        };
+      }
+
+      const giverLen = Number(barGiver.length) || 50;
+      const receiverLen = Number(barReceiver.length) || 50;
+      if (giverLen > receiverLen + 15 && (!barReceiver.hasDifference || barReceiver.diffType !== 'MORE')) {
+        return {
+          isValid: false,
+          defect: 'AFTER_STATE_WRONG_LENGTH',
+          errorMsg: `After the transfer, "${barReceiver.name}" has more than "${barGiver.name}". Adjust "${barReceiver.name}"'s bar to be longer.`,
+          details: { giverLen, receiverLen }
+        };
+      }
+
+      if (barReceiver.hasDifference && barReceiver.diffValue && barReceiver.diffValue !== '?') {
+        const actDiff = normalizeNumber(barReceiver.diffValue);
+        const expDiff = normalizeNumber(actualConfig.newDiff || actualConfig.differenceValue);
+        if (actDiff !== expDiff) {
+          return {
+            isValid: false,
+            defect: 'AFTER_STATE_INCORRECT_DIFF',
+            errorMsg: `The new difference in the After State should be ${Number(expDiff).toLocaleString()}, but got "${barReceiver.diffValue}".`,
+            details: { expected: expDiff, actual: actDiff }
+          };
+        }
+      }
     }
   }
 
@@ -526,7 +585,7 @@ export function checkBarModelParameters(userBars = [], config = {}, totalState =
   let compEntities = expectedEntities.filter(e => e.relation === 'MORE' || e.relation === 'FEWER');
 
   // Flexible baseline for 2-entity difference/transfer: either entity can serve as base reference!
-  if ((config?.target?.type === 'DIFFERENCE' || config?.target?.type === 'TRANSFER' || config?.problemType === 'EQUALIZING_TRANSFER' || config?.problemType === 'DIFFERENCE_DEDUCTION') && expectedEntities.length === 2 && !config?.total) {
+  if ((config?.target?.type === 'DIFFERENCE' || config?.target?.type === 'TRANSFER' || config?.problemType === 'EQUALIZING_TRANSFER' || config?.problemType === 'SHIFTING_DIFFERENCE_TRANSFER' || config?.problemType === 'DIFFERENCE_DEDUCTION') && expectedEntities.length === 2 && !config?.total) {
     const defaultBase = expectedBases[0] || expectedEntities[0];
     const barWithoutDiff = rawBars.find(b => !b.hasDifference);
     if (barWithoutDiff) {
@@ -635,6 +694,9 @@ export function checkBarModelParameters(userBars = [], config = {}, totalState =
     if (!compBar) continue;
 
     if (!compBar.hasDifference) {
+      if (config?.problemType === 'SHIFTING_DIFFERENCE_TRANSFER' && normalizeNumber(compBar.value) === normalizeNumber(comp.value)) {
+        continue;
+      }
       return {
         isValid: false,
         defect: `MISSING_DIFFERENCE_${comp.relation}`,
@@ -886,6 +948,7 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
 
   const isBeforeAfterModel = config?.correctModelType === 'BEFORE_AFTER' || 
     config?.problemType === 'EQUALIZING_TRANSFER' || 
+    config?.problemType === 'SHIFTING_DIFFERENCE_TRANSFER' ||
     (Array.isArray(config?.correctModelType) && config?.correctModelType[0] === 'BEFORE_AFTER');
 
   if (isBeforeAfterModel) {
@@ -950,7 +1013,11 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
             <span className="text-[11px] font-black uppercase tracking-wider text-slate-700">
               1. Before State (At First)
             </span>
-            {(target?.type === 'DIFFERENCE' || config?.targetType === 'DIFFERENCE') && (
+            {config?.problemType === 'SHIFTING_DIFFERENCE_TRANSFER' ? (
+              <span className="text-[10px] font-bold text-slate-500">
+                Initial Difference = {config?.initialDiff ? Number(config.initialDiff).toLocaleString() : (diffDisplay || '?')}
+              </span>
+            ) : (target?.type === 'DIFFERENCE' || config?.targetType === 'DIFFERENCE') && (
               <span className="text-[10px] font-bold text-slate-500">
                 Difference = {diffDisplay}
               </span>
@@ -975,22 +1042,35 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
                   </div>
                 ) : (
                   <div className="flex items-center h-9 bg-slate-50 rounded-lg p-1 border border-slate-200">
-                    <div style={{ width: '48%' }} className="h-full bg-indigo-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
-                      {smallerDisplay || "Base Unit"}
-                    </div>
-                    {transferVal ? (
+                    {config?.problemType === 'SHIFTING_DIFFERENCE_TRANSFER' ? (
                       <>
-                        <div style={{ width: '18%' }} className="h-full ml-1 bg-emerald-500 rounded flex items-center justify-center text-xs font-black text-white px-1 truncate border border-emerald-400 border-dashed" title="Amount transferred">
-                          +{transferDisplay}
+                        <div style={{ width: '45%' }} className="h-full bg-indigo-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
+                          {smallerDisplay || "Base Unit"}
                         </div>
-                        <div style={{ width: '18%' }} className="h-full ml-1 bg-teal-500 rounded flex items-center justify-center text-xs font-black text-white px-1 truncate border border-teal-400 border-dashed" title="Amount to equalize">
-                          +{transferDisplay}
+                        <div style={{ width: '28%' }} className="h-full ml-1 bg-emerald-500 rounded flex items-center justify-center text-xs font-black text-white px-2 truncate border border-emerald-400 border-dashed" title="Initial Difference">
+                          +{config?.initialDiff ? Number(config.initialDiff).toLocaleString() : (diffDisplay || '?')}
                         </div>
                       </>
                     ) : (
-                      <div style={{ width: '28%' }} className="h-full ml-1 bg-emerald-500 rounded flex items-center justify-center text-xs font-black text-white px-2 truncate border border-emerald-400 border-dashed">
-                        +{diffDisplay}
-                      </div>
+                      <>
+                        <div style={{ width: '48%' }} className="h-full bg-indigo-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
+                          {smallerDisplay || "Base Unit"}
+                        </div>
+                        {transferVal ? (
+                          <>
+                            <div style={{ width: '18%' }} className="h-full ml-1 bg-emerald-500 rounded flex items-center justify-center text-xs font-black text-white px-1 truncate border border-emerald-400 border-dashed" title="Amount transferred">
+                              +{transferDisplay}
+                            </div>
+                            <div style={{ width: '18%' }} className="h-full ml-1 bg-teal-500 rounded flex items-center justify-center text-xs font-black text-white px-1 truncate border border-teal-400 border-dashed" title="Amount to equalize">
+                              +{transferDisplay}
+                            </div>
+                          </>
+                        ) : (
+                          <div style={{ width: '28%' }} className="h-full ml-1 bg-emerald-500 rounded flex items-center justify-center text-xs font-black text-white px-2 truncate border border-emerald-400 border-dashed">
+                            +{diffDisplay}
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 )}
@@ -1002,7 +1082,7 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
               <span className="w-20 text-right text-xs font-black text-slate-800 truncate">{nameB}</span>
               <div className="flex-1 pl-2 border-l-4 border-indigo-500 border-dashed">
                 <div className="flex items-center h-9 bg-slate-50 rounded-lg p-1 border border-slate-200">
-                  <div style={{ width: target?.type === 'BAR' ? '40%' : '48%' }} className="h-full bg-indigo-500 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
+                  <div style={{ width: config?.problemType === 'SHIFTING_DIFFERENCE_TRANSFER' ? '45%' : (target?.type === 'BAR' ? '40%' : '48%') }} className="h-full bg-indigo-500 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
                     {smallerDisplay || "Base Unit"}
                   </div>
                 </div>
@@ -1017,32 +1097,68 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
             <span className="text-[11px] font-black uppercase tracking-wider text-slate-700">
               2. After State (In the End)
             </span>
-            <span className="text-[10px] font-black uppercase text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-              Resulting Quantities
-            </span>
+            {config?.problemType === 'SHIFTING_DIFFERENCE_TRANSFER' ? (
+              <span className="text-[10px] font-bold text-slate-500">
+                New Difference = {config?.displayDifference || (config?.differenceValue ? Number(config.differenceValue).toLocaleString() : '?')}
+              </span>
+            ) : (
+              <span className="text-[10px] font-black uppercase text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                Resulting Quantities
+              </span>
+            )}
           </div>
 
           <div className="space-y-2 pt-1">
-            <div className="flex items-center gap-2">
-              <span className="w-20 text-right text-xs font-black text-slate-800 truncate">{nameA}</span>
-              <div className="flex-1 pl-2 border-l-4 border-emerald-500 border-dashed">
-                <div className="flex items-center h-9 bg-slate-50 rounded-lg p-1 border border-slate-200">
-                  <div style={{ width: '50%' }} className="h-full bg-emerald-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
-                    {equalDisplay}
+            {config?.problemType === 'SHIFTING_DIFFERENCE_TRANSFER' ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <span className="w-20 text-right text-xs font-black text-slate-800 truncate">{nameA}</span>
+                  <div className="flex-1 pl-2 border-l-4 border-emerald-500 border-dashed">
+                    <div className="flex items-center h-9 bg-slate-50 rounded-lg p-1 border border-slate-200">
+                      <div style={{ width: '42%' }} className="h-full bg-emerald-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
+                        {config?.displayNewA || (config?.newA ? Number(config.newA).toLocaleString() : '')}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-20 text-right text-xs font-black text-slate-800 truncate">{nameB}</span>
-              <div className="flex-1 pl-2 border-l-4 border-emerald-500 border-dashed">
-                <div className="flex items-center h-9 bg-slate-50 rounded-lg p-1 border border-slate-200">
-                  <div style={{ width: '50%' }} className="h-full bg-emerald-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
-                    {equalDisplay}
+                <div className="flex items-center gap-2">
+                  <span className="w-20 text-right text-xs font-black text-slate-800 truncate">{nameB}</span>
+                  <div className="flex-1 pl-2 border-l-4 border-emerald-500 border-dashed">
+                    <div className="flex items-center h-9 bg-slate-50 rounded-lg p-1 border border-slate-200">
+                      <div style={{ width: '42%' }} className="h-full bg-indigo-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
+                        {config?.displayNewA || (config?.newA ? Number(config.newA).toLocaleString() : '')}
+                      </div>
+                      <div style={{ width: '25%' }} className="h-full ml-1 bg-emerald-500 rounded flex items-center justify-center text-xs font-black text-white px-1 truncate border border-emerald-400 border-dashed" title="New Difference">
+                        +{config?.displayDifference || (config?.differenceValue ? Number(config.differenceValue).toLocaleString() : '?')}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-2">
+                  <span className="w-20 text-right text-xs font-black text-slate-800 truncate">{nameA}</span>
+                  <div className="flex-1 pl-2 border-l-4 border-emerald-500 border-dashed">
+                    <div className="flex items-center h-9 bg-slate-50 rounded-lg p-1 border border-slate-200">
+                      <div style={{ width: '50%' }} className="h-full bg-emerald-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
+                        {equalDisplay}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-20 text-right text-xs font-black text-slate-800 truncate">{nameB}</span>
+                  <div className="flex-1 pl-2 border-l-4 border-emerald-500 border-dashed">
+                    <div className="flex items-center h-9 bg-slate-50 rounded-lg p-1 border border-slate-200">
+                      <div style={{ width: '50%' }} className="h-full bg-emerald-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
+                        {equalDisplay}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -2175,6 +2291,76 @@ export default function InteractiveBarBuilder({
     const giverEntity = config.entities?.find(e => normalizeName(e.name) === normalizeName(nameA)) || entityMore;
     const receiverEntity = config.entities?.find(e => normalizeName(e.name) === normalizeName(nameB)) || entityBase;
 
+    if (config.problemType === 'SHIFTING_DIFFERENCE_TRANSFER') {
+      const initA = config.initialA || config.largerValue || giverEntity?.value || '';
+      const initB = config.initialB || config.smallerValue || receiverEntity?.value || '';
+      const initDiff = config.initialDiff || (initA && initB ? Number(initA) - Number(initB) : '');
+      const transVal = config.transferAmount || '';
+      const nA = config.newA || (initA && transVal ? Number(initA) - Number(transVal) : '');
+      const nB = config.newB || (initB && transVal ? Number(initB) + Number(transVal) : '');
+      const nDiff = config.newDiff || config.differenceValue || (nB && nA ? Number(nB) - Number(nA) : '');
+
+      setUserBeforeBars([
+        {
+          id: 'before-1',
+          name: nameA,
+          value: initB ? Number(initB).toLocaleString() : (initA ? Number(initA).toLocaleString() : ''),
+          length: 65,
+          hasDifference: true,
+          diffType: 'MORE',
+          diffValue: initDiff ? Number(initDiff).toLocaleString() : '?',
+          diffSegments: [{ id: 'before-seg-1', value: initDiff ? Number(initDiff).toLocaleString() : '?', length: 25 }],
+          isCollapsed: false
+        },
+        {
+          id: 'before-2',
+          name: nameB,
+          value: initB ? Number(initB).toLocaleString() : '',
+          length: 42,
+          hasDifference: false,
+          diffType: 'MORE',
+          diffValue: '',
+          diffSegments: [],
+          isCollapsed: false
+        }
+      ]);
+
+      setUserTransfer({
+        giver: nameA,
+        receiver: nameB,
+        amount: transVal ? Number(transVal).toLocaleString() : ''
+      });
+
+      setUserAfterBars([
+        {
+          id: 'after-1',
+          name: nameA,
+          value: nA ? Number(nA).toLocaleString() : '',
+          length: 42,
+          hasDifference: false,
+          diffType: 'MORE',
+          diffValue: '',
+          diffSegments: [],
+          isCollapsed: false
+        },
+        {
+          id: 'after-2',
+          name: nameB,
+          value: nA ? Number(nA).toLocaleString() : (nB ? Number(nB).toLocaleString() : ''),
+          length: 68,
+          hasDifference: true,
+          diffType: 'MORE',
+          diffValue: '?',
+          diffSegments: [{ id: 'after-seg-1', value: '?', length: 25 }],
+          isCollapsed: false
+        }
+      ]);
+
+      setStage2Status('idle');
+      setStage2ErrorMsg(null);
+      return;
+    }
+
     const largerVal = config.largerValue || giverEntity?.value || '';
     const smallerVal = config.smallerValue || receiverEntity?.value || '';
     const diffVal = config.differenceValue || config.difference?.value || giverEntity?.actualDiff || '';
@@ -2224,7 +2410,7 @@ export default function InteractiveBarBuilder({
     setUserAfterBars([
       {
         id: 'after-1',
-        name: `${nameA} (In the end)`,
+        name: nameA,
         value: equalVal ? Number(equalVal).toLocaleString() : '1 unit',
         length: 50,
         hasDifference: false,
@@ -2235,7 +2421,7 @@ export default function InteractiveBarBuilder({
       },
       {
         id: 'after-2',
-        name: `${nameB} (In the end)`,
+        name: nameB,
         value: equalVal ? Number(equalVal).toLocaleString() : '1 unit',
         length: 50,
         hasDifference: false,
