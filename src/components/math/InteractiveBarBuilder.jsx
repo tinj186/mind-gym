@@ -3567,10 +3567,12 @@ export default function InteractiveBarBuilder({
               {confirmationStatus === 'incorrect' && (
                 <p className="text-xs font-bold text-rose-600 text-center pt-2.5 animate-in fade-in duration-200">
                   {selectedModel === 'BEFORE_AFTER' && (config.problemType === 'OVERLAPPING_TARGET_DEDUCTION' || config.problemType === 'TARGET_SHORTFALL')
-                    ? "This problem does not involve transfers or changes across time states. Think about how the total is partitioned or compared!"
-                    : selectedModel === 'PART_WHOLE' && (config.problemType === 'SHIFTING_DIFFERENCE_TRANSFER' || config.problemType === 'EQUALIZING_TRANSFER')
-                      ? "This problem tracks quantities changing across before and after states. Try a model that captures transfers!"
-                      : "This bar model archetype does not match the problem structure. Consider how the quantities relate!"}
+                    ? "This problem does not involve transfers or changes across time states. Think about how the single total is divided into parts!"
+                    : selectedModel === 'COMPARISON' && config.problemType === 'OVERLAPPING_TARGET_DEDUCTION'
+                      ? "This problem describes a single whole partitioned into overlapping groups, rather than comparing two separate independent entities. Choose the Part-Whole Model!"
+                      : selectedModel === 'PART_WHOLE' && (config.problemType === 'SHIFTING_DIFFERENCE_TRANSFER' || config.problemType === 'EQUALIZING_TRANSFER')
+                        ? "This problem tracks quantities changing across before and after states. Try a model that captures transfers!"
+                        : "This bar model archetype does not match the problem structure. Consider how the quantities relate!"}
                 </p>
               )}
             </div>

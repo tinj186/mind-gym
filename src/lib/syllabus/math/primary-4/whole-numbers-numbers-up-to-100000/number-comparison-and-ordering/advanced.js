@@ -2961,7 +2961,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         barBuilderConfig: {
           problemType: "OVERLAPPING_TARGET_DEDUCTION",
           targetVariety: varietyName,
-          correctModelType: ["PART_WHOLE", "COMPARISON"],
+          correctModelType: "PART_WHOLE",
           modelOptions: [
             { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities across distinct entities" },
             { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole quantity into parts" },
