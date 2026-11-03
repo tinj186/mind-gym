@@ -80,13 +80,7 @@ Execution: Prompt construction and pedagogical rubrics must be completely decoup
 The route handler in `route.js` remains a lean, single-purpose coordinator under 50 lines.
 
 Law (Interactive Bar Model 3-Stage Workflow & Multi-Archetype Flexibility):
-When solving structured comparative word problems using `INTERACTIVE_BAR_BUILDER`, the system must support multiple valid visual representations and dynamically adapt downstream calculation steps.
-Execution:
-1. **Stage 1 (Archetype Selection & Multi-Match)**: When a problem can legitimately be solved using multiple model types (e.g., both `BEFORE_AFTER` and `COMPARISON` for inequality-flipping shifting transfers), `barBuilderConfig.correctModelType` is provided as an array `["BEFORE_AFTER", "COMPARISON"]`, allowing the student to successfully confirm either valid archetype.
-2. **Stage 2 (Blueprint Verification & Compound Representation)**:
-   - Standard comparative models enforce that differences attach to only one entity.
-   - *Compound Transfer Exception*: In Before & After models, when the receiver shows their initial base plus an attached difference segment equal to the transfer amount ($+z$), and the giver shows a shortage bracket (`- FEWER`) against that new total, this is recognized as a valid compound transfer representation. The blueprint validator (`checkBeforeAfterParameters`) explicitly permits this representation instead of rejecting it with `AFTER_STATE_MULTIPLE_DIFFS`.
-3. **Stage 3 (Archetype-Adaptive Working Steps)**: The multi-step equation prompts rendered in Stage 3 adapt dynamically to the model archetype selected in Stage 1. If the student chose `COMPARISON`, `InteractiveBarBuilder` renders the difference-shift working steps (`config.comparisonSteps`). If they chose `BEFORE_AFTER`, it renders the state-tracking steps (`config.steps`).
+Structured word problems utilizing `INTERACTIVE_BAR_BUILDER` must follow the 3-Stage Lifecycle (Archetype Selection → Blueprint Construction → Equation Working). For complete technical specifications, the Golden Rule of Bar Modeling (Drawing Precedes Solving), multi-archetype flexibility, and blueprint validation laws, see **Section VIII: The Universal Interactive Bar Model Engine (Singapore Math Source of Truth)** below.
 
 Law (Template Preservation Strictness): When dynamic context or randomized attributes (e.g. random objects like "eraser" or math numbers) are generated deterministically in code, the AI must NEVER be allowed to "autocorrect" or rewrite the template string.
 Execution: To prevent the LLM from taking creative liberty and replacing randomized values with what it perceives to be "better" standard examples, the format instructions MUST explicitly prepend the following directive to the prompt: `CRITICAL INSTRUCTION: You MUST use the EXACT strings provided in the template below for questionText, hint, and solutionSteps. DO NOT rephrase them!`
@@ -108,6 +102,64 @@ VII. Adaptive Engine Session Integrity
 Law (Strict Isolation Enforcement): When an Isolation Workout (Subtopic Focus) is triggered, the engine must prioritize the requested subtopic over any historically locked Daily Workout session. If the database `activeWorkout` lock does not strictly match the requested subtopic, the lock must be instantly discarded. Furthermore, Isolation Workouts MUST save their own 10-question lock to the database to preserve student progress.
 
 Law (Isolation Randomization): Isolation Workouts must NOT pull the top 10 static questions. They must execute a `.count()` on the subtopic and utilize a `randomSkip` offset to pull a dynamically randomized slice from the entire database pool for that subtopic, ensuring zero repetition for the student.
+
+VIII. The Universal Interactive Bar Model Engine (Singapore Math Source of Truth)
+
+To ensure that interactive bar modeling adheres strictly to Singapore MOE Concrete-Pictorial-Abstract (CPA) pedagogy, eliminates "pre-solving" bugs, and provides adaptive 3-stage scaffolding:
+
+1. The Golden Law of Bar Modeling: Drawing Precedes Solving
+- **Pedagogical Mandate**: The bar model is an exploratory cognitive heuristic. A student constructs the model using EXCLUSIVELY the numbers given in the problem stem, representing all unknown quantities and calculation targets with question marks (`?` or blank). The pictorial model is what enables the student to discover and write the arithmetic equations in Stage 3 — students must NEVER be forced to calculate arithmetic answers before they can build or validate their bar model.
+- **Blueprint Config Rule**:
+  - In `barBuilderConfig.parts`, `barBuilderConfig.entities`, and `barBuilderConfig.target`, any value that requires an arithmetic calculation (+, -, ×, ÷) to discover MUST be initialized with `value: '?'` and `displayValue: '?'`.
+  - Calculated values must only be stored in `actualValue` or `actualDiff` (for optional validation if the student chooses to pre-calculate).
+  - NEVER inject calculated intermediate numbers (e.g. overlap $16,900$, non-target group only $27,400$, initial difference $23,200$, new flipped difference $12,400$) into `value` or `displayValue`.
+- **Validation Rule**:
+  - In `checkPartWholeParameters`, `checkComparativeParameters`, and `checkBeforeAfterParameters`, marking unknown parts or difference segments with `'?'` or leaving them blank MUST ALWAYS pass validation without error.
+  - The validator must NEVER reject a student's model with "Please enter the value (X)" when X is not in the question stem.
+
+2. Full Archetype Palette Availability: Zero Pruning
+- **Student Choice Principle**: Students must be trained to evaluate problem structures and select the correct bar model archetype.
+- **Palette Rule**: `barBuilderConfig.modelOptions` must ALWAYS offer the full catalog of three core archetypes:
+  1. `COMPARISON` ("Comparison Model — Compare quantities across distinct entities")
+  2. `PART_WHOLE` ("Part-Whole Model — Divide a single whole quantity into parts or find a target whole")
+  3. `BEFORE_AFTER` ("Before & After Model — Show transfers or changes across time states")
+- **Never Prune Options**: Developers must NEVER remove or hide archetypes from `modelOptions` simply because a model is suboptimal or non-standard for that problem.
+- **Multi-Match Archetypes**: When a problem can legitimately be solved using multiple archetypes (e.g., Shifting Transfers can be modeled via `BEFORE_AFTER` state tracking OR `COMPARISON` difference shifting), `barBuilderConfig.correctModelType` MUST be provided as an array `["BEFORE_AFTER", "COMPARISON"]`. The student can successfully confirm either archetype.
+- **Educational Feedback for Incompatible Archetypes**: If an incompatible archetype is confirmed (e.g., selecting `PART_WHOLE` for a two-entity transfer problem), provide clear pedagogical guidance explaining why another model is better suited, rather than removing the option from the UI.
+
+3. Permissive Multi-Model Blueprint Verification (Stage 2)
+The blueprint validator must accept all mathematically valid representations of the problem stem:
+- **A. Overlapping Sets (`OVERLAPPING_TARGET_DEDUCTION`)**:
+  - *Standard 3-Part Disjoint Model*: Whole = Grand Total ($75,000$). Parts = `Group A Only (?)` + `Both (?)` + `Group B Only (?)`. All three parts are initially unknown (`?`). Validator accepts `'?'` or blank for all three, or accepted pre-computed numbers if supplied.
+  - *Direct 2-Part Model*: Total = Known Group + Target Only (e.g., $\text{Total } (75,000) = \text{Chemistry Lab } (44,300) + \text{Astronomy Booth Only } (?)$). This directly maps the stem numbers to a 2-part whole. Validator explicitly accepts this 2-part model.
+- **B. Shifting & Equalizing Transfers (`SHIFTING_DIFFERENCE_TRANSFER` & `EQUALIZING_TRANSFER`)**:
+  - *Before State*: Must accept direct solid bars representing initial amounts from the stem (e.g., Kumar = $48,700$, Danial = $25,500$) without requiring a difference segment. If a difference segment is added, it must accept `'?'` as the unknown initial difference.
+  - *After State (Action Transfer Model)*: Receiver shows initial base plus transfer segment ($25,500 + 18,000$), Giver shows ending bar ($30,700$ or `?`), and the new gap is `?` (target: New Difference).
+  - *After State (Compound Transfer Model)*: Receiver shows initial base + transfer ($+z$), Giver shows shortage bracket (`- FEWER`).
+  - *After State (Resulting Comparison Model)*: Base aligned to Giver's end amount, difference segment labeled `?` or new difference.
+  - *Comparison Canvas (Single Time State)*: Accepts direct initial stem amounts (Giver: $48,700$, Receiver: $25,500$, difference: `?`), or Final State comparison.
+
+4. Smart Diagnostic Misconception Feedback
+Rather than throwing cryptic mismatch errors (e.g., "The difference amount should be 23,200, but got 18000"), the validator provides targeted pedagogical diagnostics:
+- *Transfer Used as Difference*: If the student enters the transfer amount ($18,000$) as the difference on a Comparison canvas, diagnose:
+  `"+18,000" is the amount transferred from Kumar to Danial, not the difference between them. In a Comparison Model, compare their quantities directly (initial difference is unknown "?"). Or switch to the "Before & After Model" to show the transfer across time!` (Defect: `TRANSFER_USED_AS_DIFFERENCE`).
+- *Final Difference on Initial State*: If the student enters the ending difference on starting bars, diagnose `FINAL_DIFF_ON_INITIAL_MODEL`.
+- *Inverted Relation / Wrong Winner*: If difference is placed on the wrong entity, diagnose `AFTER_STATE_WRONG_WINNER` or `INVERTED_RELATION_MORE`.
+
+5. Reference Blueprint Rendering Integrity (`ModelSolutionBarModel`)
+When a student triggers "View Model Solution" (or during review after an error):
+- **Active Canvas Parity**: The rendered reference blueprint MUST match the student's selected `activeModel`. If the student is on the Comparison canvas, render the reference Comparison model. If on Before & After, render Before & After.
+- **Stem-Only Data Grounding**:
+  - Every number displayed on the reference blueprint MUST originate directly from the question stem.
+  - All calculated targets and intermediate quantities MUST display `?`.
+  - *Overlapping Sets Reference*: Shows Whole bracket ($75,000$), Group A span bracket ($47,600$), Group B span bracket ($44,300$), and `?` inside all three partitioned bar segments.
+  - *Before & After Reference*: Shows solid bars in Before State ($48,700$ and $25,500$ with Initial Difference = `?`), transfer action in After State ($25,500 + 18,000$ with New Difference = `?`).
+
+6. Downstream Calculation Adaptation (Stage 3)
+- Multi-step equation working prompts (`steps` vs `comparisonSteps` / `alternativeSteps`) in Stage 3 adapt dynamically to the model archetype selected in Stage 1:
+  - If `BEFORE_AFTER`: Prompts state-tracking steps (Find A's end amount $\to$ Find B's end amount $\to$ Subtract to find difference).
+  - If `COMPARISON`: Prompts difference-shifting steps (Find initial difference $\to$ Find $2 \times$ transfer shift $\to$ Subtract initial difference to find new difference).
+- Evaluated by Tier 1 Fast-Path with intermediate step permutation tolerance and Tier 2 AI Multi-Step Grader fallback.
 
 ### 3.4 Cloud Neutrality & Vendor Lock-In Prevention
 To maintain the ability to smoothly migrate from Serverless (Vercel) to a containerized VPS (Docker/Render/DigitalOcean) in the future, strictly enforce the following architectural boundaries:
