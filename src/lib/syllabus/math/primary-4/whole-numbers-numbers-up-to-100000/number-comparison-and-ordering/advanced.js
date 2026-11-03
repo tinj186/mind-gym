@@ -2534,7 +2534,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   }
 
   // ==========================================================================
-  // VARIANT 5: advanced_overlapping_target_deduction (The "Both" Deduction)
+  // VARIANT 5: advanced_overlapping_target_deduction (The Overlapping Deduction)
   // ==========================================================================
   else if (effectiveVariant === 'advanced_overlapping_target_deduction') {
     const totalParticipants = (Math.floor(Math.random() * 20) + 65) * 1000; // 65k - 84k
@@ -2552,6 +2552,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const bOnly = groupB - overlap;
 
     const subType = explicitVariety === 'find_group_a_only' ? 1 : (explicitVariety === 'find_group_b_only' ? 2 : (explicitVariety === 'find_both_overlap' ? 0 : Math.floor(Math.random() * 3)));
+    const varietyName = subType === 0 ? 'find_both_overlap' : (subType === 1 ? 'find_group_a_only' : 'find_group_b_only');
 
     const contexts = [
       {
@@ -2574,25 +2575,142 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         groupAName: "Music Club",
         groupBName: "Sports Club",
         bothDesc: "BOTH clubs"
+      },
+      {
+        totalDesc: `a community charity drive with a total of ${total.toLocaleString()} donors`,
+        itemUnit: "donors",
+        groupAName: "Food Aid",
+        groupBName: "Shelter Fund",
+        bothDesc: "BOTH causes"
+      },
+      {
+        totalDesc: `a science fair with a total of ${total.toLocaleString()} visitors`,
+        itemUnit: "visitors",
+        groupAName: "Astronomy Booth",
+        groupBName: "Chemistry Lab",
+        bothDesc: "BOTH booths"
       }
     ];
     const ctx = contexts[Math.floor(Math.random() * contexts.length)];
 
-    if (subType === 0) {
-      // Find BOTH overlap
-      finalAnswer = overlap.toString();
-      promptInstruction = `- Question stem: "In ${ctx.totalDesc}, ${groupA.toLocaleString()} ${ctx.itemUnit} were recorded in ${ctx.groupAName} and ${groupB.toLocaleString()} ${ctx.itemUnit} were recorded in ${ctx.groupBName}. Every ${ctx.itemUnit === 'points' ? 'point' : 'person'} was in at least one group. How many ${ctx.itemUnit} belonged to ${ctx.bothDesc}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    const targetLabel = subType === 0 ? `Both ${ctx.groupAName} & ${ctx.groupBName}` : (subType === 1 ? `${ctx.groupAName} Only` : `${ctx.groupBName} Only`);
 
-      if (isStructure) {
-        inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: "Write the working equation to find the sum of the two groups:", expectedAnswer: `${groupA} + ${groupB} = ${groupA + groupB}` },
-            { label: "Write the working equation to find the overlap amount:", expectedAnswer: `${groupA + groupB} - ${total} = ${overlap}` },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
+    let steps = [];
+    let comparisonSteps = [];
+    let alternativeSteps = [];
+
+    if (subType === 0) {
+      // VARIETY 0: Find BOTH overlap
+      finalAnswer = overlap.toString();
+      promptInstruction = `- Question stem: "In ${ctx.totalDesc}, ${groupA.toLocaleString()} ${ctx.itemUnit} were recorded in ${ctx.groupAName} and ${groupB.toLocaleString()} ${ctx.itemUnit} were recorded in ${ctx.groupBName}. Every ${ctx.itemUnit === 'points' ? 'point' : (ctx.itemUnit.endsWith('s') ? ctx.itemUnit.slice(0, -1) : 'person')} belonged to at least one group. How many ${ctx.itemUnit} belonged to ${ctx.bothDesc}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+
+      steps = [
+        {
+          label: `Write the working equation to find the sum of the two groups:`,
+          expectedAnswer: `${groupA} + ${groupB} = ${groupA + groupB}`,
+          acceptedAnswers: [
+            `${groupA} + ${groupB} = ${groupA + groupB}`,
+            `${groupA}+${groupB}=${groupA + groupB}`,
+            `${groupB} + ${groupA} = ${groupA + groupB}`,
+            `${groupB}+${groupA}=${groupA + groupB}`,
+            `${groupA} + ${groupB}`,
+            `${groupA}+${groupB}`,
+            `${groupB} + ${groupA}`,
+            `${groupB}+${groupA}`,
+            `${groupA.toLocaleString()} + ${groupB.toLocaleString()} = ${(groupA + groupB).toLocaleString()}`,
+            `${groupA.toLocaleString()}+${groupB.toLocaleString()}=${(groupA + groupB).toLocaleString()}`,
+            `${groupB.toLocaleString()} + ${groupA.toLocaleString()} = ${(groupA + groupB).toLocaleString()}`,
+            `${groupB.toLocaleString()}+${groupA.toLocaleString()}=${(groupA + groupB).toLocaleString()}`,
+            `${groupA.toLocaleString()} + ${groupB.toLocaleString()}`,
+            `${groupB.toLocaleString()} + ${groupA.toLocaleString()}`,
+            (groupA + groupB).toString(),
+            (groupA + groupB).toLocaleString(),
+            `${groupA + groupB} ${ctx.itemUnit}`,
+            `${(groupA + groupB).toLocaleString()} ${ctx.itemUnit}`,
+            `${total} - ${groupA} = ${bOnly}`,
+            `${total} - ${groupB} = ${aOnly}`
           ]
-        }, null, 2);
-      }
+        },
+        {
+          label: `Write the working equation to find the number of ${ctx.itemUnit} in both groups (overlap):`,
+          expectedAnswer: `${groupA + groupB} - ${total} = ${overlap}`,
+          acceptedAnswers: [
+            `${groupA + groupB} - ${total} = ${overlap}`,
+            `${groupA + groupB}-${total}=${overlap}`,
+            `${groupA + groupB} - ${total}`,
+            `${groupA + groupB}-${total}`,
+            `${(groupA + groupB).toLocaleString()} - ${total.toLocaleString()} = ${overlap.toLocaleString()}`,
+            `${(groupA + groupB).toLocaleString()}-${total.toLocaleString()}=${overlap.toLocaleString()}`,
+            `${(groupA + groupB).toLocaleString()} - ${total.toLocaleString()}`,
+            `${groupA} - ${aOnly} = ${overlap}`,
+            `${groupB} - ${bOnly} = ${overlap}`,
+            overlap.toString(),
+            overlap.toLocaleString(),
+            `${overlap} ${ctx.itemUnit}`,
+            `${overlap.toLocaleString()} ${ctx.itemUnit}`
+          ]
+        },
+        {
+          label: "Final Answer:",
+          expectedAnswer: finalAnswer,
+          acceptedAnswers: [
+            finalAnswer,
+            Number(finalAnswer).toLocaleString(),
+            `${finalAnswer} ${ctx.itemUnit}`,
+            `${Number(finalAnswer).toLocaleString()} ${ctx.itemUnit}`
+          ]
+        }
+      ];
+
+      comparisonSteps = [
+        {
+          label: `Write the working equation to find the combined sum of both groups:`,
+          expectedAnswer: `${groupA} + ${groupB} = ${groupA + groupB}`,
+          acceptedAnswers: steps[0].acceptedAnswers
+        },
+        {
+          label: `Write the working equation to find the overlap difference between the sum and the total:`,
+          expectedAnswer: `${groupA + groupB} - ${total} = ${overlap}`,
+          acceptedAnswers: steps[1].acceptedAnswers
+        },
+        {
+          label: "Final Answer:",
+          expectedAnswer: finalAnswer,
+          acceptedAnswers: steps[2].acceptedAnswers
+        }
+      ];
+
+      alternativeSteps = [
+        {
+          label: `Write the working equation to find the number of ${ctx.itemUnit} in ${ctx.groupBName} only:`,
+          expectedAnswer: `${total} - ${groupA} = ${bOnly}`,
+          acceptedAnswers: [
+            `${total} - ${groupA} = ${bOnly}`,
+            `${total}-${groupA}=${bOnly}`,
+            `${total} - ${groupA}`,
+            `${total.toLocaleString()} - ${groupA.toLocaleString()} = ${bOnly.toLocaleString()}`,
+            bOnly.toString(),
+            bOnly.toLocaleString()
+          ]
+        },
+        {
+          label: `Write the working equation to find the number of ${ctx.itemUnit} in both groups:`,
+          expectedAnswer: `${groupB} - ${bOnly} = ${overlap}`,
+          acceptedAnswers: [
+            `${groupB} - ${bOnly} = ${overlap}`,
+            `${groupB}-${bOnly}=${overlap}`,
+            `${groupB} - ${bOnly}`,
+            `${groupB.toLocaleString()} - ${bOnly.toLocaleString()} = ${overlap.toLocaleString()}`,
+            overlap.toString(),
+            overlap.toLocaleString()
+          ]
+        },
+        {
+          label: "Final Answer:",
+          expectedAnswer: finalAnswer,
+          acceptedAnswers: steps[2].acceptedAnswers
+        }
+      ];
 
       if (isMCQ) {
         const d1 = Math.abs(groupA - groupB).toString();
@@ -2611,21 +2729,92 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       hint = `Add the two group quantities together. The amount by which this sum exceeds the grand total represents those counted twice (in both groups)!`;
 
     } else if (subType === 1) {
-      // Find Group A ONLY
+      // VARIETY 1: Find Group A ONLY
       finalAnswer = aOnly.toString();
-      promptInstruction = `- Question stem: "In ${ctx.totalDesc}, ${groupA.toLocaleString()} ${ctx.itemUnit} were in ${ctx.groupAName} and ${groupB.toLocaleString()} ${ctx.itemUnit} were in ${ctx.groupBName}. Every item/person was in at least one group. How many ${ctx.itemUnit} belonged ONLY to ${ctx.groupAName}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+      promptInstruction = `- Question stem: "In ${ctx.totalDesc}, ${groupA.toLocaleString()} ${ctx.itemUnit} were recorded in ${ctx.groupAName} and ${groupB.toLocaleString()} ${ctx.itemUnit} were recorded in ${ctx.groupBName}. Every ${ctx.itemUnit === 'points' ? 'point' : (ctx.itemUnit.endsWith('s') ? ctx.itemUnit.slice(0, -1) : 'person')} belonged to at least one group. How many ${ctx.itemUnit} belonged ONLY to ${ctx.groupAName}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
-      if (isStructure) {
-        inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: "Write the working equation to find the sum of the two groups:", expectedAnswer: `${groupA} + ${groupB} = ${groupA + groupB}` },
-            { label: "Write the working equation to find the overlap amount:", expectedAnswer: `${groupA + groupB} - ${total} = ${overlap}` },
-            { label: `Write the working equation to find the amount in ${ctx.groupAName} only:`, expectedAnswer: `${groupA} - ${overlap} = ${aOnly}` },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
+      steps = [
+        {
+          label: `Write the working equation to find the sum of the two groups:`,
+          expectedAnswer: `${groupA} + ${groupB} = ${groupA + groupB}`,
+          acceptedAnswers: [
+            `${groupA} + ${groupB} = ${groupA + groupB}`,
+            `${groupA}+${groupB}=${groupA + groupB}`,
+            `${groupB} + ${groupA} = ${groupA + groupB}`,
+            `${groupB}+${groupA}=${groupA + groupB}`,
+            `${groupA} + ${groupB}`,
+            `${groupB} + ${groupA}`,
+            `${groupA.toLocaleString()} + ${groupB.toLocaleString()} = ${(groupA + groupB).toLocaleString()}`,
+            `${total} - ${groupB} = ${aOnly}`,
+            `${total}-${groupB}=${aOnly}`,
+            (groupA + groupB).toString(),
+            (groupA + groupB).toLocaleString()
           ]
-        }, null, 2);
-      }
+        },
+        {
+          label: `Write the working equation to find the overlap amount (in both groups):`,
+          expectedAnswer: `${groupA + groupB} - ${total} = ${overlap}`,
+          acceptedAnswers: [
+            `${groupA + groupB} - ${total} = ${overlap}`,
+            `${groupA + groupB}-${total}=${overlap}`,
+            `${groupA + groupB} - ${total}`,
+            `${(groupA + groupB).toLocaleString()} - ${total.toLocaleString()} = ${overlap.toLocaleString()}`,
+            overlap.toString(),
+            overlap.toLocaleString()
+          ]
+        },
+        {
+          label: `Write the working equation to find the amount in ${ctx.groupAName} only:`,
+          expectedAnswer: `${groupA} - ${overlap} = ${aOnly}`,
+          acceptedAnswers: [
+            `${groupA} - ${overlap} = ${aOnly}`,
+            `${groupA}-${overlap}=${aOnly}`,
+            `${groupA} - ${overlap}`,
+            `${groupA.toLocaleString()} - ${overlap.toLocaleString()} = ${aOnly.toLocaleString()}`,
+            `${total} - ${groupB} = ${aOnly}`,
+            `${total}-${groupB}=${aOnly}`,
+            `${total} - ${groupB}`,
+            `${total.toLocaleString()} - ${groupB.toLocaleString()} = ${aOnly.toLocaleString()}`,
+            aOnly.toString(),
+            aOnly.toLocaleString(),
+            `${aOnly} ${ctx.itemUnit}`,
+            `${aOnly.toLocaleString()} ${ctx.itemUnit}`
+          ]
+        },
+        {
+          label: "Final Answer:",
+          expectedAnswer: finalAnswer,
+          acceptedAnswers: [
+            finalAnswer,
+            Number(finalAnswer).toLocaleString(),
+            `${finalAnswer} ${ctx.itemUnit}`,
+            `${Number(finalAnswer).toLocaleString()} ${ctx.itemUnit}`
+          ]
+        }
+      ];
+
+      comparisonSteps = steps;
+
+      alternativeSteps = [
+        {
+          label: `Write the working equation to subtract all ${ctx.itemUnit} in ${ctx.groupBName} from the grand total:`,
+          expectedAnswer: `${total} - ${groupB} = ${aOnly}`,
+          acceptedAnswers: [
+            `${total} - ${groupB} = ${aOnly}`,
+            `${total}-${groupB}=${aOnly}`,
+            `${total} - ${groupB}`,
+            `${total.toLocaleString()} - ${groupB.toLocaleString()} = ${aOnly.toLocaleString()}`,
+            aOnly.toString(),
+            aOnly.toLocaleString(),
+            `${aOnly} ${ctx.itemUnit}`
+          ]
+        },
+        {
+          label: "Final Answer:",
+          expectedAnswer: finalAnswer,
+          acceptedAnswers: steps[3].acceptedAnswers
+        }
+      ];
 
       if (isMCQ) {
         const d1 = overlap.toString();
@@ -2640,25 +2829,96 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         defectMap = mcqRes.defectMap;
       }
 
-      solutionSteps = `Step 1: Find the sum of both groups: ${groupA.toLocaleString()} + ${groupB.toLocaleString()} = ${(groupA + groupB).toLocaleString()}.\\nStep 2: Subtract the total to find the overlap: ${(groupA + groupB).toLocaleString()} - ${total.toLocaleString()} = ${overlap.toLocaleString()}.\\nStep 3: Subtract the overlap from the ${ctx.groupAName} total to find those in ${ctx.groupAName} only: ${groupA.toLocaleString()} - ${overlap.toLocaleString()} = ${aOnly.toLocaleString()}.`;
-      hint = `Find the overlap first by adding both groups and subtracting the grand total, then subtract the overlap from ${ctx.groupAName}!`;
+      solutionSteps = `Step 1: Find the sum of both groups: ${groupA.toLocaleString()} + ${groupB.toLocaleString()} = ${(groupA + groupB).toLocaleString()}.\\nStep 2: Subtract the total to find the overlap: ${(groupA + groupB).toLocaleString()} - ${total.toLocaleString()} = ${overlap.toLocaleString()}.\\nStep 3: Subtract the overlap from the ${ctx.groupAName} total to find those in ${ctx.groupAName} only: ${groupA.toLocaleString()} - ${overlap.toLocaleString()} = ${aOnly.toLocaleString()}. (Alternatively: Total - ${ctx.groupBName} = ${total.toLocaleString()} - ${groupB.toLocaleString()} = ${aOnly.toLocaleString()}).`;
+      hint = `Find the overlap first by adding both groups and subtracting the grand total, then subtract the overlap from ${ctx.groupAName}! Or simply subtract ${ctx.groupBName} from the total!`;
 
     } else {
-      // Find Group B ONLY
+      // VARIETY 2: Find Group B ONLY
       finalAnswer = bOnly.toString();
-      promptInstruction = `- Question stem: "In ${ctx.totalDesc}, ${groupA.toLocaleString()} ${ctx.itemUnit} were in ${ctx.groupAName} and ${groupB.toLocaleString()} ${ctx.itemUnit} were in ${ctx.groupBName}. Every item/person was in at least one group. How many ${ctx.itemUnit} belonged ONLY to ${ctx.groupBName}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+      promptInstruction = `- Question stem: "In ${ctx.totalDesc}, ${groupA.toLocaleString()} ${ctx.itemUnit} were recorded in ${ctx.groupAName} and ${groupB.toLocaleString()} ${ctx.itemUnit} were recorded in ${ctx.groupBName}. Every ${ctx.itemUnit === 'points' ? 'point' : (ctx.itemUnit.endsWith('s') ? ctx.itemUnit.slice(0, -1) : 'person')} belonged to at least one group. How many ${ctx.itemUnit} belonged ONLY to ${ctx.groupBName}?"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
-      if (isStructure) {
-        inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: "Write the working equation to find the sum of the two groups:", expectedAnswer: `${groupA} + ${groupB} = ${groupA + groupB}` },
-            { label: "Write the working equation to find the overlap amount:", expectedAnswer: `${groupA + groupB} - ${total} = ${overlap}` },
-            { label: `Write the working equation to find the amount in ${ctx.groupBName} only:`, expectedAnswer: `${groupB} - ${overlap} = ${bOnly}` },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
+      steps = [
+        {
+          label: `Write the working equation to find the sum of the two groups:`,
+          expectedAnswer: `${groupA} + ${groupB} = ${groupA + groupB}`,
+          acceptedAnswers: [
+            `${groupA} + ${groupB} = ${groupA + groupB}`,
+            `${groupA}+${groupB}=${groupA + groupB}`,
+            `${groupB} + ${groupA} = ${groupA + groupB}`,
+            `${groupB}+${groupA}=${groupA + groupB}`,
+            `${groupA} + ${groupB}`,
+            `${groupB} + ${groupA}`,
+            `${groupA.toLocaleString()} + ${groupB.toLocaleString()} = ${(groupA + groupB).toLocaleString()}`,
+            `${total} - ${groupA} = ${bOnly}`,
+            `${total}-${groupA}=${bOnly}`,
+            (groupA + groupB).toString(),
+            (groupA + groupB).toLocaleString()
           ]
-        }, null, 2);
-      }
+        },
+        {
+          label: `Write the working equation to find the overlap amount (in both groups):`,
+          expectedAnswer: `${groupA + groupB} - ${total} = ${overlap}`,
+          acceptedAnswers: [
+            `${groupA + groupB} - ${total} = ${overlap}`,
+            `${groupA + groupB}-${total}=${overlap}`,
+            `${groupA + groupB} - ${total}`,
+            `${(groupA + groupB).toLocaleString()} - ${total.toLocaleString()} = ${overlap.toLocaleString()}`,
+            overlap.toString(),
+            overlap.toLocaleString()
+          ]
+        },
+        {
+          label: `Write the working equation to find the amount in ${ctx.groupBName} only:`,
+          expectedAnswer: `${groupB} - ${overlap} = ${bOnly}`,
+          acceptedAnswers: [
+            `${groupB} - ${overlap} = ${bOnly}`,
+            `${groupB}-${overlap}=${bOnly}`,
+            `${groupB} - ${overlap}`,
+            `${groupB.toLocaleString()} - ${overlap.toLocaleString()} = ${bOnly.toLocaleString()}`,
+            `${total} - ${groupA} = ${bOnly}`,
+            `${total}-${groupA}=${bOnly}`,
+            `${total} - ${groupA}`,
+            `${total.toLocaleString()} - ${groupA.toLocaleString()} = ${bOnly.toLocaleString()}`,
+            bOnly.toString(),
+            bOnly.toLocaleString(),
+            `${bOnly} ${ctx.itemUnit}`,
+            `${bOnly.toLocaleString()} ${ctx.itemUnit}`
+          ]
+        },
+        {
+          label: "Final Answer:",
+          expectedAnswer: finalAnswer,
+          acceptedAnswers: [
+            finalAnswer,
+            Number(finalAnswer).toLocaleString(),
+            `${finalAnswer} ${ctx.itemUnit}`,
+            `${Number(finalAnswer).toLocaleString()} ${ctx.itemUnit}`
+          ]
+        }
+      ];
+
+      comparisonSteps = steps;
+
+      alternativeSteps = [
+        {
+          label: `Write the working equation to subtract all ${ctx.itemUnit} in ${ctx.groupAName} from the grand total:`,
+          expectedAnswer: `${total} - ${groupA} = ${bOnly}`,
+          acceptedAnswers: [
+            `${total} - ${groupA} = ${bOnly}`,
+            `${total}-${groupA}=${bOnly}`,
+            `${total} - ${groupA}`,
+            `${total.toLocaleString()} - ${groupA.toLocaleString()} = ${bOnly.toLocaleString()}`,
+            bOnly.toString(),
+            bOnly.toLocaleString(),
+            `${bOnly} ${ctx.itemUnit}`
+          ]
+        },
+        {
+          label: "Final Answer:",
+          expectedAnswer: finalAnswer,
+          acceptedAnswers: steps[3].acceptedAnswers
+        }
+      ];
 
       if (isMCQ) {
         const d1 = overlap.toString();
@@ -2673,23 +2933,139 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         defectMap = mcqRes.defectMap;
       }
 
-      solutionSteps = `Step 1: Find the sum of both groups: ${groupA.toLocaleString()} + ${groupB.toLocaleString()} = ${(groupA + groupB).toLocaleString()}.\\nStep 2: Subtract the total to find the overlap: ${(groupA + groupB).toLocaleString()} - ${total.toLocaleString()} = ${overlap.toLocaleString()}.\\nStep 3: Subtract the overlap from the ${ctx.groupBName} total to find those in ${ctx.groupBName} only: ${groupB.toLocaleString()} - ${overlap.toLocaleString()} = ${bOnly.toLocaleString()}.`;
-      hint = `Find the overlap first by adding both groups and subtracting the grand total, then subtract the overlap from ${ctx.groupBName}!`;
+      solutionSteps = `Step 1: Find the sum of both groups: ${groupA.toLocaleString()} + ${groupB.toLocaleString()} = ${(groupA + groupB).toLocaleString()}.\\nStep 2: Subtract the total to find the overlap: ${(groupA + groupB).toLocaleString()} - ${total.toLocaleString()} = ${overlap.toLocaleString()}.\\nStep 3: Subtract the overlap from the ${ctx.groupBName} total to find those in ${ctx.groupBName} only: ${groupB.toLocaleString()} - ${overlap.toLocaleString()} = ${bOnly.toLocaleString()}. (Alternatively: Total - ${ctx.groupAName} = ${total.toLocaleString()} - ${groupA.toLocaleString()} = ${bOnly.toLocaleString()}).`;
+      hint = `Find the overlap first by adding both groups and subtracting the grand total, then subtract the overlap from ${ctx.groupBName}! Or simply subtract ${ctx.groupAName} from the total!`;
     }
 
-    visualEngineStr = JSON.stringify({
-      componentToRender: "BAR_MODEL_COMPARISON",
-      componentData: {
-        modelType: "PART_WHOLE",
-        totalLabel: "TOTAL",
-        whole: total.toLocaleString(),
-        parts: [
-          { name: `${ctx.groupAName} Only`, layoutSize: aOnly, displayValue: subType === 1 ? "?" : "", bgClass: "bg-blue-500 text-white" },
-          { name: "Both", layoutSize: overlap, displayValue: subType === 0 ? "?" : "", bgClass: "bg-purple-500 text-white" },
-          { name: `${ctx.groupBName} Only`, layoutSize: bOnly, displayValue: subType === 2 ? "?" : "", bgClass: "bg-amber-500 text-white" }
-        ]
-      }
-    }, null, 2);
+    if (isStructure) {
+      visualEngineStr = JSON.stringify({
+        componentToRender: "NONE",
+        hideVisual: true,
+        componentData: {
+          hideVisual: true,
+          modelType: "PART_WHOLE",
+          totalLabel: `Total ${ctx.itemUnit.charAt(0).toUpperCase() + ctx.itemUnit.slice(1)}`,
+          whole: total.toLocaleString(),
+          parts: [
+            { name: `${ctx.groupAName} Only`, layoutSize: aOnly, displayValue: subType === 1 ? "?" : aOnly.toLocaleString(), bgClass: "bg-blue-600 text-white" },
+            { name: "Both", layoutSize: overlap, displayValue: subType === 0 ? "?" : overlap.toLocaleString(), bgClass: "bg-purple-600 text-white" },
+            { name: `${ctx.groupBName} Only`, layoutSize: bOnly, displayValue: subType === 2 ? "?" : bOnly.toLocaleString(), bgClass: "bg-amber-600 text-white" }
+          ]
+        }
+      }, null, 2);
+
+      inputRequirementStr = JSON.stringify({
+        inputType: "INTERACTIVE_BAR_BUILDER",
+        steps: steps,
+        alternativeSteps: alternativeSteps,
+        barBuilderConfig: {
+          problemType: "OVERLAPPING_TARGET_DEDUCTION",
+          targetVariety: varietyName,
+          correctModelType: ["PART_WHOLE", "COMPARISON"],
+          modelOptions: [
+            { id: "PART_WHOLE", label: "Part-Whole Model", description: "Partition the total whole into disjoint regions and overlap" },
+            { id: "COMPARISON", label: "Comparison Model", description: "Compare the sum of both groups against the total whole" }
+          ],
+          totalValue: total,
+          displayTotal: total.toLocaleString(),
+          groupAValue: groupA,
+          displayGroupA: groupA.toLocaleString(),
+          groupBValue: groupB,
+          displayGroupB: groupB.toLocaleString(),
+          overlapValue: overlap,
+          displayOverlap: overlap.toLocaleString(),
+          groupAOnlyValue: aOnly,
+          displayGroupAOnly: aOnly.toLocaleString(),
+          groupBOnlyValue: bOnly,
+          displayGroupBOnly: bOnly.toLocaleString(),
+          itemName: ctx.itemUnit,
+          groupAName: ctx.groupAName,
+          groupBName: ctx.groupBName,
+
+          // 1. Part-Whole Model Configuration
+          whole: {
+            label: `Total ${ctx.itemUnit.charAt(0).toUpperCase() + ctx.itemUnit.slice(1)}`,
+            value: total,
+            displayValue: total.toLocaleString()
+          },
+          parts: [
+            {
+              id: "part-A-only",
+              name: `${ctx.groupAName} Only`,
+              value: subType === 1 ? "?" : aOnly,
+              displayValue: subType === 1 ? "?" : aOnly.toLocaleString(),
+              actualValue: aOnly,
+              isShortfall: false,
+              bgClass: "bg-blue-600 text-white border-r-2 border-white",
+              aliases: [`${ctx.groupAName} Only`, ctx.groupAName, "Group A Only", "A Only"]
+            },
+            {
+              id: "part-both",
+              name: "Both",
+              value: subType === 0 ? "?" : overlap,
+              displayValue: subType === 0 ? "?" : overlap.toLocaleString(),
+              actualValue: overlap,
+              isShortfall: false,
+              bgClass: "bg-purple-600 text-white border-r-2 border-white",
+              aliases: ["Both", "Both Groups", ctx.bothDesc, "Overlap"]
+            },
+            {
+              id: "part-B-only",
+              name: `${ctx.groupBName} Only`,
+              value: subType === 2 ? "?" : bOnly,
+              displayValue: subType === 2 ? "?" : bOnly.toLocaleString(),
+              actualValue: bOnly,
+              isShortfall: false,
+              bgClass: "bg-amber-600 text-white border-r-2 border-white",
+              aliases: [`${ctx.groupBName} Only`, ctx.groupBName, "Group B Only", "B Only"]
+            }
+          ],
+
+          // 2. Comparison Model Configuration (Sum of groups vs Total)
+          entities: [
+            {
+              id: "total_whole",
+              name: `Total ${ctx.itemUnit}`,
+              value: total,
+              displayValue: total.toLocaleString(),
+              relation: "BASE"
+            },
+            {
+              id: "combined_groups",
+              name: `${ctx.groupAName} + ${ctx.groupBName}`,
+              value: groupA + groupB,
+              displayValue: (groupA + groupB).toLocaleString(),
+              relation: "MORE",
+              diffValue: overlap,
+              displayDiff: overlap.toLocaleString(),
+              actualDiff: overlap
+            }
+          ],
+          target: {
+            type: "DIFFERENCE",
+            label: targetLabel,
+            value: finalAnswer
+          },
+
+          steps: steps,
+          comparisonSteps: comparisonSteps
+        }
+      }, null, 2);
+    } else {
+      visualEngineStr = JSON.stringify({
+        componentToRender: "BAR_MODEL_COMPARISON",
+        componentData: {
+          modelType: "PART_WHOLE",
+          totalLabel: `Total ${ctx.itemUnit.charAt(0).toUpperCase() + ctx.itemUnit.slice(1)}`,
+          whole: total.toLocaleString(),
+          parts: [
+            { name: `${ctx.groupAName} Only`, layoutSize: aOnly, displayValue: subType === 1 ? "?" : aOnly.toLocaleString(), bgClass: "bg-blue-600 text-white" },
+            { name: "Both", layoutSize: overlap, displayValue: subType === 0 ? "?" : overlap.toLocaleString(), bgClass: "bg-purple-600 text-white" },
+            { name: `${ctx.groupBName} Only`, layoutSize: bOnly, displayValue: subType === 2 ? "?" : bOnly.toLocaleString(), bgClass: "bg-amber-600 text-white" }
+          ]
+        }
+      }, null, 2);
+    }
   }
 
   // ==========================================================================

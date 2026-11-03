@@ -44,8 +44,8 @@ export const p4NumberComparisonAndOrderingBlueprint = {
     //    advanced_form_numbers: 'Form 5-digit numbers using 5 given digit cards under specific conditions (greatest/smallest, even/odd, or boundary constraints).',
     //    advanced_equalizing_transfer: 'Calculate the transfer amount needed to equalize two quantities, or find original amounts from equalized states.',
     //    advanced_three_entity_grand_total: 'Determine unknown base quantities among three entities using comparative relations and a grand total.',
-    advanced_shifting_difference_transfer: 'Calculate the new difference and determine who has more after an inequality-flipping transfer.',
-    //    advanced_overlapping_target_deduction: 'Deduce the overlapping intersection when the sum of two categories exceeds the overall total.',
+    //    advanced_shifting_difference_transfer: 'Calculate the new difference and determine who has more after an inequality-flipping transfer.',
+    advanced_overlapping_target_deduction: 'Deduce the overlapping intersection when the sum of two categories exceeds the overall total.',
     //    advanced_two_tiered_difference: 'Compare two entities directly using their differences relative to a common baseline without knowing the baseline value.'
   },
 

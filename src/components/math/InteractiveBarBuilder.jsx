@@ -267,7 +267,18 @@ export function checkPartWholeParameters(userParts = [], userWhole = '', config 
 
   // 3. Check each expected part is represented
   for (const expPart of expectedParts) {
-    const matched = userParts.find(p => normalizeName(p.name) === normalizeName(expPart.name));
+    const matched = userParts.find(p => {
+      const pNorm = normalizeName(p.name);
+      const expNorm = normalizeName(expPart.name);
+      if (pNorm === expNorm || pNorm.includes(expNorm) || expNorm.includes(pNorm)) return true;
+      if (expPart.aliases && Array.isArray(expPart.aliases)) {
+        return expPart.aliases.some(a => {
+          const aNorm = normalizeName(a);
+          return aNorm === pNorm || pNorm.includes(aNorm) || aNorm.includes(pNorm);
+        });
+      }
+      return false;
+    });
     if (!matched) {
       return {
         isValid: false,
@@ -309,11 +320,26 @@ export function checkPartWholeParameters(userParts = [], userWhole = '', config 
         };
       }
       if (actVal !== expVal) {
+        // Also allow '?' or actual calculated value for intermediate parts in overlapping deduction
+        const isFlexibleAccepted = (config?.problemType === 'OVERLAPPING_TARGET_DEDUCTION' || config?.problemType === 'TARGET_SHORTFALL') &&
+          (actVal === '?' || (expPart.actualValue && actVal === normalizeNumber(expPart.actualValue)));
+        if (!isFlexibleAccepted) {
+          return {
+            isValid: false,
+            defect: 'INCORRECT_PART_VALUE',
+            errorMsg: `The value for "${expPart.name}" should be ${expPart.displayValue || Number(expPart.value).toLocaleString()}, but got "${matched.value}".`,
+            details: { part: expPart.name, expected: expVal, actual: actVal }
+          };
+        }
+      }
+    } else if (expPart.value === '?' && expPart.actualValue) {
+      const actVal = normalizeNumber(matched.value);
+      if (actVal && actVal !== '?' && actVal !== normalizeNumber(expPart.actualValue)) {
         return {
           isValid: false,
           defect: 'INCORRECT_PART_VALUE',
-          errorMsg: `The value for "${expPart.name}" should be ${expPart.displayValue || Number(expPart.value).toLocaleString()}, but got "${matched.value}".`,
-          details: { part: expPart.name, expected: expVal, actual: actVal }
+          errorMsg: `"${matched.value}" is incorrect for "${expPart.name}". Leave it as "?" (target to solve) or enter ${Number(expPart.actualValue).toLocaleString()}.`,
+          details: { part: expPart.name, expected: expPart.actualValue, actual: actVal }
         };
       }
     }
@@ -1070,7 +1096,9 @@ export function ModelSolutionBarModel({
                 {title}
               </h4>
               <span className="text-[10px] text-emerald-700 font-bold">
-                Part-Whole Model: Target Divided into Known Parts and Shortfall
+                {config?.problemType === 'OVERLAPPING_TARGET_DEDUCTION'
+                  ? 'Part-Whole Model: Total Partitioned into Disjoint Groups & Overlap'
+                  : 'Part-Whole Model: Target Divided into Known Parts and Shortfall'}
               </span>
             </div>
           </div>
@@ -1095,11 +1123,13 @@ export function ModelSolutionBarModel({
           <div className="flex h-12 w-full rounded-xl overflow-hidden border-2 border-slate-300 shadow-sm">
             {parts.map((p, idx) => {
               const isShortfall = p.isShortfall;
-              const bgClass = isShortfall 
+              const bgClass = p.bgClass || (isShortfall 
                 ? "bg-slate-100 border-2 border-dashed border-slate-400 text-slate-700" 
                 : idx === 0 
-                  ? "bg-blue-500 text-white border-r-2 border-white" 
-                  : "bg-amber-500 text-white border-r-2 border-white";
+                  ? "bg-blue-600 text-white border-r-2 border-white" 
+                  : idx === 1 && parts.length >= 3
+                    ? "bg-purple-600 text-white border-r-2 border-white"
+                    : "bg-amber-600 text-white border-r-2 border-white");
               const valText = p.displayValue || (p.value !== undefined ? (p.value === '?' ? '?' : Number(p.value).toLocaleString()) : '?');
 
               return (
@@ -1118,6 +1148,14 @@ export function ModelSolutionBarModel({
               );
             })}
           </div>
+        </div>
+
+        {/* Target Indicator */}
+        <div className="flex items-center justify-between p-3 bg-white border border-emerald-200 rounded-xl">
+          <span className="text-xs font-bold text-emerald-950">Target to Solve:</span>
+          <span className="text-xs font-black text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300">
+            {config?.target?.label || (config?.problemType === 'OVERLAPPING_TARGET_DEDUCTION' ? 'Overlap (Both)' : (config?.whole?.label || 'Target Whole'))}
+          </span>
         </div>
       </div>
     );
@@ -3945,11 +3983,13 @@ export default function InteractiveBarBuilder({
                   <div className="flex h-14 w-full rounded-2xl overflow-hidden border-2 border-slate-300 shadow-sm bg-white">
                     {userParts.map((p, idx) => {
                       const isShortfall = p.isShortfall;
-                      const bgClass = isShortfall 
+                      const bgClass = p.bgClass || (isShortfall 
                         ? "bg-slate-100 border-2 border-dashed border-slate-400 text-slate-700" 
                         : idx === 0 
-                          ? "bg-blue-500 text-white border-r-2 border-white" 
-                          : "bg-amber-500 text-white border-r-2 border-white";
+                          ? "bg-blue-600 text-white border-r-2 border-white" 
+                          : idx === 1 && userParts.length >= 3
+                            ? "bg-purple-600 text-white border-r-2 border-white"
+                            : "bg-amber-600 text-white border-r-2 border-white");
 
                       return (
                         <div
@@ -4004,6 +4044,20 @@ export default function InteractiveBarBuilder({
                           placeholder={`e.g. ${idx === 0 ? 'Shanti' : idx === 1 ? 'Kumar' : 'Shortfall'}`}
                           className="w-full px-3 py-2 text-xs font-bold text-slate-900 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                         />
+                        {config.parts?.length > 0 && (
+                          <div className="flex flex-wrap gap-1 pt-1">
+                            {config.parts.map(p => (
+                              <button
+                                key={p.id || p.name}
+                                type="button"
+                                onClick={() => handleUpdatePart(part.id, 'name', p.name)}
+                                className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 hover:bg-indigo-100 hover:text-indigo-700 text-slate-700 transition-all cursor-pointer border border-slate-200/60"
+                              >
+                                +{p.name}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
 
                       <div className="sm:col-span-3 space-y-1">
