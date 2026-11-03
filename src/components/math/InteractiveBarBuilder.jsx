@@ -234,8 +234,10 @@ export function checkPartWholeParameters(userParts = [], userWhole = '', config 
   const expectedParts = config?.parts || [];
   const expectedWhole = config?.whole || { label: 'Target', value: '' };
 
+  const isOverlapping2Part = config?.problemType === 'OVERLAPPING_TARGET_DEDUCTION' && userParts.length === 2;
+
   // 1. Check part count
-  if (userParts.length < expectedParts.length) {
+  if (!isOverlapping2Part && userParts.length < expectedParts.length) {
     const partNames = expectedParts.map(p => p.name).join(', ');
     return {
       isValid: false,
@@ -263,6 +265,81 @@ export function checkPartWholeParameters(userParts = [], userWhole = '', config 
       errorMsg: "Please enter a name label for all parts in the bar.",
       details: null
     };
+  }
+
+  // Flexible direct 2-part model for OVERLAPPING_TARGET_DEDUCTION
+  // e.g. Total = [Group B] + [Group A Only (?)] or Total = [Group A] + [Group B Only (?)]
+  if (config?.problemType === 'OVERLAPPING_TARGET_DEDUCTION' && userParts.length === 2) {
+    const nameA = normalizeName(config.groupAName || 'Group A');
+    const nameB = normalizeName(config.groupBName || 'Group B');
+    const valA = normalizeNumber(config.groupAValue);
+    const valB = normalizeNumber(config.groupBValue);
+    const aOnlyVal = normalizeNumber(config.groupAOnlyValue);
+    const bOnlyVal = normalizeNumber(config.groupBOnlyValue);
+
+    // Option A: Group B + Group A Only
+    const pGroupB = userParts.find(p => {
+      const pNorm = normalizeName(p.name);
+      return (pNorm.includes(nameB) || nameB.includes(pNorm)) && !pNorm.includes('only');
+    });
+    const pGroupAOnly = userParts.find(p => {
+      const pNorm = normalizeName(p.name);
+      return (pNorm.includes(nameA) || nameA.includes(pNorm));
+    });
+
+    if (pGroupB && pGroupAOnly) {
+      const bAct = normalizeNumber(pGroupB.value);
+      const aAct = normalizeNumber(pGroupAOnly.value);
+      if (bAct && bAct !== valB) {
+        return {
+          isValid: false,
+          defect: 'INCORRECT_PART_VALUE',
+          errorMsg: `The value for "${pGroupB.name}" should be ${Number(valB).toLocaleString()}, but got "${pGroupB.value}".`,
+          details: { expected: valB, actual: bAct }
+        };
+      }
+      if (aAct && aAct !== '?' && aAct !== aOnlyVal) {
+        return {
+          isValid: false,
+          defect: 'INCORRECT_PART_VALUE',
+          errorMsg: `The value for "${pGroupAOnly.name}" is unknown. Mark it with "?" or enter ${Number(aOnlyVal).toLocaleString()}.`,
+          details: { expected: aOnlyVal, actual: aAct }
+        };
+      }
+      return { isValid: true, defect: null, errorMsg: null, details: null };
+    }
+
+    // Option B: Group A + Group B Only
+    const pGroupA = userParts.find(p => {
+      const pNorm = normalizeName(p.name);
+      return (pNorm.includes(nameA) || nameA.includes(pNorm)) && !pNorm.includes('only');
+    });
+    const pGroupBOnly = userParts.find(p => {
+      const pNorm = normalizeName(p.name);
+      return (pNorm.includes(nameB) || nameB.includes(pNorm));
+    });
+
+    if (pGroupA && pGroupBOnly) {
+      const aAct = normalizeNumber(pGroupA.value);
+      const bAct = normalizeNumber(pGroupBOnly.value);
+      if (aAct && aAct !== valA) {
+        return {
+          isValid: false,
+          defect: 'INCORRECT_PART_VALUE',
+          errorMsg: `The value for "${pGroupA.name}" should be ${Number(valA).toLocaleString()}, but got "${pGroupA.value}".`,
+          details: { expected: valA, actual: aAct }
+        };
+      }
+      if (bAct && bAct !== '?' && bAct !== bOnlyVal) {
+        return {
+          isValid: false,
+          defect: 'INCORRECT_PART_VALUE',
+          errorMsg: `The value for "${pGroupBOnly.name}" is unknown. Mark it with "?" or enter ${Number(bOnlyVal).toLocaleString()}.`,
+          details: { expected: bOnlyVal, actual: bAct }
+        };
+      }
+      return { isValid: true, defect: null, errorMsg: null, details: null };
+    }
   }
 
   // 3. Check each expected part is represented
@@ -908,6 +985,25 @@ export function checkBarModelParameters(userBars = [], config = {}, totalState =
           actDiff === expDiff || sumOfSegments === Number(expDiff)
         );
 
+        // Smart Diagnostic for SHIFTING_DIFFERENCE_TRANSFER on Comparison Canvas:
+        if (config?.problemType === 'SHIFTING_DIFFERENCE_TRANSFER' && isTransferMatch) {
+          return {
+            isValid: false,
+            defect: 'TRANSFER_USED_AS_DIFFERENCE',
+            errorMsg: `"${compBar.diffValue}" is the amount transferred from ${config.transferFrom || 'one person'} to ${config.transferTo || 'the other'}, not the difference between them. In a Comparison Model, compare their quantities directly (initial difference is unknown "?"). Or switch to the "Before & After Model" to show the transfer!`,
+            details: { entity: comp.name, transferAmount: config.transferAmount, expectedDiff: expDiff }
+          };
+        }
+
+        if (config?.problemType === 'SHIFTING_DIFFERENCE_TRANSFER' && config.newDiff && normalizeNumber(actDiff) === normalizeNumber(config.newDiff)) {
+          return {
+            isValid: false,
+            defect: 'FINAL_DIFF_ON_INITIAL_MODEL',
+            errorMsg: `"${compBar.diffValue}" is the difference at the end (after the transfer). In this initial comparison model, compare their initial amounts (initial difference is unknown "?").`,
+            details: { entity: comp.name, newDiff: config.newDiff, expectedDiff: expDiff }
+          };
+        }
+
         if (segments.length > 1) {
           if (sumOfSegments > 0 && !isActualDiffMatch && !isTransferMatch && !isExpDiffMatch && actDiff && actDiff !== '?') {
             return {
@@ -1130,7 +1226,9 @@ export function ModelSolutionBarModel({
                   : idx === 1 && parts.length >= 3
                     ? "bg-purple-600 text-white border-r-2 border-white"
                     : "bg-amber-600 text-white border-r-2 border-white");
-              const valText = p.displayValue || (p.value !== undefined ? (p.value === '?' ? '?' : Number(p.value).toLocaleString()) : '?');
+              const valText = config?.problemType === 'OVERLAPPING_TARGET_DEDUCTION'
+                ? '?'
+                : (p.displayValue || (p.value !== undefined ? (p.value === '?' ? '?' : Number(p.value).toLocaleString()) : '?'));
 
               return (
                 <div
@@ -1148,6 +1246,28 @@ export function ModelSolutionBarModel({
               );
             })}
           </div>
+
+          {/* Group Brackets for Overlapping Sets */}
+          {config?.problemType === 'OVERLAPPING_TARGET_DEDUCTION' && (
+            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+              <div className="p-2 bg-blue-50 border border-blue-200 rounded-xl text-center">
+                <span className="text-[10px] font-black uppercase text-blue-700 block truncate">
+                  {config.groupAName || "Group A"} ({parts[0]?.name || "Only"} + Both)
+                </span>
+                <span className="text-xs font-black font-mono text-blue-900">
+                  {config.displayGroupA || (config.groupAValue ? Number(config.groupAValue).toLocaleString() : '')}
+                </span>
+              </div>
+              <div className="p-2 bg-amber-50 border border-amber-200 rounded-xl text-center">
+                <span className="text-[10px] font-black uppercase text-amber-700 block truncate">
+                  {config.groupBName || "Group B"} (Both + {parts[2]?.name || "Only"})
+                </span>
+                <span className="text-xs font-black font-mono text-amber-900">
+                  {config.displayGroupB || (config.groupBValue ? Number(config.groupBValue).toLocaleString() : '')}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Target Indicator */}
@@ -1229,7 +1349,7 @@ export function ModelSolutionBarModel({
             </span>
             {config?.problemType === 'SHIFTING_DIFFERENCE_TRANSFER' ? (
               <span className="text-[10px] font-bold text-slate-500">
-                Initial Difference = {config?.initialDiff ? Number(config.initialDiff).toLocaleString() : (diffDisplay || '?')}
+                Initial Difference = ?
               </span>
             ) : (target?.type === 'DIFFERENCE' || config?.targetType === 'DIFFERENCE') && (
               <span className="text-[10px] font-bold text-slate-500">
@@ -1422,6 +1542,8 @@ export function ModelSolutionBarModel({
                 ? e.displayDiff.replace(/[+\-]/g, '').trim()
                 : (e.diffValue && e.diffValue !== '?' && !isNaN(Number(e.diffValue)))
                 ? Number(e.diffValue).toLocaleString()
+                : (e.displayDiff === '?' || e.diffValue === '?')
+                ? '?'
                 : (e.actualDiff && !isNaN(Number(e.actualDiff)))
                 ? Number(e.actualDiff).toLocaleString()
                 : (e.displayDiff || e.diffValue || '?').replace(/[+\-]/g, '').trim() || '?';
@@ -1555,7 +1677,7 @@ export function ModelSolutionBarModel({
         <div className="flex items-center justify-between bg-rose-50 p-3 rounded-2xl border border-rose-200 text-xs">
           <span className="font-bold text-rose-950">Target to Solve:</span>
           <span className="font-black text-rose-800 bg-rose-200 px-2.5 py-0.5 rounded-lg">
-            Find {target.label || 'Difference'}
+            Find {config?.problemType === 'SHIFTING_DIFFERENCE_TRANSFER' ? 'Initial Difference' : (target.label || 'Difference')}
           </span>
         </div>
       )}

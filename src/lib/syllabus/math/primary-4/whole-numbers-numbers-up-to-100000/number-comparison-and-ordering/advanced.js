@@ -2463,11 +2463,11 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           newA: newA,
           newB: newB,
           newDiff: newDiff,
-          differenceValue: newDiff,
+          differenceValue: "?",
           largerValue: initialA,
           smallerValue: initialB,
           displayTransfer: z.toLocaleString(),
-          displayDifference: newDiff.toLocaleString(),
+          displayDifference: "?",
           displayNewA: newA.toLocaleString(),
           displayNewB: newB.toLocaleString(),
           itemName: item,
@@ -2479,7 +2479,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           ],
           entities: [
             { id: "B", name: nameB, value: initialB, displayValue: initialB.toLocaleString(), relation: "BASE" },
-            { id: "A", name: nameA, value: initialA, displayValue: initialA.toLocaleString(), relativeTo: nameB, relation: "MORE", diffValue: initialDiff, displayDiff: initialDiff.toLocaleString(), actualDiff: initialDiff }
+            { id: "A", name: nameA, value: initialA, displayValue: initialA.toLocaleString(), relativeTo: nameB, relation: "MORE", diffValue: "?", displayDiff: "?", actualDiff: initialDiff }
           ],
           target: { type: "DIFFERENCE", label: "New Difference" },
           steps: steps.map(s => ({ label: s.label, expectedAnswer: s.expectedAnswer })),
@@ -2947,9 +2947,9 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           totalLabel: `Total ${ctx.itemUnit.charAt(0).toUpperCase() + ctx.itemUnit.slice(1)}`,
           whole: total.toLocaleString(),
           parts: [
-            { name: `${ctx.groupAName} Only`, layoutSize: aOnly, displayValue: subType === 1 ? "?" : aOnly.toLocaleString(), bgClass: "bg-blue-600 text-white" },
-            { name: "Both", layoutSize: overlap, displayValue: subType === 0 ? "?" : overlap.toLocaleString(), bgClass: "bg-purple-600 text-white" },
-            { name: `${ctx.groupBName} Only`, layoutSize: bOnly, displayValue: subType === 2 ? "?" : bOnly.toLocaleString(), bgClass: "bg-amber-600 text-white" }
+            { name: `${ctx.groupAName} Only`, layoutSize: aOnly, displayValue: "?", bgClass: "bg-blue-600 text-white" },
+            { name: "Both", layoutSize: overlap, displayValue: "?", bgClass: "bg-purple-600 text-white" },
+            { name: `${ctx.groupBName} Only`, layoutSize: bOnly, displayValue: "?", bgClass: "bg-amber-600 text-white" }
           ]
         }
       }, null, 2);
@@ -2993,8 +2993,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
             {
               id: "part-A-only",
               name: `${ctx.groupAName} Only`,
-              value: subType === 1 ? "?" : aOnly,
-              displayValue: subType === 1 ? "?" : aOnly.toLocaleString(),
+              value: "?",
+              displayValue: "?",
               actualValue: aOnly,
               isShortfall: false,
               bgClass: "bg-blue-600 text-white border-r-2 border-white",
@@ -3003,8 +3003,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
             {
               id: "part-both",
               name: "Both",
-              value: subType === 0 ? "?" : overlap,
-              displayValue: subType === 0 ? "?" : overlap.toLocaleString(),
+              value: "?",
+              displayValue: "?",
               actualValue: overlap,
               isShortfall: false,
               bgClass: "bg-purple-600 text-white border-r-2 border-white",
@@ -3013,8 +3013,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
             {
               id: "part-B-only",
               name: `${ctx.groupBName} Only`,
-              value: subType === 2 ? "?" : bOnly,
-              displayValue: subType === 2 ? "?" : bOnly.toLocaleString(),
+              value: "?",
+              displayValue: "?",
               actualValue: bOnly,
               isShortfall: false,
               bgClass: "bg-amber-600 text-white border-r-2 border-white",
@@ -3037,8 +3037,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
               value: groupA + groupB,
               displayValue: (groupA + groupB).toLocaleString(),
               relation: "MORE",
-              diffValue: overlap,
-              displayDiff: overlap.toLocaleString(),
+              diffValue: "?",
+              displayDiff: "?",
               actualDiff: overlap
             }
           ],
@@ -3060,9 +3060,9 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           totalLabel: `Total ${ctx.itemUnit.charAt(0).toUpperCase() + ctx.itemUnit.slice(1)}`,
           whole: total.toLocaleString(),
           parts: [
-            { name: `${ctx.groupAName} Only`, layoutSize: aOnly, displayValue: subType === 1 ? "?" : aOnly.toLocaleString(), bgClass: "bg-blue-600 text-white" },
-            { name: "Both", layoutSize: overlap, displayValue: subType === 0 ? "?" : overlap.toLocaleString(), bgClass: "bg-purple-600 text-white" },
-            { name: `${ctx.groupBName} Only`, layoutSize: bOnly, displayValue: subType === 2 ? "?" : bOnly.toLocaleString(), bgClass: "bg-amber-600 text-white" }
+            { name: `${ctx.groupAName} Only`, layoutSize: aOnly, displayValue: "?", bgClass: "bg-blue-600 text-white" },
+            { name: "Both", layoutSize: overlap, displayValue: "?", bgClass: "bg-purple-600 text-white" },
+            { name: `${ctx.groupBName} Only`, layoutSize: bOnly, displayValue: "?", bgClass: "bg-amber-600 text-white" }
           ]
         }
       }, null, 2);

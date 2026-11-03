@@ -153,11 +153,30 @@ for (const variety of varieties) {
   assert.strictEqual(chkWrongWhole.isValid, false);
   assert.strictEqual(chkWrongWhole.defect, "INCORRECT_TARGET_VALUE");
 
-  // Check 6: Missing one part
-  const chkMissingPart = checkPartWholeParameters([idealUserParts[0], idealUserParts[1]], config.whole.displayValue, config);
+  // Check 6: Missing one part (invalid when parts don't form valid 2-part model)
+  const chkMissingPart = checkPartWholeParameters([{ name: "Unknown Part 1", value: "100" }], config.whole.displayValue, config);
   console.log("  Check 6 (Insufficient Parts): isValid =", chkMissingPart.isValid, "defect =", chkMissingPart.defect);
   assert.strictEqual(chkMissingPart.isValid, false);
   assert.strictEqual(chkMissingPart.defect, "INSUFFICIENT_PARTS");
+
+  // Check 7: Direct 2-Part Model (Total = Group B + Group A Only (?))
+  if (variety === 'find_group_a_only') {
+    const twoParts = [
+      { name: config.groupBName, value: config.groupBValue.toString(), isShortfall: false },
+      { name: `${config.groupAName} Only`, value: "?", isShortfall: false }
+    ];
+    const chk2Part = checkPartWholeParameters(twoParts, config.whole.displayValue, config);
+    console.log("  Check 7 (Direct 2-Part Model for Group A Only): isValid =", chk2Part.isValid, "defect =", chk2Part.defect, "errorMsg =", chk2Part.errorMsg);
+    assert.strictEqual(chk2Part.isValid, true);
+  } else if (variety === 'find_group_b_only') {
+    const twoParts = [
+      { name: config.groupAName, value: config.groupAValue.toString(), isShortfall: false },
+      { name: `${config.groupBName} Only`, value: "?", isShortfall: false }
+    ];
+    const chk2Part = checkPartWholeParameters(twoParts, config.whole.displayValue, config);
+    console.log("  Check 7 (Direct 2-Part Model for Group B Only): isValid =", chk2Part.isValid);
+    assert.strictEqual(chk2Part.isValid, true);
+  }
 
   // Test ModelSolutionBarModel
   console.log("\n  Testing ModelSolutionBarModel:");
