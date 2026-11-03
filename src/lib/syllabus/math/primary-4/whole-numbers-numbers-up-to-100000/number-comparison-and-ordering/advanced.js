@@ -2361,17 +2361,9 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           expectedAnswer: `${initialA} - ${z} = ${newA}`,
           acceptedAnswers: [
             `${initialA} - ${z} = ${newA}`,
-            `${initialA}-${z}=${newA}`,
-            `${initialA.toLocaleString()} - ${z.toLocaleString()} = ${newA.toLocaleString()}`,
-            `${initialA.toLocaleString()}-${z.toLocaleString()}=${newA.toLocaleString()}`,
             `${initialA} - ${z}`,
-            `${initialA}-${z}`,
-            `${initialA.toLocaleString()} - ${z.toLocaleString()}`,
-            `${initialA.toLocaleString()}-${z.toLocaleString()}`,
             newA.toString(),
-            Number(newA).toLocaleString(),
-            `${newA} ${item}`,
-            `${Number(newA).toLocaleString()} ${item}`
+            `${newA} ${item}`
           ]
         },
         {
@@ -2379,23 +2371,11 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           expectedAnswer: `${initialB} + ${z} = ${newB}`,
           acceptedAnswers: [
             `${initialB} + ${z} = ${newB}`,
-            `${initialB}+${z}=${newB}`,
             `${z} + ${initialB} = ${newB}`,
-            `${z}+${initialB}=${newB}`,
-            `${initialB.toLocaleString()} + ${z.toLocaleString()} = ${newB.toLocaleString()}`,
-            `${initialB.toLocaleString()}+${z.toLocaleString()}=${newB.toLocaleString()}`,
-            `${z.toLocaleString()} + ${initialB.toLocaleString()} = ${newB.toLocaleString()}`,
-            `${z.toLocaleString()}+${initialB.toLocaleString()}=${newB.toLocaleString()}`,
             `${initialB} + ${z}`,
-            `${initialB}+${z}`,
             `${z} + ${initialB}`,
-            `${z}+${initialB}`,
-            `${initialB.toLocaleString()} + ${z.toLocaleString()}`,
-            `${initialB.toLocaleString()}+${z.toLocaleString()}`,
             newB.toString(),
-            Number(newB).toLocaleString(),
-            `${newB} ${item}`,
-            `${Number(newB).toLocaleString()} ${item}`
+            `${newB} ${item}`
           ]
         },
         {
@@ -2403,20 +2383,11 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           expectedAnswer: `${newB} - ${newA} = ${newDiff}`,
           acceptedAnswers: [
             `${newB} - ${newA} = ${newDiff}`,
-            `${newB}-${newA}=${newDiff}`,
-            `${newB.toLocaleString()} - ${newA.toLocaleString()} = ${newDiff.toLocaleString()}`,
-            `${newB.toLocaleString()}-${newA.toLocaleString()}=${newDiff.toLocaleString()}`,
-            `${newB} - ${newA}`,
-            `${newB}-${newA}`,
-            `${newB.toLocaleString()} - ${newA.toLocaleString()}`,
-            `${newB.toLocaleString()}-${newA.toLocaleString()}`,
             `${z * 2} - ${initialDiff} = ${newDiff}`,
-            `${z * 2}-${initialDiff}=${newDiff}`,
-            `${(z * 2).toLocaleString()} - ${initialDiff.toLocaleString()} = ${newDiff.toLocaleString()}`,
+            `${newB} - ${newA}`,
+            `${z * 2} - ${initialDiff}`,
             newDiff.toString(),
-            Number(newDiff).toLocaleString(),
-            `${newDiff} ${item}`,
-            `${Number(newDiff).toLocaleString()} ${item}`
+            `${newDiff} ${item}`
           ]
         },
         {
@@ -2424,9 +2395,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           expectedAnswer: finalAnswer,
           acceptedAnswers: [
             finalAnswer,
-            Number(finalAnswer).toLocaleString(),
-            `${finalAnswer} ${item}`,
-            `${Number(finalAnswer).toLocaleString()} ${item}`
+            `${finalAnswer} ${item}`
           ]
         }
       ];
@@ -2437,17 +2406,9 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           expectedAnswer: `${initialA} - ${initialB} = ${initialDiff}`,
           acceptedAnswers: [
             `${initialA} - ${initialB} = ${initialDiff}`,
-            `${initialA}-${initialB}=${initialDiff}`,
-            `${initialA.toLocaleString()} - ${initialB.toLocaleString()} = ${initialDiff.toLocaleString()}`,
-            `${initialA.toLocaleString()}-${initialB.toLocaleString()}=${initialDiff.toLocaleString()}`,
             `${initialA} - ${initialB}`,
-            `${initialA}-${initialB}`,
-            `${initialA.toLocaleString()} - ${initialB.toLocaleString()}`,
-            `${initialA.toLocaleString()}-${initialB.toLocaleString()}`,
             initialDiff.toString(),
-            Number(initialDiff).toLocaleString(),
-            `${initialDiff} ${item}`,
-            `${Number(initialDiff).toLocaleString()} ${item}`
+            `${initialDiff} ${item}`
           ]
         },
         {
@@ -2455,28 +2416,14 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           expectedAnswer: `${z} * 2 = ${z * 2}`,
           acceptedAnswers: [
             `${z} * 2 = ${z * 2}`,
-            `${z}*2=${z * 2}`,
             `${z} x 2 = ${z * 2}`,
-            `${z}x2=${z * 2}`,
             `${z} × 2 = ${z * 2}`,
-            `${z}×2=${z * 2}`,
             `${z} + ${z} = ${z * 2}`,
-            `${z}+${z}=${z * 2}`,
-            `${z.toLocaleString()} * 2 = ${(z * 2).toLocaleString()}`,
-            `${z.toLocaleString()}*2=${(z * 2).toLocaleString()}`,
-            `${z.toLocaleString()} x 2 = ${(z * 2).toLocaleString()}`,
-            `${z.toLocaleString()} + ${z.toLocaleString()} = ${(z * 2).toLocaleString()}`,
             `${z} * 2`,
-            `${z}*2`,
             `${z} x 2`,
             `${z} + ${z}`,
-            `${z}+${z}`,
-            `${z.toLocaleString()} * 2`,
-            `${z.toLocaleString()} + ${z.toLocaleString()}`,
             (z * 2).toString(),
-            Number(z * 2).toLocaleString(),
-            `${z * 2} ${item}`,
-            `${Number(z * 2).toLocaleString()} ${item}`
+            `${z * 2} ${item}`
           ]
         },
         {
@@ -2484,24 +2431,11 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           expectedAnswer: `${z * 2} - ${initialDiff} = ${newDiff}`,
           acceptedAnswers: [
             `${z * 2} - ${initialDiff} = ${newDiff}`,
-            `${z * 2}-${initialDiff}=${newDiff}`,
-            `${(z * 2).toLocaleString()} - ${initialDiff.toLocaleString()} = ${newDiff.toLocaleString()}`,
-            `${(z * 2).toLocaleString()}-${initialDiff.toLocaleString()}=${newDiff.toLocaleString()}`,
             `${z * 2} - ${initialDiff}`,
-            `${z * 2}-${initialDiff}`,
-            `${(z * 2).toLocaleString()} - ${initialDiff.toLocaleString()}`,
-            `${(z * 2).toLocaleString()}-${initialDiff.toLocaleString()}`,
             `${newB} - ${newA} = ${newDiff}`,
-            `${newB}-${newA}=${newDiff}`,
-            `${newB.toLocaleString()} - ${newA.toLocaleString()} = ${newDiff.toLocaleString()}`,
-            `${newB.toLocaleString()}-${newA.toLocaleString()}=${newDiff.toLocaleString()}`,
             `${newB} - ${newA}`,
-            `${newB}-${newA}`,
-            `${newB.toLocaleString()} - ${newA.toLocaleString()}`,
             newDiff.toString(),
-            Number(newDiff).toLocaleString(),
-            `${newDiff} ${item}`,
-            `${Number(newDiff).toLocaleString()} ${item}`
+            `${newDiff} ${item}`
           ]
         },
         {
@@ -2509,9 +2443,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           expectedAnswer: finalAnswer,
           acceptedAnswers: [
             finalAnswer,
-            Number(finalAnswer).toLocaleString(),
-            `${finalAnswer} ${item}`,
-            `${Number(finalAnswer).toLocaleString()} ${item}`
+            `${finalAnswer} ${item}`
           ]
         }
       ];
@@ -2550,8 +2482,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
             { id: "A", name: nameA, value: initialA, displayValue: initialA.toLocaleString(), relativeTo: nameB, relation: "MORE", diffValue: initialDiff, displayDiff: initialDiff.toLocaleString(), actualDiff: initialDiff }
           ],
           target: { type: "DIFFERENCE", label: "New Difference" },
-          steps: steps,
-          comparisonSteps: comparisonSteps
+          steps: steps.map(s => ({ label: s.label, expectedAnswer: s.expectedAnswer })),
+          comparisonSteps: comparisonSteps.map(s => ({ label: s.label, expectedAnswer: s.expectedAnswer }))
         }
       }, null, 2);
     } else {
@@ -2996,5 +2928,9 @@ ${solutionSteps}
 
 ${getFormatInstructions(visualEngineStr, inputRequirementStr, effectiveVariant)}`;
 
-  return { aiPrompt };
+  return { 
+    aiPrompt,
+    visualEngine: visualEngineStr,
+    inputRequirement: inputRequirementStr
+  };
 }

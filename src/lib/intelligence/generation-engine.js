@@ -111,7 +111,7 @@ export class GenerationEngine {
         currentModelId = getBestModel();
         const model = genAI.getGenerativeModel({
           model: currentModelId,
-          generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: 4096 }
+          generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: 8192 }
         }, { apiVersion: 'v1beta' });
         try {
           result = await model.generateContent(baseSystemInstructions + "\n" + stepResult.aiPrompt);
