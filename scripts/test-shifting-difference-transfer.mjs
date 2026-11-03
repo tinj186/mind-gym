@@ -386,11 +386,46 @@ if (!check8.isValid) {
   allPassed = false;
 }
 
-// 4. Test ModelSolutionBarModel rendering
+// 4. Test ModelSolutionBarModel rendering with dynamic activeModel
 console.log("\n4. Testing ModelSolutionBarModel execution:");
+function treeContainsText(node, searchStr) {
+  if (!node) return false;
+  if (typeof node === 'string') return node.includes(searchStr);
+  if (typeof node === 'number') return node.toString().includes(searchStr);
+  if (Array.isArray(node)) return node.some(child => treeContainsText(child, searchStr));
+  if (node.children && treeContainsText(node.children, searchStr)) return true;
+  if (node.props?.children && treeContainsText(node.props.children, searchStr)) return true;
+  return false;
+}
+
 try {
-  const modelOutput = ModelSolutionBarModel({ config });
-  console.log("ModelSolutionBarModel output type:", typeof modelOutput);
+  // Test 4a: Fallback when activeModel not provided
+  const modelDefault = ModelSolutionBarModel({ config });
+  const isDefaultBA = treeContainsText(modelDefault, "Before & After Model");
+  console.log("ModelSolutionBarModel default resolves to Before & After:", isDefaultBA);
+  if (!isDefaultBA) {
+    console.error("FAIL: Default ModelSolutionBarModel should resolve to BEFORE_AFTER for this variant");
+    allPassed = false;
+  }
+
+  // Test 4b: Explicit COMPARISON activeModel
+  const modelComp = ModelSolutionBarModel({ config, activeModel: 'COMPARISON' });
+  const isCompModel = treeContainsText(modelComp, "Comparative Bar Model");
+  const isCompNotBA = !treeContainsText(modelComp, "Before & After Model");
+  console.log("ModelSolutionBarModel (activeModel='COMPARISON') renders Comparative Model:", isCompModel && isCompNotBA);
+  if (!isCompModel || !isCompNotBA) {
+    console.error("FAIL: ModelSolutionBarModel with activeModel='COMPARISON' must render Comparative Model!");
+    allPassed = false;
+  }
+
+  // Test 4c: Explicit BEFORE_AFTER activeModel
+  const modelBA = ModelSolutionBarModel({ config, activeModel: 'BEFORE_AFTER' });
+  const isBAModel = treeContainsText(modelBA, "Before & After Model");
+  console.log("ModelSolutionBarModel (activeModel='BEFORE_AFTER') renders Before & After Model:", isBAModel);
+  if (!isBAModel) {
+    console.error("FAIL: ModelSolutionBarModel with activeModel='BEFORE_AFTER' must render Before & After Model!");
+    allPassed = false;
+  }
 } catch (e) {
   console.error("FAIL: ModelSolutionBarModel crashed:", e);
   allPassed = false;

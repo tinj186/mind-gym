@@ -923,8 +923,25 @@ export function checkBarModelParameters(userBars = [], config = {}, totalState =
  * Renders the reference pictorial blueprint for students to inspect
  * when an error occurs or when the solution is revealed.
  */
-export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Bar Model Blueprint" }) {
-  if (config?.correctModelType === 'PART_WHOLE') {
+export function ModelSolutionBarModel({ 
+  config = {}, 
+  title = "Model Solution: Bar Model Blueprint",
+  activeModel = null 
+}) {
+  const resolvedModel = activeModel || (
+    Array.isArray(config?.correctModelType)
+      ? config.correctModelType[0]
+      : (config?.correctModelType || (
+          config?.problemType === 'EQUALIZING_TRANSFER' || config?.problemType === 'SHIFTING_DIFFERENCE_TRANSFER'
+            ? 'BEFORE_AFTER'
+            : 'COMPARISON'
+        ))
+  );
+
+  const isPartWholeModel = resolvedModel === 'PART_WHOLE';
+  const isBeforeAfterModel = resolvedModel === 'BEFORE_AFTER';
+
+  if (isPartWholeModel) {
     const parts = config?.parts || [];
     const whole = config?.whole || { label: 'Target', displayValue: '?' };
     if (!parts || parts.length === 0) return null;
@@ -997,11 +1014,6 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
   const entities = config?.entities || [];
   const target = config?.target || { type: 'TOTAL', label: 'Total' };
   const itemName = config?.itemName || 'units';
-
-  const isBeforeAfterModel = config?.correctModelType === 'BEFORE_AFTER' || 
-    config?.problemType === 'EQUALIZING_TRANSFER' || 
-    config?.problemType === 'SHIFTING_DIFFERENCE_TRANSFER' ||
-    (Array.isArray(config?.correctModelType) && config?.correctModelType[0] === 'BEFORE_AFTER');
 
   if (isBeforeAfterModel) {
     // Robustly resolve the Giver / Entity with MORE (nameA) vs Receiver / Entity with BASE (nameB)
@@ -1227,6 +1239,8 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
 
   if (!entities || entities.length === 0) return null;
 
+  const refBase = entities.find(ent => ent.relation === 'BASE') || entities[0];
+
   return (
     <div className="bg-emerald-50/70 border-2 border-emerald-300 rounded-3xl p-5 sm:p-6 space-y-4 shadow-sm animate-in fade-in duration-200">
       <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-emerald-200">
@@ -1239,7 +1253,9 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
               {title}
             </h4>
             <span className="text-[10px] text-emerald-700 font-bold">
-              Comparative Bar Model Aligned to Common Baseline
+              {config?.problemType === 'SHIFTING_DIFFERENCE_TRANSFER'
+                ? 'Comparative Bar Model: Initial State Comparison (Before Transfer)'
+                : 'Comparative Bar Model Aligned to Common Baseline'}
             </span>
           </div>
         </div>
@@ -1281,6 +1297,8 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
                 baseLabel = e.displayValue || (e.value ? (e.value === '?' ? '?' : Number(e.value).toLocaleString()) : (config?.problemType === 'THREE_ENTITY_GRAND_TOTAL' ? '1 unit' : ''));
               } else if (isMultiple) {
                 baseLabel = e.displayValue || `${e.multipleFactor || 2} units`;
+              } else if (isMore) {
+                baseLabel = refBase?.displayValue || (refBase?.value ? (refBase.value === '?' ? '?' : Number(refBase.value).toLocaleString()) : (config?.problemType === 'THREE_ENTITY_GRAND_TOTAL' ? '1 unit' : ''));
               }
 
               return (
@@ -1392,7 +1410,7 @@ export function ModelSolutionBarModel({ config = {}, title = "Model Solution: Ba
         <div className="flex items-center justify-between bg-rose-50 p-3 rounded-2xl border border-rose-200 text-xs">
           <span className="font-bold text-rose-950">Target to Solve:</span>
           <span className="font-black text-rose-800 bg-rose-200 px-2.5 py-0.5 rounded-lg">
-            Find Difference
+            Find {target.label || 'Difference'}
           </span>
         </div>
       )}
@@ -2374,8 +2392,8 @@ export default function InteractiveBarBuilder({
   ];
   const entities = config.entities || [];
   const target = config.target || { type: "TOTAL", label: "Total" };
-  const calculationSteps = (activeModel === 'COMPARISON' && config?.comparisonSteps?.length > 0)
-    ? config.comparisonSteps
+  const calculationSteps = (activeModel === 'COMPARISON' && (config?.comparisonSteps?.length > 0 || config?.alternativeSteps?.length > 0))
+    ? (config.comparisonSteps || config.alternativeSteps)
     : (activeModel === 'BEFORE_AFTER' && config?.beforeAfterSteps?.length > 0)
       ? config.beforeAfterSteps
       : (steps.length > 0 ? steps : (config.steps || []));
@@ -3726,7 +3744,7 @@ export default function InteractiveBarBuilder({
 
                     {showModelSolution && (
                       <div className="animate-in fade-in slide-in-from-top-2">
-                        <ModelSolutionBarModel config={config} />
+                        <ModelSolutionBarModel config={config} activeModel={activeModel} />
                       </div>
                     )}
 
@@ -3982,7 +4000,7 @@ export default function InteractiveBarBuilder({
 
                     {showModelSolution && (
                       <div className="animate-in fade-in slide-in-from-top-2">
-                        <ModelSolutionBarModel config={config} />
+                        <ModelSolutionBarModel config={config} activeModel={activeModel} />
                       </div>
                     )}
 
@@ -4397,7 +4415,7 @@ export default function InteractiveBarBuilder({
                   {/* Expandable Model Solution Bar Model */}
                   {showModelSolution && (
                     <div className="animate-in fade-in slide-in-from-top-2">
-                      <ModelSolutionBarModel config={config} />
+                      <ModelSolutionBarModel config={config} activeModel={activeModel} />
                     </div>
                   )}
 
@@ -4452,7 +4470,7 @@ export default function InteractiveBarBuilder({
                 onEdit={() => setCurrentStage(2)} 
               />
             ) : (
-              <ModelSolutionBarModel config={config} title="Reference Before & After Model Blueprint" />
+              <ModelSolutionBarModel config={config} activeModel="BEFORE_AFTER" title="Reference Before & After Model Blueprint" />
             )
           ) : isPartWhole ? (
             userParts.length > 0 ? (
@@ -4464,7 +4482,7 @@ export default function InteractiveBarBuilder({
                 onEdit={() => setCurrentStage(2)} 
               />
             ) : (
-              <ModelSolutionBarModel config={config} title="Reference Part-Whole Model Blueprint" />
+              <ModelSolutionBarModel config={config} activeModel="PART_WHOLE" title="Reference Part-Whole Model Blueprint" />
             )
           ) : (
             userBars.length > 0 ? (
@@ -4476,7 +4494,7 @@ export default function InteractiveBarBuilder({
                 onEdit={() => setCurrentStage(2)} 
               />
             ) : (
-              <ModelSolutionBarModel config={config} title="Reference Bar Model Blueprint" />
+              <ModelSolutionBarModel config={config} activeModel="COMPARISON" title="Reference Bar Model Blueprint" />
             )
           )}
 
