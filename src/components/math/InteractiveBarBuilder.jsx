@@ -503,9 +503,24 @@ export function checkBeforeAfterParameters(beforeBars = [], afterBars = [], tran
 
       // If receiver has difference segment (MORE)
       if (barReceiver.hasDifference && barReceiver.diffType === 'MORE') {
-        if (barReceiver.diffValue && barReceiver.diffValue !== '?') {
-          const actDiff = normalizeNumber(barReceiver.diffValue);
-          if (actDiff !== expDiff) {
+        const segSum = barReceiver.diffSegments && barReceiver.diffSegments.length > 0
+          ? barReceiver.diffSegments.reduce((sum, s) => sum + (Number(normalizeNumber(s.value)) || 0), 0)
+          : null;
+        const actDiffVal = barReceiver.diffValue || (segSum !== null ? segSum.toString() : '');
+        if (actDiffVal && actDiffVal !== '?') {
+          const actDiff = normalizeNumber(actDiffVal);
+          const isTransferAmountMatch = actualConfig.transferAmount && (
+            normalizeNumber(actDiff) === normalizeNumber(actualConfig.transferAmount) ||
+            (segSum !== null && segSum === Number(actualConfig.transferAmount))
+          );
+          const isReceiverBaseInitial = !barReceiver.value || 
+            normalizeNumber(barReceiver.value) === normalizeNumber(actualConfig.initialB || actualConfig.smallerValue) ||
+            barReceiver.value === '?';
+
+          if (isTransferAmountMatch && isReceiverBaseInitial) {
+            // Valid Action Model: Receiver shows initial base + transfer amount received (+z)!
+            // This is the direct modelling of the transfer without requiring pre-solving.
+          } else if (actDiff !== expDiff) {
             if (actualConfig.initialDiff && normalizeNumber(actDiff) === normalizeNumber(actualConfig.initialDiff)) {
               return {
                 isValid: false,
@@ -518,7 +533,7 @@ export function checkBeforeAfterParameters(beforeBars = [], afterBars = [], tran
               return {
                 isValid: false,
                 defect: 'AFTER_STATE_USED_TRANSFER_AMOUNT',
-                errorMsg: `"${barReceiver.diffValue}" is the amount transferred. The resulting difference in the end is ${Number(expDiff).toLocaleString()}.`,
+                errorMsg: `"${barReceiver.diffValue}" is the amount transferred. If comparing directly to "${barGiver.name}"'s ending amount, the resulting difference is ${Number(expDiff).toLocaleString()}. Or keep "${barReceiver.name}"'s base at ${Number(actualConfig.initialB || actualConfig.smallerValue).toLocaleString()} to model the transfer action!`,
                 details: { expected: expDiff, actual: actDiff }
               };
             }
@@ -1255,7 +1270,7 @@ export function ModelSolutionBarModel({
             </span>
             {config?.problemType === 'SHIFTING_DIFFERENCE_TRANSFER' ? (
               <span className="text-[10px] font-bold text-slate-500">
-                New Difference = {config?.displayDifference || (config?.differenceValue ? Number(config.differenceValue).toLocaleString() : '?')}
+                New Difference = ?
               </span>
             ) : (
               <span className="text-[10px] font-black uppercase text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
@@ -1271,7 +1286,7 @@ export function ModelSolutionBarModel({
                   <span className="w-20 text-right text-xs font-black text-slate-800 truncate">{nameA}</span>
                   <div className="flex-1 pl-2 border-l-4 border-emerald-500 border-dashed">
                     <div className="flex items-center h-9 bg-slate-50 rounded-lg p-1 border border-slate-200">
-                      <div style={{ width: '42%' }} className="h-full bg-emerald-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
+                      <div style={{ width: '42%' }} className="h-full bg-emerald-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate" title={`${nameA}'s amount in the end`}>
                         {config?.displayNewA || (config?.newA ? Number(config.newA).toLocaleString() : '')}
                       </div>
                     </div>
@@ -1281,11 +1296,11 @@ export function ModelSolutionBarModel({
                   <span className="w-20 text-right text-xs font-black text-slate-800 truncate">{nameB}</span>
                   <div className="flex-1 pl-2 border-l-4 border-emerald-500 border-dashed">
                     <div className="flex items-center h-9 bg-slate-50 rounded-lg p-1 border border-slate-200">
-                      <div style={{ width: '42%' }} className="h-full bg-indigo-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
-                        {config?.displayNewA || (config?.newA ? Number(config.newA).toLocaleString() : '')}
+                      <div style={{ width: '40%' }} className="h-full bg-indigo-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate" title={`${nameB}'s base amount at first`}>
+                        {smallerDisplay || (config?.initialB ? Number(config.initialB).toLocaleString() : '')}
                       </div>
-                      <div style={{ width: '25%' }} className="h-full ml-1 bg-emerald-500 rounded flex items-center justify-center text-xs font-black text-white px-1 truncate border border-emerald-400 border-dashed" title="New Difference">
-                        +{config?.displayDifference || (config?.differenceValue ? Number(config.differenceValue).toLocaleString() : '?')}
+                      <div style={{ width: '26%' }} className="h-full ml-1 bg-teal-500 rounded flex items-center justify-center text-xs font-black text-white px-1 truncate border border-teal-400 border-dashed" title={`Transferred from ${nameA}`}>
+                        +{transferDisplay || (config?.transferAmount ? Number(config.transferAmount).toLocaleString() : '')}
                       </div>
                     </div>
                   </div>
@@ -2576,12 +2591,12 @@ export default function InteractiveBarBuilder({
         {
           id: 'after-2',
           name: nameB,
-          value: nA ? Number(nA).toLocaleString() : (nB ? Number(nB).toLocaleString() : ''),
-          length: 68,
+          value: initB ? Number(initB).toLocaleString() : '',
+          length: 40,
           hasDifference: true,
           diffType: 'MORE',
-          diffValue: '?',
-          diffSegments: [{ id: 'after-seg-1', value: '?', length: 25 }],
+          diffValue: transVal ? Number(transVal).toLocaleString() : '',
+          diffSegments: [{ id: 'after-seg-1', value: transVal ? Number(transVal).toLocaleString() : '', length: 26 }],
           isCollapsed: false
         }
       ]);
