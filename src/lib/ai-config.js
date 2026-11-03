@@ -1,11 +1,14 @@
 import { prisma } from '@/lib/db';
 
 export let modelPriorityList = [
-  "gemini-3.1-flash-lite",
-//  "gemini-3.1-flash",
-//  "gemini-3.1-pro", // 🟢 Fastest & highly intelligent (Newest)
-  "gemini-2.5-flash",              // 🟡 Excellent reasoning, very stable
-  "gemini-2.5-pro"                 // 🔴 Powerhouse for complex logic (Fallback)
+  "gemini-3.1-flash-lite",       // 🟢 Ultra-fast & efficient (Clocked ~700ms)
+  "gemini-flash-lite-latest",    // 🟢 Evergreen Flash-Lite (Auto-updates to latest gen)
+  "gemini-3.5-flash-lite",       // 🟢 Fast & lightweight
+  "gemini-3.5-flash",            // 🟡 High reasoning & speed balance
+  "gemini-flash-latest",         // 🟡 Evergreen Flash
+  "gemini-3.8-flash",            // 🟡 Latest 3.8 series
+  "gemini-pro-latest",           // 🔴 Evergreen Pro reasoning powerhouse
+  "gemini-4-argon"               // 🔴 Next-gen flagship reasoning model
 ];
 
 export const modelCooldowns = {};

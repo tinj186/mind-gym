@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getBestModel } from "@/lib/ai-config";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -13,7 +14,8 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
  * @returns {Promise<string>} The defect code (e.g., 'CARELESS_CALCULATION').
  */
 export async function runStealthDiagnostic({ question, expectedAnswer, studentAnswer, modelDescription }) {
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const selectedModelId = getBestModel();
+  const model = genAI.getGenerativeModel({ model: selectedModelId }, { apiVersion: 'v1beta' });
 
   const prompt = `
     As a Singapore Math specialist, diagnose the learner's error.

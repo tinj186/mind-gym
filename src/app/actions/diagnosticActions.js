@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/db';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { getBestModel } from '@/lib/ai-config';
 
 export async function runBackgroundDiagnostic(studentId, topicId, topicTotalReps) {
   try {
@@ -48,7 +49,8 @@ ${promptData}`;
 
     // 4. Call Gemini
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const selectedModelId = getBestModel();
+    const model = genAI.getGenerativeModel({ model: selectedModelId }, { apiVersion: 'v1beta' });
 
     let diagnosticText = "Pattern recognition failing. Form repair required.";
     
