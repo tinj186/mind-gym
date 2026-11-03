@@ -506,6 +506,22 @@ export function checkBeforeAfterParameters(beforeBars = [], afterBars = [], tran
         if (barReceiver.diffValue && barReceiver.diffValue !== '?') {
           const actDiff = normalizeNumber(barReceiver.diffValue);
           if (actDiff !== expDiff) {
+            if (actualConfig.initialDiff && normalizeNumber(actDiff) === normalizeNumber(actualConfig.initialDiff)) {
+              return {
+                isValid: false,
+                defect: 'AFTER_STATE_USED_INITIAL_DIFF',
+                errorMsg: `"${barReceiver.diffValue}" was the difference at first. After the transfer, the difference shifted to ${Number(expDiff).toLocaleString()}.`,
+                details: { expected: expDiff, actual: actDiff }
+              };
+            }
+            if (actualConfig.transferAmount && normalizeNumber(actDiff) === normalizeNumber(actualConfig.transferAmount)) {
+              return {
+                isValid: false,
+                defect: 'AFTER_STATE_USED_TRANSFER_AMOUNT',
+                errorMsg: `"${barReceiver.diffValue}" is the amount transferred. The resulting difference in the end is ${Number(expDiff).toLocaleString()}.`,
+                details: { expected: expDiff, actual: actDiff }
+              };
+            }
             return {
               isValid: false,
               defect: 'AFTER_STATE_INCORRECT_DIFF',
@@ -521,6 +537,22 @@ export function checkBeforeAfterParameters(beforeBars = [], afterBars = [], tran
         if (barGiver.diffValue && barGiver.diffValue !== '?') {
           const actDiff = normalizeNumber(barGiver.diffValue);
           if (actDiff !== expDiff) {
+            if (actualConfig.initialDiff && normalizeNumber(actDiff) === normalizeNumber(actualConfig.initialDiff)) {
+              return {
+                isValid: false,
+                defect: 'AFTER_STATE_USED_INITIAL_DIFF',
+                errorMsg: `"${barGiver.diffValue}" was the difference at first. After the transfer, the difference shifted to ${Number(expDiff).toLocaleString()}.`,
+                details: { expected: expDiff, actual: actDiff }
+              };
+            }
+            if (actualConfig.transferAmount && normalizeNumber(actDiff) === normalizeNumber(actualConfig.transferAmount)) {
+              return {
+                isValid: false,
+                defect: 'AFTER_STATE_USED_TRANSFER_AMOUNT',
+                errorMsg: `"${barGiver.diffValue}" is the amount transferred. The resulting difference in the end is ${Number(expDiff).toLocaleString()}.`,
+                details: { expected: expDiff, actual: actDiff }
+              };
+            }
             return {
               isValid: false,
               defect: 'AFTER_STATE_INCORRECT_DIFF',
@@ -654,6 +686,36 @@ export function checkBarModelParameters(userBars = [], config = {}, totalState =
           actualDiff: otherEntity.actualDiff || defaultBase.actualDiff
         }];
       }
+    }
+  }
+
+  // Support Final State Comparison for SHIFTING_DIFFERENCE_TRANSFER
+  if (config?.problemType === 'SHIFTING_DIFFERENCE_TRANSFER' && expectedEntities.length === 2 && config?.newA && config?.newB && config?.newDiff) {
+    const nameA = config.transferFrom;
+    const nameB = config.transferTo;
+    const barA = rawBars.find(b => normalizeName(b.name) === normalizeName(nameA));
+    const barB = rawBars.find(b => normalizeName(b.name) === normalizeName(nameB));
+
+    // In the end, nameB (receiver) has more than nameA (giver) by newDiff
+    const isBarAMatchNewA = barA && normalizeNumber(barA.value) === normalizeNumber(config.newA);
+    const isBarBDiffNewDiff = barB && barB.hasDifference && (
+      normalizeNumber(barB.diffValue) === normalizeNumber(config.newDiff) ||
+      (barB.diffSegments && barB.diffSegments.reduce((sum, s) => sum + (Number(s.value) || 0), 0) === Number(config.newDiff))
+    );
+    const isBarBMatchNewB = barB && normalizeNumber(barB.value) === normalizeNumber(config.newB);
+
+    if ((isBarAMatchNewA && isBarBDiffNewDiff) || (isBarBMatchNewB && isBarBDiffNewDiff)) {
+      expectedBases = [{ id: 'A_final', name: nameA, value: config.newA, displayValue: Number(config.newA).toLocaleString(), relation: 'BASE' }];
+      compEntities = [{
+        id: 'B_final',
+        name: nameB,
+        value: config.newB,
+        displayValue: Number(config.newB).toLocaleString(),
+        relation: 'MORE',
+        diffValue: config.newDiff,
+        displayDiff: Number(config.newDiff).toLocaleString(),
+        actualDiff: config.newDiff
+      }];
     }
   }
 
@@ -828,6 +890,14 @@ export function checkBarModelParameters(userBars = [], config = {}, totalState =
         if (segments.length > 1) {
           const isSumMatch = sumOfSegments === Number(expDiff) || (comp.actualDiff && sumOfSegments === Number(comp.actualDiff));
           if (!isSumMatch) {
+            if (config.transferAmount && sumOfSegments === Number(config.transferAmount)) {
+              return {
+                isValid: false,
+                defect: 'TRANSFER_USED_AS_DIFFERENCE',
+                errorMsg: `The sum of your segments (${sumOfSegments.toLocaleString()}) is the amount transferred from ${config.transferFrom || 'one person'} to ${config.transferTo || 'the other'}, not the difference between them. In a Comparison Model, compare their quantities directly (${displayDiff}). Or switch to the "Before & After Model" to show the transfer!`,
+                details: { entity: comp.name, transferAmount: config.transferAmount, expectedDiff: expDiff }
+              };
+            }
             return {
               isValid: false,
               defect: 'INCORRECT_DIFF_VALUE',
@@ -845,6 +915,33 @@ export function checkBarModelParameters(userBars = [], config = {}, totalState =
             };
           }
           if (actDiff !== expDiff) {
+            // Smart Diagnostic 1: Student entered the transfer amount instead of the difference
+            if (config.transferAmount && normalizeNumber(actDiff) === normalizeNumber(config.transferAmount)) {
+              return {
+                isValid: false,
+                defect: 'TRANSFER_USED_AS_DIFFERENCE',
+                errorMsg: `"${compBar.diffValue}" is the amount transferred, not the difference between ${comp.name} and the other bar. In a Comparison Model, compare their quantities directly (${displayDiff}). Or switch to the "Before & After Model" to show the transfer!`,
+                details: { entity: comp.name, transferAmount: config.transferAmount, expectedDiff: expDiff }
+              };
+            }
+            // Smart Diagnostic 2: Student entered the final difference on an initial comparison model
+            if (config.newDiff && normalizeNumber(actDiff) === normalizeNumber(config.newDiff)) {
+              return {
+                isValid: false,
+                defect: 'FINAL_DIFF_ON_INITIAL_MODEL',
+                errorMsg: `"${compBar.diffValue}" is the difference in the end (after the transfer). In this model, we are comparing their amounts at first (${displayDiff}).`,
+                details: { entity: comp.name, newDiff: config.newDiff, expectedDiff: expDiff }
+              };
+            }
+            // Smart Diagnostic 3: Student subtracted single transfer instead of double transfer
+            if (config.initialDiff && config.transferAmount && normalizeNumber(actDiff) === normalizeNumber(config.initialDiff - config.transferAmount)) {
+              return {
+                isValid: false,
+                defect: 'SINGLE_TRANSFER_DIFFERENCE_ERROR',
+                errorMsg: `Remember: when an amount is transferred, one person loses it while the other person gains it, so the difference changes by twice the transfer amount (2 × ${Number(config.transferAmount).toLocaleString()}).`,
+                details: { entity: comp.name, expectedDiff: expDiff }
+              };
+            }
             return {
               isValid: false,
               defect: 'INCORRECT_DIFF_VALUE',

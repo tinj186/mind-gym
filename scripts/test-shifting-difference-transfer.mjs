@@ -490,6 +490,88 @@ if (!checkAutoFill.isValid) {
   allPassed = false;
 }
 
+// 6. Test Smart Diagnostics and Final State Comparison on Comparative Canvas
+console.log("\n6. Testing Smart Diagnostics on Comparative Canvas:");
+
+// 6a. Student enters transferAmount as difference on Comparison canvas (the exact scenario from the screenshot!)
+const compTransferDiffBars = [
+  {
+    name: nameA,
+    value: newA.toString(), // Student wrote newA as base
+    hasDifference: true,
+    diffType: 'MORE',
+    diffValue: config.transferAmount.toString() // Student wrote transfer amount as difference!
+  },
+  {
+    name: nameB,
+    value: initB.toString(),
+    hasDifference: false
+  }
+];
+const checkTransferDiff = checkBarModelParameters(compTransferDiffBars, config);
+console.log("Check 6a (Transfer amount used as difference): isValid =", checkTransferDiff.isValid, "defect =", checkTransferDiff.defect);
+console.log("  Error message:", checkTransferDiff.errorMsg);
+if (checkTransferDiff.isValid || checkTransferDiff.defect !== 'TRANSFER_USED_AS_DIFFERENCE') {
+  console.error("FAIL: Expected TRANSFER_USED_AS_DIFFERENCE defect with smart diagnostic message!");
+  allPassed = false;
+}
+
+// 6b. Student enters final difference on initial comparison bars
+const compFinalDiffBars = [
+  {
+    name: nameA,
+    value: initA.toString(),
+    hasDifference: true,
+    diffType: 'MORE',
+    diffValue: newDiff.toString() // Student entered newDiff instead of initialDiff
+  },
+  {
+    name: nameB,
+    value: initB.toString(),
+    hasDifference: false
+  }
+];
+const checkFinalDiff = checkBarModelParameters(compFinalDiffBars, config);
+console.log("Check 6b (Final difference used on initial bars): isValid =", checkFinalDiff.isValid, "defect =", checkFinalDiff.defect);
+if (checkFinalDiff.isValid || checkFinalDiff.defect !== 'FINAL_DIFF_ON_INITIAL_MODEL') {
+  console.error("FAIL: Expected FINAL_DIFF_ON_INITIAL_MODEL defect!");
+  allPassed = false;
+}
+
+// 6c. Student builds the Final State Comparison (Zhi Xuan: newA, Sarah: newA + newDiff)
+const compFinalStateBars = [
+  {
+    name: nameA,
+    value: newA.toString(), // Giver in the end (smaller)
+    hasDifference: false
+  },
+  {
+    name: nameB,
+    value: newA.toString(), // Receiver base aligned to Giver
+    hasDifference: true,
+    diffType: 'MORE',
+    diffValue: newDiff.toString() // Receiver has newDiff MORE in the end
+  }
+];
+const checkFinalState = checkBarModelParameters(compFinalStateBars, config);
+console.log("Check 6c (Final State Comparison Model): isValid =", checkFinalState.isValid, "defect =", checkFinalState.defect);
+if (!checkFinalState.isValid) {
+  console.error("FAIL: Final State Comparison should be accepted as a valid alternative! Error:", checkFinalState.errorMsg);
+  allPassed = false;
+}
+
+// 6d. Smart Diagnostic in Before & After After State when initial difference is entered
+const baUsedInitialDiffAfter = [
+  { name: nameA, value: newA.toString(), hasDifference: false },
+  { name: nameB, value: newA.toString(), hasDifference: true, diffType: 'MORE', diffValue: initDiff.toString() }
+];
+const checkBAInitialDiff = checkBeforeAfterParameters(validBefore, baUsedInitialDiffAfter, {}, config);
+console.log("Check 6d (Initial diff used in After State): isValid =", checkBAInitialDiff.isValid, "defect =", checkBAInitialDiff.defect);
+if (checkBAInitialDiff.isValid || checkBAInitialDiff.defect !== 'AFTER_STATE_USED_INITIAL_DIFF') {
+  console.error("FAIL: Expected AFTER_STATE_USED_INITIAL_DIFF defect!");
+  allPassed = false;
+}
+
 if (allPassed) {
   console.log("\n>>> ALL TESTS PASSED SUCCESSFULLY! <<<");
   process.exit(0);
