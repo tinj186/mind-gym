@@ -2529,7 +2529,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       defectMap = mcqRes.defectMap;
     }
 
-    solutionSteps = `Step 1: Calculate ${nameA}'s new amount after giving ${z.toLocaleString()}: ${initialA.toLocaleString()} - ${z.toLocaleString()} = ${newA.toLocaleString()}.\\nStep 2: Calculate ${nameB}'s new amount after receiving ${z.toLocaleString()}: ${initialB.toLocaleString()} + ${z.toLocaleString()} = ${newB.toLocaleString()}.\\nStep 3: Subtract ${nameA}'s new amount from ${nameB}'s new amount to find the new difference: ${newB.toLocaleString()} - ${newA.toLocaleString()} = ${newDiff.toLocaleString()}.`;
+    solutionSteps = `Method 1 (Before & After Model):\\nStep 1: Find ${nameA}'s amount in the end: ${initialA.toLocaleString()} - ${z.toLocaleString()} = ${newA.toLocaleString()}\\nStep 2: Find ${nameB}'s amount in the end: ${initialB.toLocaleString()} + ${z.toLocaleString()} = ${newB.toLocaleString()}\\nStep 3: Find how many more ${item} ${nameB} has than ${nameA} now: ${newB.toLocaleString()} - ${newA.toLocaleString()} = ${newDiff.toLocaleString()}\\n\\nMethod 2 (Comparison Model):\\nStep 1: Find the initial difference: ${initialA.toLocaleString()} - ${initialB.toLocaleString()} = ${initialDiff.toLocaleString()}\\nStep 2: Find the change in difference caused by transfer: 2 × ${z.toLocaleString()} = ${(z * 2).toLocaleString()}\\nStep 3: Find new difference: ${(z * 2).toLocaleString()} - ${initialDiff.toLocaleString()} = ${newDiff.toLocaleString()}`;
     hint = `Calculate both new amounts after the transfer first, then subtract to find who has more and by how much!`;
   }
 
