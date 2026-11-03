@@ -1204,14 +1204,9 @@ export function ModelSolutionBarModel({
                 ) : (
                   <div className="flex items-center h-9 bg-slate-50 rounded-lg p-1 border border-slate-200">
                     {config?.problemType === 'SHIFTING_DIFFERENCE_TRANSFER' ? (
-                      <>
-                        <div style={{ width: '45%' }} className="h-full bg-indigo-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
-                          {smallerDisplay || "Base Unit"}
-                        </div>
-                        <div style={{ width: '28%' }} className="h-full ml-1 bg-emerald-500 rounded flex items-center justify-center text-xs font-black text-white px-2 truncate border border-emerald-400 border-dashed" title="Initial Difference">
-                          +{config?.initialDiff ? Number(config.initialDiff).toLocaleString() : (diffDisplay || '?')}
-                        </div>
-                      </>
+                      <div style={{ width: '68%' }} className="h-full bg-indigo-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
+                        {largerDisplay || (config?.initialA ? Number(config.initialA).toLocaleString() : '')}
+                      </div>
                     ) : (
                       <>
                         <div style={{ width: '48%' }} className="h-full bg-indigo-600 rounded flex items-center justify-center text-xs font-bold text-white px-2 truncate">
@@ -2539,12 +2534,12 @@ export default function InteractiveBarBuilder({
         {
           id: 'before-1',
           name: nameA,
-          value: initB ? Number(initB).toLocaleString() : (initA ? Number(initA).toLocaleString() : ''),
+          value: initA ? Number(initA).toLocaleString() : '',
           length: 65,
-          hasDifference: true,
+          hasDifference: false,
           diffType: 'MORE',
-          diffValue: initDiff ? Number(initDiff).toLocaleString() : '?',
-          diffSegments: [{ id: 'before-seg-1', value: initDiff ? Number(initDiff).toLocaleString() : '?', length: 25 }],
+          diffValue: '',
+          diffSegments: [],
           isCollapsed: false
         },
         {
@@ -3440,7 +3435,7 @@ export default function InteractiveBarBuilder({
                   </span>
                   <div className="flex items-center gap-2">
                     <span className="text-[11px] font-bold text-slate-500 hidden sm:inline">
-                      Comparative Bars with Common Baseline
+                      Initial Quantities (At First)
                     </span>
                     <button
                       type="button"
@@ -3623,7 +3618,7 @@ export default function InteractiveBarBuilder({
                 </span>
                 <div className="flex items-center gap-2">
                   <span className="text-[11px] font-bold text-emerald-700 hidden sm:inline">
-                    Resulting Quantities Aligned to Baseline
+                    Resulting Quantities (In the End)
                   </span>
                   <button
                     type="button"

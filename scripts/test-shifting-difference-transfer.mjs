@@ -437,12 +437,12 @@ const autoFillBefore = [
   {
     id: 'before-1',
     name: nameA,
-    value: initB ? Number(initB).toLocaleString() : '',
+    value: initA ? Number(initA).toLocaleString() : '',
     length: 65,
-    hasDifference: true,
+    hasDifference: false,
     diffType: 'MORE',
-    diffValue: initDiff ? Number(initDiff).toLocaleString() : '?',
-    diffSegments: [{ id: 'before-seg-1', value: initDiff ? Number(initDiff).toLocaleString() : '?', length: 25 }],
+    diffValue: '',
+    diffSegments: [],
     isCollapsed: false
   },
   {
