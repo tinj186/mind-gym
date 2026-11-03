@@ -2930,7 +2930,7 @@ ${getFormatInstructions(visualEngineStr, inputRequirementStr, effectiveVariant)}
 
   return { 
     aiPrompt,
-    visualEngine: visualEngineStr,
-    inputRequirement: inputRequirementStr
+    visualEngine: visualEngineStr ? (typeof visualEngineStr === 'string' ? JSON.parse(visualEngineStr) : visualEngineStr) : null,
+    inputRequirement: inputRequirementStr ? (typeof inputRequirementStr === 'string' ? JSON.parse(inputRequirementStr) : inputRequirementStr) : null
   };
 }

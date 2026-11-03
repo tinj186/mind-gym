@@ -184,6 +184,14 @@ export function processAiQuestion(q, context) {
     q.meta.difficulty = difficulty.charAt(0).toUpperCase() + difficulty.slice(1).toLowerCase();
   }
 
+  // Sanitize visualEngine and inputRequirement to parsed objects to prevent Zod string type mismatches
+  if (typeof q?.visualEngine === 'string') {
+    try { q.visualEngine = JSON.parse(q.visualEngine); } catch (e) {}
+  }
+  if (typeof q?.inputRequirement === 'string') {
+    try { q.inputRequirement = JSON.parse(q.inputRequirement); } catch (e) {}
+  }
+
   try {
     // Try strict Zod validation first
     const validatedData = UniversalQuestionSchema.parse(q);

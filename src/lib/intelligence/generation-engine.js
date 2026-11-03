@@ -136,10 +136,18 @@ export class GenerationEngine {
           // IMPORTANT: Override the LLM's generated visualEngine with the pristine one from the blueprint!
           // This entirely prevents the LLM from hallucinating structural changes to the UI components.
           if (stepResult.visualEngine) {
-            q.visualEngine = stepResult.visualEngine;
+            let ve = stepResult.visualEngine;
+            if (typeof ve === 'string') {
+              try { ve = JSON.parse(ve); } catch (e) {}
+            }
+            q.visualEngine = ve;
           }
           if (stepResult.inputRequirement) {
-            q.inputRequirement = stepResult.inputRequirement;
+            let ir = stepResult.inputRequirement;
+            if (typeof ir === 'string') {
+              try { ir = JSON.parse(ir); } catch (e) {}
+            }
+            q.inputRequirement = ir;
           }
           parsedQuestions.push(processAiQuestion(q, { ...context, blueprintMeta, stepResult, heuristic: loopVariant }));
         }
