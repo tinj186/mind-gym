@@ -1079,6 +1079,15 @@ export function checkBarModelParameters(userBars = [], config = {}, totalState =
                 details: { entity: comp.name, expectedDiff: expDiff }
               };
             }
+            // Smart Diagnostic 4: Student entered the target difference on C's bar in TWO_TIERED_DIFFERENCE
+            if (config?.problemType === 'TWO_TIERED_DIFFERENCE' && config.target?.value && normalizeNumber(actDiff) === normalizeNumber(config.target.value)) {
+              return {
+                isValid: false,
+                defect: 'TARGET_DIFF_USED_ON_BASELINE_BAR',
+                errorMsg: `"${compBar.diffValue}" is the difference between ${config.entityAName || 'the two entities'} and ${comp.name} that you need to solve for. On this bar, enter the difference relative to baseline "${config.baselineName || expectedBases[0]?.name || 'the base'}" (${displayDiff}) as given in the problem stem.`,
+                details: { entity: comp.name, targetDiff: config.target.value, expectedDiff: expDiff }
+              };
+            }
             return {
               isValid: false,
               defect: 'INCORRECT_DIFF_VALUE',
@@ -1566,6 +1575,8 @@ export function ModelSolutionBarModel({
                 baseLabel = e.displayValue || `${e.multipleFactor || 2} units`;
               } else if (isMore) {
                 baseLabel = refBase?.displayValue || (refBase?.value ? (refBase.value === '?' ? '?' : Number(refBase.value).toLocaleString()) : (config?.problemType === 'THREE_ENTITY_GRAND_TOTAL' ? '1 unit' : ''));
+              } else if (isFewer) {
+                baseLabel = e.displayValue || (e.value ? (e.value === '?' ? '?' : Number(e.value).toLocaleString()) : '');
               }
 
               return (
@@ -3322,7 +3333,7 @@ export default function InteractiveBarBuilder({
           value: s.displayValue || (s.value ? `${s.value}`.replace(/[+\-]/g, '').trim() : cleanDiff),
           length: s.length || 18
         }));
-      } else if (hasDiff && e.relation !== 'FEWER') {
+      } else if (hasDiff) {
         if (config.problemType === 'EQUALIZING_TRANSFER' && config.transferAmount) {
           const tVal = Number(config.transferAmount).toLocaleString();
           defaultSegments = [
@@ -3331,7 +3342,7 @@ export default function InteractiveBarBuilder({
           ];
         } else {
           defaultSegments = [
-            { id: `bar-${idx + 1}-seg-1`, value: cleanDiff, length: 20 }
+            { id: `bar-${idx + 1}-seg-1`, value: cleanDiff, length: e.relation === 'FEWER' ? 16 : 20 }
           ];
         }
       }
@@ -3566,10 +3577,12 @@ export default function InteractiveBarBuilder({
 
               {confirmationStatus === 'incorrect' && (
                 <p className="text-xs font-bold text-rose-600 text-center pt-2.5 animate-in fade-in duration-200">
-                  {selectedModel === 'BEFORE_AFTER' && (config.problemType === 'OVERLAPPING_TARGET_DEDUCTION' || config.problemType === 'TARGET_SHORTFALL')
-                    ? "This problem does not involve transfers or changes across time states. Think about how the single total is divided into parts!"
+                  {selectedModel === 'BEFORE_AFTER' && (config.problemType === 'OVERLAPPING_TARGET_DEDUCTION' || config.problemType === 'TARGET_SHORTFALL' || config.problemType === 'TWO_TIERED_DIFFERENCE')
+                    ? "This problem does not involve transfers or changes across time states. The quantities are static comparisons against a baseline. Choose the Comparison Model!"
                     : selectedModel === 'COMPARISON' && config.problemType === 'OVERLAPPING_TARGET_DEDUCTION'
                       ? "This problem describes a single whole partitioned into overlapping groups, rather than comparing two separate independent entities. Choose the Part-Whole Model!"
+                      : selectedModel === 'PART_WHOLE' && config.problemType === 'TWO_TIERED_DIFFERENCE'
+                        ? "This problem compares multiple distinct entities to a common baseline, rather than partitioning a single total. Choose the Comparison Model!"
                       : selectedModel === 'PART_WHOLE' && (config.problemType === 'SHIFTING_DIFFERENCE_TRANSFER' || config.problemType === 'EQUALIZING_TRANSFER')
                         ? "This problem tracks quantities changing across before and after states. Try a model that captures transfers!"
                         : "This bar model archetype does not match the problem structure. Consider how the quantities relate!"}

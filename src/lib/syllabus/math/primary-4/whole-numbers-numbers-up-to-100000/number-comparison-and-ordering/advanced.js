@@ -3125,12 +3125,77 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       promptInstruction = `- Question stem: "${nameA} has ${x.toLocaleString()} more ${item} than ${nameB}. ${nameC} has ${y.toLocaleString()} more ${item} than ${nameB}. How many more ${item} does ${nameA} have than ${nameC}?"\\n- The finalAnswer must be strictly "${finalAnswer}".\\n- CRITICAL: Return visualEngine and componentData EXACTLY as provided.`;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "NONE",
+          hideVisual: true,
+          componentData: {
+            hideVisual: true,
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: "?", layoutSize: baselineLayout + x, displayValue: "1 unit" },
+              { name: nameB, value: "?", layoutSize: baselineLayout, displayValue: "1 unit" },
+              { name: nameC, value: "?", layoutSize: baselineLayout + y, displayValue: "1 unit" }
+            ]
+          }
+        }, null, 2);
+
+        const steps = [
+          {
+            label: `Write the working equation to find the difference between ${nameA} and ${nameC}:`,
+            expectedAnswer: `${x} - ${y} = ${diffAC}`,
+            acceptedAnswers: [
+              `${x} - ${y} = ${diffAC}`,
+              `${diffAC} = ${x} - ${y}`,
+              `${x.toLocaleString()} - ${y.toLocaleString()} = ${diffAC.toLocaleString()}`,
+              `${diffAC.toLocaleString()} = ${x.toLocaleString()} - ${y.toLocaleString()}`,
+              `${x} - ${y}`,
+              `${x.toLocaleString()} - ${y.toLocaleString()}`
+            ]
+          },
+          {
+            label: "Final Answer:",
+            expectedAnswer: finalAnswer,
+            acceptedAnswers: [
+              finalAnswer,
+              Number(finalAnswer).toLocaleString(),
+              `${finalAnswer} ${item}`,
+              `${Number(finalAnswer).toLocaleString()} ${item}`
+            ]
+          }
+        ];
+
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: `Write the working equation to find the difference between ${nameA} and ${nameC}:`, expectedAnswer: `${x} - ${y} = ${diffAC}` },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
-          ]
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "TWO_TIERED_DIFFERENCE",
+            targetVariety: "compare_a_and_c_both_more",
+            correctModelType: "COMPARISON",
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities across distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole quantity into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfers or changes across time states" }
+            ],
+            baselineName: nameB,
+            entityAName: nameA,
+            entityCName: nameC,
+            diffAB: x,
+            displayDiffAB: x.toLocaleString(),
+            diffCB: y,
+            displayDiffCB: y.toLocaleString(),
+            itemName: item,
+            entities: [
+              { id: "A", name: nameA, value: "?", relativeTo: nameB, relation: "MORE", diffValue: x, displayDiff: x.toLocaleString() },
+              { id: "B", name: nameB, value: "?", displayValue: "1 unit", relation: "BASE" },
+              { id: "C", name: nameC, value: "?", relativeTo: nameB, relation: "MORE", diffValue: y, displayDiff: y.toLocaleString() }
+            ],
+            target: {
+              type: "DIFFERENCE",
+              label: `Difference between ${nameA} and ${nameC}`,
+              value: diffAC.toString()
+            },
+            steps: steps
+          }
         }, null, 2);
       }
 
@@ -3191,12 +3256,83 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       promptInstruction = `- Question stem: "${nameA} has ${x.toLocaleString()} more ${item} than ${nameB}. ${nameC} has ${y.toLocaleString()} fewer ${item} than ${nameB}. How many more ${item} does ${nameA} have than ${nameC}?"\\n- The finalAnswer must be strictly "${finalAnswer}".\\n- CRITICAL: Return visualEngine and componentData EXACTLY as provided.`;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "NONE",
+          hideVisual: true,
+          componentData: {
+            hideVisual: true,
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: "?", layoutSize: baselineLayout + x, displayValue: "1 unit" },
+              { name: nameB, value: "?", layoutSize: baselineLayout, displayValue: "1 unit" },
+              { name: nameC, value: "?", layoutSize: baselineLayout, displayValue: "?" }
+            ]
+          }
+        }, null, 2);
+
+        const steps = [
+          {
+            label: `Write the working equation to find the total difference between ${nameA} and ${nameC}:`,
+            expectedAnswer: `${x} + ${y} = ${diffAC}`,
+            acceptedAnswers: [
+              `${x} + ${y} = ${diffAC}`,
+              `${y} + ${x} = ${diffAC}`,
+              `${diffAC} = ${x} + ${y}`,
+              `${diffAC} = ${y} + ${x}`,
+              `${x.toLocaleString()} + ${y.toLocaleString()} = ${diffAC.toLocaleString()}`,
+              `${y.toLocaleString()} + ${x.toLocaleString()} = ${diffAC.toLocaleString()}`,
+              `${diffAC.toLocaleString()} = ${x.toLocaleString()} + ${y.toLocaleString()}`,
+              `${diffAC.toLocaleString()} = ${y.toLocaleString()} + ${x.toLocaleString()}`,
+              `${x} + ${y}`,
+              `${y} + ${x}`,
+              `${x.toLocaleString()} + ${y.toLocaleString()}`,
+              `${y.toLocaleString()} + ${x.toLocaleString()}`
+            ]
+          },
+          {
+            label: "Final Answer:",
+            expectedAnswer: finalAnswer,
+            acceptedAnswers: [
+              finalAnswer,
+              Number(finalAnswer).toLocaleString(),
+              `${finalAnswer} ${item}`,
+              `${Number(finalAnswer).toLocaleString()} ${item}`
+            ]
+          }
+        ];
+
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: `Write the working equation to find the total difference between ${nameA} and ${nameC}:`, expectedAnswer: `${x} + ${y} = ${diffAC}` },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
-          ]
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "TWO_TIERED_DIFFERENCE",
+            targetVariety: "compare_a_and_c_more_and_less",
+            correctModelType: "COMPARISON",
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities across distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole quantity into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfers or changes across time states" }
+            ],
+            baselineName: nameB,
+            entityAName: nameA,
+            entityCName: nameC,
+            diffAB: x,
+            displayDiffAB: x.toLocaleString(),
+            diffCB: y,
+            displayDiffCB: y.toLocaleString(),
+            itemName: item,
+            entities: [
+              { id: "A", name: nameA, value: "?", relativeTo: nameB, relation: "MORE", diffValue: x, displayDiff: x.toLocaleString() },
+              { id: "B", name: nameB, value: "?", displayValue: "1 unit", relation: "BASE" },
+              { id: "C", name: nameC, value: "?", displayValue: "?", relativeTo: nameB, relation: "FEWER", diffValue: y, displayDiff: y.toLocaleString() }
+            ],
+            target: {
+              type: "DIFFERENCE",
+              label: `Difference between ${nameA} and ${nameC}`,
+              value: diffAC.toString()
+            },
+            steps: steps
+          }
         }, null, 2);
       }
 
@@ -3256,12 +3392,83 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       promptInstruction = `- Question stem: "${nameA} has ${x.toLocaleString()} more ${item} than ${nameB}. ${nameC} has ${y.toLocaleString()} more ${item} than ${nameB}. If ${nameA} and ${nameC} combine their ${item}, how many more ${item} will their combined total be compared to twice of ${nameB}'s amount?"\\n- The finalAnswer must be strictly "${finalAnswer}".\\n- CRITICAL: Return visualEngine and componentData EXACTLY as provided.`;
 
       if (isStructure) {
+        visualEngineStr = JSON.stringify({
+          componentToRender: "NONE",
+          hideVisual: true,
+          componentData: {
+            hideVisual: true,
+            modelType: "BAR_MODEL_COMPARISON",
+            bars: [
+              { name: nameA, value: "?", layoutSize: baselineLayout + x, displayValue: "1 unit" },
+              { name: nameB, value: "?", layoutSize: baselineLayout, displayValue: "1 unit" },
+              { name: nameC, value: "?", layoutSize: baselineLayout + y, displayValue: "1 unit" }
+            ]
+          }
+        }, null, 2);
+
+        const steps = [
+          {
+            label: `Write the working equation to find the total excess above twice of ${nameB}'s amount:`,
+            expectedAnswer: `${x} + ${y} = ${excess}`,
+            acceptedAnswers: [
+              `${x} + ${y} = ${excess}`,
+              `${y} + ${x} = ${excess}`,
+              `${excess} = ${x} + ${y}`,
+              `${excess} = ${y} + ${x}`,
+              `${x.toLocaleString()} + ${y.toLocaleString()} = ${excess.toLocaleString()}`,
+              `${y.toLocaleString()} + ${x.toLocaleString()} = ${excess.toLocaleString()}`,
+              `${excess.toLocaleString()} = ${x.toLocaleString()} + ${y.toLocaleString()}`,
+              `${excess.toLocaleString()} = ${y.toLocaleString()} + ${x.toLocaleString()}`,
+              `${x} + ${y}`,
+              `${y} + ${x}`,
+              `${x.toLocaleString()} + ${y.toLocaleString()}`,
+              `${y.toLocaleString()} + ${x.toLocaleString()}`
+            ]
+          },
+          {
+            label: "Final Answer:",
+            expectedAnswer: finalAnswer,
+            acceptedAnswers: [
+              finalAnswer,
+              Number(finalAnswer).toLocaleString(),
+              `${finalAnswer} ${item}`,
+              `${Number(finalAnswer).toLocaleString()} ${item}`
+            ]
+          }
+        ];
+
         inputRequirementStr = JSON.stringify({
-          inputType: "MULTI_STEP_INPUT",
-          steps: [
-            { label: `Write the working equation to find the total excess above twice of ${nameB}'s amount:`, expectedAnswer: `${x} + ${y} = ${excess}` },
-            { label: "Final Answer:", expectedAnswer: finalAnswer }
-          ]
+          inputType: "INTERACTIVE_BAR_BUILDER",
+          steps: steps,
+          barBuilderConfig: {
+            problemType: "TWO_TIERED_DIFFERENCE",
+            targetVariety: "combined_excess_over_twice_base",
+            correctModelType: "COMPARISON",
+            modelOptions: [
+              { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities across distinct entities" },
+              { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole quantity into parts" },
+              { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfers or changes across time states" }
+            ],
+            baselineName: nameB,
+            entityAName: nameA,
+            entityCName: nameC,
+            diffAB: x,
+            displayDiffAB: x.toLocaleString(),
+            diffCB: y,
+            displayDiffCB: y.toLocaleString(),
+            itemName: item,
+            entities: [
+              { id: "A", name: nameA, value: "?", relativeTo: nameB, relation: "MORE", diffValue: x, displayDiff: x.toLocaleString() },
+              { id: "B", name: nameB, value: "?", displayValue: "1 unit", relation: "BASE" },
+              { id: "C", name: nameC, value: "?", relativeTo: nameB, relation: "MORE", diffValue: y, displayDiff: y.toLocaleString() }
+            ],
+            target: {
+              type: "DIFFERENCE",
+              label: `Excess over 2 units of ${nameB}`,
+              value: excess.toString()
+            },
+            steps: steps
+          }
         }, null, 2);
       }
 
