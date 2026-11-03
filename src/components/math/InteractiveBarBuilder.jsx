@@ -2530,11 +2530,26 @@ export default function InteractiveBarBuilder({
   const [showModelSolution, setShowModelSolution] = useState(false);
   const [defectHistory, setDefectHistory] = useState([]);
 
-  const modelOptions = config.modelOptions || [
+  const defaultModelOptions = [
     { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities across distinct entities" },
     { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole quantity into parts" },
     { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfers or changes across time states" }
   ];
+
+  // Always present all model archetypes so the student evaluates and decides which one to use
+  const modelOptions = (() => {
+    const custom = Array.isArray(config.modelOptions) ? config.modelOptions : [];
+    const merged = [...defaultModelOptions];
+    for (const opt of custom) {
+      const idx = merged.findIndex(m => m.id === opt.id);
+      if (idx === -1) {
+        merged.push(opt);
+      } else {
+        merged[idx] = { ...merged[idx], ...opt };
+      }
+    }
+    return merged;
+  })();
   const entities = config.entities || [];
   const target = config.target || { type: "TOTAL", label: "Total" };
   const calculationSteps = (activeModel === 'COMPARISON' && (config?.comparisonSteps?.length > 0 || config?.alternativeSteps?.length > 0))
@@ -3425,6 +3440,16 @@ export default function InteractiveBarBuilder({
                   Confirm Model Selection
                   <ArrowRight className="w-4 h-4" />
                 </button>
+              )}
+
+              {confirmationStatus === 'incorrect' && (
+                <p className="text-xs font-bold text-rose-600 text-center pt-2.5 animate-in fade-in duration-200">
+                  {selectedModel === 'BEFORE_AFTER' && (config.problemType === 'OVERLAPPING_TARGET_DEDUCTION' || config.problemType === 'TARGET_SHORTFALL')
+                    ? "This problem does not involve transfers or changes across time states. Think about how the total is partitioned or compared!"
+                    : selectedModel === 'PART_WHOLE' && (config.problemType === 'SHIFTING_DIFFERENCE_TRANSFER' || config.problemType === 'EQUALIZING_TRANSFER')
+                      ? "This problem tracks quantities changing across before and after states. Try a model that captures transfers!"
+                      : "This bar model archetype does not match the problem structure. Consider how the quantities relate!"}
+                </p>
               )}
             </div>
 

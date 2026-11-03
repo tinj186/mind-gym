@@ -2963,8 +2963,9 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           targetVariety: varietyName,
           correctModelType: ["PART_WHOLE", "COMPARISON"],
           modelOptions: [
-            { id: "PART_WHOLE", label: "Part-Whole Model", description: "Partition the total whole into disjoint regions and overlap" },
-            { id: "COMPARISON", label: "Comparison Model", description: "Compare the sum of both groups against the total whole" }
+            { id: "COMPARISON", label: "Comparison Model", description: "Compare quantities across distinct entities" },
+            { id: "PART_WHOLE", label: "Part-Whole Model", description: "Divide a single whole quantity into parts" },
+            { id: "BEFORE_AFTER", label: "Before & After Model", description: "Show transfers or changes across time states" }
           ],
           totalValue: total,
           displayTotal: total.toLocaleString(),
