@@ -171,11 +171,12 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         componentData: {
           rows: n,
           columns: base,
-          totalItems: mult,
           itemShape: "dot",
           rowLabel: `${n} rows`,
           colLabel: `${base} per row`,
-          title: `${nOrdinal} multiple of ${base}`
+          title: `Array Model: ${n} rows of ${base}`,
+          showTotal: '?',
+          showEquation: false
         }
       }, null, 2);
     } else {

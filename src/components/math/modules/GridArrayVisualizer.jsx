@@ -22,11 +22,15 @@ export default function GridArrayVisualizer({ data = {} }) {
 
   const rows = Math.min(12, Math.max(1, data.rows || 4));
   const columns = Math.min(15, Math.max(1, data.columns || 6));
-  const totalItems = data.totalItems || (rows * columns);
+  const totalItems = data.totalItems ?? (rows * columns);
   const itemShape = data.itemShape || 'dot';
   const rowLabel = data.rowLabel || `${rows} rows`;
   const colLabel = data.colLabel || `${columns} per row`;
   const title = data.title || `Grid Array: ${rows} × ${columns}`;
+
+  const showTotal = data.showTotal === true;
+  const showUnknownTotal = data.showTotal === '?' || data.targetUnknown === 'total';
+  const showEquation = data.showEquation === true;
 
   const highlightRows = new Set(data.highlightRows || []);
 
@@ -80,9 +84,16 @@ export default function GridArrayVisualizer({ data = {} }) {
             {title}
           </h4>
         </div>
-        <span className="text-xs font-black px-3 py-1 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full font-mono">
-          Total: {totalItems}
-        </span>
+        {showTotal && (
+          <span className="text-xs font-black px-3 py-1 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full font-mono">
+            Total: {totalItems}
+          </span>
+        )}
+        {showUnknownTotal && (
+          <span className="text-xs font-black px-3 py-1 bg-amber-50 text-amber-700 border border-amber-300 rounded-full font-mono">
+            Total: ?
+          </span>
+        )}
       </div>
 
       {/* Grid Canvas with Dimensions */}
@@ -111,15 +122,15 @@ export default function GridArrayVisualizer({ data = {} }) {
         </div>
       </div>
 
-      {/* Equation Footer */}
-      {data.showEquation !== false && (
+      {/* Equation Footer - Only shown when explicitly requested */}
+      {showEquation && (
         <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-center gap-3 font-mono text-xs font-black text-slate-700">
           <span className="bg-slate-100 px-3 py-1 rounded-lg border border-slate-200">
-            {rows} × {columns} = {totalItems}
+            {rows} × {columns} = {data.hideEquationAnswer ? '?' : totalItems}
           </span>
           <span className="text-slate-400">or</span>
           <span className="bg-slate-100 px-3 py-1 rounded-lg border border-slate-200">
-            {totalItems} ÷ {rows} = {columns}
+            {data.hideEquationAnswer ? '?' : totalItems} ÷ {rows} = {columns}
           </span>
         </div>
       )}
