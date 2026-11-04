@@ -167,3 +167,4 @@ export default function InteractiveScribbleCanvas({ data, disabled }) {
     </div>
   );
 }
+

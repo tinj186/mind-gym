@@ -26,6 +26,7 @@ export const UniversalQuestionSchema = z.object({
       'COUNTING_OBJECTS',
       'OBJECT_COUNTING',
       'ICON_GRID',
+      'RENDER_ICON_GRID',
       'TWO_SET_COMPARISON',
       'NUMBER_CARDS',
       'SINGAPORE_MONEY',
@@ -36,11 +37,22 @@ export const UniversalQuestionSchema = z.object({
       'BASE_TEN_BLOCKS',
       'NUMBER_BOND',
       'FACT_TRIANGLE',
+      'FACTOR_RAINBOW',
+      'FACTOR_RAINBOW_VISUALIZER',
+      'GRID_ARRAY',
+      'GRID_ARRAY_VISUALIZER',
+      'INTERACTIVE_SCRIBBLE_CANVAS',
+      'SCRIBBLE_CANVAS',
       'SHAPE',
+      'SHAPE_3D',
+      'SHAPE_3D_PATTERN',
+      'COMPOSITE_SHAPE_3D',
       'SHAPE_DISPLAY',
       'GRID_DISPLAY',
       'GRID_DRAWING_CANVAS',
       'PICTURE_GRAPH_DISPLAY',
+      'CROSS_OUT_GROUP',
+      'TF_MATRIX_TABLE',
       'MEASUREMENT_UNIT',
       'CLOCK_DISPLAY',
       'MULTI_COMPONENT',
@@ -48,6 +60,7 @@ export const UniversalQuestionSchema = z.object({
       'BAR_MODEL',
       'VERTICAL_ALGORITHM',
       'LONG_DIVISION',
+      'DIAGRAM_RENDERER',
       'FRACTION_EQUIVALENCE',
       'HTML_CONTENT',
       'STATIC_IMAGE',
@@ -72,8 +85,8 @@ export const UniversalQuestionSchema = z.object({
       'DIGIT_CARD_SORTER',
       'NONE',
     ]), // Registered native visual engines
-    componentData: z.record(z.any()).nullable(),
-  }),
+    componentData: z.record(z.any()).nullable().optional(),
+  }).passthrough(),
 
   // 4. INPUT REQUIREMENT: How the student answers
   inputRequirement: z.object({
@@ -88,10 +101,11 @@ export const UniversalQuestionSchema = z.object({
     ]).default('STANDARD_TEXT'),
     steps: z.array(z.object({
       label: z.string(),
-      expectedAnswer: z.string(),
+      expectedAnswer: z.string().optional(),
+      expected: z.string().optional(),
       acceptedAnswers: z.array(z.string()).optional(),
       defectMap: z.record(z.string()).optional().nullable()
-    })).optional(),
+    }).passthrough()).optional(),
     barBuilderConfig: z.record(z.any()).optional()
   }).passthrough().nullable().optional()
 });

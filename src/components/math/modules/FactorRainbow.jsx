@@ -218,3 +218,4 @@ export default function FactorRainbow({ data = {} }) {
     </div>
   );
 }
+

@@ -49,7 +49,7 @@ export const p4FactorsAndMultiplesBlueprint = {
     advanced_hcf_grid_square_tiling: 'Determine the largest square tile size to cut or tile a rectangle without leftovers using highest common factor (HCF).'
   },
 
-  generate: function (difficulty, activeVariant, type, options = {}) {
+  generate: function (difficulty, activeVariant, type, options = { }) {
     const level = 'Primary 4';
     const topic = 'Whole Numbers - Factors and Multiples';
     const subtopic = 'Factors and Multiples';

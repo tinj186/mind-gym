@@ -118,16 +118,19 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         {
           label: `Write the multiples of ${M} between ${low} and ${high}:`,
           type: "text",
+          expectedAnswer: multiplesInRange.join(', '),
           expected: multiplesInRange.join(', ')
         },
         {
           label: `Write the factors of ${F} between ${low} and ${high}:`,
           type: "text",
+          expectedAnswer: factorsInRange.join(', '),
           expected: factorsInRange.join(', ')
         },
         {
           label: "Final Answer:",
           type: "text",
+          expectedAnswer: finalAnswer,
           expected: finalAnswer
         }
       ];
@@ -205,21 +208,25 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         {
           label: `Write the first 4 multiples of ${i1}:`,
           type: "text",
+          expectedAnswer: m1List.join(', '),
           expected: m1List.join(', ')
         },
         {
           label: `Write the first 4 multiples of ${i2}:`,
           type: "text",
+          expectedAnswer: m2List.join(', '),
           expected: m2List.join(', ')
         },
         {
           label: "Write the lowest common multiple (LCM):",
           type: "text",
+          expectedAnswer: finalAnswer,
           expected: finalAnswer
         },
         {
           label: "Final Answer (in minutes):",
           type: "text",
+          expectedAnswer: finalAnswer,
           expected: finalAnswer
         }
       ];
@@ -296,11 +303,13 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         {
           label: `Write the equation testing the correct factor pair:`,
           type: "text",
+          expectedAnswer: `${fBig} ${opSign} ${fSmall} = ${val}`,
           expected: `${fBig} ${opSign} ${fSmall} = ${val}`
         },
         {
           label: "Final Answer (the greater factor):",
           type: "text",
+          expectedAnswer: finalAnswer,
           expected: finalAnswer
         }
       ];
@@ -381,16 +390,19 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         {
           label: `Write the lowest common multiple (LCM) of ${g1} and ${g2}:`,
           type: "text",
+          expectedAnswer: lcmVal.toString(),
           expected: lcmVal.toString()
         },
         {
           label: `Write the working equation to find the total number of ${itemNoun}:`,
           type: "text",
+          expectedAnswer: `${lcmVal} + ${R} = ${ansTotal}`,
           expected: `${lcmVal} + ${R} = ${ansTotal}`
         },
         {
           label: `Final Answer:`,
           type: "text",
+          expectedAnswer: finalAnswer,
           expected: finalAnswer
         }
       ];
@@ -466,16 +478,19 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
         {
           label: `Write the common factors of ${L} and ${W}:`,
           type: "text",
+          expectedAnswer: commonFactors.join(', '),
           expected: commonFactors.join(', ')
         },
         {
           label: `Write the greatest common factor (length of side in cm):`,
           type: "text",
+          expectedAnswer: finalAnswer,
           expected: finalAnswer
         },
         {
           label: "Final Answer (in cm):",
           type: "text",
+          expectedAnswer: finalAnswer,
           expected: finalAnswer
         }
       ];
