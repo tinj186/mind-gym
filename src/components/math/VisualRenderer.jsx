@@ -61,6 +61,9 @@ const LineAndPolygonVisualizer = lazy(() => import('./modules/LineAndPolygonVisu
 const NumberLine = lazy(() => import('./modules/NumberLine'));
 const NumberSequenceBlocks = lazy(() => import('./modules/NumberSequenceBlocks'));
 const TablePatternVisualizer = lazy(() => import('./modules/TablePatternVisualizer'));
+const FactorRainbow = lazy(() => import('./modules/FactorRainbow'));
+const GridArrayVisualizer = lazy(() => import('./modules/GridArrayVisualizer'));
+const InteractiveScribbleCanvas = lazy(() => import('./modules/InteractiveScribbleCanvas'));
 
 export default function VisualRenderer({ type, ...props }) {
   const activeType = (
@@ -123,6 +126,10 @@ export default function VisualRenderer({ type, ...props }) {
           case 'BASE_TEN_BLOCKS': return <BaseTenBlocks {...props} />;
           case 'NUMBER_BOND': return <NumberBond {...props} />;
           case 'FACT_TRIANGLE': return <FactTriangle data={props.visualEngine?.componentData || props.data} />;
+          case 'FACTOR_RAINBOW':
+          case 'FACTOR_RAINBOW_VISUALIZER': return <FactorRainbow data={props.visualEngine?.componentData || props.data} />;
+          case 'GRID_ARRAY':
+          case 'GRID_ARRAY_VISUALIZER': return <GridArrayVisualizer data={props.visualEngine?.componentData || props.data} />;
           case 'PLACE_VALUE_CHART': return <PlaceValueChart data={props.visualEngine?.componentData || props.data} />;
           case 'SHAPE': return <Shape {...props} />;
           case 'SHAPE_3D': return <Shape3D data={props.visualEngine?.componentData || props.data} />;
@@ -131,6 +138,8 @@ export default function VisualRenderer({ type, ...props }) {
           case 'SHAPE_DISPLAY': return <ShapeDisplay data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
           case 'GRID_DISPLAY': return <GridDisplay data={props.visualEngine?.componentData || props.data} />;
           case 'GRID_DRAWING_CANVAS': return <GridDrawingCanvas data={props.visualEngine?.componentData || props.data} onSubmit={props.onSubmitGrid} onChange={props.onChangeGrid} disabled={props.disabled} />;
+          case 'INTERACTIVE_SCRIBBLE_CANVAS':
+          case 'SCRIBBLE_CANVAS': return <InteractiveScribbleCanvas data={props.visualEngine?.componentData || props.data} disabled={props.disabled} />;
           case 'PICTURE_GRAPH_DISPLAY': return <PictureGraphDisplay data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
           case 'CROSS_OUT_GROUP': {
             const data = props.visualEngine?.componentData || props.data || {};
