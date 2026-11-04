@@ -1,10 +1,11 @@
 import React from 'react';
 
 export default function NumberCards({ data }) {
-  // Support DIGIT_CARD_SORTER 'digits' array, 'items' object array, and legacy 'numbers' array
-  const rawItems = (data?.digits && Array.isArray(data.digits))
-    ? data.digits.map(d => ({ value: d.toString() }))
-    : (data?.items || data?.numbers || []);
+  // Support DIGIT_CARD_SORTER 'digits' / 'cards' array, 'items' object array, and legacy 'numbers' array
+  const rawList = data?.digits || data?.cards || data?.numbers || data?.items || [];
+  const rawItems = Array.isArray(rawList)
+    ? rawList.map(d => (typeof d === 'object' && d !== null ? d : { value: d.toString() }))
+    : [];
 
   const items = rawItems.map(item => {
     if (typeof item === 'object' && item !== null) return item;
@@ -12,7 +13,7 @@ export default function NumberCards({ data }) {
   });
 
   const layout = data?.layout || 'horizontal';
-  const condition = data?.condition;
+  const condition = data?.condition || data?.targetDescription;
 
   return (
     <div className="flex flex-col items-center gap-3">

@@ -420,7 +420,9 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       visualEngineStr = JSON.stringify({
         componentToRender: "DIGIT_CARD_SORTER",
         componentData: {
+          digits: cards,
           cards: cards,
+          condition: `Form a multiple of ${D}`,
           targetDescription: `Form a multiple of ${D}`
         }
       }, null, 2);
