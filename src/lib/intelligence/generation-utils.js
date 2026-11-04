@@ -233,7 +233,9 @@ export function processAiQuestion(q, context) {
           : resolvedVisualEngine.componentToRender === 'NONE'),
         inputRequirement: overrideInputRequirement || validatedData.inputRequirement || null,
         finalAnswer: validatedData.content.finalAnswer,
-        acceptedAnswers: validatedData.content.acceptedAnswers || [],
+        acceptedAnswers: (validatedData.content.acceptedAnswers && validatedData.content.acceptedAnswers.length > 0)
+          ? validatedData.content.acceptedAnswers
+          : (stepResult?.acceptedAnswers || []),
         items: Array.isArray(safeData?.items) ? safeData.items : [],
         defectMap: validatedData.content.defectMap || null,
         visualEngine: resolvedVisualEngine

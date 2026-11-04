@@ -556,6 +556,7 @@ ${getFormatInstructions(visualEngineStr, inputRequirementStr, effectiveVariant)}
   return {
     aiPrompt,
     visualEngine: visualEngineStr ? (typeof visualEngineStr === 'string' ? JSON.parse(visualEngineStr) : visualEngineStr) : null,
-    inputRequirement: inputRequirementStr ? (typeof inputRequirementStr === 'string' ? JSON.parse(inputRequirementStr) : inputRequirementStr) : null
+    inputRequirement: inputRequirementStr ? (typeof inputRequirementStr === 'string' ? JSON.parse(inputRequirementStr) : inputRequirementStr) : null,
+    acceptedAnswers: [finalAnswer]
   };
 }

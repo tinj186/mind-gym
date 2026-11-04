@@ -149,6 +149,12 @@ export class GenerationEngine {
             }
             q.inputRequirement = ir;
           }
+          if (stepResult.acceptedAnswers && Array.isArray(stepResult.acceptedAnswers) && stepResult.acceptedAnswers.length > 0) {
+            if (!q.content) q.content = {};
+            if (!q.content.acceptedAnswers || q.content.acceptedAnswers.length === 0) {
+              q.content.acceptedAnswers = stepResult.acceptedAnswers;
+            }
+          }
           parsedQuestions.push(processAiQuestion(q, { ...context, blueprintMeta, stepResult, heuristic: loopVariant }));
         }
         

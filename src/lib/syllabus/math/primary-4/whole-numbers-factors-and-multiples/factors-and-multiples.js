@@ -28,10 +28,10 @@ export const p4FactorsAndMultiplesBlueprint = {
 
   variants: {
     // Foundation (Direct Identification & Pairing)
-    foundation_rainbow_pairing: 'Given a target number and one factor, find the missing complementary factor in the factor pair.',
-    foundation_multiple_skip_counter: 'Find the N-th multiple of a number or verify multiple relationships.',
-    foundation_boundary_constraints_all_factors: 'List all factors of a specific number and count how many factors it has altogether.',
-    foundation_relationship_true_false: 'Deduce and disambiguate the vocabulary and relationship between factor and multiple.',
+    //    foundation_rainbow_pairing: 'Given a target number and one factor, find the missing complementary factor in the factor pair.',
+    //    foundation_multiple_skip_counter: 'Find the N-th multiple of a number or verify multiple relationships.',
+    //    foundation_boundary_constraints_all_factors: 'List all factors of a specific number and count how many factors it has altogether.',
+    //    foundation_relationship_true_false: 'Deduce and disambiguate the vocabulary and relationship between factor and multiple.',
     foundation_digit_card_multiples: 'Form a 2-digit multiple from given digit cards under divisibility constraints.',
 
     // Standard (Common Traits & Bounded Logic)
@@ -77,7 +77,7 @@ export const p4FactorsAndMultiplesBlueprint = {
       explicitVariety = parts[1];
     }
 
-    const getFormatInstructions = (visualEngineStr = '{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }', inputRequirementStr = null, variantOverride = null) => `CRITICAL INSTRUCTION: You MUST use the EXACT "visualEngine" and "inputRequirement" JSON objects provided in the template below.
+    const getFormatInstructions = (visualEngineStr = '{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }', inputRequirementStr = null, variantOverride = null, acceptedAnswers = null) => `CRITICAL INSTRUCTION: You MUST use the EXACT "visualEngine" and "inputRequirement" JSON objects provided in the template below.
 OUTPUT FORMAT (Return ONLY valid JSON matching this schema, with NO markdown formatting and NO trailing characters):
 {
   "meta": {
@@ -95,6 +95,7 @@ OUTPUT FORMAT (Return ONLY valid JSON matching this schema, with NO markdown for
     "options": ${isMCQ ? '["Option A", "Option B", "Option C", "Option D"]' : 'null'},
     "defectMap": ${isMCQ ? '{"wrong_option_1": "CARELESS_CALCULATION"}' : '{}'},
     "finalAnswer": "string (the final correct answer)",
+    "acceptedAnswers": ${acceptedAnswers && Array.isArray(acceptedAnswers) && acceptedAnswers.length > 0 ? JSON.stringify(acceptedAnswers) : '[]'},
     "solutionSteps": "string (step-by-step logic, separate steps using \\\\n)",
     "hint": "string (a helpful conceptual clue)"
   }

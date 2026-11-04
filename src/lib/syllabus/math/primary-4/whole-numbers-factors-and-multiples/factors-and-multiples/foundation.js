@@ -51,6 +51,7 @@ const ordinals = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th",
 export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, levelName, topic, getFormatInstructions, explicitVariety = null) {
   let promptInstruction = "";
   let finalAnswer = "";
+  let acceptedAnswers = [];
   let options = [];
   let defectMap = {};
   let visualEngineStr = `{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }`;
@@ -414,7 +415,45 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     }
 
     const cards = [c1, c2, c3].sort(() => Math.random() - 0.5);
-    finalAnswer = validMultiples[0];
+    const sortedMultiples = [...validMultiples].sort((a, b) => Number(a) - Number(b));
+    const smallestMult = sortedMultiples[0];
+    const greatestMult = sortedMultiples[sortedMultiples.length - 1];
+
+    // Sub-mode: "greatest" | "smallest" | "any"
+    // For MCQ, we prefer greatest or smallest so there is only 1 unambiguous correct choice among options
+    const subModes = isMCQ ? ["greatest", "smallest"] : ["greatest", "smallest", "any"];
+    const subMode = subModes[Math.floor(Math.random() * subModes.length)];
+
+    let questionText = "";
+    let targetDesc = "";
+
+    const ruleText = D === 2 ? 'an even digit (0, 2, 4, 6, 8)' : (D === 5 ? '0 or 5' : '0');
+
+    if (subMode === "greatest") {
+      finalAnswer = greatestMult;
+      acceptedAnswers = [greatestMult];
+      questionText = `Given the three digit cards: [${cards.join(', ')}], form the greatest 2-digit number using two of the cards that is a multiple of ${D}.`;
+      targetDesc = `Form greatest multiple of ${D}`;
+      const tensDigit = finalAnswer[0];
+      solutionSteps = `Step 1: Check the divisibility rule for ${D}: a multiple of ${D} must end in ${ruleText}.\\nStep 2: From the cards [${cards.join(', ')}], the ones digit must be ${c2}.\\nStep 3: To make the greatest 2-digit number, place the largest remaining card (${tensDigit}) in the tens place: ${finalAnswer}.`;
+      hint = `To form the greatest multiple of ${D}, place the required digit (${c2}) in the ones place, then pick the largest remaining card for the tens place!`;
+    } else if (subMode === "smallest") {
+      finalAnswer = smallestMult;
+      acceptedAnswers = [smallestMult];
+      questionText = `Given the three digit cards: [${cards.join(', ')}], form the smallest 2-digit number using two of the cards that is a multiple of ${D}.`;
+      targetDesc = `Form smallest multiple of ${D}`;
+      const tensDigit = finalAnswer[0];
+      solutionSteps = `Step 1: Check the divisibility rule for ${D}: a multiple of ${D} must end in ${ruleText}.\\nStep 2: From the cards [${cards.join(', ')}], the ones digit must be ${c2}.\\nStep 3: To make the smallest 2-digit number, place the smallest remaining card (${tensDigit}) in the tens place: ${finalAnswer}.`;
+      hint = `To form the smallest multiple of ${D}, place the required digit (${c2}) in the ones place, then pick the smallest remaining card for the tens place!`;
+    } else {
+      // "any" - Accept either 2-digit multiple!
+      finalAnswer = validMultiples[0];
+      acceptedAnswers = validMultiples; // e.g. ["98", "78"]
+      questionText = `Given the three digit cards: [${cards.join(', ')}], form a 2-digit number using two of the cards that is a multiple of ${D}.`;
+      targetDesc = `Form a multiple of ${D}`;
+      solutionSteps = `Step 1: Check the divisibility rule for ${D}: a multiple of ${D} must end in ${ruleText}.\\nStep 2: From the cards [${cards.join(', ')}], the ones digit must be ${c2}.\\nStep 3: Pair it with either remaining card to form a 2-digit number: ${validMultiples.join(' or ')}. Either answer is correct.`;
+      hint = `Think about the last digit! What must the ones place be for a number to be a multiple of ${D}? Pair it with either other card!`;
+    }
 
     if (!isStructure) {
       visualEngineStr = JSON.stringify({
@@ -422,9 +461,14 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         componentData: {
           digits: cards,
           cards: cards,
-          condition: `Form a multiple of ${D}`,
-          targetDescription: `Form a multiple of ${D}`
+          condition: targetDesc,
+          targetDescription: targetDesc
         }
+      }, null, 2);
+
+      inputRequirementStr = JSON.stringify({
+        inputType: isMCQ ? "MCQ_BUTTONS" : "STANDARD_TEXT",
+        acceptedAnswers: acceptedAnswers
       }, null, 2);
     } else {
       visualEngineStr = JSON.stringify({
@@ -434,8 +478,11 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       }, null, 2);
     }
 
-    const questionText = `Given the three digit cards: [${cards.join(', ')}], form a 2-digit number using two of the cards that is a multiple of ${D}.`;
-    promptInstruction = `- Question stem: "${questionText}"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
+    const acceptedInstruction = acceptedAnswers.length > 1
+      ? `\\n- Set acceptedAnswers strictly to: ${JSON.stringify(acceptedAnswers)}.`
+      : `\\n- Set acceptedAnswers to: ${JSON.stringify(acceptedAnswers)}.`;
+
+    promptInstruction = `- Question stem: "${questionText}"\\n- The finalAnswer must be strictly "${finalAnswer}".${acceptedInstruction}`;
 
     if (isStructure) {
       const steps = [
@@ -447,13 +494,14 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
         {
           label: `Form a 2-digit multiple of ${D} from the cards:`,
           expectedAnswer: finalAnswer,
-          acceptedAnswers: validMultiples
+          acceptedAnswers: acceptedAnswers
         }
       ];
 
       inputRequirementStr = JSON.stringify({
         inputType: "MULTI_STEP_INPUT",
-        steps: steps
+        steps: steps,
+        acceptedAnswers: acceptedAnswers
       }, null, 2);
     }
 
@@ -470,9 +518,6 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       options = mcqRes.options;
       defectMap = mcqRes.defectMap;
     }
-
-    solutionSteps = `Step 1: Check the divisibility rule for ${D}: a multiple of ${D} must end in ${D === 2 ? 'an even digit' : (D === 5 ? '0 or 5' : '0')}.\\nStep 2: From the cards [${cards.join(', ')}], the ones digit must be ${D === 2 ? c2 : (D === 5 ? '5' : '0')}.\\nStep 3: Pair it with one of the other cards to form a 2-digit number: ${validMultiples.join(' or ')}.`;
-    hint = `Think about the last digit! What must the ones place be for a number to be a multiple of ${D}?`;
   }
 
   const mcqInstruction = isMCQ ? `- Generate EXACTLY 4 options: ${JSON.stringify(options)}.\\n- Set defectMap to: ${JSON.stringify(defectMap)}.` : "";
@@ -495,11 +540,12 @@ ${solutionSteps}
 "${hint}"
 5. Forbid using "STORY:" or any instructional prefix in the output.
 
-${getFormatInstructions(visualEngineStr, inputRequirementStr, effectiveVariant)}`;
+${getFormatInstructions(visualEngineStr, inputRequirementStr, effectiveVariant, acceptedAnswers)}`;
 
   return {
     aiPrompt,
     visualEngine: visualEngineStr ? (typeof visualEngineStr === 'string' ? JSON.parse(visualEngineStr) : visualEngineStr) : null,
-    inputRequirement: inputRequirementStr ? (typeof inputRequirementStr === 'string' ? JSON.parse(inputRequirementStr) : inputRequirementStr) : null
+    inputRequirement: inputRequirementStr ? (typeof inputRequirementStr === 'string' ? JSON.parse(inputRequirementStr) : inputRequirementStr) : null,
+    acceptedAnswers: acceptedAnswers.length > 0 ? acceptedAnswers : [finalAnswer]
   };
 }
