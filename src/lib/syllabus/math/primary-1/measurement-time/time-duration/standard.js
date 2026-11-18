@@ -1,5 +1,5 @@
-import { getRandomContext } from '@/lib/utils/localization';
-import { getRandomNames } from '@/lib/utils/variable-bank';
+import { getRandomContext } from '../../../../../utils/localization.js';
+import { getRandomNames } from '../../../../../utils/variable-bank.js';
 const getShuffledOptions = (correct, distractors) => [correct, ...distractors].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4);
 
 export const standardVariants = {
@@ -10,8 +10,24 @@ export const standardVariants = {
     const end = start + duration;
     const answer = `${duration} ${duration === 1 ? 'hour' : 'hours'}`;
 
-    const questionTextTemplate = getQText(`Math class starts at ${start} o'clock and ends at ${end} o'clock. How long is the class?`, `Duration from ${start} to ${end} = ?`);
-    const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
+    const [name] = getRandomNames(1);
+    const events = [
+      "swimming lesson",
+      "art class",
+      "math class",
+      "piano practice",
+      "reading session",
+      "football training"
+    ];
+    const event = events[Math.floor(Math.random() * events.length)];
+
+    const stems = [
+      `${name}'s ${event} starts at ${start} o'clock and ends at ${end} o'clock. How many hours does the ${event} last?`,
+      `A cartoon show starts at ${start} o'clock and finishes at ${end} o'clock. How many hours did the cartoon last?`,
+      `How many hours are there from ${start} o'clock to ${end} o'clock?`
+    ];
+    const questionText = stems[Math.floor(Math.random() * stems.length)];
+    const storyInstruction = "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT modify ANY field in the JSON template except where instructed. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and 'questionText' MUST remain exactly as provided! IGNORE any examples in the logic variant description.";
 
     let options = [answer, "3 hours", "half an hour", "5 hours"];
     options = getShuffledOptions(answer, options);
@@ -26,6 +42,9 @@ export const standardVariants = {
       defectMapStr = JSON.stringify(defectMapObj);
     }
 
+    const solutionSteps = `Step 1: The start time is ${start} o'clock.\\nStep 2: The end time is ${end} o'clock.\\nStep 3: Count forward: ${end} - ${start} = ${duration}.\\nStep 4: The duration is ${answer}.`;
+    const hint = `Count the number of hours from ${start} o'clock to ${end} o'clock on the clock face!`;
+
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
@@ -35,12 +54,12 @@ export const standardVariants = {
       {
         "meta": { "level": "${level}", "topic": "${topic}", "type": "${zodType}", "difficulty": "${zodDiff}" },
         "content": {
-          "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
+          "questionText": ${JSON.stringify(questionText)},
           "options": ${mcqOptions},
           "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`Count how many big jumps the hour hand makes from the start time to the end time.`, `Subtract start from end.`))},
+          "hint": ${JSON.stringify(hint)},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`We count the hours from ${start} to ${end}. ${end} minus ${start} is ${duration}.`, `Answer is ${answer}.`))}
+          "solutionSteps": ${JSON.stringify(solutionSteps)}
         },
         "visualEngine": {
           "componentToRender": "NONE",
@@ -156,7 +175,7 @@ export const standardVariants = {
   
   standard_calculate_start_end_time: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
     const askEnd = Math.random() > 0.5;
-    const names = getRandomNames(2);
+    const [name] = getRandomNames(1);
     const duration = Math.floor(Math.random() * 3) + 2; // 2, 3, or 4 hours
     
     // We stay within 1-12 without crossing noon to keep it standard
@@ -164,19 +183,19 @@ export const standardVariants = {
     const endHour = startHour + duration;
     
     const questionTextTemplate = askEnd 
-      ? getQText(`${names} starts playing at ${startHour}:00. ${names} plays for ${duration} hours. What time does ${names} finish playing?`, `Start: ${startHour}:00, Duration: ${duration} hours. End time = ?`)
-      : getQText(`A concert ends at ${endHour}:00. The concert is ${duration} hours long. What time did it start?`, `End: ${endHour}:00, Duration: ${duration} hours. Start time = ?`);
+      ? getQText(`${name} starts playing at ${startHour} o'clock and plays for ${duration} hours. What time does ${name} finish playing?`, `${name} starts at ${startHour} o'clock. Duration is ${duration} hours. What time does it end?`)
+      : getQText(`A concert ends at ${endHour} o'clock. The concert is ${duration} hours long. What time did it start?`, `End time is ${endHour} o'clock. Duration is ${duration} hours. What time did it start?`);
       
     const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
 
-    const answer = askEnd ? `${endHour}:00` : `${startHour}:00`;
-    let options = [answer, `${askEnd ? startHour - duration : endHour + duration}:00`, `${askEnd ? endHour + 1 : startHour - 1}:00`, `${askEnd ? startHour : endHour}:00`];
+    const answer = askEnd ? `${endHour} o'clock` : `${startHour} o'clock`;
+    let options = [answer, `${askEnd ? startHour - duration : endHour + duration} o'clock`, `${askEnd ? endHour + 1 : startHour - 1} o'clock`, `${askEnd ? startHour : endHour} o'clock`];
     // Filter out invalid negative times or > 12 if any occurred in distractors
     options = options.map(o => {
-      let h = parseInt(o.split(':')[0]);
+      let h = parseInt(o.split(' ')[0]);
       if (h <= 0) h = 12 + h;
       if (h > 12) h = h - 12;
-      return `${h}:00`;
+      return `${h} o'clock`;
     });
     options = getShuffledOptions(answer, options);
 
@@ -190,6 +209,14 @@ export const standardVariants = {
       defectMapStr = JSON.stringify(defectMapObj);
     }
 
+    const solutionSteps = askEnd
+      ? `Step 1: Start time is ${startHour} o'clock.\\nStep 2: Add the duration (${duration} hours): ${startHour} + ${duration} = ${endHour}.\\nStep 3: ${name} finishes playing at ${answer}.`
+      : `Step 1: End time is ${endHour} o'clock.\\nStep 2: Subtract the duration (${duration} hours): ${endHour} - ${duration} = ${startHour}.\\nStep 3: The concert started at ${answer}.`;
+
+    const hint = askEnd 
+      ? `Start at ${startHour} o'clock and count forward ${duration} hours on the clock!`
+      : `Start at ${endHour} o'clock and count backwards ${duration} hours on the clock!`;
+
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
@@ -202,9 +229,9 @@ export const standardVariants = {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
           "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(askEnd ? `Add the hours to the start time.` : `Subtract the hours from the end time.`, askEnd ? `Add hours.` : `Subtract hours.`))},
+          "hint": ${JSON.stringify(hint)},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(askEnd ? `${startHour} + ${duration} = ${endHour}. So it finishes at ${answer}.` : `${endHour} - ${duration} = ${startHour}. So it started at ${answer}.`, `Answer is ${answer}.`))}
+          "solutionSteps": ${JSON.stringify(solutionSteps)}
         },
         "visualEngine": {
           "componentToRender": "NONE",
@@ -217,14 +244,14 @@ export const standardVariants = {
   },
 
   standard_total_duration: (config, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, formatInstructions, context, getQText) => {
-    const names = getRandomNames(2);
+    const [name] = getRandomNames(1);
     const dur1 = Math.floor(Math.random() * 2) + 1; // 1 or 2
     const dur2 = Math.floor(Math.random() * 2) + 2; // 2 or 3
     const total = dur1 + dur2;
     const act1 = "reading";
     const act2 = "playing";
     
-    const questionTextTemplate = getQText(`${names} spends ${dur1} ${dur1 === 1 ? 'hour' : 'hours'} ${act1} and ${dur2} hours ${act2}. How many hours does ${names} spend in total?`, `Reading: ${dur1} hr, Playing: ${dur2} hr. Total time = ?`);
+    const questionTextTemplate = getQText(`${name} spends ${dur1} ${dur1 === 1 ? 'hour' : 'hours'} ${act1} and ${dur2} hours ${act2}. How many hours does ${name} spend in total?`, `${name} spends ${dur1} ${dur1 === 1 ? 'hour' : 'hours'} ${act1} and ${dur2} hours ${act2}. How many hours does ${name} spend altogether?`);
     const storyInstruction = isShort ? "STRICT: Output the EXACT questionText provided in the JSON template below. DO NOT add any story context, names, or words. Keep it as a pure mathematical question. CRITICAL: DO NOT modify ANY field in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description." : `STRICT: Keep the mathematical sentences in "questionText" EXACTLY as they are! DO NOT paraphrase, reword, or use advanced vocabulary. Just replace the "[STORY]" tag with a simple 1-sentence Singaporean math story context for a Primary 1 student that EXPLICITLY names the items/times in the question. DO NOT combine the story and the math question into one sentence. CRITICAL: DO NOT modify ANY field in the JSON template except replacing the [STORY] tag. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.`;
 
     const answer = `${total} hours`;
@@ -241,6 +268,9 @@ export const standardVariants = {
       defectMapStr = JSON.stringify(defectMapObj);
     }
 
+    const solutionSteps = `Step 1: Time spent ${act1} = ${dur1} ${dur1 === 1 ? 'hour' : 'hours'}.\\nStep 2: Time spent ${act2} = ${dur2} hours.\\nStep 3: Add the times: ${dur1} + ${dur2} = ${total} hours.\\nStep 4: ${name} spends ${answer} altogether.`;
+    const hint = `Add the two durations together: ${dur1} + ${dur2}!`;
+
     return {
       aiPrompt: `You are an expert Primary 1 math generator. 
       ${formatInstructions}
@@ -253,9 +283,9 @@ export const standardVariants = {
           "questionText": ${JSON.stringify(isShort ? questionTextTemplate : "[STORY] " + questionTextTemplate)},
           "options": ${mcqOptions},
           "defectMap": ${defectMapStr},
-          "hint": ${JSON.stringify(getQText(`Add the hours together!`, `Add hours.`))},
+          "hint": ${JSON.stringify(hint)},
           "finalAnswer": "${answer}",
-          "solutionSteps": ${JSON.stringify(getQText(`${dur1} + ${dur2} = ${total}. Total time spent is ${answer}.`, `Answer is ${answer}.`))}
+          "solutionSteps": ${JSON.stringify(solutionSteps)}
         },
         "visualEngine": {
           "componentToRender": "NONE",

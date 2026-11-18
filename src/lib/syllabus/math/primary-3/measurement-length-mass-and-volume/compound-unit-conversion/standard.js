@@ -1,4 +1,4 @@
-import { getRandomNames, getKgItems, getGramItems, getRandomLiquids, getRandomLocations } from '@/lib/utils/variable-bank';
+import { getRandomNames, getKgItems, getGramItems, getRandomLiquids, getRandomLocations } from '../../../../../utils/variable-bank.js';
 
 export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, getFormatInstructions) => {
   const names = getRandomNames(2);
@@ -17,6 +17,7 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
   let askText, answer, options, solutionSteps, hint;
   let visualEngineStr = `{"componentToRender": "NONE", "componentData": {}}`;
   let inputRequirementStr = null;
+  let acceptedAnswers = [];
 
   switch (activeVariant) {
     case 'standard_convert_to_compare': {
@@ -250,6 +251,27 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
           `${totalB + 1} ${selectedUnit.big} ${totalS} ${selectedUnit.small}`,
           `${totalG} ${selectedUnit.big}`
         ];
+
+        if (selectedUnit.big === 'ℓ') {
+          acceptedAnswers = [
+            `${totalB} ℓ ${totalS} ml`,
+            `${totalB} l ${totalS} ml`,
+            `${totalB}ℓ ${totalS}ml`,
+            `${totalB}l ${totalS}ml`,
+            `${totalB}l${totalS}ml`,
+            `${totalB}ℓ${totalS}ml`,
+            `${totalG} ml`,
+            `${totalG}ml`
+          ];
+        } else {
+          acceptedAnswers = [
+            `${totalB} ${selectedUnit.big} ${totalS} ${selectedUnit.small}`,
+            `${totalB}${selectedUnit.big} ${totalS}${selectedUnit.small}`,
+            `${totalB}${selectedUnit.big}${totalS}${selectedUnit.small}`,
+            `${totalG} ${selectedUnit.small}`,
+            `${totalG}${selectedUnit.small}`
+          ];
+        }
 
         solutionSteps = `1. Add the two values: ${s1} ${selectedUnit.small} + ${s2} ${selectedUnit.small} = ${totalG} ${selectedUnit.small}.\n2. Convert ${totalG} ${selectedUnit.small} back to compound units.\n3. Split ${totalG} into thousands and hundreds: ${totalB * 1000} and ${totalS}.\n4. ${totalB * 1000} ${selectedUnit.small} = ${totalB} ${selectedUnit.big}.\n5. The final answer is ${answer}.`;
         hint = `Add the two smaller units together first. Once you have the big total, split out the thousands to find the ${selectedUnit.big}!`;
@@ -491,6 +513,27 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
           `${totalG} ${selectedUnit.small}`
         ];
 
+        if (selectedUnit.big === 'ℓ') {
+          acceptedAnswers = [
+            `${b1} ℓ ${s1} ml`,
+            `${b1} l ${s1} ml`,
+            `${b1}ℓ ${s1}ml`,
+            `${b1}l ${s1}ml`,
+            `${b1}l${s1}ml`,
+            `${b1}ℓ${s1}ml`,
+            `${totalG} ml`,
+            `${totalG}ml`
+          ];
+        } else {
+          acceptedAnswers = [
+            `${b1} ${selectedUnit.big} ${s1} ${selectedUnit.small}`,
+            `${b1}${selectedUnit.big} ${s1}${selectedUnit.small}`,
+            `${b1}${selectedUnit.big}${s1}${selectedUnit.small}`,
+            `${totalG} ${selectedUnit.small}`,
+            `${totalG}${selectedUnit.small}`
+          ];
+        }
+
         solutionSteps = `1. Add the two parts to find the total: ${minusG} + ${leftG} = ${totalG} ${selectedUnit.small}.\n2. Convert ${totalG} ${selectedUnit.small} into compound units: ${totalG} = ${b1} ${selectedUnit.big} ${s1} ${selectedUnit.small}.`;
         hint = `Draw a Part-Whole bar model. If you know both parts, you can ADD them together to find the whole!`;
       }
@@ -565,6 +608,27 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
         `${part2B + 1} ${selectedUnit.big} ${part2S} ${selectedUnit.small}`,
         `${part2G} ${selectedUnit.big}`
       ];
+
+      if (selectedUnit.big === 'ℓ') {
+        acceptedAnswers = [
+          `${part2B} ℓ ${part2S} ml`,
+          `${part2B} l ${part2S} ml`,
+          `${part2B}ℓ ${part2S}ml`,
+          `${part2B}l ${part2S}ml`,
+          `${part2B}l${part2S}ml`,
+          `${part2B}ℓ${part2S}ml`,
+          `${part2G} ml`,
+          `${part2G}ml`
+        ];
+      } else {
+        acceptedAnswers = [
+          `${part2B} ${selectedUnit.big} ${part2S} ${selectedUnit.small}`,
+          `${part2B}${selectedUnit.big} ${part2S}${selectedUnit.small}`,
+          `${part2B}${selectedUnit.big}${part2S}${selectedUnit.small}`,
+          `${part2G} ${selectedUnit.small}`,
+          `${part2G}${selectedUnit.small}`
+        ];
+      }
 
       solutionSteps = `1. Convert the total to ${fullSmallLabel}: ${bTotal} ${selectedUnit.big} = ${totalG} ${selectedUnit.small}.\n2. Subtract Part A from the total to find Part B: ${totalG} - ${part1G} = ${part2G} ${selectedUnit.small}.\n3. Convert Part B back to compound units: ${part2G} ${selectedUnit.small} = ${answer}.`;
       hint = `Convert the total ${selectedUnit.big} into ${selectedUnit.small} first! Then subtract the known part to find the missing part.`;
@@ -646,7 +710,16 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       throw new Error(`Variant not found in Standard logic: ${activeVariant}`);
   }
 
-  const generatedPrompt = getFormatInstructions(visualEngineStr, inputRequirementStr);
+  const generatedPrompt = getFormatInstructions(visualEngineStr, inputRequirementStr, acceptedAnswers);
+
+  let parsedVE = null;
+  if (visualEngineStr) {
+    try { parsedVE = JSON.parse(visualEngineStr); } catch (e) {}
+  }
+  let parsedIR = null;
+  if (inputRequirementStr) {
+    try { parsedIR = JSON.parse(inputRequirementStr); } catch (e) {}
+  }
 
   return {
     aiPrompt: `
@@ -663,11 +736,15 @@ CRITICAL INSTRUCTIONS:
 4. Generate a logical solution sequence for the 'solutionSteps' array that matches the finalAnswer. Ensure the steps explicitly address the conversion mathematics.
 5. DO NOT alter or append numerical values to the strings inside visualEngine parts. Keep the exact text provided in the template.
 6. The 'visualEngine' and 'inputRequirement' fields MUST match the provided JSON schema EXACTLY. DO NOT invent or generate your own visual engine objects (like BAR_MODEL) if the template says NONE. If the provided visualEngine is {"componentToRender": "NONE", "componentData": {}}, you MUST output that EXACT literal object without adding anything.
+7. CRITICAL INSTRUCTION: Under NO circumstances should 'visualEngine.componentData.whole' or any bar model labels contain parenthetical unit conversions or multiple units (e.g., NEVER write "4 km (4000 m)" or "4000 m"). Use ONLY the single original unit provided in the question stem (e.g. "4 km").
 
 Inputs for your generation:
 - askText: ${askText}
 
 ${generatedPrompt}
-`
+`,
+    visualEngine: parsedVE,
+    inputRequirement: parsedIR,
+    acceptedAnswers
   };
 };

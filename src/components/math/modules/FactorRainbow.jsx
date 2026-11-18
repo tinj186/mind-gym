@@ -196,8 +196,8 @@ export default function FactorRainbow({ data = {} }) {
         </svg>
       </div>
 
-      {/* Optional Equation Summary Footer */}
-      {data.showEquations !== false && (
+      {/* Optional Equation Summary Footer - Only shown when explicitly requested */}
+      {data.showEquations === true && (
         <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap gap-2 justify-center">
           {pairs.map(([f1, f2], pIdx) => {
             const isHiddenPair = (hiddenIndices.has(factors.indexOf(f1)) || hiddenIndices.has(factors.indexOf(f2)));

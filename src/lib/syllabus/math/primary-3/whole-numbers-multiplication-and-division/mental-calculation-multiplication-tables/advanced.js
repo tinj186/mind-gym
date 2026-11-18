@@ -24,10 +24,12 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       `${a} x ${b} = ${prod}`,
       `${prod} + ${c} = ${total}`
     ];
-    customConstraints = `
-      1. Provide exactly these 4 options in MCQ: "${total}", "${prod}", "${(a + b) * c}", "${total + 10}"
-      2. Set defectMap for incorrect options to "CARELESS_CALCULATION".
-    `;
+    if (isMCQ) {
+      customConstraints = `
+        1. Provide exactly these 4 options in MCQ: "${total}", "${prod}", "${(a + b) * c}", "${total + 10}"
+        2. Set defectMap for incorrect options to "CARELESS_CALCULATION".
+      `;
+    }
   }
   else if (activeVariant === 'advanced_chained_ops_divide_subtract') {
     const divisor = Math.floor(Math.random() * 8) + 2; // 2 to 9
@@ -47,10 +49,12 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       `${dividend} ÷ ${divisor} = ${quotient}`,
       `${quotient} - ${sub} = ${total}`
     ];
-    customConstraints = `
-      1. Provide exactly these 4 options in MCQ: "${total}", "${quotient}", "${quotient + sub}", "${total - 10}"
-      2. Set defectMap for incorrect options to "CARELESS_CALCULATION".
-    `;
+    if (isMCQ) {
+      customConstraints = `
+        1. Provide exactly these 4 options in MCQ: "${total}", "${quotient}", "${quotient + sub}", "${total - 10}"
+        2. Set defectMap for incorrect options to "CARELESS_CALCULATION".
+      `;
+    }
   }
   else if (activeVariant === 'advanced_equivalent_expressions') {
     // We want a * b = c * d
@@ -60,13 +64,12 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       [[3, 8], [4, 6]],
       [[2, 9], [3, 6]],
       [[2, 6], [3, 4]],
-      [[4, 8], [2, 16]], // maybe not > 10, let's stick to simple ones
+      [[4, 8], [2, 16]],
       [[5, 8], [4, 10]],
       [[6, 8], [4, 12]],
       [[9, 8], [6, 12]]
     ];
     const pairSet = pairs[Math.floor(Math.random() * pairs.length)];
-    const isFirstMissing = Math.random() > 0.5;
     
     let a, b, c, d;
     if (Math.random() > 0.5) {
@@ -93,10 +96,12 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
         `${c * d} ÷ ${b} = ${a}`,
         `The missing number is ${a}.`
       ];
-      customConstraints = `
-        1. Provide exactly these 4 options in MCQ: "${a}", "${c * d}", "${b + c + d}", "${Math.max(1, a - 1)}"
-        2. Set defectMap for incorrect options to "CONCEPTUAL_ERROR".
-      `;
+      if (isMCQ) {
+        customConstraints = `
+          1. Provide exactly these 4 options in MCQ: "${a}", "${c * d}", "${b + c + d}", "${Math.max(1, a - 1)}"
+          2. Set defectMap for incorrect options to "CONCEPTUAL_ERROR".
+        `;
+      }
     } else {
       // a * b = c * ?
       answer = `${d}`;
@@ -111,10 +116,12 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
         `${a * b} ÷ ${c} = ${d}`,
         `The missing number is ${d}.`
       ];
-      customConstraints = `
-        1. Provide exactly these 4 options in MCQ: "${d}", "${a * b}", "${a + b + c}", "${Math.max(1, d - 1)}"
-        2. Set defectMap for incorrect options to "CONCEPTUAL_ERROR".
-      `;
+      if (isMCQ) {
+        customConstraints = `
+          1. Provide exactly these 4 options in MCQ: "${d}", "${a * b}", "${a + b + c}", "${Math.max(1, d - 1)}"
+          2. Set defectMap for incorrect options to "CONCEPTUAL_ERROR".
+        `;
+      }
     }
   }
   else if (activeVariant === 'advanced_mental_scaling') {
@@ -135,10 +142,12 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       `${dividend} ÷ ${divisor} = ${quotient}`,
       `${quotient} x ${mult} = ${total}`
     ];
-    customConstraints = `
-      1. Provide exactly these 4 options in MCQ: "${total}", "${quotient}", "${dividend * mult}", "${total + 10}"
-      2. Set defectMap for incorrect options to "CARELESS_CALCULATION".
-    `;
+    if (isMCQ) {
+      customConstraints = `
+        1. Provide exactly these 4 options in MCQ: "${total}", "${quotient}", "${dividend * mult}", "${total + 10}"
+        2. Set defectMap for incorrect options to "CARELESS_CALCULATION".
+      `;
+    }
   }
   else if (activeVariant === 'advanced_mental_reversal') {
     const divisor = Math.floor(Math.random() * 6) + 3; // 3 to 8
@@ -157,10 +166,12 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       `${quotient} x ${divisor} = ${dividend}`,
       `The mystery number is ${dividend}.`
     ];
-    customConstraints = `
-      1. Provide exactly these 4 options in MCQ: "${dividend}", "${quotient / 10}", "${dividend * 10}", "${dividend + divisor}"
-      2. Set defectMap for incorrect options to "CONCEPTUAL_ERROR".
-    `;
+    if (isMCQ) {
+      customConstraints = `
+        1. Provide exactly these 4 options in MCQ: "${dividend}", "${quotient / 10}", "${dividend * 10}", "${dividend + divisor}"
+        2. Set defectMap for incorrect options to "CONCEPTUAL_ERROR".
+      `;
+    }
   }
   else {
     throw new Error("Variant logic not implemented for advanced: " + activeVariant);
@@ -170,16 +181,17 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
 CRITICAL INSTRUCTION: You MUST use the EXACT strings provided below for hint, finalAnswer, and solutionSteps. DO NOT rephrase them!
 CRITICAL INSTRUCTION: For questionText, use the instruction provided in askText to generate a creative word problem. The generated questionText MUST start with the exact phrase "Calculate mentally: ". Do NOT output the instruction itself.
 CRITICAL INSTRUCTION: \`solutionSteps\` MUST be a single string formatted with \\n, NOT an array of objects. 
-CRITICAL INSTRUCTION: You MUST include the exact \`inputRequirement\` block shown in the schema below in your final JSON output.
+CRITICAL INSTRUCTION: You MUST include the exact \`visualEngine\` and \`inputRequirement\` blocks shown in the schema below in your final JSON output.
 ${customConstraints}
 
 GENERATE:
 askText = \`${questionText}\`
 finalAnswer = \`${answer}\`
+acceptedAnswers = ["${answer}"]
 hint = \`${hint}\`
 solutionSteps = \`${solutionSteps.map((step, index) => `${index + 1}. ${step}`).join('\\n')}\`
 
-${getFormatInstructions(visualEngineStr, inputRequirementStr)}
+${getFormatInstructions(visualEngineStr, inputRequirementStr, [String(answer)])}
   `;
 
   return { aiPrompt };

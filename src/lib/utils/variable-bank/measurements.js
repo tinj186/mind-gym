@@ -417,3 +417,24 @@ export const getSingularUnit = (unit) => {
   if (u.endsWith('s') && !u.endsWith('ss')) return u.slice(0, -1);
   return u;
 };
+
+export const getSyncEventPairs = () => {
+  const pool = [
+    // Transportation
+    { entityA: 'Bus A', entityB: 'Bus B', action: 'leaves the interchange', togetherVerb: 'left together', nextVerb: 'leave together' },
+    { entityA: 'MRT Train A', entityB: 'MRT Train B', action: 'arrives at the station', togetherVerb: 'arrived together', nextVerb: 'arrive together' },
+    { entityA: 'Ferry A', entityB: 'Ferry B', action: 'departs from the pier', togetherVerb: 'departed together', nextVerb: 'depart together' },
+    { entityA: 'Shuttle A', entityB: 'Shuttle B', action: 'leaves the terminal', togetherVerb: 'left together', nextVerb: 'leave together' },
+    // Food preparation
+    { entityA: 'Oven A', entityB: 'Oven B', action: 'finishes baking a tray of muffins', togetherVerb: 'finished together', nextVerb: 'finish together' },
+    { entityA: 'Steamer A', entityB: 'Steamer B', action: 'completes a batch of pau', togetherVerb: 'completed a batch together', nextVerb: 'complete a batch together' },
+    { entityA: 'Toaster A', entityB: 'Toaster B', action: 'pops up a batch of kaya toast', togetherVerb: 'popped up together', nextVerb: 'pop up together' },
+    { entityA: 'Coffee Machine A', entityB: 'Coffee Machine B', action: 'finishes brewing a pot', togetherVerb: 'finished together', nextVerb: 'finish together' },
+    // Activities & Signals
+    { entityA: 'Bell A', entityB: 'Bell B', action: 'rings at the clock tower', togetherVerb: 'rang together', nextVerb: 'ring together' },
+    { entityA: 'Fountain A', entityB: 'Fountain B', action: 'sprays water at the park', togetherVerb: 'sprayed together', nextVerb: 'spray together' },
+    { entityA: 'Traffic Light A', entityB: 'Traffic Light B', action: 'turns green', togetherVerb: 'turned green together', nextVerb: 'turn green together' },
+    { entityA: 'Runner A', entityB: 'Runner B', action: 'completes a lap around the track', togetherVerb: 'crossed the start line together', nextVerb: 'meet at the start line together' }
+  ];
+  return pool[Math.floor(Math.random() * pool.length)];
+};

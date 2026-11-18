@@ -1,7 +1,7 @@
-import { getRandomContext } from '@/lib/utils/localization';
-import { foundationLogic } from './time-duration/foundation';
-import { standardLogic } from './time-duration/standard';
-import { advancedLogic } from './time-duration/advanced';
+import { getRandomContext } from '../../../../utils/localization.js';
+import { foundationLogic } from './time-duration/foundation.js';
+import { standardLogic } from './time-duration/standard.js';
+import { advancedLogic } from './time-duration/advanced.js';
 
 export const timeDurationBlueprint = {
   id: 'p1-time-duration',
@@ -81,7 +81,8 @@ export const timeDurationBlueprint = {
     const level = 'Primary 1';
     const topic = 'Measurement';
 
-    const getQText = (words, equation) => isShort ? equation : words;
+    // In Singapore Primary Math, Short Questions are direct, full questions with clear units and context, NEVER cryptic pseudo-equations.
+    const getQText = (words, equation) => words;
     const levelNum = parseInt(level.replace('Primary ', ''));
     const tier = levelNum <= 2 ? 'LOWER_BLOCK' : (levelNum <= 4 ? 'MIDDLE_BLOCK' : 'UPPER_BLOCK');
     const context = getRandomContext('GENERAL', tier);

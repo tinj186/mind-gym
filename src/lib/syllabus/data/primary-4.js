@@ -139,10 +139,11 @@ export const primary4Syllabus = [
         "name": "Factor Determination",
         "allowedTypes": [
           QUESTION_TYPES.SHORT_QUESTION.label,
-          QUESTION_TYPES.MCQ.label
+          QUESTION_TYPES.MCQ.label,
+          QUESTION_TYPES.STRUCTURED.label
         ],
         "blueprint": "Focus on factor determination in accordance with Singapore MOE syllabus learning outcomes.",
-        "visualType": "NONE",
+        "visualType": "DYNAMIC",
         "vocabulary": [
           "factor",
           "divisible",

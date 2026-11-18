@@ -119,6 +119,9 @@ export class GenerationEngine {
           result.parsedResponse = aiResponse;
           break;
         } catch (error) {
+          if (error.status === 402 || error.message?.includes('402') || error.message?.includes('prepayment credits are depleted')) {
+            throw new Error("Google AI Studio prepayment credits are depleted. Please top up your billing credits at https://ai.studio/projects or check your Gemini billing settings.");
+          }
           if (retries > 1) {
             const { cooldown } = await getDynamicDelays(currentModelId);
             modelCooldowns[currentModelId] = Date.now() + cooldown;

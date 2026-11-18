@@ -1,4 +1,4 @@
-import { getRandomNames } from '@/lib/utils/variable-bank';
+import { getRandomNames } from '../../../../../utils/variable-bank.js';
 
 const getShuffledOptions = (correct, distractors) => [correct, ...distractors].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4);
 

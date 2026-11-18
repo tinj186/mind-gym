@@ -91,15 +91,11 @@ export const generateStandard = (variant, type, getFormatInstructions) => {
     }
     
     const allPts = [startA, endB, startC, endD];
-    const rawMinX = Math.min(...allPts.map(p => p.x)) - 40;
-    const rawMaxX = Math.max(...allPts.map(p => p.x)) + 40;
-    const rawMinY = Math.min(...allPts.map(p => p.y)) - 40;
-    const rawMaxY = Math.max(...allPts.map(p => p.y)) + 40;
     const gridBounds = {
-      minX: Math.max(0, rawMinX),
-      maxX: rawMaxX,
-      minY: Math.max(0, rawMinY),
-      maxY: rawMaxY
+      minX: Math.min(...allPts.map(p => p.x)) - 60,
+      maxX: Math.max(...allPts.map(p => p.x)) + 60,
+      minY: Math.min(...allPts.map(p => p.y)) - 60,
+      maxY: Math.max(...allPts.map(p => p.y)) + 60
     };
 
     visualEngineStr = JSON.stringify({
@@ -155,10 +151,8 @@ export const generateStandard = (variant, type, getFormatInstructions) => {
       if (isStructure) {
         askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A student is drawing a slanted parallelogram ABCD on a square grid. Lines AB and BC are already drawn. Top horizontal Line AB is parallel to bottom horizontal Line CD, and slanted Line BC is parallel to slanted Line DA. Use the drawing tool to draw Line CD and Line DA to complete the parallelogram. Visually count the grid units for Line AB, deduce the length of parallel Line CD, and find the combined length of the two horizontal parallel edges (AB + CD)."`;
         const stepsArr = [
-          { label: "Visually count the units for top horizontal Line AB:", expectedAnswer: String(w), acceptedAnswers: [] },
-          { label: "Because bottom Line CD must be perfectly parallel and equal to Line AB, what is the length of Line CD?", expectedAnswer: String(w), acceptedAnswers: [] },
-          { label: `Line BC is slanted (${dx} boxes right and ${dy} boxes down). Because Line DA is parallel to it, how many boxes horizontally does Line DA span?`, expectedAnswer: String(dx), acceptedAnswers: [] },
-          { label: "Write the working equation to find the total combined length of the two horizontal parallel edges (AB + CD):", expectedAnswer: `${w} + ${w} = ${sumParallelBases}`, acceptedAnswers: [`2 x ${w} = ${sumParallelBases}`, `2x${w}=${sumParallelBases}`, `${w}*2=${sumParallelBases}`] },
+          { label: "Find the length of bottom parallel edge CD:", expectedAnswer: String(w), acceptedAnswers: [] },
+          { label: "Write the working equation to find the combined length of the two horizontal parallel edges:", expectedAnswer: `${w} + ${w} = ${sumParallelBases}`, acceptedAnswers: [`2 x ${w} = ${sumParallelBases}`, `2x${w}=${sumParallelBases}`, `${w}*2=${sumParallelBases}`, `${w} * 2 = ${sumParallelBases}`, `${w}+${w}=${sumParallelBases}`] },
           { label: "Total combined length of the two horizontal parallel edges:", expectedAnswer: String(sumParallelBases), acceptedAnswers: [] }
         ];
         inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
@@ -205,9 +199,8 @@ export const generateStandard = (variant, type, getFormatInstructions) => {
       if (isStructure) {
         askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A designer is drawing a right trapezoid ABCD on a square grid. Vertical edge AB and bottom horizontal edge BC are already drawn at a right angle. The top horizontal edge AD must be drawn parallel to edge BC and must be exactly ${topW} grid units long. Then, a slanted closing line CD connects Point D to Point C. Use the drawing tool to draw Line AD and Line CD. Deduce the grid lengths and calculate the total combined length of both parallel horizontal bases (AD + BC)."`;
         const stepsArr = [
-          { label: "Visually count the length of the bottom horizontal base BC:", expectedAnswer: String(botW), acceptedAnswers: [] },
-          { label: `Top edge AD is drawn parallel to BC with length ${topW} units. Write the equation to find the difference between the two parallel bases (${botW} - ${topW}):`, expectedAnswer: `${botW} - ${topW} = ${diffBases}`, acceptedAnswers: [] },
-          { label: `Write the working equation to find the total combined length of both parallel bases (${topW} + ${botW}):`, expectedAnswer: `${topW} + ${botW} = ${sumBases}`, acceptedAnswers: [`${botW} + ${topW} = ${sumBases}`, `${botW}+${topW}=${sumBases}`] },
+          { label: "Find the length of bottom horizontal base BC:", expectedAnswer: String(botW), acceptedAnswers: [] },
+          { label: "Write the working equation to find the combined length of both parallel horizontal bases:", expectedAnswer: `${topW} + ${botW} = ${sumBases}`, acceptedAnswers: [`${botW} + ${topW} = ${sumBases}`, `${botW}+${topW}=${sumBases}`, `${topW}+${botW}=${sumBases}`] },
           { label: "Total combined length of both parallel bases:", expectedAnswer: String(sumBases), acceptedAnswers: [] }
         ];
         inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
@@ -262,11 +255,9 @@ export const generateStandard = (variant, type, getFormatInstructions) => {
       if (isStructure) {
         askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"An L-shaped polygon ABCDEF is partially drawn on a grid. Edges AB, BC, CD, and DE are already drawn. To complete the 6-sided polygon, you must draw vertical Line EF (parallel to edge AB) and horizontal Line FA (parallel to edge BC). Visually count the lengths on the grid, use parallel properties to deduce the lengths of the missing edges EF and FA, draw them using the drawing tool, and calculate the total perimeter of the completed 6-sided polygon."`;
         const stepsArr = [
-          { label: "Visually count the total height of left vertical edge AB:", expectedAnswer: String(totalH), acceptedAnswers: [] },
-          { label: `Edge CD has height ${h1}. Write the equation to deduce the length of missing parallel vertical edge EF (${totalH} - ${h1}):`, expectedAnswer: `${totalH} - ${h1} = ${h2}`, acceptedAnswers: [] },
-          { label: "Visually count the total width of bottom horizontal edge BC:", expectedAnswer: String(totalW), acceptedAnswers: [] },
-          { label: `Edge DE has width ${w1}. Write the equation to deduce the length of missing parallel horizontal edge FA (${totalW} - ${w1}):`, expectedAnswer: `${totalW} - ${w1} = ${w2}`, acceptedAnswers: [] },
-          { label: `Write the working equation to find the total perimeter of the completed polygon (${totalW} + ${totalH}) x 2:`, expectedAnswer: `(${totalW} + ${totalH}) x 2 = ${perimeter}`, acceptedAnswers: [`2 x (${totalW} + ${totalH}) = ${perimeter}`, `${totalW} + ${totalH} + ${totalW} + ${totalH} = ${perimeter}`, `${totalW}+${totalH}+${totalW}+${totalH}=${perimeter}`, `2x(${totalW}+${totalH})=${perimeter}`] },
+          { label: "Find the length of missing vertical edge EF:", expectedAnswer: String(h2), acceptedAnswers: [`${totalH} - ${h1} = ${h2}`, `${totalH}-${h1}=${h2}`] },
+          { label: "Find the length of missing horizontal edge FA:", expectedAnswer: String(w2), acceptedAnswers: [`${totalW} - ${w1} = ${w2}`, `${totalW}-${w1}=${w2}`] },
+          { label: "Write the working equation to find the total perimeter of the completed polygon:", expectedAnswer: `${totalH} + ${totalW} + ${h1} + ${w1} + ${h2} + ${w2} = ${perimeter}`, acceptedAnswers: [`(${totalW} + ${totalH}) x 2 = ${perimeter}`, `(${totalH} + ${totalW}) x 2 = ${perimeter}`, `2 x (${totalW} + ${totalH}) = ${perimeter}`, `2 x (${totalH} + ${totalW}) = ${perimeter}`, `${totalW} + ${totalH} + ${totalW} + ${totalH} = ${perimeter}`, `${totalH} + ${totalW} + ${totalH} + ${totalW} = ${perimeter}`, `${totalW}+${totalH}+${totalW}+${totalH}=${perimeter}`, `2x(${totalW}+${totalH})=${perimeter}`, `(${totalW}+${totalH})*2=${perimeter}`, `${totalH}+${totalW}+${h1}+${w1}+${h2}+${w2}=${perimeter}`] },
           { label: "Total perimeter of the completed polygon:", expectedAnswer: String(perimeter), acceptedAnswers: [] }
         ];
         inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
@@ -323,9 +314,9 @@ export const generateStandard = (variant, type, getFormatInstructions) => {
       if (isStructure) {
         askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A gardener is drawing a rectangular flower bed ABCD on a grid map. Edges AB and BC are already drawn perpendicularly. To complete the rectangle, plot Point D and use the drawing tool to draw Line CD parallel to Line AB, and Line DA parallel to Line BC. Deduce the grid lengths of the missing edges and find the total perimeter of the completed rectangle."`;
         const stepsArr = [
-          { label: "Visually count the units for Line AB. Because Line CD is parallel to it, what is the length of Line CD?", expectedAnswer: String(w), acceptedAnswers: [] },
-          { label: "Visually count the units for Line BC. Because Line DA is parallel to it, what is the length of Line DA?", expectedAnswer: String(h), acceptedAnswers: [] },
-          { label: "Write the working equation to find the total perimeter (all 4 edges):", expectedAnswer: `${w} + ${h} + ${w} + ${h} = ${perimeter}`, acceptedAnswers: [`(${w} + ${h}) x 2 = ${perimeter}`, `2 x (${w} + ${h}) = ${perimeter}`, `${w}*2 + ${h}*2 = ${perimeter}`, `${h} + ${w} + ${h} + ${w} = ${perimeter}`, `${w}+${h}+${w}+${h}=${perimeter}`] },
+          { label: "Find the length of missing edge CD:", expectedAnswer: String(w), acceptedAnswers: [] },
+          { label: "Find the length of missing edge DA:", expectedAnswer: String(h), acceptedAnswers: [] },
+          { label: "Write the working equation to find the total perimeter:", expectedAnswer: `${w} + ${h} + ${w} + ${h} = ${perimeter}`, acceptedAnswers: [`(${w} + ${h}) x 2 = ${perimeter}`, `2 x (${w} + ${h}) = ${perimeter}`, `${w}*2 + ${h}*2 = ${perimeter}`, `${h} + ${w} + ${h} + ${w} = ${perimeter}`, `${w}+${h}+${w}+${h}=${perimeter}`] },
           { label: "Total perimeter length:", expectedAnswer: String(perimeter), acceptedAnswers: [] }
         ];
         inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
@@ -340,15 +331,11 @@ export const generateStandard = (variant, type, getFormatInstructions) => {
       }
     }
 
-    const rawMinX = Math.min(...allPts.map(p => p.x)) - 40;
-    const rawMaxX = Math.max(...allPts.map(p => p.x)) + 40;
-    const rawMinY = Math.min(...allPts.map(p => p.y)) - 40;
-    const rawMaxY = Math.max(...allPts.map(p => p.y)) + 40;
     const gridBounds = {
-      minX: Math.max(0, rawMinX),
-      maxX: rawMaxX,
-      minY: Math.max(0, rawMinY),
-      maxY: rawMaxY
+      minX: Math.min(...allPts.map(p => p.x)) - 60,
+      maxX: Math.max(...allPts.map(p => p.x)) + 60,
+      minY: Math.min(...allPts.map(p => p.y)) - 60,
+      maxY: Math.max(...allPts.map(p => p.y)) + 60
     };
 
     visualEngineStr = JSON.stringify({
@@ -407,12 +394,12 @@ export const generateStandard = (variant, type, getFormatInstructions) => {
 
       if (isStructure) {
         askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A character draws an ascending staircase path with perpendicular corners on a grid. The first step from Point A to Point B is already drawn (${hStep} units Right, then ${vStep} units Up). The character must draw a total of ${totalSteps} identical steps. Use the drawing tool to draw the remaining ${remainingSteps} step(s) starting from Point B. Then, calculate the total length of all parallel horizontal lines, all parallel vertical lines, and the grand total path length."`;
+        const hRepeated = Array(totalSteps).fill(hStep).join(' + ');
+        const vRepeated = Array(totalSteps).fill(vStep).join(' + ');
         const stepsArr = [
-          { label: "Visually count the length of one horizontal step:", expectedAnswer: String(hStep), acceptedAnswers: [] },
-          { label: "Visually count the height of one vertical step:", expectedAnswer: String(vStep), acceptedAnswers: [] },
-          { label: `Write the working equation to find the total length of all ${totalSteps} parallel horizontal lines (${totalSteps} x ${hStep}):`, expectedAnswer: `${totalSteps} x ${hStep} = ${hTotal}`, acceptedAnswers: [`${hStep} x ${totalSteps} = ${hTotal}`, `${totalSteps}*${hStep}=${hTotal}`, `${hStep}*${totalSteps}=${hTotal}`] },
-          { label: `Write the working equation to find the total length of all ${totalSteps} parallel vertical lines (${totalSteps} x ${vStep}):`, expectedAnswer: `${totalSteps} x ${vStep} = ${vTotal}`, acceptedAnswers: [`${vStep} x ${totalSteps} = ${vTotal}`, `${totalSteps}*${vStep}=${vTotal}`, `${vStep}*${totalSteps}=${vTotal}`] },
-          { label: `Write the working equation to find the grand total length of the entire drawn path (${hTotal} + ${vTotal}):`, expectedAnswer: `${hTotal} + ${vTotal} = ${grandTotal}`, acceptedAnswers: [`${vTotal} + ${hTotal} = ${grandTotal}`, `${hTotal}+${vTotal}=${grandTotal}`, `${vTotal}+${hTotal}=${grandTotal}`] },
+          { label: "Write the working equation to find the total length of all parallel horizontal steps:", expectedAnswer: `${totalSteps} x ${hStep} = ${hTotal}`, acceptedAnswers: [`${hStep} x ${totalSteps} = ${hTotal}`, `${totalSteps}*${hStep}=${hTotal}`, `${hStep}*${totalSteps}=${hTotal}`, `${hRepeated} = ${hTotal}`, `${hRepeated.replace(/\s+/g, '')}=${hTotal}`] },
+          { label: "Write the working equation to find the total length of all parallel vertical steps:", expectedAnswer: `${totalSteps} x ${vStep} = ${vTotal}`, acceptedAnswers: [`${vStep} x ${totalSteps} = ${vTotal}`, `${totalSteps}*${vStep}=${vTotal}`, `${vStep}*${totalSteps}=${vTotal}`, `${vRepeated} = ${vTotal}`, `${vRepeated.replace(/\s+/g, '')}=${vTotal}`] },
+          { label: "Write the working equation to find the grand total length of the path:", expectedAnswer: `${hTotal} + ${vTotal} = ${grandTotal}`, acceptedAnswers: [`${vTotal} + ${hTotal} = ${grandTotal}`, `${hTotal}+${vTotal}=${grandTotal}`, `${vTotal}+${hTotal}=${grandTotal}`] },
           { label: "Grand total length of the path:", expectedAnswer: String(grandTotal), acceptedAnswers: [] }
         ];
         inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
@@ -465,12 +452,12 @@ export const generateStandard = (variant, type, getFormatInstructions) => {
 
       if (isStructure) {
         askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A stonemason is carving a castle battlement with perpendicular corners along a wall. The first section from Point A to Point B is drawn (${h} units Up, then ${w} units Right). The full wall contains exactly ${numVert} vertical segments (each ${h} units) and ${numHoriz} horizontal segments (each ${w} units). Use the drawing tool to continue the pattern from Point B and complete the battlement. Then, calculate the total length of all vertical lines, horizontal lines, and the grand total path length."`;
+        const vRepeated = Array(numVert).fill(h).join(' + ');
+        const hRepeated = Array(numHoriz).fill(w).join(' + ');
         const stepsArr = [
-          { label: "Visually count the height of one vertical post:", expectedAnswer: String(h), acceptedAnswers: [] },
-          { label: "Visually count the width of one horizontal segment:", expectedAnswer: String(w), acceptedAnswers: [] },
-          { label: `Write the equation to find the total length of all ${numVert} parallel vertical posts (${numVert} x ${h}):`, expectedAnswer: `${numVert} x ${h} = ${vTotal}`, acceptedAnswers: [`${h} x ${numVert} = ${vTotal}`, `${numVert}*${h}=${vTotal}`, `${h}*${numVert}=${vTotal}`] },
-          { label: `Write the equation to find the total length of all ${numHoriz} parallel horizontal segments (${numHoriz} x ${w}):`, expectedAnswer: `${numHoriz} x ${w} = ${hTotal}`, acceptedAnswers: [`${w} x ${numHoriz} = ${hTotal}`, `${numHoriz}*${w}=${hTotal}`, `${w}*${numHoriz}=${hTotal}`] },
-          { label: `Write the equation to find the grand total carved length (${vTotal} + ${hTotal}):`, expectedAnswer: `${vTotal} + ${hTotal} = ${grandTotal}`, acceptedAnswers: [`${hTotal} + ${vTotal} = ${grandTotal}`, `${vTotal}+${hTotal}=${grandTotal}`, `${hTotal}+${vTotal}=${grandTotal}`] },
+          { label: "Write the working equation to find the total length of all parallel vertical segments:", expectedAnswer: `${numVert} x ${h} = ${vTotal}`, acceptedAnswers: [`${h} x ${numVert} = ${vTotal}`, `${numVert}*${h}=${vTotal}`, `${h}*${numVert}=${vTotal}`, `${vRepeated} = ${vTotal}`, `${vRepeated.replace(/\s+/g, '')}=${vTotal}`] },
+          { label: "Write the working equation to find the total length of all parallel horizontal segments:", expectedAnswer: `${numHoriz} x ${w} = ${hTotal}`, acceptedAnswers: [`${w} x ${numHoriz} = ${hTotal}`, `${numHoriz}*${w}=${hTotal}`, `${w}*${numHoriz}=${hTotal}`, `${hRepeated} = ${hTotal}`, `${hRepeated.replace(/\s+/g, '')}=${hTotal}`] },
+          { label: "Write the working equation to find the grand total length of the battlement:", expectedAnswer: `${vTotal} + ${hTotal} = ${grandTotal}`, acceptedAnswers: [`${hTotal} + ${vTotal} = ${grandTotal}`, `${vTotal}+${hTotal}=${grandTotal}`, `${hTotal}+${vTotal}=${grandTotal}`] },
           { label: "Grand total length of the battlement:", expectedAnswer: String(grandTotal), acceptedAnswers: [] }
         ];
         inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
@@ -522,22 +509,22 @@ export const generateStandard = (variant, type, getFormatInstructions) => {
 
       if (isStructure) {
         askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A robot navigates a snake track with perpendicular turns between two parallel walls. The initial path from Point A to Point B is drawn (${w} units Right, then ${h} units Down). To finish the track, the robot must make ${numHoriz} parallel horizontal runs (each ${w} units long) connected by ${numVert} perpendicular drops (each ${h} units long). Use the drawing tool to draw the remaining segments starting from Point B. Then, calculate the total length of the parallel horizontal runs, the vertical drops, and the total track length."`;
+        const hRepeated = Array(numHoriz).fill(w).join(' + ');
+        const vRepeated = Array(numVert).fill(h).join(' + ');
         const stepsArr = [
-          { label: "Visually count the width of one horizontal run:", expectedAnswer: String(w), acceptedAnswers: [] },
-          { label: "Visually count the height of one vertical drop:", expectedAnswer: String(h), acceptedAnswers: [] },
-          { label: `Write the working equation to find the total length of all ${numHoriz} parallel horizontal runs (${numHoriz} x ${w}):`, expectedAnswer: `${numHoriz} x ${w} = ${hTotal}`, acceptedAnswers: [`${w} x ${numHoriz} = ${hTotal}`, `${numHoriz}*${w}=${hTotal}`, `${w}*${numHoriz}=${hTotal}`] },
-          { label: `Write the working equation to find the total length of all ${numVert} parallel vertical drops (${numVert} x ${h}):`, expectedAnswer: `${numVert} x ${h} = ${vTotal}`, acceptedAnswers: [`${h} x ${numVert} = ${vTotal}`, `${numVert}*${h}=${vTotal}`, `${h}*${numVert}=${vTotal}`] },
-          { label: `Write the working equation to find the total track length (${hTotal} + ${vTotal}):`, expectedAnswer: `${hTotal} + ${vTotal} = ${grandTotal}`, acceptedAnswers: [`${vTotal} + ${hTotal} = ${grandTotal}`, `${hTotal}+${vTotal}=${grandTotal}`, `${vTotal}+${hTotal}=${grandTotal}`] },
+          { label: "Write the working equation to find the total length of all parallel horizontal runs:", expectedAnswer: `${numHoriz} x ${w} = ${hTotal}`, acceptedAnswers: [`${w} x ${numHoriz} = ${hTotal}`, `${numHoriz}*${w}=${hTotal}`, `${w}*${numHoriz}=${hTotal}`, `${hRepeated} = ${hTotal}`, `${hRepeated.replace(/\s+/g, '')}=${hTotal}`] },
+          { label: "Write the working equation to find the total length of all parallel vertical drops:", expectedAnswer: `${numVert} x ${h} = ${vTotal}`, acceptedAnswers: [`${h} x ${numVert} = ${vTotal}`, `${numVert}*${h}=${vTotal}`, `${h}*${numVert}=${vTotal}`, `${vRepeated} = ${vTotal}`, `${vRepeated.replace(/\s+/g, '')}=${vTotal}`] },
+          { label: "Write the working equation to find the total length of the track:", expectedAnswer: `${hTotal} + ${vTotal} = ${grandTotal}`, acceptedAnswers: [`${vTotal} + ${hTotal} = ${grandTotal}`, `${hTotal}+${vTotal}=${grandTotal}`, `${vTotal}+${hTotal}=${grandTotal}`] },
           { label: "Total length of the entire track:", expectedAnswer: String(grandTotal), acceptedAnswers: [] }
         ];
         inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
       } else if (isMCQ) {
-        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A snake track has ${numHoriz} parallel horizontal runs (${w} units each) and ${numVert} vertical drops (${h} units each) meeting perpendicularly. The path from A to B is drawn. Use the drawing tool to complete the track. What is the total length of the track?"`;
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A snake track has ${numHoriz} parallel horizontal runs (${w} units each) and ${numVert} vertical drops (${h} units each) meeting perpendicularly. From Point B, the track turns ${w} units Left, ${h} units Down, and ${w} units Right. Use the drawing tool to complete the track. What is the total length of the track?"`;
         inputRequirementStr = JSON.stringify({ inputType: "MCQ_BUTTONS" });
         const opts = getFourOptions(finalAnswer, [String(hTotal), String(vTotal), String(grandTotal + 2), String(grandTotal - 2 > 0 ? grandTotal - 2 : grandTotal + 4)]);
         mcqOptionsPrompt = `Generate EXACTLY 4 options in "content.options":\n- "${opts[0]}"\n- "${opts[1]}"\n- "${opts[2]}"\n- "${opts[3]}"\nCRITICAL: The options array MUST contain exactly these 4 options. One option MUST match finalAnswer ("${finalAnswer}") exactly.`;
       } else {
-        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A snake track has ${numHoriz} horizontal runs (${w} units each) and ${numVert} vertical drops (${h} units each). Draw the remaining lines from Point B to complete the path. Find the total length."`;
+        askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A snake track has ${numHoriz} horizontal runs (${w} units each) and ${numVert} vertical drops (${h} units each). From Point B, draw ${w} units Left, ${h} units Down, and ${w} units Right to complete the path. Find the total length."`;
         inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
       }
 
@@ -580,9 +567,9 @@ export const generateStandard = (variant, type, getFormatInstructions) => {
       if (isStructure) {
         askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A pipeline engineer is drawing a detour path around an underground obstacle using perpendicular turns. The first section from Point A to Point B is drawn (${d1} units Right, then ${v} units Up). The remaining detour must go ${d2} units Right, ${v} units Down, and ${d3} units Right to rejoin the mainline. Use the drawing tool to draw the remaining segments starting from Point B. Then, calculate the total length of all parallel horizontal pipe sections, all parallel vertical pipe sections, and the total pipeline length."`;
         const stepsArr = [
-          { label: `Write the equation to find the total length of the 3 parallel horizontal sections (${d1} + ${d2} + ${d3}):`, expectedAnswer: `${d1} + ${d2} + ${d3} = ${hTotal}`, acceptedAnswers: [] },
-          { label: `Write the equation to find the total length of the 2 parallel vertical detour sections (${v} + ${v}):`, expectedAnswer: `${v} + ${v} = ${vTotal}`, acceptedAnswers: [`2 x ${v} = ${vTotal}`, `2x${v}=${vTotal}`, `${v}*2=${vTotal}`] },
-          { label: `Write the working equation to find the grand total length of the detour pipeline (${hTotal} + ${vTotal}):`, expectedAnswer: `${hTotal} + ${vTotal} = ${grandTotal}`, acceptedAnswers: [`${vTotal} + ${hTotal} = ${grandTotal}`, `${hTotal}+${vTotal}=${grandTotal}`, `${vTotal}+${hTotal}=${grandTotal}`] },
+          { label: "Write the working equation to find the total length of all parallel horizontal sections:", expectedAnswer: `${d1} + ${d2} + ${d3} = ${hTotal}`, acceptedAnswers: [`${d1}+${d2}+${d3}=${hTotal}`] },
+          { label: "Write the working equation to find the total length of all parallel vertical sections:", expectedAnswer: `${v} + ${v} = ${vTotal}`, acceptedAnswers: [`${v}+${v}=${vTotal}`, `2 x ${v} = ${vTotal}`, `${v} x 2 = ${vTotal}`, `2x${v}=${vTotal}`, `2*${v}=${vTotal}`, `${v}*2=${vTotal}`] },
+          { label: "Write the working equation to find the grand total length of the pipeline:", expectedAnswer: `${hTotal} + ${vTotal} = ${grandTotal}`, acceptedAnswers: [`${vTotal} + ${hTotal} = ${grandTotal}`, `${hTotal}+${vTotal}=${grandTotal}`, `${vTotal}+${hTotal}=${grandTotal}`] },
           { label: "Grand total length of the pipeline:", expectedAnswer: String(grandTotal), acceptedAnswers: [] }
         ];
         inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
@@ -597,15 +584,11 @@ export const generateStandard = (variant, type, getFormatInstructions) => {
       }
     }
 
-    const rawMinX = Math.min(...allPts.map(p => p.x)) - 40;
-    const rawMaxX = Math.max(...allPts.map(p => p.x)) + 40;
-    const rawMinY = Math.min(...allPts.map(p => p.y)) - 40;
-    const rawMaxY = Math.max(...allPts.map(p => p.y)) + 40;
     const gridBounds = {
-      minX: Math.max(0, rawMinX),
-      maxX: rawMaxX,
-      minY: Math.max(0, rawMinY),
-      maxY: rawMaxY
+      minX: Math.min(...allPts.map(p => p.x)) - 60,
+      maxX: Math.max(...allPts.map(p => p.x)) + 60,
+      minY: Math.min(...allPts.map(p => p.y)) - 60,
+      maxY: Math.max(...allPts.map(p => p.y)) + 60
     };
 
     visualEngineStr = JSON.stringify({
@@ -828,15 +811,11 @@ export const generateStandard = (variant, type, getFormatInstructions) => {
       }
     }
 
-    const rawMinX = Math.min(...allPts.map(p => p.x)) - 40;
-    const rawMaxX = Math.max(...allPts.map(p => p.x)) + 40;
-    const rawMinY = Math.min(...allPts.map(p => p.y)) - 40;
-    const rawMaxY = Math.max(...allPts.map(p => p.y)) + 40;
     const gridBounds = {
-      minX: Math.max(0, rawMinX),
-      maxX: rawMaxX,
-      minY: Math.max(0, rawMinY),
-      maxY: rawMaxY
+      minX: Math.min(...allPts.map(p => p.x)) - 60,
+      maxX: Math.max(...allPts.map(p => p.x)) + 60,
+      minY: Math.min(...allPts.map(p => p.y)) - 60,
+      maxY: Math.max(...allPts.map(p => p.y)) + 60
     };
 
     visualEngineStr = JSON.stringify({
@@ -1188,15 +1167,11 @@ export const generateStandard = (variant, type, getFormatInstructions) => {
       }
     }
 
-    const rawMinX = Math.min(...allPts.map(p => p.x)) - 40;
-    const rawMaxX = Math.max(...allPts.map(p => p.x)) + 40;
-    const rawMinY = Math.min(...allPts.map(p => p.y)) - 40;
-    const rawMaxY = Math.max(...allPts.map(p => p.y)) + 40;
     const gridBounds = {
-      minX: Math.max(0, rawMinX),
-      maxX: rawMaxX,
-      minY: Math.max(0, rawMinY),
-      maxY: rawMaxY
+      minX: Math.min(...allPts.map(p => p.x)) - 60,
+      maxX: Math.max(...allPts.map(p => p.x)) + 60,
+      minY: Math.min(...allPts.map(p => p.y)) - 60,
+      maxY: Math.max(...allPts.map(p => p.y)) + 60
     };
 
     visualEngineStr = JSON.stringify({

@@ -1,4 +1,4 @@
-import { CONTEXT_TIERS } from './variable-bank';
+import { CONTEXT_TIERS } from './variable-bank.js';
 
 /**
  * Returns a random Singaporean context (name, setting, and topical items).

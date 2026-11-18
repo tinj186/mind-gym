@@ -1,4 +1,4 @@
-import { getRandomNames, getKgItems, getGramItems, getRandomLiquids, getRandomLocations } from '@/lib/utils/variable-bank';
+import { getRandomNames, getKgItems, getGramItems, getRandomLiquids, getRandomLocations } from '../../../../../utils/variable-bank.js';
 
 export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, getFormatInstructions) => {
   const names = getRandomNames(2);
@@ -17,6 +17,7 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
   let askText, answer, options, solutionSteps, hint;
   let visualEngineStr = `{"componentToRender": "NONE", "componentData": {}}`;
   let inputRequirementStr = null;
+  let acceptedAnswers = [];
 
   switch (activeVariant) {
     case 'advanced_three_part_total': {
@@ -34,30 +35,23 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       
       answer = `${totalB} ${selectedUnit.big} ${totalS} ${selectedUnit.small}`;
 
-      let label1, label2, label3;
-      if (selectedUnit.big === 'km') {
-        label1 = "Distance 1"; label2 = "Distance 2"; label3 = "Distance 3";
-      } else if (selectedUnit.big === 'kg') {
-        label1 = `${kgFoods[0].item}'s mass`; label2 = `${kgFoods[1].item}'s mass`; label3 = `${kgFoods[2].item}'s mass`;
-      } else {
-        label1 = `${liquids[0]}'s volume`; label2 = `${liquids[1]}'s volume`; label3 = `${liquids[2]}'s volume`;
-      }
-
       visualEngineStr = JSON.stringify({
         componentToRender: "BAR_MODEL",
         componentData: {
           type: "PART_WHOLE",
           isStatic: true,
           parts: [
-            { value: label1, size: v1G, layoutSize: v1G, segments: 1 },
-            { value: label2, size: v2G, layoutSize: v2G, segments: 1 },
-            { value: label3, size: v3G, layoutSize: v3G, segments: 1 }
+            { value: `${b1} ${selectedUnit.big} ${s1} ${selectedUnit.small}`, size: v1G, layoutSize: v1G, segments: 1 },
+            { value: `${v2G} ${selectedUnit.small}`, size: v2G, layoutSize: v2G, segments: 1 },
+            { value: `${v3G} ${selectedUnit.small}`, size: v3G, layoutSize: v3G, segments: 1 }
           ],
-          whole: "?"
+          whole: "?",
+          wholeLayoutSize: totalG
         }
       });
 
       const makeAns = (val) => [`${val}`, `${val}${selectedUnit.small}`, `${val} ${selectedUnit.small}`];
+      acceptedAnswers = [answer, answer.replace(/ /g, ""), `${totalB}${selectedUnit.big} ${totalS}${selectedUnit.small}`, `${totalB} ${selectedUnit.big} ${totalS}${selectedUnit.small}`, `${totalB}${selectedUnit.big} ${totalS} ${selectedUnit.small}`];
       const makeEq3 = (a, b, c, d) => {
         const perms = [
           `${a} + ${b} + ${c}`, `${a} + ${c} + ${b}`,
@@ -119,23 +113,14 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       
       answer = `${leftG} ${selectedUnit.small}`;
 
-      let label1, label2, label3;
-      if (selectedUnit.big === 'km') {
-        label1 = "Distance 1"; label2 = "Distance 2"; label3 = "Remaining";
-      } else if (selectedUnit.big === 'kg') {
-        label1 = `${kgFoods[0].item}`; label2 = `${kgFoods[1].item}`; label3 = "Remaining safe limit";
-      } else {
-        label1 = `${liquids[0]}`; label2 = `${liquids[1]}`; label3 = "Room left";
-      }
-
       visualEngineStr = JSON.stringify({
         componentToRender: "BAR_MODEL",
         componentData: {
           type: "PART_WHOLE",
           isStatic: true,
           parts: [
-            { value: label1, size: part1G, layoutSize: part1G, segments: 1 },
-            { value: label2, size: part2G, layoutSize: part2G, segments: 1 },
+            { value: `${part1G} ${selectedUnit.small}`, size: part1G, layoutSize: part1G, segments: 1 },
+            { value: `${part2G} ${selectedUnit.small}`, size: part2G, layoutSize: part2G, segments: 1 },
             { value: "?", size: leftG, layoutSize: leftG, segments: 1 }
           ],
           whole: `${maxB} ${selectedUnit.big}`,
@@ -144,6 +129,7 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       });
 
       const makeAns = (val) => [`${val}`, `${val}${selectedUnit.small}`, `${val} ${selectedUnit.small}`];
+      acceptedAnswers = makeAns(leftG);
       const makeEq = (a, op, b, c) => [
         `${a} ${op} ${b} = ${c}`,
         `${a}${op}${b}=${c}`,
@@ -226,6 +212,7 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       });
 
       const makeAns = (val) => [`${val}`, `${val}${selectedUnit.small}`, `${val} ${selectedUnit.small}`];
+      acceptedAnswers = makeAns(totalG);
       const makeEq = (a, op, b, c) => [
         `${a} ${op} ${b} = ${c}`,
         `${a}${op}${b}=${c}`,
@@ -284,23 +271,14 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       
       answer = `${leftB} ${selectedUnit.big} ${leftS} ${selectedUnit.small}`;
 
-      let label1, label2, label3;
-      if (selectedUnit.big === 'km') {
-        label1 = "Distance 1"; label2 = "Distance 2"; label3 = "Distance left";
-      } else if (selectedUnit.big === 'kg') {
-        label1 = `${kgFoods[0].item} used`; label2 = `${kgFoods[1].item} used`; label3 = "Left";
-      } else {
-        label1 = `${liquids[0]} used`; label2 = `${liquids[1]} used`; label3 = "Left";
-      }
-
       visualEngineStr = JSON.stringify({
         componentToRender: "BAR_MODEL",
         componentData: {
           type: "PART_WHOLE",
           isStatic: true,
           parts: [
-            { value: label1, size: part1G, layoutSize: part1G, segments: 1 },
-            { value: label2, size: part2G, layoutSize: part2G, segments: 1 },
+            { value: `${part1G} ${selectedUnit.small}`, size: part1G, layoutSize: part1G, segments: 1 },
+            { value: `${part2G} ${selectedUnit.small}`, size: part2G, layoutSize: part2G, segments: 1 },
             { value: "?", size: leftG, layoutSize: leftG, segments: 1 }
           ],
           whole: `${totalB} ${selectedUnit.big}`,
@@ -309,6 +287,7 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       });
 
       const makeAns = (val) => [`${val}`, `${val}${selectedUnit.small}`, `${val} ${selectedUnit.small}`];
+      acceptedAnswers = [answer, answer.replace(/ /g, ""), `${leftB}${selectedUnit.big} ${leftS}${selectedUnit.small}`, `${leftB} ${selectedUnit.big} ${leftS}${selectedUnit.small}`, `${leftB}${selectedUnit.big} ${leftS} ${selectedUnit.small}`];
       const makeEq = (a, op, b, c) => [
         `${a} ${op} ${b} = ${c}`,
         `${a}${op}${b}=${c}`,
@@ -372,23 +351,14 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       
       answer = `${remainingG} ${selectedUnit.small}`;
 
-      let identicalName, uniqueName;
-      if (selectedUnit.big === 'km') {
-        identicalName = `${itemCount} Legs`; uniqueName = "Leg A";
-      } else if (selectedUnit.big === 'kg') {
-        identicalName = `${itemCount} Books`; uniqueName = "Toy";
-      } else {
-        identicalName = `${itemCount} Cups`; uniqueName = "Jug";
-      }
-
       visualEngineStr = JSON.stringify({
         componentToRender: "BAR_MODEL",
         componentData: {
           type: "PART_WHOLE",
           isStatic: true,
           parts: [
-            { value: uniqueName, size: uniqueG, layoutSize: uniqueG, segments: 1 },
-            { value: identicalName, size: remainingG, layoutSize: remainingG, segments: itemCount }
+            { value: `${uniqueG} ${selectedUnit.small}`, size: uniqueG, layoutSize: uniqueG, segments: 1 },
+            { value: "?", size: remainingG, layoutSize: remainingG, segments: itemCount }
           ],
           whole: `${totalB} ${selectedUnit.big}`,
           wholeLayoutSize: totalG
@@ -396,6 +366,7 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       });
 
       const makeAns = (val) => [`${val}`, `${val}${selectedUnit.small}`, `${val} ${selectedUnit.small}`];
+      acceptedAnswers = makeAns(remainingG);
       const makeEq = (a, op, b, c) => [
         `${a} ${op} ${b} = ${c}`,
         `${a}${op}${b}=${c}`,
@@ -450,7 +421,16 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       throw new Error(`Variant not found in Advanced logic: ${activeVariant}`);
   }
 
-  const generatedPrompt = getFormatInstructions(visualEngineStr, inputRequirementStr);
+  const generatedPrompt = getFormatInstructions(visualEngineStr, inputRequirementStr, acceptedAnswers);
+
+  let parsedVE = null;
+  if (visualEngineStr) {
+    try { parsedVE = JSON.parse(visualEngineStr); } catch (e) {}
+  }
+  let parsedIR = null;
+  if (inputRequirementStr) {
+    try { parsedIR = JSON.parse(inputRequirementStr); } catch (e) {}
+  }
 
   return {
     aiPrompt: `
@@ -467,11 +447,15 @@ CRITICAL INSTRUCTIONS:
 4. Generate a logical solution sequence for the 'solutionSteps' array that matches the finalAnswer. Ensure the steps explicitly address the conversion mathematics.
 5. DO NOT alter or append numerical values to the strings inside visualEngine parts. Keep the exact text provided in the template.
 6. The 'visualEngine' and 'inputRequirement' fields MUST match the provided JSON schema EXACTLY. DO NOT invent or generate your own visual engine objects (like BAR_MODEL) if the template says NONE. If the provided visualEngine is {"componentToRender": "NONE", "componentData": {}}, you MUST output that EXACT literal object without adding anything.
+7. CRITICAL INSTRUCTION: Under NO circumstances should 'visualEngine.componentData.whole' or any bar model labels contain parenthetical unit conversions or multiple units (e.g., NEVER write "4 km (4000 m)" or "4000 m"). Use ONLY the single original unit provided in the question stem (e.g. "4 km").
 
 Inputs for your generation:
 - askText: ${askText}
 
 ${generatedPrompt}
-`
+`,
+    visualEngine: parsedVE,
+    inputRequirement: parsedIR,
+    acceptedAnswers
   };
 };

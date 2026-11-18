@@ -66,7 +66,10 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
   // ==========================================================================
   if (effectiveVariant === 'foundation_rainbow_pairing') {
     const [name] = getRandomNames(1);
-    const targets = [12, 16, 18, 20, 24, 28, 30, 32, 36, 40, 42, 45, 48, 54, 60];
+    const targets = [
+      12, 14, 15, 16, 18, 20, 21, 24, 28, 30, 32, 35, 36, 40, 
+      42, 44, 45, 48, 50, 52, 54, 56, 60, 63, 64, 70, 72, 75, 80, 84, 90, 96
+    ];
     const T = targets[Math.floor(Math.random() * targets.length)];
     const allFactors = getFactors(T);
     const allPairs = getFactorPairs(T);
@@ -82,6 +85,7 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
     const missingFactor = swap ? selectedPair[1] : selectedPair[0];
 
     finalAnswer = missingFactor.toString();
+    acceptedAnswers = [finalAnswer];
 
     const hiddenIndex = allFactors.indexOf(missingFactor);
 
@@ -105,7 +109,12 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       }, null, 2);
     }
 
-    const questionText = `${name} is finding factor pairs for ${T}. Since ${givenFactor} × ? = ${T}, what is the missing factor of ${T}?`;
+    const templates = [
+      `${name} is finding factor pairs for ${T}. Since ${givenFactor} × ? = ${T}, what is the missing factor of ${T}?`,
+      `In the factor pairs of ${T}, ${givenFactor} is paired with another factor. What is this missing factor?`,
+      `One factor of ${T} is ${givenFactor}. Find its partner factor that multiplies with it to give ${T}.`
+    ];
+    const questionText = templates[Math.floor(Math.random() * templates.length)];
     promptInstruction = `- Question stem: "${questionText}"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
     if (isStructure) {
@@ -244,7 +253,10 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
   // VARIANT 3: foundation_boundary_constraints_all_factors (Total Factors Count)
   // ==========================================================================
   } else if (effectiveVariant === 'foundation_boundary_constraints_all_factors') {
-    const candidateNumbers = [12, 16, 18, 20, 24, 28, 30, 36, 40, 45];
+    const candidateNumbers = [
+      12, 14, 15, 16, 18, 20, 21, 24, 25, 27, 28, 30, 32, 35, 36,
+      40, 42, 45, 48, 50, 54, 56, 60, 64, 72, 80, 84, 90, 96, 100
+    ];
     const T = candidateNumbers[Math.floor(Math.random() * candidateNumbers.length)];
     const allFactors = getFactors(T);
     const count = allFactors.length;
@@ -259,7 +271,8 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
           targetNumber: T,
           factors: allFactors,
           pairs: allPairs,
-          title: `All Factors of ${T}`
+          title: `All Factors of ${T}`,
+          showEquations: false
         }
       }, null, 2);
     } else {
@@ -270,7 +283,12 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
       }, null, 2);
     }
 
-    const questionText = `How many factors does ${T} have altogether?`;
+    const questionTemplates = [
+      `How many factors does ${T} have altogether?`,
+      `Find the total number of distinct factors of ${T}.`,
+      `How many different factors does the number ${T} have?`
+    ];
+    const questionText = questionTemplates[Math.floor(Math.random() * questionTemplates.length)];
     promptInstruction = `- Question stem: "${questionText}"\\n- The finalAnswer must be strictly "${finalAnswer}".`;
 
     if (isStructure) {
@@ -318,8 +336,8 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
   // VARIANT 4: foundation_relationship_true_false (Factor vs Multiple)
   // ==========================================================================
   } else if (effectiveVariant === 'foundation_relationship_true_false') {
-    const factor = Math.floor(Math.random() * 6) + 4; // 4 to 9
-    const k = Math.floor(Math.random() * 6) + 3; // 3 to 8
+    const factor = Math.floor(Math.random() * 9) + 3; // 3 to 11
+    const k = Math.floor(Math.random() * 9) + 2; // 2 to 10
     const multiple = factor * k;
 
     // Toggle whether asking if F is a factor of M, or M is a multiple of F
@@ -327,10 +345,18 @@ export function foundationLogic(activeVariant, difficulty, type, isMCQ, isShort,
 
     let questionText = "";
     if (askForFactor) {
-      questionText = `${multiple} is a multiple of ${factor}. Therefore, ${factor} is a _____ of ${multiple}.`;
+      const stems = [
+        `${multiple} is a multiple of ${factor}. Therefore, ${factor} is a _____ of ${multiple}.`,
+        `Since ${factor} × ${k} = ${multiple}, complete the sentence: ${factor} is a _____ of ${multiple}.`
+      ];
+      questionText = stems[Math.floor(Math.random() * stems.length)];
       finalAnswer = "factor";
     } else {
-      questionText = `${factor} is a factor of ${multiple}. Therefore, ${multiple} is a _____ of ${factor}.`;
+      const stems = [
+        `${factor} is a factor of ${multiple}. Therefore, ${multiple} is a _____ of ${factor}.`,
+        `Since ${multiple} ÷ ${factor} = ${k}, complete the sentence: ${multiple} is a _____ of ${factor}.`
+      ];
+      questionText = stems[Math.floor(Math.random() * stems.length)];
       finalAnswer = "multiple";
     }
 

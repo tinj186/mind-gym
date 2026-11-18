@@ -31,17 +31,37 @@ export default function GridArrayVisualizer({ data = {} }) {
   const showTotal = data.showTotal === true;
   const showUnknownTotal = data.showTotal === '?' || data.targetUnknown === 'total';
   const showEquation = data.showEquation === true;
+  const hideEquationAnswer = data.hideEquationAnswer ?? (data.showTotal === '?' || data.targetUnknown === 'total' || !data.showTotal);
 
   const highlightRows = new Set(data.highlightRows || []);
+  const isCompact = columns > 10;
+  const isVeryCompact = columns > 16;
+
+  const itemSizeClasses = isVeryCompact 
+    ? 'w-3 h-3' 
+    : isCompact 
+      ? 'w-4 h-4' 
+      : 'w-5 h-5 sm:w-6 sm:h-6';
 
   const renderItem = (r, c) => {
+    const itemIndex = r * columns + c;
+    if (data.totalItems !== undefined && itemIndex >= data.totalItems) {
+      return (
+        <div 
+          key={`item-${r}-${c}`}
+          className={`${itemSizeClasses} rounded-full border-2 border-dashed border-slate-300 bg-slate-100/40 flex items-center justify-center shrink-0 opacity-40`}
+          title="Missing item"
+        />
+      );
+    }
+
     const isRowHighlighted = highlightRows.has(r);
 
     if (itemShape === 'square') {
       return (
         <div 
           key={`item-${r}-${c}`}
-          className={`w-6 h-6 sm:w-7 sm:h-7 rounded-md border-2 flex items-center justify-center transition-all ${
+          className={`${itemSizeClasses} rounded-md border-2 flex items-center justify-center transition-all shrink-0 ${
             isRowHighlighted 
               ? 'bg-amber-400 border-amber-600 shadow-xs' 
               : 'bg-indigo-500 border-indigo-700 shadow-2xs'
@@ -54,7 +74,7 @@ export default function GridArrayVisualizer({ data = {} }) {
       return (
         <div 
           key={`item-${r}-${c}`}
-          className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center text-sm"
+          className={`${itemSizeClasses} flex items-center justify-center text-xs shrink-0`}
         >
           ⭐
         </div>
@@ -65,7 +85,7 @@ export default function GridArrayVisualizer({ data = {} }) {
     return (
       <div 
         key={`item-${r}-${c}`}
-        className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+        className={`${itemSizeClasses} rounded-full border-2 flex items-center justify-center transition-all shrink-0 ${
           isRowHighlighted 
             ? 'bg-amber-400 border-amber-600 shadow-xs' 
             : 'bg-indigo-500 border-indigo-700 shadow-2xs'
@@ -97,27 +117,29 @@ export default function GridArrayVisualizer({ data = {} }) {
       </div>
 
       {/* Grid Canvas with Dimensions */}
-      <div className="flex flex-col items-center justify-center py-2 overflow-x-auto">
-        {/* Top Column Header / Label */}
-        <div className="flex items-center justify-center mb-2 text-xs font-black uppercase text-indigo-600 tracking-wider">
-          <span>{colLabel}</span>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {/* Left Row Header / Label with vertical indicator */}
-          <div className="flex items-center gap-1.5 pr-2 border-r-2 border-indigo-200 py-1">
-            <span className="text-xs font-black uppercase text-indigo-600 tracking-wider [writing-mode:vertical-lr] rotate-180 text-center">
-              {rowLabel}
-            </span>
+      <div className="w-full overflow-x-auto py-2">
+        <div className="min-w-max mx-auto flex flex-col items-center px-4">
+          {/* Top Column Header / Label */}
+          <div className="flex items-center justify-center mb-2 text-xs font-black uppercase text-indigo-600 tracking-wider">
+            <span>{colLabel}</span>
           </div>
 
-          {/* Array Container */}
-          <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200 space-y-2">
-            {Array.from({ length: rows }).map((_, r) => (
-              <div key={`row-${r}`} className="flex items-center gap-2">
-                {Array.from({ length: columns }).map((_, c) => renderItem(r, c))}
-              </div>
-            ))}
+          <div className="flex items-center gap-3">
+            {/* Left Row Header / Label with vertical indicator */}
+            <div className="shrink-0 flex items-center gap-1.5 pr-2.5 border-r-2 border-indigo-200 py-1">
+              <span className="text-xs font-black uppercase text-indigo-600 tracking-wider [writing-mode:vertical-lr] rotate-180 text-center select-none">
+                {rowLabel}
+              </span>
+            </div>
+
+            {/* Array Container */}
+            <div className="p-3 sm:p-4 bg-slate-50/80 rounded-2xl border border-slate-200 space-y-1.5 sm:space-y-2">
+              {Array.from({ length: rows }).map((_, r) => (
+                <div key={`row-${r}`} className="flex items-center gap-1 sm:gap-2">
+                  {Array.from({ length: columns }).map((_, c) => renderItem(r, c))}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -126,11 +148,11 @@ export default function GridArrayVisualizer({ data = {} }) {
       {showEquation && (
         <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-center gap-3 font-mono text-xs font-black text-slate-700">
           <span className="bg-slate-100 px-3 py-1 rounded-lg border border-slate-200">
-            {rows} × {columns} = {data.hideEquationAnswer ? '?' : totalItems}
+            {rows} × {columns} = {hideEquationAnswer ? '?' : totalItems}
           </span>
           <span className="text-slate-400">or</span>
           <span className="bg-slate-100 px-3 py-1 rounded-lg border border-slate-200">
-            {data.hideEquationAnswer ? '?' : totalItems} ÷ {rows} = {columns}
+            {hideEquationAnswer ? '?' : totalItems} ÷ {rows} = {columns}
           </span>
         </div>
       )}

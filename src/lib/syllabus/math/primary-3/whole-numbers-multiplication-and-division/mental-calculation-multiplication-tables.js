@@ -1,7 +1,7 @@
-import { foundationLogic } from './mental-calculation-multiplication-tables/foundation';
-import { standardLogic } from './mental-calculation-multiplication-tables/standard';
-import { advancedLogic } from './mental-calculation-multiplication-tables/advanced';
-import { getRandomContext } from '@/lib/utils/localization';
+import { foundationLogic } from './mental-calculation-multiplication-tables/foundation.js';
+import { standardLogic } from './mental-calculation-multiplication-tables/standard.js';
+import { advancedLogic } from './mental-calculation-multiplication-tables/advanced.js';
+import { getRandomContext } from '../../../../utils/localization.js';
 
 export const p3MentalCalculationMultiplicationTablesBlueprint = {
   id: 'p3-mental-calculation-multiplication-tables',
@@ -72,7 +72,7 @@ export const p3MentalCalculationMultiplicationTablesBlueprint = {
     };
 
     // Default system instructions segment
-    const getFormatInstructions = (visualEngineStr = JSON.stringify({ componentToRender: "NONE", componentData: { hideVisual: true } }), inputRequirementStr = null) => `OUTPUT FORMAT (Return ONLY valid JSON matching this schema, with NO markdown formatting, NO \`\`\`json blocks, and NO trailing characters/braces):
+    const getFormatInstructions = (visualEngineStr = JSON.stringify({ componentToRender: "NONE", componentData: { hideVisual: true } }), inputRequirementStr = null, acceptedAnswers = null) => `OUTPUT FORMAT (Return ONLY valid JSON matching this schema, with NO markdown formatting, NO \`\`\`json blocks, and NO trailing characters/braces):
 {
   "meta": {
     "level": "${level}",
@@ -81,15 +81,17 @@ export const p3MentalCalculationMultiplicationTablesBlueprint = {
     "type": "${zodType}",
     "difficulty": "${zodDiff}"
   },
+  "visualEngine": ${visualEngineStr},
+  "inputRequirement": ${inputRequirementStr || JSON.stringify({ inputType: isMCQ ? 'MCQ_BUTTONS' : 'STANDARD_TEXT' })},
   "content": {
     "questionText": ["string (Line 1)", "string (Line 2)"] (Array of strings for the full question text. Break into multiple lines if needed.),
-    "options": ["string", "string", "string", "string"] (ONLY if MCQ, otherwise empty array),
-    "defectMap": { "distractor1": "Error category", "distractor2": "Error category" } (ONLY if MCQ, otherwise empty object),
+    "options": ${isMCQ ? '["Option A", "Option B", "Option C", "Option D"]' : '[]'},
+    "defectMap": ${isMCQ ? '{"wrong_option_1": "CARELESS_CALCULATION", "wrong_option_2": "CARELESS_CALCULATION", "wrong_option_3": "CARELESS_CALCULATION"}' : '{}'},
     "hint": "string (Pedagogical hint)",
     "solutionSteps": "string (step-by-step model solution. You MUST separate steps using the exact characters \\\\n inside the string. Formatted strictly as a numbered list 1. ..., 2. ..., 3. ...)",
-    "finalAnswer": "string (The exact final answer)"
-  },
-  "visualEngine": ${visualEngineStr}${inputRequirementStr ? `,\n  "inputRequirement": ${inputRequirementStr}` : ''}
+    "finalAnswer": "string (The exact final answer)",
+    "acceptedAnswers": ${acceptedAnswers && Array.isArray(acceptedAnswers) && acceptedAnswers.length > 0 ? JSON.stringify(acceptedAnswers) : '[]'}
+  }
 }
 CRITICAL INSTRUCTION: DO NOT generate your own visualEngine. You MUST output EXACTLY the visualEngine and inputRequirement values provided in the schema above.`;
 

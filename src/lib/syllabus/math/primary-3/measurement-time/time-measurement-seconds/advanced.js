@@ -230,10 +230,10 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
           type: "PART_WHOLE",
           isStatic: true,
           parts: [
-            { name: "Time Taken", value: "Time Taken", size: elapsed, layoutSize: elapsed, segments: 1 },
-            { name: "Time Left", value: "Time Left", size: remain, layoutSize: remain, segments: 1 }
+            { name: "Time Taken", value: `${elapsed} s`, size: elapsed, layoutSize: elapsed, segments: 1 },
+            { name: "Time Left", value: "?", size: remain, layoutSize: remain, segments: 1 }
           ],
-          whole: "?",
+          whole: `${minLimit} min`,
           wholeLayoutSize: secLimit
         }
       });
@@ -335,7 +335,7 @@ export const advancedLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
     3. NEVER add extra unrequested questions. Keep the final question sentence exactly as requested.
     4. CRITICAL: DO NOT include the word "STORY:" or any other prefixes in your final generated questionText.
     5. If there is a "[STORY]" tag, replace it with a simple 1-sentence story. 
-    6. DO NOT modify any other fields in the JSON template except inserting the story. 'visualEngine', 'componentData', 'solutionSteps', 'hint', 'finalAnswer', and all times/numbers MUST remain exactly as provided! IGNORE any examples in the logic variant description.
+    6. CRITICAL: DO NOT modify any other fields in the JSON template except inserting the story into "questionText". "visualEngine", "componentData", "solutionSteps", "hint", "finalAnswer", and all times/numbers MUST be copied verbatim! NEVER convert units (e.g., do NOT change "2 min" to "120s") or replace "?" with calculated answers inside "visualEngine". IGNORE any examples in the logic variant description.
     ${isShort ? '\n    CRITICAL STRICT RULE: This is a SHORT QUESTION. You MUST provide a direct mathematical question exactly as provided. DO NOT generate ANY story context, NO names, NO scenarios, and NO characters.' : ''}
 
     OUTPUT FORMAT (Return ONLY valid JSON matching this schema exactly):

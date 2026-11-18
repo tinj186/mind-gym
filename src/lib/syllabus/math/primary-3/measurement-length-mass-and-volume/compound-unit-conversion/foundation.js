@@ -1,4 +1,4 @@
-import { getRandomNames, getKgItems, getGramItems, getRandomLiquids, getRandomLocations } from '@/lib/utils/variable-bank';
+import { getRandomNames, getKgItems, getGramItems, getRandomLiquids, getRandomLocations } from '../../../../../utils/variable-bank.js';
 
 export const foundationLogic = (activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, level, topic, subtopic, getFormatInstructions) => {
   const names = getRandomNames(2);
@@ -279,6 +279,15 @@ export const foundationLogic = (activeVariant, difficulty, type, isMCQ, isShort,
 
   const generatedPrompt = getFormatInstructions(visualEngineStr, inputRequirementStr);
 
+  let parsedVE = null;
+  if (visualEngineStr) {
+    try { parsedVE = JSON.parse(visualEngineStr); } catch (e) {}
+  }
+  let parsedIR = null;
+  if (inputRequirementStr) {
+    try { parsedIR = JSON.parse(inputRequirementStr); } catch (e) {}
+  }
+
   return {
     aiPrompt: `You are an expert Primary 3 math teacher.
 Your task is to generate a JSON response for a math question.
@@ -295,6 +304,7 @@ CRITICAL INSTRUCTIONS:
 4. Generate a logical solution sequence for the 'solutionSteps' array that matches the finalAnswer. Ensure the steps explicitly address the conversion mathematics.
 5. DO NOT alter or append numerical values to the strings inside visualEngine parts. Keep the exact text provided in the template.
 6. The 'visualEngine' and 'inputRequirement' fields MUST match the provided JSON schema EXACTLY. DO NOT invent or generate your own visual engine objects (like BAR_MODEL) if the template says NONE. If the provided visualEngine is {"componentToRender": "NONE", "componentData": {}}, you MUST output that EXACT literal object without adding anything.
+7. CRITICAL INSTRUCTION: Under NO circumstances should 'visualEngine.componentData.whole' or any bar model labels contain parenthetical unit conversions or multiple units (e.g., NEVER write "4 km (4000 m)" or "4000 m"). Use ONLY the single original unit provided in the question stem (e.g. "4 km").
 
 Inputs for your generation:
 - askText: ${askText}
@@ -302,6 +312,8 @@ Inputs for your generation:
 - hint: ${hint}
 
 ${generatedPrompt}
-`
+`,
+    visualEngine: parsedVE,
+    inputRequirement: parsedIR
   };
 };

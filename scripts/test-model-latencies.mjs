@@ -41,3 +41,4 @@ for (const modelId of candidates) {
     console.log(`❌ ${modelId}: FAILED (${err.message})`);
   }
 }
+

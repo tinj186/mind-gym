@@ -28,14 +28,14 @@ export const p4FactorsAndMultiplesBlueprint = {
 
   variants: {
     // Foundation (Direct Identification & Pairing)
-    //    foundation_rainbow_pairing: 'Given a target number and one factor, find the missing complementary factor in the factor pair.',
-    //    foundation_multiple_skip_counter: 'Find the N-th multiple of a number or verify multiple relationships.',
-    //    foundation_boundary_constraints_all_factors: 'List all factors of a specific number and count how many factors it has altogether.',
-    //    foundation_relationship_true_false: 'Deduce and disambiguate the vocabulary and relationship between factor and multiple.',
+    foundation_rainbow_pairing: 'Given a target number and one factor, find the missing complementary factor in the factor pair.',
+    foundation_multiple_skip_counter: 'Find the N-th multiple of a number or verify multiple relationships.',
+    foundation_boundary_constraints_all_factors: 'List all factors of a specific number and count how many factors it has altogether.',
+    foundation_relationship_true_false: 'Deduce and disambiguate the vocabulary and relationship between factor and multiple.',
     foundation_digit_card_multiples: 'Form a 2-digit multiple from given digit cards under divisibility constraints.',
 
     // Standard (Common Traits & Bounded Logic)
-    standard_common_factor_venn: 'Find common factors and the greatest common factor (GCF) between two numbers.',
+    standard_common_factor_venn: 'Find common factors and the highest common factor (HCF) between two numbers.',
     standard_bounded_multiple_finder: 'Find a multiple of a given number that lies strictly between two boundary numbers.',
     standard_common_multiple_sequence: 'Find the 1st, 2nd, or N-th common multiple of two single-digit numbers.',
     standard_geometry_area_factors: 'Determine possible dimensions (length and breadth) of a rectangle given its area and constraints.',
@@ -49,13 +49,13 @@ export const p4FactorsAndMultiplesBlueprint = {
     advanced_hcf_grid_square_tiling: 'Determine the largest square tile size to cut or tile a rectangle without leftovers using highest common factor (HCF).'
   },
 
-  generate: function (difficulty, activeVariant, type, options = { }) {
+  generate: function (difficulty, activeVariant, type, options = {}) {
     const level = 'Primary 4';
     const topic = 'Whole Numbers - Factors and Multiples';
     const subtopic = 'Factors and Multiples';
     const safeType = String(type || 'short question').toLowerCase();
-    const isMCQ = safeType === 'mcq';
-    const isShort = safeType === 'short question';
+    const isMCQ = safeType.includes('mcq') || safeType.includes('choice');
+    const isShort = safeType.includes('short');
     const isStructure = !isMCQ && !isShort;
 
     const zodType = isMCQ ? 'MCQ' : isShort ? 'SHORT_QUESTION' : 'STRUCTURED';

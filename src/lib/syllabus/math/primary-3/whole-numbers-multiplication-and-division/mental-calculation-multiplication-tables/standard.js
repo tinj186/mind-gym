@@ -26,14 +26,12 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
     ];
     
     if (isMCQ) {
+      const dist1 = total + a;
+      const dist2 = Math.max(1, total - a);
+      let dist3 = a * 10 + ones;
+      if (dist3 === total || dist3 === dist1 || dist3 === dist2) dist3 = total + 10;
       customConstraints = `
-      1. Provide exactly these 4 options in MCQ: "${a * 10} + ${a * ones}", "${a * 10} + ${b}", "${a} + ${a * 10}", "${total + a}"
-      2. Set defectMap for incorrect options to "CONCEPTUAL_ERROR".
-      `;
-      answer = `${a * 10} + ${a * ones}`;
-    } else {
-      customConstraints = `
-      1. Provide exactly these 4 options in MCQ: "${total}", "${total + a}", "${total - a}", "${a * 10 + ones}"
+      1. Provide exactly these 4 options in MCQ: "${total}", "${dist1}", "${dist2}", "${dist3}"
       2. Set defectMap for incorrect options to "COMPUTATION_ERROR".
       `;
     }
@@ -63,10 +61,15 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       `${a} x ${b} = (${a} x ${b + 1}) - ${a}`,
       `${a * (b + 1)} - ${a} = ${total}`
     ];
-    customConstraints = `
-      1. Provide exactly these 4 options in MCQ: "${total}", "${a * (b + 1)}", "${total - a}", "${total + a}"
-      2. Set defectMap for incorrect options to "CARELESS_CALCULATION".
-    `;
+    if (isMCQ) {
+      const dist1 = a * (b + 1);
+      const dist2 = Math.max(1, total - a);
+      const dist3 = total + a;
+      customConstraints = `
+        1. Provide exactly these 4 options in MCQ: "${total}", "${dist1}", "${dist2}", "${dist3}"
+        2. Set defectMap for incorrect options to "CARELESS_CALCULATION".
+      `;
+    }
   }
   else if (activeVariant === 'standard_splitting_for_division') {
     const divisor = Math.floor(Math.random() * 8) + 2; // 2 to 9
@@ -89,14 +92,12 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
     ];
     
     if (isMCQ) {
+      const dist1 = quotient - 1;
+      const dist2 = quotient + 1;
+      let dist3 = 10 * onesQuotient;
+      if (dist3 === quotient || dist3 === dist1 || dist3 === dist2) dist3 = quotient + divisor;
       customConstraints = `
-      1. Provide exactly these 4 options in MCQ: "10 + ${onesQuotient}", "${tensDividend} + ${onesDividend}", "${quotient * 10} + ${onesQuotient}", "10 + ${divisor}"
-      2. Set defectMap for incorrect options to "CONCEPTUAL_ERROR".
-      `;
-      answer = `10 + ${onesQuotient}`;
-    } else {
-      customConstraints = `
-      1. Provide exactly these 4 options in MCQ: "${quotient}", "${quotient - 1}", "${quotient + 1}", "${10 * onesQuotient}"
+      1. Provide exactly these 4 options in MCQ: "${quotient}", "${dist1}", "${dist2}", "${dist3}"
       2. Set defectMap for incorrect options to "COMPUTATION_ERROR".
       `;
     }
@@ -127,10 +128,12 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
         `Double ${a * 2} is ${total}.`,
         `${a} x 4 = ${total}`
       ];
-      customConstraints = `
+      if (isMCQ) {
+        customConstraints = `
         1. Provide exactly these 4 options in MCQ: "${total}", "${a * 2}", "${total + 4}", "${total - 4}"
         2. Set defectMap for incorrect options to "CARELESS_CALCULATION".
-      `;
+        `;
+      }
     } else {
       // Must be divisible by 4
       const quotient = Math.floor(Math.random() * 12) + 12;
@@ -147,10 +150,12 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
         `Halve ${dividend / 2} is ${quotient}.`,
         `${dividend} ÷ 4 = ${quotient}`
       ];
-      customConstraints = `
+      if (isMCQ) {
+        customConstraints = `
         1. Provide exactly these 4 options in MCQ: "${quotient}", "${dividend / 2}", "${quotient + 2}", "${quotient - 2}"
         2. Set defectMap for incorrect options to "CARELESS_CALCULATION".
-      `;
+        `;
+      }
     }
   }
   else if (activeVariant === 'standard_extrapolating_hundreds') {
@@ -170,10 +175,12 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
       `${divisor} x ${quotientBase} = ${divisor * quotientBase}`,
       `So, ${divisor} x ${quotientBase} tens = ${dividend}`
     ];
-    customConstraints = `
+    if (isMCQ) {
+      customConstraints = `
       1. Provide exactly these 4 options in MCQ: "${dividend}", "${divisor * quotientBase}", "${dividend * 10}", "${dividend + 10}"
       2. Set defectMap for incorrect options to "CARELESS_CALCULATION".
-    `;
+      `;
+    }
   }
   else {
     throw new Error("Variant logic not implemented for standard: " + activeVariant);
@@ -182,16 +189,17 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
   const aiPrompt = `
 CRITICAL INSTRUCTION: You MUST use the EXACT strings provided below for questionText, hint, finalAnswer, and solutionSteps. DO NOT rephrase them!
 CRITICAL INSTRUCTION: \`solutionSteps\` MUST be a single string formatted with \\n, NOT an array of objects. 
-CRITICAL INSTRUCTION: You MUST include the exact \`inputRequirement\` block shown in the schema below in your final JSON output.
+CRITICAL INSTRUCTION: You MUST include the exact \`visualEngine\` and \`inputRequirement\` blocks shown in the schema below in your final JSON output.
 ${customConstraints}
 
 GENERATE:
 askText = \`${questionText}\`
 finalAnswer = \`${answer}\`
+acceptedAnswers = ["${answer}"]
 hint = \`${hint}\`
 solutionSteps = \`${solutionSteps.map((step, index) => `${index + 1}. ${step}`).join('\\n')}\`
 
-${getFormatInstructions(visualEngineStr, inputRequirementStr)}
+${getFormatInstructions(visualEngineStr, inputRequirementStr, [String(answer)])}
   `;
 
   return { aiPrompt };

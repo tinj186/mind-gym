@@ -8,7 +8,9 @@
 export function normalizeAnswer(val) {
   if (val === null || val === undefined) return '';
 
-  let str = String(val).trim().toLowerCase();
+  let str = String(val).trim().toLowerCase()
+    .replace(/\\ell\b/g, 'l')
+    .replace(/ℓ/g, 'l');
 
   // Handle thousands separators first (e.g., 1,000,000 -> 1000000)
   // Run twice to catch overlapping matches like 1,000,000

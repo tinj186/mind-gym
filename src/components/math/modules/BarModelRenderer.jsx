@@ -39,6 +39,12 @@ function UnitSegments({ value, segments }) {
   );
 }
 
+function cleanDisplayValue(val) {
+  if (typeof val !== 'string') return val;
+  // Defensive filter: Strip parenthetical duplicate unit conversions like "4 km (4000 m)" -> "4 km" or "1 kg (1000 g)" -> "1 kg"
+  return val.replace(/\s*\(\s*\d+\s*(?:km|m|cm|mm|kg|g|l|ℓ|ml|min|s|h|hr|hours|mins|secs)\s*\)/gi, '').trim();
+}
+
 export default function BarModelRenderer({ data, toolState = {} }) {
   if (!data) return null;
   const model = typeof data === 'string' ? JSON.parse(data) : data;
@@ -127,7 +133,8 @@ export default function BarModelRenderer({ data, toolState = {} }) {
             <div className="flex h-12 w-full rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-white">
               {partsList.map((part, idx) => {
                 const partValue = (typeof part === 'object' && part !== null) ? (part.value !== undefined ? part.value : (part.text !== undefined ? part.text : "")) : part;
-                const partDisplayValue = (typeof part === 'object' && part !== null && part.displayValue !== undefined) ? part.displayValue : partValue;
+                const rawDisplayValue = (typeof part === 'object' && part !== null && part.displayValue !== undefined) ? part.displayValue : partValue;
+                const partDisplayValue = cleanDisplayValue(rawDisplayValue);
                 const partLayoutVal = parseFloat(part.layoutSize || partValue) || fallbackPartVal;
                 const width = (partLayoutVal / calculatedWhole) * 100;
                 const inputKey = `part_${idx}`;
@@ -174,7 +181,7 @@ export default function BarModelRenderer({ data, toolState = {} }) {
               <div className="mt-2 flex flex-col items-center">
                 <div className="w-full h-3 border-x-2 border-b-2 border-slate-300 rounded-b-xl"></div>
                 <span className="text-sm font-black text-slate-500 uppercase mt-2 tracking-widest bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm">
-                  {m.totalLabel || m.wholeLabel || "Total"}: {toolState['whole'] ? <span className="text-indigo-600">{toolState['whole']}</span> : (m.whole === "?" ? "?" : <span className="text-indigo-600">{m.whole}</span>)}
+                  {m.totalLabel || m.wholeLabel || "Total"}: {toolState['whole'] ? <span className="text-indigo-600">{toolState['whole']}</span> : (m.whole === "?" ? "?" : <span className="text-indigo-600">{cleanDisplayValue(m.whole)}</span>)}
                 </span>
               </div>
             )}
@@ -271,7 +278,7 @@ export default function BarModelRenderer({ data, toolState = {} }) {
                     >
                       <UnitSegments value={bar.segments || bar.value} />
                       {(!bar.segments || parseInt(bar.segments) <= 1) && (
-                        userVal ? <span className="text-yellow-200 px-2 drop-shadow-md text-lg z-10">{userVal}</span> : (bar.value === "?" ? "?" : <span className="text-white drop-shadow-sm z-10">{bar.displayValue !== undefined ? bar.displayValue : bar.value}</span>)
+                        userVal ? <span className="text-yellow-200 px-2 drop-shadow-md text-lg z-10">{userVal}</span> : (bar.value === "?" ? "?" : <span className="text-white drop-shadow-sm z-10">{cleanDisplayValue(bar.displayValue !== undefined ? bar.displayValue : bar.value)}</span>)
                       )}
                     </div>
                   )}
@@ -322,7 +329,7 @@ export default function BarModelRenderer({ data, toolState = {} }) {
                   <div className="flex-1 flex">
                     <div style={{ width: `${(getLayoutValue(bar) / maxVal) * 100}%` }} className="flex flex-col items-center">
                       <div className="w-[calc(100%-8px)] h-4 border-x-2 border-b-2 border-slate-400 opacity-60 rounded-b-md"></div>
-                      <span className="text-sm font-black text-slate-600 bg-slate-50 px-2 -mt-3 z-10">{userVal || (bar.displayValue !== undefined ? bar.displayValue : bar.value)}</span>
+                      <span className="text-sm font-black text-slate-600 bg-slate-50 px-2 -mt-3 z-10">{userVal || cleanDisplayValue(bar.displayValue !== undefined ? bar.displayValue : bar.value)}</span>
                     </div>
                   </div>
                 </div>
@@ -340,7 +347,7 @@ export default function BarModelRenderer({ data, toolState = {} }) {
               </div>
               <div className="ml-1 flex flex-col items-start pointer-events-auto">
                 <span className="text-sm font-black text-slate-500 uppercase mt-2 tracking-widest bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm">
-                  Total: {toolState['whole'] ? <span className="text-indigo-600">{toolState['whole']}</span> : (m.whole === "?" ? "?" : <span className="text-indigo-600">{m.whole}</span>)}
+                  Total: {toolState['whole'] ? <span className="text-indigo-600">{toolState['whole']}</span> : (m.whole === "?" ? "?" : <span className="text-indigo-600">{cleanDisplayValue(m.whole)}</span>)}
                 </span>
               </div>
             </div>

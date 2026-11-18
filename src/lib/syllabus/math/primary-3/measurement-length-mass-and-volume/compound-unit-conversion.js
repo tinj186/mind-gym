@@ -35,7 +35,7 @@ export const p3CompoundUnitConversionBlueprint = {
     const zodType = isMCQ ? 'MCQ' : isShort ? 'SHORT_QUESTION' : 'STRUCTURED';
     const zodDiff = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
 
-    const getFormatInstructions = (visualEngineStr, inputRequirementStr) => {
+    const getFormatInstructions = (visualEngineStr, inputRequirementStr, acceptedAnswers = null) => {
       const inputReq = inputRequirementStr || JSON.stringify({ inputType: isMCQ ? "MCQ_BUTTONS" : "STANDARD_TEXT" });
       const optionsStr = isMCQ ? `["string", "string", "string", "string"]` : `[]`;
       const defectMapStr = isMCQ ? `{ "distractor1": "Error category", "distractor2": "Error category" }` : `{}`;
@@ -53,6 +53,7 @@ export const p3CompoundUnitConversionBlueprint = {
     "questionText": "string (the main problem statement)",
     "options": ${optionsStr},
     "finalAnswer": "string (exact answer matching the logic)",
+    "acceptedAnswers": ${acceptedAnswers && Array.isArray(acceptedAnswers) && acceptedAnswers.length > 0 ? JSON.stringify(acceptedAnswers) : '[]'},
     "defectMap": ${defectMapStr},
     "solutionSteps": "string (detailed step-by-step model solution, use exact string characters \\n to separate steps)",
     "hint": "string (pedagogical scaffolding)"

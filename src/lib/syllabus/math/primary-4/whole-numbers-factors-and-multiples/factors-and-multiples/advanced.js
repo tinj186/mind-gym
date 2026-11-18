@@ -59,9 +59,38 @@ function lcm(a, b) {
   return (a * b) / gcd(a, b);
 }
 
+// Generate extensive pool of verified mystery number scenarios (200+ combinations)
+function buildMysteryPool() {
+  const pool = [];
+  for (let M = 3; M <= 12; M++) {
+    for (let F = 36; F <= 120; F++) {
+      const factors = getFactors(F);
+      const common = factors.filter(f => f % M === 0 && f < F);
+      for (const ans of common) {
+        const low = ans - Math.floor(M / 2) - 1;
+        const high = ans + Math.floor(M / 2) + 1;
+        
+        const multiplesInRange = [];
+        for (let m = M; m < high; m += M) {
+          if (m > low && m < high) multiplesInRange.push(m);
+        }
+        const factorsInRange = factors.filter(f => f > low && f < high);
+        const intersection = multiplesInRange.filter(m => factorsInRange.includes(m));
+        if (intersection.length === 1 && intersection[0] === ans && ans >= 12 && ans <= 96) {
+          pool.push({ M, F, low, high, ans });
+        }
+      }
+    }
+  }
+  return pool;
+}
+
+const MYSTERY_POOL = buildMysteryPool();
+
 export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, isStructure, zodType, zodDiff, levelName, topic, getFormatInstructions, explicitVariety = null) {
   let promptInstruction = "";
   let finalAnswer = "";
+  let acceptedAnswers = [];
   let options = [];
   let defectMap = {};
   let visualEngineStr = `{\n    "componentToRender": "NONE",\n    "componentData": { "hideVisual": true }\n  }`;
@@ -75,21 +104,10 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   // VARIANT 1: advanced_mystery_number_dual_constraints (Dual Constraints)
   // ==========================================================================
   if (effectiveVariant === 'advanced_mystery_number_dual_constraints') {
-    const pool = [
-      { M: 6, F: 72, low: 20, high: 30, ans: 24 },
-      { M: 4, F: 60, low: 16, high: 24, ans: 20 },
-      { M: 7, F: 84, low: 22, high: 34, ans: 28 },
-      { M: 8, F: 96, low: 20, high: 30, ans: 24 },
-      { M: 9, F: 72, low: 10, high: 25, ans: 18 },
-      { M: 5, F: 90, low: 25, high: 35, ans: 30 },
-      { M: 8, F: 80, low: 35, high: 45, ans: 40 },
-      { M: 3, F: 45, low: 10, high: 20, ans: 15 },
-      { M: 6, F: 90, low: 25, high: 35, ans: 30 }
-    ];
-
-    const item = pool[Math.floor(Math.random() * pool.length)];
+    const item = MYSTERY_POOL[Math.floor(Math.random() * MYSTERY_POOL.length)];
     const { M, F, low, high, ans } = item;
     finalAnswer = ans.toString();
+    acceptedAnswers = [finalAnswer];
 
     // Multiples of M strictly between low and high
     const multiplesInRange = [];
@@ -101,7 +119,12 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     const allFactorsF = getFactors(F);
     const factorsInRange = allFactorsF.filter(f => f > low && f < high);
 
-    const askText = `I am a multiple of ${M}. I am a factor of ${F}. I am greater than ${low} but less than ${high}. What number am I?`;
+    const templates = [
+      `I am a multiple of ${M}. I am a factor of ${F}. I am greater than ${low} but less than ${high}. What number am I?`,
+      `Find the mystery number that is a factor of ${F}, a multiple of ${M}, and lies strictly between ${low} and ${high}.`,
+      `I am greater than ${low} and less than ${high}. I can be divided by ${M} without remainder, and I divide ${F} exactly. What number am I?`
+    ];
+    const askText = templates[Math.floor(Math.random() * templates.length)];
 
     promptInstruction = `The question must strictly be: "${askText}"`;
 
@@ -147,9 +170,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
 
     if (isMCQ) {
-      // Find a factor of F that is NOT a multiple of M
       const factorNotMultiple = factorsInRange.find(f => f % M !== 0) || (low + 1);
-      // Find a multiple of M that is out of range or not factor
       const dist1 = (ans - M).toString();
       const dist2 = (ans + M).toString();
       const dist3 = factorNotMultiple.toString();
@@ -168,30 +189,43 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
   }
 
   // ==========================================================================
-  // VARIANT 2: advanced_synchronization_periodic_intervals (Meeting Intervals / LCM)
+  // VARIANT 2: advanced_synchronization_periodic_intervals (Periodic Intervals / LCM)
   // ==========================================================================
   else if (effectiveVariant === 'advanced_synchronization_periodic_intervals') {
     const pairsPool = [
-      { i1: 6, i2: 8, lcmVal: 24, routeA: "12", routeB: "34" },
-      { i1: 8, i2: 12, lcmVal: 24, routeA: "51", routeB: "62" },
-      { i1: 6, i2: 9, lcmVal: 18, routeA: "7", routeB: "15" },
-      { i1: 4, i2: 10, lcmVal: 20, routeA: "85", routeB: "98" },
-      { i1: 9, i2: 12, lcmVal: 36, routeA: "105", routeB: "143" },
-      { i1: 10, i2: 15, lcmVal: 30, routeA: "21", routeB: "65" },
-      { i1: 12, i2: 15, lcmVal: 60, routeA: "166", routeB: "174" },
-      { i1: 8, i2: 10, lcmVal: 40, routeA: "3", routeB: "19" },
-      { i1: 6, i2: 10, lcmVal: 30, routeA: "80", routeB: "87" },
-      { i1: 15, i2: 20, lcmVal: 60, routeA: "190", routeB: "972" }
+      { i1: 4, i2: 6 }, { i1: 6, i2: 8 }, { i1: 8, i2: 12 }, { i1: 6, i2: 9 },
+      { i1: 4, i2: 10 }, { i1: 9, i2: 12 }, { i1: 10, i2: 15 }, { i1: 12, i2: 15 },
+      { i1: 8, i2: 10 }, { i1: 6, i2: 10 }, { i1: 15, i2: 20 }, { i1: 12, i2: 18 },
+      { i1: 10, i2: 25 }, { i1: 16, i2: 24 }, { i1: 14, i2: 21 }, { i1: 18, i2: 24 },
+      { i1: 20, i2: 30 }, { i1: 15, i2: 25 }, { i1: 8, i2: 14 }, { i1: 9, i2: 15 }
     ];
 
     const item = pairsPool[Math.floor(Math.random() * pairsPool.length)];
-    const { i1, i2, lcmVal, routeA, routeB } = item;
+    const [i1, i2] = Math.random() > 0.5 ? [item.i1, item.i2] : [item.i2, item.i1];
+    const lcmVal = lcm(i1, i2);
     finalAnswer = lcmVal.toString();
+    acceptedAnswers = [finalAnswer, `${finalAnswer} minutes`, `${finalAnswer} min`];
 
     const m1List = [i1, i1 * 2, i1 * 3, i1 * 4];
     const m2List = [i2, i2 * 2, i2 * 3, i2 * 4];
 
-    const askText = `At a bus interchange, Service ${routeA} departs every ${i1} minutes and Service ${routeB} departs every ${i2} minutes. If both bus services depart together at 8:00 a.m., in how many minutes will they next depart together?`;
+    // Randomize context: Bus departures, flashing beacons, or bell alarms
+    const contextType = Math.floor(Math.random() * 3);
+    let askText = "";
+    let contextNoun = "";
+
+    if (contextType === 0) {
+      const busRoutes = ["12", "34", "51", "65", "80", "143", "166", "190", "972"].sort(() => Math.random() - 0.5);
+      askText = `At a bus interchange, Service ${busRoutes[0]} departs every ${i1} minutes and Service ${busRoutes[1]} departs every ${i2} minutes. If both bus services depart together at 8:00 a.m., in how many minutes will they next depart together?`;
+      contextNoun = "bus departures";
+    } else if (contextType === 1) {
+      askText = `Two warning lights at a harbor flash periodically. Light A flashes every ${i1} seconds and Light B flashes every ${i2} seconds. If both lights flash together now, after how many seconds will they next flash together?`;
+      contextNoun = "flashes";
+      acceptedAnswers = [finalAnswer, `${finalAnswer} seconds`, `${finalAnswer} s`];
+    } else {
+      askText = `Two school bells ring at regular intervals. Bell X rings every ${i1} minutes and Bell Y rings every ${i2} minutes. If both bells chime together at 9:00 a.m., in how many minutes will both bells chime together again?`;
+      contextNoun = "chimes";
+    }
 
     promptInstruction = `The question must strictly be: "${askText}"`;
 
@@ -224,7 +258,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           expected: finalAnswer
         },
         {
-          label: "Final Answer (in minutes):",
+          label: "Final Answer:",
           type: "text",
           expectedAnswer: finalAnswer,
           expected: finalAnswer
@@ -256,8 +290,8 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       defectMap = mcqRes.defectMap;
     }
 
-    solutionSteps = `Step 1: List the departure intervals for Service ${routeA} (multiples of ${i1}): ${m1List.join(', ')}...\\nStep 2: List the departure intervals for Service ${routeB} (multiples of ${i2}): ${m2List.join(', ')}...\\nStep 3: The lowest common multiple (LCM) of ${i1} and ${i2} is ${finalAnswer} minutes.`;
-    hint = `When events repeat at periodic intervals, they happen together again at their Lowest Common Multiple (LCM). List the multiples of both numbers!`;
+    solutionSteps = `Step 1: List the multiples of ${i1}: ${m1List.join(', ')}...\\nStep 2: List the multiples of ${i2}: ${m2List.join(', ')}...\\nStep 3: The lowest common multiple (LCM) of ${i1} and ${i2} is ${finalAnswer}.`;
+    hint = `When events repeat at periodic intervals, they occur simultaneously at their Lowest Common Multiple (LCM). List the multiples of both numbers!`;
   }
 
   // ==========================================================================
@@ -275,19 +309,32 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       { T: 56, fSmall: 7, fBig: 8, isSum: false, val: 1 },
       { T: 54, fSmall: 3, fBig: 18, isSum: true, val: 21 },
       { T: 64, fSmall: 4, fBig: 16, isSum: false, val: 12 },
-      { T: 80, fSmall: 5, fBig: 16, isSum: false, val: 11 }
+      { T: 80, fSmall: 5, fBig: 16, isSum: false, val: 11 },
+      { T: 84, fSmall: 6, fBig: 14, isSum: true, val: 20 },
+      { T: 90, fSmall: 6, fBig: 15, isSum: false, val: 9 },
+      { T: 96, fSmall: 8, fBig: 12, isSum: false, val: 4 },
+      { T: 75, fSmall: 5, fBig: 15, isSum: true, val: 20 },
+      { T: 63, fSmall: 7, fBig: 9, isSum: false, val: 2 },
+      { T: 70, fSmall: 5, fBig: 14, isSum: true, val: 19 },
+      { T: 50, fSmall: 5, fBig: 10, isSum: false, val: 5 },
+      { T: 32, fSmall: 4, fBig: 8, isSum: true, val: 12 },
+      { T: 42, fSmall: 6, fBig: 7, isSum: false, val: 1 }
     ];
 
     const item = pool[Math.floor(Math.random() * pool.length)];
     const { T, fSmall, fBig, isSum, val } = item;
-    finalAnswer = fBig.toString();
+
+    // Toggle asking for greater factor or smaller factor
+    const askGreater = Math.random() > 0.4;
+    finalAnswer = (askGreater ? fBig : fSmall).toString();
+    acceptedAnswers = [finalAnswer];
 
     const pairs = getFactorPairs(T);
     const opText = isSum ? 'sum' : 'difference';
     const opSign = isSum ? '+' : '-';
+    const targetDescriptor = askGreater ? "greater" : "smaller";
 
-    const askText = `${name} found two factors of ${T}. The ${opText} of these two factors is ${val}. Find the greater of the two factors.`;
-
+    const askText = `${name} found two factors of ${T}. The ${opText} of these two factors is ${val}. Find the ${targetDescriptor} of the two factors.`;
     promptInstruction = `The question must strictly be: "${askText}"`;
 
     if (isStructure) {
@@ -307,7 +354,7 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
           expected: `${fBig} ${opSign} ${fSmall} = ${val}`
         },
         {
-          label: "Final Answer (the greater factor):",
+          label: `Final Answer (the ${targetDescriptor} factor):`,
           type: "text",
           expectedAnswer: finalAnswer,
           expected: finalAnswer
@@ -320,22 +367,19 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       }, null, 2);
     } else {
       visualEngineStr = JSON.stringify({
-        componentToRender: "FACTOR_RAINBOW",
-        componentData: {
-          targetNumber: T,
-          factorPairs: pairs,
-          hiddenNodes: []
-        }
+        componentToRender: "NONE",
+        hideVisual: true,
+        componentData: { hideVisual: true }
       }, null, 2);
     }
 
     if (isMCQ) {
-      const dist1 = fSmall.toString();
+      const otherFactor = (askGreater ? fSmall : fBig).toString();
       const dist2 = (val - fSmall).toString();
-      const dist3 = (fBig + 2).toString();
+      const dist3 = (Number(finalAnswer) + 2).toString();
 
       const mcqRes = ensureFourUniqueOptions(finalAnswer, [
-        { val: dist1, defect: "CHOSE_SMALLER_FACTOR" },
+        { val: otherFactor, defect: askGreater ? "CHOSE_SMALLER_FACTOR" : "CHOSE_GREATER_FACTOR" },
         { val: dist2, defect: "INCORRECT_FACTOR_PAIR" },
         { val: dist3, defect: "CARELESS_CALCULATION" }
       ]);
@@ -344,17 +388,17 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
     }
 
     const testedPairsStr = pairs.map(([a, b]) => `${b} ${opSign} ${a} = ${isSum ? a + b : b - a}`).join(', ');
-
-    solutionSteps = `Step 1: List all factor pairs of ${T}: ${pairs.map(p => `(${p[0]}, ${p[1]})`).join(', ')}.\\nStep 2: Test the ${opText} of each pair: ${testedPairsStr}.\\nStep 3: The pair with a ${opText} of ${val} is ${fSmall} and ${fBig}. The greater factor is ${finalAnswer}.`;
+    solutionSteps = `Step 1: List all factor pairs of ${T}: ${pairs.map(p => `(${p[0]}, ${p[1]})`).join(', ')}.\\nStep 2: Test the ${opText} of each pair: ${testedPairsStr}.\\nStep 3: The pair with a ${opText} of ${val} is ${fSmall} and ${fBig}. The ${targetDescriptor} factor is ${finalAnswer}.`;
     hint = `List all factor pairs that multiply to give ${T}, then find which pair has a ${opText} of ${val}!`;
   }
 
   // ==========================================================================
-  // VARIANT 4: advanced_grouping_with_leftovers (Chinese Remainder / Common Remainder)
+  // VARIANT 4: advanced_grouping_with_leftovers (Common Remainder Problem)
   // ==========================================================================
   else if (effectiveVariant === 'advanced_grouping_with_leftovers') {
     const [name] = getRandomNames(1);
-    const [itemNoun] = getRandomCountableItems(1);
+    const rawItem = getRandomCountableItems(1)[0];
+    const itemNoun = (rawItem && typeof rawItem === 'object' && rawItem.item) ? rawItem.item : (rawItem || 'sweets');
 
     const pool = [
       { g1: 4, g2: 6, R: 3, lcmVal: 12 },
@@ -365,13 +409,20 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       { g1: 8, g2: 12, R: 3, lcmVal: 24 },
       { g1: 5, g2: 8, R: 3, lcmVal: 40 },
       { g1: 4, g2: 7, R: 2, lcmVal: 28 },
-      { g1: 6, g2: 10, R: 4, lcmVal: 30 }
+      { g1: 6, g2: 10, R: 4, lcmVal: 30 },
+      { g1: 7, g2: 9, R: 3, lcmVal: 63 },
+      { g1: 8, g2: 10, R: 5, lcmVal: 40 },
+      { g1: 9, g2: 12, R: 5, lcmVal: 36 },
+      { g1: 5, g2: 9, R: 4, lcmVal: 45 },
+      { g1: 6, g2: 15, R: 2, lcmVal: 30 },
+      { g1: 10, g2: 12, R: 7, lcmVal: 60 }
     ];
 
     const entry = pool[Math.floor(Math.random() * pool.length)];
     const { g1, g2, R, lcmVal } = entry;
     const ansTotal = lcmVal + R;
     finalAnswer = ansTotal.toString();
+    acceptedAnswers = [finalAnswer];
 
     const askText = `When ${name} packs some ${itemNoun} into packets of ${g1}, there are ${R} ${itemNoun} left over. When ${name} packs the same ${itemNoun} into packets of ${g2}, there are also ${R} ${itemNoun} left over. What is the smallest possible number of ${itemNoun} ${name} has?`;
 
@@ -450,26 +501,35 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       { L: 40, W: 24, hcfVal: 8 },
       { L: 54, W: 36, hcfVal: 18 },
       { L: 50, W: 30, hcfVal: 10 },
-      { L: 72, W: 48, hcfVal: 24 }
+      { L: 72, W: 48, hcfVal: 24 },
+      { L: 64, W: 48, hcfVal: 16 },
+      { L: 56, W: 42, hcfVal: 14 },
+      { L: 84, W: 60, hcfVal: 12 },
+      { L: 60, W: 45, hcfVal: 15 },
+      { L: 70, W: 42, hcfVal: 14 },
+      { L: 80, W: 50, hcfVal: 10 }
     ];
 
     const entry = pool[Math.floor(Math.random() * pool.length)];
     const { L, W, hcfVal } = entry;
     finalAnswer = hcfVal.toString();
+    acceptedAnswers = [finalAnswer, `${finalAnswer} cm`, `${finalAnswer}cm`];
 
     const fL = getFactors(L);
     const fW = getFactors(W);
     const commonFactors = fL.filter(f => fW.includes(f));
 
-    const askText = `${name} has a rectangular cardboard measuring ${L} cm by ${W} cm. ${name} wants to cut it into identical square cards of the greatest possible size without any leftover cardboard. What is the length of each side of the square card?`;
+    const materialTypes = ["cardboard", "wood sheet", "tile surface", "poster board"];
+    const material = materialTypes[Math.floor(Math.random() * materialTypes.length)];
 
+    const askText = `${name} has a rectangular ${material} measuring ${L} cm by ${W} cm. ${name} wants to cut it into identical square cards of the greatest possible size without any leftover material. What is the length of each side of the square card?`;
     promptInstruction = `The question must strictly be: "${askText}"`;
 
     if (isStructure) {
       visualEngineStr = JSON.stringify({
         componentToRender: "INTERACTIVE_SCRIBBLE_CANVAS",
         componentData: {
-          watermarkText: "Sketch the rectangular cardboard and square tiling layout",
+          watermarkText: "Sketch the rectangular sheet and square tiling layout",
           backgroundGrid: true
         }
       }, null, 2);
@@ -501,15 +561,9 @@ export function advancedLogic(activeVariant, difficulty, type, isMCQ, isShort, i
       }, null, 2);
     } else {
       visualEngineStr = JSON.stringify({
-        componentToRender: "GRID_ARRAY",
-        componentData: {
-          rows: Math.min(W / hcfVal, 5),
-          columns: Math.min(L / hcfVal, 6),
-          itemShape: "square",
-          rowLabel: `${W} cm`,
-          colLabel: `${L} cm`,
-          highlightedCells: []
-        }
+        componentToRender: "NONE",
+        hideVisual: true,
+        componentData: { hideVisual: true }
       }, null, 2);
     }
 
@@ -551,12 +605,12 @@ ${solutionSteps}
 "${hint}"
 5. Forbid using "STORY:" or any instructional prefix in the output.
 
-${getFormatInstructions(visualEngineStr, inputRequirementStr, effectiveVariant)}`;
+${getFormatInstructions(visualEngineStr, inputRequirementStr, effectiveVariant, acceptedAnswers)}`;
 
   return {
     aiPrompt,
     visualEngine: visualEngineStr ? (typeof visualEngineStr === 'string' ? JSON.parse(visualEngineStr) : visualEngineStr) : null,
     inputRequirement: inputRequirementStr ? (typeof inputRequirementStr === 'string' ? JSON.parse(inputRequirementStr) : inputRequirementStr) : null,
-    acceptedAnswers: [finalAnswer]
+    acceptedAnswers: acceptedAnswers.length > 0 ? acceptedAnswers : [finalAnswer]
   };
 }

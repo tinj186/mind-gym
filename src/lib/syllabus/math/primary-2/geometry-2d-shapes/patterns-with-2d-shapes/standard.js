@@ -335,12 +335,15 @@ export const standardLogic = (activeVariant, isMCQ, isShort, isStructure, getQTe
     });
 
     if (isMCQ) {
-      mcqOptions = [
-        actualAnswer,
-        `${distinctShapes[0]} ${getDirection(distinctRots[1] || distinctRots[0])}`,
-        `${distinctShapes[1] || distinctShapes[0]} ${getDirection(distinctRots[0])}`,
-        `${distinctShapes[1] || distinctShapes[0]} ${getDirection(distinctRots[2] || distinctRots[0])}`
-      ];
+      const distractorPool = optionsRow
+        .map(o => o.label)
+        .filter(lbl => lbl !== actualAnswer)
+        .sort(() => 0.5 - Math.random());
+      const fallbackPool = ASYMMETRIC_SHAPES.flatMap(s =>
+        [0, 90, 180, 270].map(r => `${s} ${getDirection(r)}`)
+      ).filter(lbl => lbl !== actualAnswer);
+      const uniqueDistractors = [...new Set([...distractorPool, ...fallbackPool])].slice(0, 3);
+      mcqOptions = [actualAnswer, ...uniqueDistractors];
     }
   } else if (activeVariant === 'standard_dual_attribute_colour_size') {
     const shape = getRandomElement(SHAPES);
@@ -562,20 +565,33 @@ export const standardLogic = (activeVariant, isMCQ, isShort, isStructure, getQTe
 
   if (isStructure) {
     if (structureSteps && structureSteps.length > 0) {
-      const stepsJson = structureSteps.map(step => 
-        `{"label": "${step.label}", "expectedAnswer": "${step.expectedAnswer}", "acceptedAnswers": []}`
-      ).join(",\\n        ");
-      
-      inputRequirementStr = `{"inputType": "MULTI_STEP_INPUT", "steps": [
-        ${stepsJson}
-      ]}`;
+      inputRequirementStr = JSON.stringify({
+        inputType: "MULTI_STEP_INPUT",
+        steps: structureSteps.map(step => ({
+          label: step.label,
+          expectedAnswer: step.expectedAnswer,
+          acceptedAnswers: step.acceptedAnswers || []
+        }))
+      });
     } else {
-      inputRequirementStr = `{"inputType": "MULTI_STEP_INPUT", "steps": [
-        {"label": "Final Answer:", "expectedAnswer": "${actualAnswer}", "acceptedAnswers": []}
-      ]}`;
+      inputRequirementStr = JSON.stringify({
+        inputType: "MULTI_STEP_INPUT",
+        steps: [{ label: "Final Answer:", expectedAnswer: actualAnswer, acceptedAnswers: [] }]
+      });
     }
+  } else if (isMCQ) {
+    inputRequirementStr = `{"inputType": "MCQ_BUTTONS"}`;
   } else {
     inputRequirementStr = `{"inputType": "TEXT_INPUT"}`;
+  }
+
+  let parsedVE = null;
+  if (visualEngineStr) {
+    try { parsedVE = JSON.parse(visualEngineStr); } catch (e) {}
+  }
+  let parsedIR = null;
+  if (inputRequirementStr) {
+    try { parsedIR = JSON.parse(inputRequirementStr); } catch (e) {}
   }
 
   let systemPrompt = `
@@ -589,11 +605,12 @@ Hint: ${hintStr}
 CRITICAL INSTRUCTIONS:
 - You must use the EXACT question text provided above.
 - You must use the EXACT correct answer provided above.
+- Do NOT modify "visualEngine", "gapIndex", "pattern", or "optionsRow".
 - Ensure the solution steps are broken down clearly.
 - Output ONLY valid JSON using the provided schema template.
 
 ${getFormatInstructions(visualEngineStr, inputRequirementStr)}
   `.trim();
 
-  return { aiPrompt: systemPrompt };
+  return { aiPrompt: systemPrompt, visualEngine: parsedVE, inputRequirement: parsedIR };
 };

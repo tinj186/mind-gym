@@ -25,13 +25,14 @@ export const patternsWith2DShapesBlueprint = {
     'advanced_mismatched_attribute_cycles': 'Identify the next shape in a pattern where two attributes change, but they repeat at different intervals (e.g., the Shape alternates every 2 spaces, but the Colour alternates every 3 spaces).'
   },
   generate: function (difficulty, activeVariant, type) {
-    const isMCQ = type === 'MCQ';
-    const isShort = type === 'Short Question';
-    const isStructure = type === 'Structured';
+    const tLower = (type || '').toLowerCase();
+    const isMCQ = tLower === 'mcq';
+    const isShort = tLower === 'short question' || tLower === 'short_question';
+    const isStructure = tLower === 'structured';
     const level = 'Primary 2';
     const topic = 'Geometry - 2D Shapes';
     const subtopic = '2D Shape Patterns';
-    const zodType = type === 'Short Question' ? 'SHORT_QUESTION' : type.toUpperCase();
+    const zodType = isShort ? 'SHORT_QUESTION' : (isMCQ ? 'MCQ' : 'STRUCTURED');
     const zodDiff = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
 
     // Helper to switch text based on type
@@ -63,13 +64,13 @@ export const patternsWith2DShapesBlueprint = {
 
     if (difficulty.toLowerCase() === 'foundation') {
       const result = foundationLogic(activeVariant, isMCQ, isShort, isStructure, getQText, getFormatInstructions);
-      return { aiPrompt: result.aiPrompt };
+      return { aiPrompt: result.aiPrompt, ...(result.visualEngine ? { visualEngine: result.visualEngine } : {}), ...(result.inputRequirement ? { inputRequirement: result.inputRequirement } : {}) };
     } else if (difficulty.toLowerCase() === 'standard') {
       const result = standardLogic(activeVariant, isMCQ, isShort, isStructure, getQText, getFormatInstructions);
-      return { aiPrompt: result.aiPrompt };
+      return { aiPrompt: result.aiPrompt, ...(result.visualEngine ? { visualEngine: result.visualEngine } : {}), ...(result.inputRequirement ? { inputRequirement: result.inputRequirement } : {}) };
     } else if (difficulty.toLowerCase() === 'advanced') {
       const result = advancedLogic(activeVariant, isMCQ, isShort, isStructure, getQText, getFormatInstructions);
-      return { aiPrompt: result.aiPrompt };
+      return { aiPrompt: result.aiPrompt, ...(result.visualEngine ? { visualEngine: result.visualEngine } : {}), ...(result.inputRequirement ? { inputRequirement: result.inputRequirement } : {}) };
     }
 
     return { aiPrompt: `No logic matched for difficulty: ${difficulty}` };

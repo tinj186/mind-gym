@@ -1,5 +1,5 @@
-import { getRandomContext } from '@/lib/utils/localization';
-import { getRandomNames } from '@/lib/utils/variable-bank';
+import { getRandomContext } from '../../../../../utils/localization.js';
+import { getRandomNames } from '../../../../../utils/variable-bank.js';
 const getShuffledOptions = (correct, distractors) => [correct, ...distractors].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4);
 
 export const advancedVariants = {

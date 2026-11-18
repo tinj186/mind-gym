@@ -170,7 +170,7 @@ export const standardLogic = (activeVariant, difficulty, type, isMCQ, isShort, i
             { value: `${s1} ${selectedUnit.small}`, size: s1, layoutSize: s1, segments: 1 },
             { value: "?", size: shortfall, layoutSize: shortfall, segments: 1 }
           ],
-          whole: `1 ${selectedUnit.big} (1000 ${selectedUnit.small})`,
+          whole: `1 ${selectedUnit.big}`,
           wholeLayoutSize: 1000
         }
       });

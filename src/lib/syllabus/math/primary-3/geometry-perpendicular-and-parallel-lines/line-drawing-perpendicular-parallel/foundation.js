@@ -322,13 +322,49 @@ export const generateFoundation = (variant, type, getFormatInstructions) => {
 
     const candidateLabels = ["P", "Q", "R", "S"];
     let correctAnswerLabel = "";
-    
-    const placements = [
-      {x: 180, y: 60},
-      {x: 60, y: 220},
-      {x: 180, y: 220},
-      {x: 320, y: 140}
-    ];
+
+    const getBox = (p1, p2) => ({
+      x1: Math.min(p1.x, p2.x),
+      y1: Math.min(p1.y, p2.y),
+      x2: Math.max(p1.x, p2.x),
+      y2: Math.max(p1.y, p2.y)
+    });
+
+    const hasOverlap = (boxA, boxes, pad) => boxes.some((boxB) => !(
+      boxA.x2 + pad <= boxB.x1 ||
+      boxB.x2 + pad <= boxA.x1 ||
+      boxA.y2 + pad <= boxB.y1 ||
+      boxB.y2 + pad <= boxA.y1
+    ));
+
+    const placedBoxes = [getBox(mP1, mP2)];
+    const findNonOverlappingStart = (horiz, len) => {
+      const pxLen = len * 20;
+      const maxX = horiz ? 460 - pxLen : 460;
+      const maxY = horiz ? 420 : 420 - pxLen;
+      for (const pad of [40, 20]) {
+        const validStarts = [];
+        for (let x = 40; x <= maxX; x += 20) {
+          for (let y = 60; y <= maxY; y += 20) {
+            const p1 = { x, y };
+            const p2 = horiz ? { x: x + pxLen, y } : { x, y: y + pxLen };
+            const box = getBox(p1, p2);
+            if (!hasOverlap(box, placedBoxes, pad)) {
+              validStarts.push({ p1, p2, box });
+            }
+          }
+        }
+        if (validStarts.length > 0) {
+          const chosen = validStarts[Math.floor(Math.random() * validStarts.length)];
+          placedBoxes.push(chosen.box);
+          return chosen;
+        }
+      }
+      const fallbackP1 = { x: 60, y: 60 + placedBoxes.length * 60 };
+      const fallbackP2 = horiz ? { x: fallbackP1.x + pxLen, y: fallbackP1.y } : { x: fallbackP1.x, y: fallbackP1.y + pxLen };
+      placedBoxes.push(getBox(fallbackP1, fallbackP2));
+      return { p1: fallbackP1, p2: fallbackP2 };
+    };
 
     const polys = [
       { vertices: [mP1, mP2], isOpen: true, strokeColor: "#3b82f6" },
@@ -337,8 +373,7 @@ export const generateFoundation = (variant, type, getFormatInstructions) => {
     
     candidates.forEach((cand, idx) => {
       if (cand === trueC) correctAnswerLabel = candidateLabels[idx];
-      const pt = placements[idx];
-      const p2 = cand.horiz ? {x: pt.x + cand.len * 20, y: pt.y} : {x: pt.x, y: pt.y + cand.len * 20};
+      const { p1: pt, p2 } = findNonOverlappingStart(cand.horiz, cand.len);
       polys.push({ vertices: [pt, p2], isOpen: true, strokeColor: "#ef4444" });
       polys.push(createLabeledDot(pt, candidateLabels[idx], "#ef4444"));
     });

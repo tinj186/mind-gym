@@ -244,6 +244,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
         .replace(/\\colon/g, ':') // Normalize MathLive colon (used for time/ratios)
         .replace(/[\u200B-\u200D\uFEFF]/g, '') // Strip zero-width invisible characters
         .replace(/’/g, "'") // Normalize typographic apostrophes from MathInput bypass
+        .replace(/\\ell\b/g, 'l') // Normalize LaTeX cursive ell for litres
         .replace(/\\/g, '') // Any remaining latex slashes
         .toLowerCase();
 
@@ -260,6 +261,17 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
       s = s.replace(/\bcents?\b/g, 'c');
       s = s.replace(/¢/g, 'c');
       s = s.replace(/(\d+)\s*\$/g, '$$$1'); // e.g. 2$ -> $2
+
+      // Length, Mass, Volume & Unit Normalization
+      s = s.replace(/ℓ/g, 'l');
+      s = s.replace(/\b(?:litres?|liters?)\b/g, 'l');
+      s = s.replace(/\b(?:millilitres?|milliliters?)\b/g, 'ml');
+      s = s.replace(/\b(?:kilometres?|kilometers?)\b/g, 'km');
+      s = s.replace(/\b(?:centimetres?|centimeters?)\b/g, 'cm');
+      s = s.replace(/\b(?:millimetres?|millimeters?)\b/g, 'mm');
+      s = s.replace(/\b(?:metres?|meters?)\b/g, 'm');
+      s = s.replace(/\b(?:kilograms?)\b/g, 'kg');
+      s = s.replace(/\b(?:grams?)\b/g, 'g');
 
       // Area & Volume Unit Normalization
       s = s.replace(/\b(?:sq\.?\s*cm|square\s*(?:cm|centimet(?:er|re)s?))\b/g, 'cm²');
@@ -441,6 +453,15 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
           const studentUnit = studentAns.slice(studentBare.length);
           const realUnit = realAns.slice(realBare.length);
           if (!studentUnit || !realUnit || studentUnit === realUnit) {
+            isCorrect = true;
+          }
+        }
+
+        // Resilient compound unit matching (e.g. "2l500ml" vs "2l500")
+        const compoundMatch = realAns.match(/^(\d+)(km|kg|l)(\d+)(m|g|ml)$/);
+        if (compoundMatch) {
+          const [, bigVal, bigUnit, smallVal, smallUnit] = compoundMatch;
+          if (studentAns === `${bigVal}${bigUnit}${smallVal}`) {
             isCorrect = true;
           }
         }

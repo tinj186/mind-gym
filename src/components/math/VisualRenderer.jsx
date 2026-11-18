@@ -12,12 +12,16 @@ export const ESSENTIAL_VISUALS = [
   "GRID_DISPLAY", "GRID_DRAWING_CANVAS", "FRACTION_DISPLAY",
   "MASS_SCALE", "VOLUME_BEAKER", "STATIC_IMAGE", "HTML_CONTENT", "BAR_MODEL", "FACT_TRIANGLE",
   "SQUARE_GRID_SHAPE", "GEOMETRY_POLYGON", "AREA_PERIMETER_EXPLORER", "ANGLE_VISUALIZER", "LINE_AND_POLYGON",
-  "BAR_GRAPH", "BAR_GRAPH_VISUALIZER", "NUMBER_LINE", "NUMBER_SEQUENCE_BLOCKS", "TABLE_PATTERN_VISUALIZER"
+  "BAR_GRAPH", "BAR_GRAPH_VISUALIZER", "NUMBER_LINE", "NUMBER_SEQUENCE_BLOCKS", "TABLE_PATTERN_VISUALIZER",
+  "GRID_ARRAY", "GRID_ARRAY_VISUALIZER", "FACTOR_RAINBOW", "FACTOR_RAINBOW_VISUALIZER",
+  "VENN_DIAGRAM", "VENN_DIAGRAM_VISUALIZER", "REPEATING_PATTERN", "REPEATING_PATTERN_VISUALIZER"
   // "PICTURE_GRAPH_DISPLAY" // Not essential, lazy-loaded
 ];
 
 // 🚀 Lazy-loaded modules (Only downloaded by the browser if the question requires it)
 const BarGraphVisualizer = lazy(() => import('./modules/BarGraphVisualizer'));
+const VennDiagramVisualizer = lazy(() => import('./modules/VennDiagramVisualizer'));
+const RepeatingPatternVisualizer = lazy(() => import('./modules/RepeatingPatternVisualizer'));
 const MeasurementUnit = lazy(() => import('./modules/MeasurementUnit'));
 const MeasurementRuler = lazy(() => import('./modules/MeasurementRuler'));
 const MassScale = lazy(() => import('./modules/MassScale'));
@@ -128,6 +132,10 @@ export default function VisualRenderer({ type, ...props }) {
           case 'FACT_TRIANGLE': return <FactTriangle data={props.visualEngine?.componentData || props.data} />;
           case 'FACTOR_RAINBOW':
           case 'FACTOR_RAINBOW_VISUALIZER': return <FactorRainbow data={props.visualEngine?.componentData || props.data} />;
+          case 'VENN_DIAGRAM':
+          case 'VENN_DIAGRAM_VISUALIZER': return <VennDiagramVisualizer data={props.visualEngine?.componentData || props.data} />;
+          case 'REPEATING_PATTERN':
+          case 'REPEATING_PATTERN_VISUALIZER': return <RepeatingPatternVisualizer data={props.visualEngine?.componentData || props.data} />;
           case 'GRID_ARRAY':
           case 'GRID_ARRAY_VISUALIZER': return <GridArrayVisualizer data={props.visualEngine?.componentData || props.data} />;
           case 'PLACE_VALUE_CHART': return <PlaceValueChart data={props.visualEngine?.componentData || props.data} />;
