@@ -8,8 +8,8 @@ export const ESSENTIAL_VISUALS = [
   "ORDINAL_LINE", "GROUPING_WORKSPACE", "NUMBER_CARDS", 
   "NUMBER_BOND", "NUMBER_PATTERN", "BASE_TEN_BLOCKS", 
   "SINGAPORE_MONEY", "MEASUREMENT_UNIT", "MEASUREMENT_RULER", "CLOCK_DISPLAY",
-  "SHAPE_DISPLAY", "SHAPE_3D", "SHAPE_3D_PATTERN", "PLACE_VALUE_CHART", "VERTICAL_ALGORITHM", "LONG_DIVISION",
-  "GRID_DISPLAY", "GRID_DRAWING_CANVAS", "FRACTION_DISPLAY",
+  "SHAPE_DISPLAY", "SHAPE_3D", "SHAPE_3D_PATTERN", "PLACE_VALUE_CHART", "VERTICAL_ALGORITHM", "VERTICAL_ALGORITHM_GRID", "AREA_MODEL_MULTIPLICATION", "AREA_MODEL_DIVISION", "LONG_DIVISION", "LONG_DIVISION_GRID",
+  "GRID_DISPLAY", "GRID_DRAWING_CANVAS", "FRACTION_DISPLAY", "FRACTION_PIZZA_VISUALIZER", "FRACTION_BAR_VISUALIZER",
   "MASS_SCALE", "VOLUME_BEAKER", "STATIC_IMAGE", "HTML_CONTENT", "BAR_MODEL", "FACT_TRIANGLE",
   "SQUARE_GRID_SHAPE", "GEOMETRY_POLYGON", "AREA_PERIMETER_EXPLORER", "ANGLE_VISUALIZER", "LINE_AND_POLYGON",
   "BAR_GRAPH", "BAR_GRAPH_VISUALIZER", "NUMBER_LINE", "NUMBER_SEQUENCE_BLOCKS", "TABLE_PATTERN_VISUALIZER",
@@ -22,6 +22,8 @@ export const ESSENTIAL_VISUALS = [
 const BarGraphVisualizer = lazy(() => import('./modules/BarGraphVisualizer'));
 const VennDiagramVisualizer = lazy(() => import('./modules/VennDiagramVisualizer'));
 const RepeatingPatternVisualizer = lazy(() => import('./modules/RepeatingPatternVisualizer'));
+const AreaModelMultiplication = lazy(() => import('./modules/AreaModelMultiplication'));
+const AreaModelDivision = lazy(() => import('./modules/AreaModelDivision'));
 const MeasurementUnit = lazy(() => import('./modules/MeasurementUnit'));
 const MeasurementRuler = lazy(() => import('./modules/MeasurementRuler'));
 const MassScale = lazy(() => import('./modules/MassScale'));
@@ -161,13 +163,19 @@ export default function VisualRenderer({ type, ...props }) {
             const data = props.visualEngine?.componentData || props.data || {};
             return <TFMatrixTable statements={data.statements} entities={data.entities} />;
           }
-          case 'VERTICAL_ALGORITHM': return <VerticalAlgorithm data={props.visualEngine?.componentData || props.data} />;
-          case 'LONG_DIVISION': return <LongDivision data={props.visualEngine?.componentData || props.data} />;
+          case 'VERTICAL_ALGORITHM':
+          case 'VERTICAL_ALGORITHM_GRID': return <VerticalAlgorithm data={props.visualEngine?.componentData || props.data} />;
+          case 'AREA_MODEL_MULTIPLICATION': return <AreaModelMultiplication data={props.visualEngine?.componentData || props.data} />;
+          case 'AREA_MODEL_DIVISION': return <AreaModelDivision data={props.visualEngine?.componentData || props.data} />;
+          case 'LONG_DIVISION':
+          case 'LONG_DIVISION_GRID': return <LongDivision data={props.visualEngine?.componentData || props.data} />;
           case 'DIAGRAM_RENDERER': return <DiagramRenderer data={props.visualEngine?.componentData || props.data} />;
           case 'BAR_MODEL':
           case 'BAR_MODEL_COMPARISON': return <BarModelRenderer data={props.visualEngine?.componentData || props.data} toolState={props.toolState} />;
           case 'FRACTION_EQUIVALENCE': return <FractionEquivalence data={props.visualEngine?.componentData || props.data} />;
-          case 'FRACTION_DISPLAY': return <FractionDisplay data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
+          case 'FRACTION_DISPLAY':
+          case 'FRACTION_PIZZA_VISUALIZER':
+          case 'FRACTION_BAR_VISUALIZER': return <FractionDisplay data={props.visualEngine?.componentData || props.data} hideCardStyles={props.hideCardStyles} />;
           case 'SQUARE_GRID_SHAPE': return <SquareGridShape data={props.visualEngine?.componentData || props.data} />;
           case 'GEOMETRY_POLYGON': return <GeometryPolygon data={props.visualEngine?.componentData || props.data} />;
           case 'ANGLE_VISUALIZER': return <AngleVisualizer data={props.visualEngine?.componentData || props.data} />;

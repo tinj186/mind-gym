@@ -112,7 +112,7 @@ export const standardLogic = (variant, isMCQ, isShort, isStructure, getFormatIns
 "${name} chooses two different shapes from the options above. She draws exactly ${q1} of the first shape and ${q2} of the second shape. Altogether, these shapes have ${totalPairs} pairs of parallel lines. Which two shapes did she choose?"`;
       const stepsArr = [
         { label: `By looking at the visual, list the number of parallel pairs for Shape A, B, C, and D in order (e.g. 0, 1, 2, 3):`, expectedAnswer: `${shapePool[0].pairs}, ${shapePool[1].pairs}, ${shapePool[2].pairs}, ${shapePool[3].pairs}`, acceptedAnswers: [] },
-        { label: `Use guess and check. If she chose Shape ${label1} and Shape ${label2}, write the equation to check if the total pairs equal ${totalPairs}:`, expectedAnswer: `${q1} x ${shape1.pairs} + ${q2} x ${shape2.pairs} = ${totalPairs}`, acceptedAnswers: [`${q1}*${shape1.pairs}+${q2}*${shape2.pairs}=${totalPairs}`] },
+        { label: `Use guess and check. Write the equation using the number of parallel pairs of the two chosen shapes that gives a total of ${totalPairs} pairs:`, expectedAnswer: `${q1} x ${shape1.pairs} + ${q2} x ${shape2.pairs} = ${totalPairs}`, acceptedAnswers: [`${q1}*${shape1.pairs}+${q2}*${shape2.pairs}=${totalPairs}`] },
         { label: `What is the first shape she chose?`, expectedAnswer: `Shape ${label1}`, acceptedAnswers: [`${label1}`] },
         { label: `What is the second shape she chose?`, expectedAnswer: `Shape ${label2}`, acceptedAnswers: [`${label2}`] }
       ];

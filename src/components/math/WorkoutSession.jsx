@@ -11,6 +11,7 @@ import BarModelWorkspace from '@/components/tools/BarModelWorkspace';
 import MultiStepInput from '@/components/math/MultiStepInput'; // Multi-Step Input
 import InteractiveBarBuilder, { ModelSolutionBarModel } from '@/components/math/InteractiveBarBuilder'; // Interactive Bar Builder
 import MathInput from '@/components/math/MathInput'; // Advanced Math Input
+import FractionText from '@/components/math/FractionText';
 import confetti from 'canvas-confetti';
 
 import ExamReviewBoard from '@/components/math/ExamReviewBoard';
@@ -673,7 +674,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
           exit={{ x: -20, opacity: 0 }}
           className="bg-white border-4 border-slate-50 rounded-[3rem] p-12 space-y-8 shadow-xl"
         >
-          <h3 className="text-3xl font-black text-slate-900 whitespace-pre-line">{normalizedQuestion.question}</h3>
+          <h3 className="text-3xl font-black text-slate-900 whitespace-pre-line"><FractionText text={normalizedQuestion.question} /></h3>
           {normalizedQuestion.inputRequirement?.inputType === 'MULTI_STEP_INPUT' && (
             <p className="text-slate-500 font-bold text-lg">✏️ Write your working and final answer below.</p>
           )}
@@ -743,7 +744,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
                       className={`text-left p-6 border-4 rounded-2xl text-xl font-black transition-all active:scale-95 disabled:opacity-50 ${focusedOptionIndex === idx ? 'border-slate-900 ring-4 ring-blue-200 bg-slate-50 scale-[1.02]' : 'border-slate-200'}`}
                     >
                     <span className="inline-block w-8 h-8 rounded-full border-2 border-slate-900 text-center leading-7 mr-4 text-sm">{['A','B','C','D'][idx] || idx + 1}</span>
-                    {opt.replace(/^[A-D]:\s*/, '')}
+                    <FractionText text={opt.replace(/^[A-D]:\s*/, '')} />
                   </button>
                 ))}
               </div>
@@ -786,7 +787,7 @@ export default function WorkoutSession({ studentId, level, initialQuestions = []
 
           {showHint && (
             <div className="p-6 bg-amber-50 rounded-2xl border-2 border-amber-200 animate-in fade-in slide-in-from-bottom-4">
-              <p className="text-amber-900 font-bold text-sm">💡 HINT: {normalizedQuestion.hint || "Try counting carefully!"}</p>
+              <p className="text-amber-900 font-bold text-sm">💡 HINT: <FractionText text={normalizedQuestion.hint || "Try counting carefully!"} /></p>
             </div>
           )}
 

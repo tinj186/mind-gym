@@ -247,7 +247,8 @@ export const primary4Syllabus = [
         "name": "Mixed Numbers/Improper Fractions",
         "allowedTypes": [
           QUESTION_TYPES.SHORT_QUESTION.label,
-          QUESTION_TYPES.MCQ.label
+          QUESTION_TYPES.MCQ.label,
+          QUESTION_TYPES.STRUCTURED.label
         ],
         "blueprint": "Focus on mixed numbers/improper fractions in accordance with Singapore MOE syllabus learning outcomes.",
         "visualType": "FRACTION_MODEL",
@@ -271,7 +272,8 @@ export const primary4Syllabus = [
         "name": "Fraction of a Set",
         "allowedTypes": [
           QUESTION_TYPES.SHORT_QUESTION.label,
-          QUESTION_TYPES.MCQ.label
+          QUESTION_TYPES.MCQ.label,
+          QUESTION_TYPES.STRUCTURED.label
         ],
         "blueprint": "Focus on fraction of a set in accordance with Singapore MOE syllabus learning outcomes.",
         "visualType": "FRACTION_OF_SET",

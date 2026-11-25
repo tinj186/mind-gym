@@ -3,6 +3,7 @@
 import React from 'react';
 import VisualRenderer from '@/components/math/VisualRenderer';
 import InteractiveBarBuilder from '@/components/math/InteractiveBarBuilder';
+import FractionText from '@/components/math/FractionText';
 import { toggleArchiveQuestionAction } from '@/app/actions/workoutActions';
 import { normalizeQuestionData, deriveVisualProps } from '@/lib/intelligence/workout-utils';
 
@@ -61,7 +62,7 @@ export default function ReviewCard({
           <div className="flex justify-between items-start gap-4">
             <div className="space-y-1">
               <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">The Question</span>
-              <p className="text-xl font-bold text-slate-900 leading-tight whitespace-pre-line">{String(q.question || '').replace(/<br\s*\/?>/gi, '\n')}</p>
+              <p className="text-xl font-bold text-slate-900 leading-tight whitespace-pre-line"><FractionText text={String(q.question || '').replace(/<br\s*\/?>/gi, '\n')} /></p>
             </div>
             {isInteractiveBar ? (
               <div className="px-3.5 py-1.5 bg-indigo-600 text-white rounded-xl shrink-0 shadow-sm flex items-center gap-1.5 border border-indigo-500">
@@ -211,7 +212,7 @@ export default function ReviewCard({
                       : 'bg-slate-50 border-slate-100 text-slate-600'
                     }`}
                 >
-                  {opt}
+                  <FractionText text={opt} />
                 </div>
               );
             })}
@@ -231,7 +232,7 @@ export default function ReviewCard({
                 <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-1 flex items-center gap-1">
                   <span>💡</span> Pedagogical Scaffolding (Hint)
                 </p>
-                <p className="text-xs text-amber-900 font-bold italic leading-relaxed">{q.hint}</p>
+                <p className="text-xs text-amber-900 font-bold italic leading-relaxed"><FractionText text={q.hint} /></p>
               </div>
             )}
           </div>

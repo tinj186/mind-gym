@@ -1979,30 +1979,34 @@ export function CompactBarCanvas({
 
           {/* Partitioned Bar */}
           <div className="flex h-11 w-full rounded-xl overflow-hidden border-2 border-slate-300 shadow-sm">
-            {parts.map((p, idx) => {
-              const isShortfall = p.isShortfall;
-              const bgClass = isShortfall 
-                ? "bg-slate-100 border-2 border-dashed border-slate-400 text-slate-700" 
-                : idx === 0 
-                  ? "bg-blue-500 text-white border-r-2 border-white" 
-                  : "bg-amber-500 text-white border-r-2 border-white";
-              const valText = p.value || '?';
+            {(() => {
+              const totalLen = parts.reduce((sum, item) => sum + (Number(item.length) || 33), 0) || 100;
+              return parts.map((p, idx) => {
+                const isShortfall = p.isShortfall;
+                const bgClass = isShortfall 
+                  ? "bg-slate-100 border-2 border-dashed border-slate-400 text-slate-700" 
+                  : idx === 0 
+                    ? "bg-blue-500 text-white border-r-2 border-white" 
+                    : "bg-amber-500 text-white border-r-2 border-white";
+                const valText = p.value || '?';
+                const widthPct = ((Number(p.length) || 33) / totalLen) * 100;
 
-              return (
-                <div
-                  key={p.id || idx}
-                  style={{ width: `${p.length || 33}%` }}
-                  className={`flex flex-col items-center justify-center px-2 py-1 text-center font-sans ${bgClass}`}
-                >
-                  <span className="text-[10px] font-black uppercase tracking-tight truncate w-full">
-                    {p.name}
-                  </span>
-                  <span className="text-xs font-bold font-mono tracking-tight truncate w-full">
-                    {valText}
-                  </span>
-                </div>
-              );
-            })}
+                return (
+                  <div
+                    key={p.id || idx}
+                    style={{ width: `${widthPct}%` }}
+                    className={`flex flex-col items-center justify-center px-2 py-1 text-center font-sans ${bgClass}`}
+                  >
+                    <span className="text-[10px] font-black uppercase tracking-tight truncate w-full">
+                      {p.name}
+                    </span>
+                    <span className="text-xs font-bold font-mono tracking-tight truncate w-full">
+                      {valText}
+                    </span>
+                  </div>
+                );
+              });
+            })()}
           </div>
         </div>
       </div>
@@ -4143,31 +4147,35 @@ export default function InteractiveBarBuilder({
                 {/* The Partitioned Bar */}
                 {userParts.length > 0 ? (
                   <div className="flex h-14 w-full rounded-2xl overflow-hidden border-2 border-slate-300 shadow-sm bg-white">
-                    {userParts.map((p, idx) => {
-                      const isShortfall = p.isShortfall;
-                      const bgClass = p.bgClass || (isShortfall 
-                        ? "bg-slate-100 border-2 border-dashed border-slate-400 text-slate-700" 
-                        : idx === 0 
-                          ? "bg-blue-600 text-white border-r-2 border-white" 
-                          : idx === 1 && userParts.length >= 3
-                            ? "bg-purple-600 text-white border-r-2 border-white"
-                            : "bg-amber-600 text-white border-r-2 border-white");
+                    {(() => {
+                      const totalLen = userParts.reduce((sum, item) => sum + (Number(item.length) || 33), 0) || 100;
+                      return userParts.map((p, idx) => {
+                        const isShortfall = p.isShortfall;
+                        const bgClass = p.bgClass || (isShortfall 
+                          ? "bg-slate-100 border-2 border-dashed border-slate-400 text-slate-700" 
+                          : idx === 0 
+                            ? "bg-blue-600 text-white border-r-2 border-white" 
+                            : idx === 1 && userParts.length >= 3
+                              ? "bg-purple-600 text-white border-r-2 border-white"
+                              : "bg-amber-600 text-white border-r-2 border-white");
+                        const widthPct = ((Number(p.length) || 33) / totalLen) * 100;
 
-                      return (
-                        <div
-                          key={p.id}
-                          style={{ width: `${p.length || 33}%` }}
-                          className={`flex flex-col items-center justify-center px-2 py-1 text-center font-sans transition-all ${bgClass}`}
-                        >
-                          <span className="text-[11px] font-black uppercase tracking-tight truncate w-full">
-                            {p.name || `Part ${idx + 1}`}
-                          </span>
-                          <span className="text-xs font-bold font-mono tracking-tight truncate w-full">
-                            {p.value || "?"}
-                          </span>
-                        </div>
-                      );
-                    })}
+                        return (
+                          <div
+                            key={p.id}
+                            style={{ width: `${widthPct}%` }}
+                            className={`flex flex-col items-center justify-center px-2 py-1 text-center font-sans transition-all ${bgClass}`}
+                          >
+                            <span className="text-[11px] font-black uppercase tracking-tight truncate w-full">
+                              {p.name || `Part ${idx + 1}`}
+                            </span>
+                            <span className="text-xs font-bold font-mono tracking-tight truncate w-full">
+                              {p.value || "?"}
+                            </span>
+                          </div>
+                        );
+                      });
+                    })()}
                   </div>
                 ) : (
                   <div className="p-6 text-center text-xs font-bold text-slate-400 border-2 border-dashed border-slate-300 rounded-2xl">

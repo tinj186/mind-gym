@@ -10,58 +10,126 @@ export const advancedLogic = (variant, isMCQ, isShort, isStructure, getFormatIns
   if (variant === 'advanced_grid_line_network') {
     const numLines = 5 + Math.floor(Math.random() * 2); // 5 or 6
     const lines = [];
-    const slopes = [];
-    
-    // Procedurally generate lines with known slopes
-    // Types: 0 (horiz), Infinity (vert), 1 (diag), -1 (diag neg), 2 (steep), -0.5 (shallow)
+
+    // Grid-aligned slopes (multiples of 20px)
     const slopeTypes = [
-      { s: 0, dx: 40, dy: 0 },
-      { s: Infinity, dx: 0, dy: 40 },
-      { s: 1, dx: 40, dy: -40 },
-      { s: -1, dx: 40, dy: 40 },
-      { s: 2, dx: 20, dy: -40 },
-      { s: -0.5, dx: 40, dy: 20 }
+      { s: 0, dx: 60, dy: 0 },      // horizontal
+      { s: Infinity, dx: 0, dy: 60 }, // vertical
+      { s: 1, dx: 40, dy: -40 },    // diagonal up-right
+      { s: -1, dx: 40, dy: 40 }     // diagonal down-right
     ];
 
-    let parPairs = 0;
-    let perpPairs = 0;
-
-    // To ensure predictable properties, we pick a fixed set of slopes
-    const chosenTypes = [];
-    chosenTypes.push(slopeTypes[0], slopeTypes[0]); // 2 horizontals -> 1 parallel pair
-    chosenTypes.push(slopeTypes[1]); // 1 vertical -> 2 perp pairs (with horiz)
-    chosenTypes.push(slopeTypes[2], slopeTypes[3]); // slope 1 and -1 -> 1 perp pair
+    const chosenTypes = [
+      slopeTypes[0],
+      slopeTypes[0], // 1 horizontal parallel pair
+      slopeTypes[1], // 1 vertical (perpendicular to both horizontals)
+      slopeTypes[2],
+      slopeTypes[3]  // 1 slanted perpendicular pair
+    ];
     if (numLines === 6) {
-      chosenTypes.push(slopeTypes[2]); // Another slope 1 -> 1 more parallel pair, 1 more perp pair
+      chosenTypes.push(slopeTypes[2]); // +1 slanted parallel pair, +1 slanted perp pair
     }
 
-    parPairs = (numLines === 6) ? 2 : 1;
-    perpPairs = (numLines === 6) ? 4 : 3;
+    // Shuffle slopes so labels A..E/F vary across runs
+    for (let i = chosenTypes.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [chosenTypes[i], chosenTypes[j]] = [chosenTypes[j], chosenTypes[i]];
+    }
 
-    // Distribute them on a grid
-    for(let i=0; i<numLines; i++) {
-      const type = chosenTypes[i];
-      const x0 = 20 + Math.random() * 80;
-      const y0 = 20 + Math.random() * 80;
+    // Compute exact parallel and perpendicular pairs
+    const parPairsList = [];
+    const perpPairsList = [];
+    const nonPerpPairsList = [];
+    for (let i = 0; i < numLines; i++) {
+      for (let j = i + 1; j < numLines; j++) {
+        const s1 = chosenTypes[i].s;
+        const s2 = chosenTypes[j].s;
+        const pairName = `Line ${String.fromCharCode(65 + i)} and Line ${String.fromCharCode(65 + j)}`;
+        const isPar = s1 === s2;
+        const isPerp =
+          (s1 === 0 && s2 === Infinity) ||
+          (s1 === Infinity && s2 === 0) ||
+          (Number.isFinite(s1) && Number.isFinite(s2) && s1 * s2 === -1);
+        if (isPar) parPairsList.push(pairName);
+        if (isPerp) perpPairsList.push(pairName);
+        else nonPerpPairsList.push(pairName);
+      }
+    }
+
+    const parPairs = parPairsList.length;
+    const perpPairs = perpPairsList.length;
+
+    // Place every line on a 20px-aligned grid with >= 40px clearance so lines & labels never overlap
+    const getBox = (p1, p2) => ({
+      x1: Math.min(p1.x, p2.x),
+      y1: Math.min(p1.y, p2.y),
+      x2: Math.max(p1.x, p2.x),
+      y2: Math.max(p1.y, p2.y)
+    });
+    const hasOverlap = (boxA, boxes, pad) =>
+      boxes.some((boxB) => !(
+        boxA.x2 + pad <= boxB.x1 ||
+        boxB.x2 + pad <= boxA.x1 ||
+        boxA.y2 + pad <= boxB.y1 ||
+        boxB.y2 + pad <= boxA.y1
+      ));
+
+    const placedBoxes = [];
+    for (let i = 0; i < numLines; i++) {
+      const t = chosenTypes[i];
+      let chosen = null;
+      for (const pad of [40, 20]) {
+        const candidates = [];
+        for (let x = 20; x <= 280; x += 20) {
+          for (let y = 20; y <= 240; y += 20) {
+            const p1 = { x, y };
+            const p2 = { x: x + t.dx, y: y + t.dy };
+            const box = getBox(p1, p2);
+            if (box.x1 < 20 || box.y1 < 20 || box.x2 > 340 || box.y2 > 300) continue;
+            if (!hasOverlap(box, placedBoxes, pad)) {
+              candidates.push({ p1, p2, box });
+            }
+          }
+        }
+        if (candidates.length > 0) {
+          chosen = candidates[Math.floor(Math.random() * candidates.length)];
+          break;
+        }
+      }
+      if (!chosen) {
+        const p1 = { x: 40 + (i % 3) * 100, y: 60 + Math.floor(i / 3) * 100 };
+        const p2 = { x: p1.x + t.dx, y: p1.y + t.dy };
+        chosen = { p1, p2, box: getBox(p1, p2) };
+      }
+      placedBoxes.push(chosen.box);
+      const lineColors = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6", "#06b6d4"];
       lines.push({
-        vertices: [{x: x0, y: y0}, {x: x0 + type.dx, y: y0 + type.dy}],
-        isOpen: true, strokeColor: "#3b82f6", label: String.fromCharCode(65 + i)
+        vertices: [chosen.p1, chosen.p2],
+        isOpen: true,
+        strokeColor: lineColors[i % lineColors.length],
+        label: String.fromCharCode(65 + i)
       });
     }
 
+    const correctPerpPair = perpPairsList[Math.floor(Math.random() * perpPairsList.length)];
+    const distractors = nonPerpPairsList.sort(() => Math.random() - 0.5).slice(0, 3);
+    const mcqOptions = [correctPerpPair, ...distractors].sort(() => Math.random() - 0.5);
+
     let askText = "";
+    let mcqPrompt = "";
     if (isStructure) {
       askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"A grid displays ${numLines} independent line segments labeled A to ${String.fromCharCode(64 + numLines)}. By inspecting their directions and slopes on the square grid, identify all pairs of parallel lines and all pairs of perpendicular lines. Calculate the difference between the total number of perpendicular pairs and parallel pairs."`;
       const stepsArr = [
         { label: "Visually check the grid. How many distinct pairs of parallel lines can you find?", expectedAnswer: String(parPairs), acceptedAnswers: [] },
         { label: "Visually check the grid. How many distinct pairs of perpendicular lines can you find?", expectedAnswer: String(perpPairs), acceptedAnswers: [] },
-        { label: "Write the working equation to find the difference between the two totals:", expectedAnswer: `${perpPairs} - ${parPairs} = ${perpPairs - parPairs}`, acceptedAnswers: [] },
+        { label: "Write the working equation to find the difference between the two totals:", expectedAnswer: `${perpPairs} - ${parPairs} = ${perpPairs - parPairs}`, acceptedAnswers: [`${perpPairs}-${parPairs}=${perpPairs - parPairs}`] },
         { label: "Difference:", expectedAnswer: String(perpPairs - parPairs), acceptedAnswers: [] }
       ];
       inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
     } else if (isMCQ) {
-      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"Line A has a slanted slope on the grid. Which pair of lines on the grid is perpendicular to each other?"`;
+      askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"Look at the lines labeled A to ${String.fromCharCode(64 + numLines)} on the grid. Which pair of lines is perpendicular to each other?"`;
       inputRequirementStr = JSON.stringify({ inputType: "MCQ_BUTTONS" });
+      mcqPrompt = `\nGenerate EXACTLY 4 options in "content.options":\n${mcqOptions.map(o => `- "${o}"`).join('\n')}\nCRITICAL: The options array MUST contain exactly these 4 options. One option MUST match finalAnswer ("${correctPerpPair}") exactly.`;
     } else {
       askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"Look at the lines on the grid. How many distinct pairs of parallel lines are there in total?"`;
       inputRequirementStr = `{"inputType": "STANDARD_TEXT"}`;
@@ -69,14 +137,14 @@ export const advancedLogic = (variant, isMCQ, isShort, isStructure, getFormatIns
 
     visualEngineStr = JSON.stringify({
       componentToRender: "LINE_AND_POLYGON",
-      componentData: { polygons: lines, showGrid: true }
+      componentData: { polygons: lines, showGrid: true, hideToolbar: true }
     });
 
     systemPrompt = `You are generating a Primary 3 Math question.
 ${getFormatInstructions(visualEngineStr, inputRequirementStr)}
 Generate the "content" JSON based on this logic:
 ${askText}
-Final Answer: ${isMCQ ? "Line C and Line D" : isStructure ? perpPairs - parPairs : parPairs}
+Final Answer: ${isMCQ ? correctPerpPair : isStructure ? perpPairs - parPairs : parPairs}${mcqPrompt}
 CRITICAL: Do not explain the math inside the questionText. Leave it as a puzzle for the student.`;
 
   } else if (variant === 'advanced_half_shape_reflection') {

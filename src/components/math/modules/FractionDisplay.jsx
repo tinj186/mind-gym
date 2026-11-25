@@ -23,7 +23,46 @@ const polarToCartesian = (centerX, centerY, radius, angleInDegrees) => {
 export default function FractionDisplay({ data, hideCardStyles = false }) {
   if (!data) return null;
 
-  const { shape = 'rectangle', totalParts = 4, shadedParts = 1, color = '#3b82f6', shadedSegments } = data;
+  const {
+    shape = data.totalBars ? 'rectangle' : 'rectangle',
+    totalParts = data.denominator ?? data.partitionsPerBar ?? 4,
+    shadedParts = data.totalShadedBlocks ?? 1,
+    color = '#3b82f6',
+    shadedSegments
+  } = data;
+
+  const shapeCount = Number(data.totalShapes ?? data.totalBars ?? 1);
+  if (shapeCount > 1) {
+    const layout = data.layout === 'vertical' ? 'flex-col' : 'flex-row flex-wrap';
+    const shouldHideCardStyles = hideCardStyles || data.hideCardStyles;
+    const outerCls = shouldHideCardStyles
+      ? `flex ${layout} items-center justify-center gap-4 w-full`
+      : `w-full max-w-2xl mx-auto p-6 bg-white rounded-2xl border-4 border-slate-900 shadow-[6px_6px_0px_0px_rgba(15,23,42,1)] flex ${layout} items-center justify-center gap-4`;
+
+    let remaining = Number(shadedParts) || 0;
+    const items = Array.from({ length: shapeCount }, () => {
+      const take = Math.max(0, Math.min(totalParts, remaining));
+      remaining -= take;
+      return take;
+    });
+
+    return (
+      <div className={outerCls}>
+        {items.map((countShaded, idx) => (
+          <FractionDisplay
+            key={idx}
+            hideCardStyles
+            data={{
+              shape: data.totalBars ? 'rectangle' : shape,
+              totalParts,
+              shadedParts: countShaded,
+              color
+            }}
+          />
+        ))}
+      </div>
+    );
+  }
   
   const baseSize = 200;
   const strokeColor = '#0f172a';

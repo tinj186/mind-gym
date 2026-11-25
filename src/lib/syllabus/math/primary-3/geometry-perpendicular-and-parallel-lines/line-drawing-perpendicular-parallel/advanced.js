@@ -241,9 +241,9 @@ export const generateAdvanced = (variant, type, getFormatInstructions) => {
     if (isStructure) {
       askText = `CRITICAL INSTRUCTION: Your "questionText" MUST BE EXACTLY the following string. DO NOT ADD OR CHANGE A SINGLE WORD:\n"${studentName} is drawing an expanding square spiral on grid paper. Every time a straight line is completed, a 90-degree perpendicular turn is made in the spiral path to draw the next line. The line lengths follow an increasing pattern: the 1st line (Point A to Point B) is ${s1} grid units, the 2nd line (Point B to Point C) is ${s2} grid units, and the 3rd line (Point C to Point D) is ${s3} grid units (each new line increases by ${step} grid unit(s)). Starting from Point D, use the drawing tool to continue the expanding spiral: count the grid units to draw the 4th perpendicular line, then make another 90-degree turn and count the grid units to draw the 5th perpendicular line. Determine the pattern, calculate the length of the 5th line, and find the total number of grid units used to draw all 5 lines."`;
       const stepsArr = [
-        { label: `Looking at the pattern of line lengths (${s1}, ${s2}, ${s3}...), each new perpendicular line increases by ${step} grid unit(s). What is the length of the 4th line to be drawn from Point D?`, expectedAnswer: String(s4), acceptedAnswers: [] },
+        { label: "What is the length of the 4th line to be drawn from Point D?", expectedAnswer: String(s4), acceptedAnswers: [] },
         { label: "What is the length of the 5th perpendicular line to be drawn?", expectedAnswer: String(s5), acceptedAnswers: [] },
-        { label: `Write the working equation to find the total length of all 5 lines drawn (${s1} + ${s2} + ${s3} + ${s4} + ${s5}):`, expectedAnswer: `${s1} + ${s2} + ${s3} + ${s4} + ${s5} = ${totalLen}`, acceptedAnswers: [`${s1}+${s2}+${s3}+${s4}+${s5}=${totalLen}`] },
+        { label: "Write the working equation to find the total length of all 5 lines drawn:", expectedAnswer: `${s1} + ${s2} + ${s3} + ${s4} + ${s5} = ${totalLen}`, acceptedAnswers: [`${s1}+${s2}+${s3}+${s4}+${s5}=${totalLen}`] },
         { label: "Total grid units drawn for all 5 lines:", expectedAnswer: String(totalLen), acceptedAnswers: [] }
       ];
       inputRequirementStr = JSON.stringify({ inputType: "MULTI_STEP_INPUT", steps: stepsArr });
